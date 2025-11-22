@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function DuelPage() {
+function DuelContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const roomIdParam = searchParams.get('room');
@@ -402,5 +402,18 @@ export default function DuelPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+
+export default function DuelPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 flex items-center justify-center">
+        <div className="text-cyan-400 font-mono animate-pulse">Carregando...</div>
+      </div>
+    }>
+      <DuelContent />
+    </Suspense>
   );
 }
