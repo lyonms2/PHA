@@ -65,9 +65,12 @@ function BatalhaContent() {
   const [syncManager, setSyncManager] = useState(null);
   const [aguardandoOponente, setAguardandoOponente] = useState(false);
   const [oponenteDesconectou, setOponenteDesconectou] = useState(false);
+  const [salaAtiva, setSalaAtiva] = useState(false); // Sala está ativa (ambos prontos)
 
   // Ref para controle de registro de batalha (anti-abandono)
   const batalhaRegistradaRef = useRef(false);
+  // Ref para evitar múltiplas detecções de W.O.
+  const woDetectadoRef = useRef(false);
 
   useEffect(() => {
     let batalhaJSON;
@@ -159,7 +162,8 @@ function BatalhaContent() {
       return;
     }
 
-    if (pvpAoVivo && !isYourTurn) {
+    // Em PvP ao vivo, só rodar timer se sala estiver ativa e for seu turno
+    if (pvpAoVivo && (!salaAtiva || !isYourTurn)) {
       return;
     }
 
@@ -175,7 +179,7 @@ function BatalhaContent() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [timerAtivo, turnoIA, processando, resultado, pvpAoVivo, isYourTurn]);
+  }, [timerAtivo, turnoIA, processando, resultado, pvpAoVivo, salaAtiva, isYourTurn]);
 
   // Cleanup PvP ao sair
   useEffect(() => {
@@ -292,15 +296,18 @@ function BatalhaContent() {
   };
 
   const handleRoomStateUpdate = (roomState) => {
-    if (roomState.room.status === 'active' && !estado) {
+    // Verificar se ambos estão prontos e sala ficou ativa
+    if (roomState.room.status === 'active' && !salaAtiva) {
+      setSalaAtiva(true);
       adicionarLog(`🎮 Ambos prontos! Batalha iniciada!`);
     }
 
     const opponent = roomState.playerNumber === 1 ? roomState.player2 : roomState.player1;
 
-    // Evitar mensagens repetidas de W.O.
-    // Só considerar desconectado se connected for explicitamente false
-    if (opponent.connected === false && !oponenteDesconectou) {
+    // Só verificar desconexão se a sala estiver ativa (ambos marcaram como pronto)
+    // Evitar W.O. falso durante a fase de preparação
+    if (roomState.room.status === 'active' && opponent.connected === false && !woDetectadoRef.current) {
+      woDetectadoRef.current = true;
       setOponenteDesconectou(true);
       const nomeOponente = opponent.nome || 'Oponente';
       adicionarLog(`🚪 ${nomeOponente} desconectou!`);
@@ -377,6 +384,11 @@ function BatalhaContent() {
     if (!estado) return;
 
     if (pvpAoVivo) {
+      // Verificar se sala está ativa (ambos prontos)
+      if (!salaAtiva) {
+        adicionarLog('⏳ Aguardando oponente entrar na sala...');
+        return;
+      }
       if (!isYourTurn) {
         adicionarLog('⚠️ Aguarde seu turno!');
         return;
