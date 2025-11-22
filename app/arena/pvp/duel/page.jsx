@@ -48,6 +48,14 @@ function DuelContent() {
         const data = await res.json();
 
         if (data.success) {
+          // Verificar se seu desafio foi aceito
+          if (data.acceptedRoom) {
+            setRoomId(data.acceptedRoom);
+            setInLobby(false);
+            addLog('⚔️ Desafio aceito! Entrando na batalha...');
+            return;
+          }
+
           // Filtrar para não mostrar a si mesmo
           setPlayers(data.players.filter(p => p.visitorId !== visitorId));
 

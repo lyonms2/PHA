@@ -30,7 +30,10 @@ export async function GET(request) {
 
     // Buscar desafios pendentes para o usuário atual
     let pendingChallenge = null;
+    let acceptedRoom = null;
+
     if (visitorId) {
+      // Verificar se alguém te desafiou
       const challenges = await getDocuments('pvp_lobby', {
         where: [
           ['target_id', '==', visitorId],
@@ -40,12 +43,23 @@ export async function GET(request) {
       if (challenges && challenges.length > 0) {
         pendingChallenge = challenges[0];
       }
+
+      // Verificar se seu desafio foi aceito (você tem um room_id)
+      const myEntries = await getDocuments('pvp_lobby', {
+        where: [['visitorId', '==', visitorId]]
+      });
+      if (myEntries && myEntries.length > 0 && myEntries[0].room_id) {
+        acceptedRoom = myEntries[0].room_id;
+        // Limpar entrada do lobby
+        await deleteDocument('pvp_lobby', myEntries[0].id);
+      }
     }
 
     return NextResponse.json({
       success: true,
       players: players || [],
-      pendingChallenge
+      pendingChallenge,
+      acceptedRoom
     });
 
   } catch (error) {
@@ -185,9 +199,14 @@ export async function POST(request) {
         created_at: new Date().toISOString()
       });
 
-      // Remover ambos do lobby
-      await deleteDocument('pvp_lobby', challenge.id);
+      // Atualizar entrada do desafiante com o roomId (para ele detectar via polling)
+      const { updateDocument } = await import('@/lib/firebase/firestore');
+      await updateDocument('pvp_lobby', challenge.id, {
+        room_id: roomId,
+        status: 'matched'
+      });
 
+      // Remover entrada do aceitante do lobby
       const myEntries = await getDocuments('pvp_lobby', {
         where: [['visitorId', '==', visitorId]]
       });
