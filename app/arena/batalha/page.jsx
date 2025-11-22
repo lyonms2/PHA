@@ -72,6 +72,8 @@ function BatalhaContent() {
   const batalhaRegistradaRef = useRef(false);
   // Ref para evitar múltiplas detecções de W.O.
   const woDetectadoRef = useRef(false);
+  // Ref para evitar mensagem repetida de "Ambos prontos"
+  const salaAtivadaRef = useRef(false);
 
   useEffect(() => {
     let batalhaJSON;
@@ -342,10 +344,13 @@ function BatalhaContent() {
   };
 
   const handleRoomStateUpdate = (roomState) => {
-    // Verificar se ambos estão prontos e sala ficou ativa
-    if (roomState.room.status === 'active' && !salaAtiva) {
+    // Verificar se ambos estão prontos e sala ficou ativa (usar ref para evitar repetição)
+    if (roomState.room.status === 'active' && !salaAtivadaRef.current) {
+      salaAtivadaRef.current = true;
       setSalaAtiva(true);
-      adicionarLog(`🎮 Ambos prontos! Batalha iniciada!`);
+      adicionarLog(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+      adicionarLog(`🎮 BATALHA INICIADA!`);
+      adicionarLog(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
     }
 
     const opponent = roomState.playerNumber === 1 ? roomState.player2 : roomState.player1;
