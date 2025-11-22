@@ -65,6 +65,7 @@ function BatalhaContent() {
   const [syncManager, setSyncManager] = useState(null);
   const [aguardandoOponente, setAguardandoOponente] = useState(false);
   const [oponenteDesconectou, setOponenteDesconectou] = useState(false);
+  const [salaAtiva, setSalaAtiva] = useState(false); // Sala está ativa (ambos prontos)
 
   // Ref para controle de registro de batalha (anti-abandono)
   const batalhaRegistradaRef = useRef(false);
@@ -161,7 +162,8 @@ function BatalhaContent() {
       return;
     }
 
-    if (pvpAoVivo && !isYourTurn) {
+    // Em PvP ao vivo, só rodar timer se sala estiver ativa e for seu turno
+    if (pvpAoVivo && (!salaAtiva || !isYourTurn)) {
       return;
     }
 
@@ -177,7 +179,7 @@ function BatalhaContent() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [timerAtivo, turnoIA, processando, resultado, pvpAoVivo, isYourTurn]);
+  }, [timerAtivo, turnoIA, processando, resultado, pvpAoVivo, salaAtiva, isYourTurn]);
 
   // Cleanup PvP ao sair
   useEffect(() => {
@@ -295,7 +297,8 @@ function BatalhaContent() {
 
   const handleRoomStateUpdate = (roomState) => {
     // Verificar se ambos estão prontos e sala ficou ativa
-    if (roomState.room.status === 'active' && !estado) {
+    if (roomState.room.status === 'active' && !salaAtiva) {
+      setSalaAtiva(true);
       adicionarLog(`🎮 Ambos prontos! Batalha iniciada!`);
     }
 
@@ -381,6 +384,11 @@ function BatalhaContent() {
     if (!estado) return;
 
     if (pvpAoVivo) {
+      // Verificar se sala está ativa (ambos prontos)
+      if (!salaAtiva) {
+        adicionarLog('⏳ Aguardando oponente entrar na sala...');
+        return;
+      }
       if (!isYourTurn) {
         adicionarLog('⚠️ Aguarde seu turno!');
         return;
