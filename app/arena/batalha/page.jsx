@@ -313,6 +313,34 @@ function BatalhaContent() {
     }
   };
 
+  // Função para se render (PvP)
+  const seRender = async () => {
+    if (!estado || resultado) return;
+
+    adicionarLog('🏳️ Voce se rendeu!');
+    adicionarLog('☠️ DERROTA por rendição!');
+
+    // Notificar servidor sobre rendição
+    if (pvpAoVivo && matchId) {
+      try {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        await enviarAcaoPvP(matchId, userData.id, {
+          tipo: 'render',
+          dano: 0,
+          cura: 0,
+          hp_jogador_atual: 0,
+          hp_inimigo_atual: estado.inimigo.hp_atual,
+          resultado: 'derrota'
+        });
+      } catch (error) {
+        console.error('Erro ao notificar rendição:', error);
+      }
+    }
+
+    // Finalizar como derrota
+    finalizarBatalha(estado, 'inimigo');
+  };
+
   const handleRoomStateUpdate = (roomState) => {
     // Verificar se ambos estão prontos e sala ficou ativa
     if (roomState.room.status === 'active' && !salaAtiva) {
@@ -817,6 +845,8 @@ function BatalhaContent() {
             turnoIA={turnoIA}
             processando={processando}
             executarAcao={executarAcao}
+            pvpAoVivo={pvpAoVivo}
+            onSurrender={seRender}
           />
         </div>
 
