@@ -298,16 +298,25 @@ function BatalhaContent() {
 
     const opponent = roomState.playerNumber === 1 ? roomState.player2 : roomState.player1;
 
-    if (!opponent.connected) {
+    // Evitar mensagens repetidas de W.O.
+    // Só considerar desconectado se connected for explicitamente false
+    if (opponent.connected === false && !oponenteDesconectou) {
       setOponenteDesconectou(true);
-      adicionarLog(`🚪 ${opponent.nome} desconectou!`);
+      const nomeOponente = opponent.nome || 'Oponente';
+      adicionarLog(`🚪 ${nomeOponente} desconectou!`);
       adicionarLog(`🏆 Voce venceu por W.O.!`);
+
+      // Parar polling
+      if (syncManager) {
+        syncManager.stopPolling();
+      }
 
       setTimeout(() => {
         if (estado) {
           finalizarBatalha(estado, 'jogador');
         }
       }, 2000);
+      return;
     }
 
     setIsYourTurn(roomState.isYourTurn);
