@@ -72,6 +72,11 @@ function BatalhaContent() {
   const batalhaRegistradaRef = useRef(false);
   // Ref para evitar múltiplas detecções de W.O.
   const woDetectadoRef = useRef(false);
+  // Ref para evitar mensagem repetida de "Ambos prontos"
+  const salaAtivadaRef = useRef(false);
+  // Refs para valores usados em callbacks (evitar closure bugs)
+  const isYourTurnRef = useRef(false);
+  const salaAtivaRef = useRef(false);
 
   useEffect(() => {
     let batalhaJSON;
@@ -163,12 +168,13 @@ function BatalhaContent() {
       return;
     }
 
-    // Em PvP ao vivo, só rodar timer se sala estiver ativa e for seu turno
-    if (pvpAoVivo && (!salaAtiva || !isYourTurn)) {
-      return;
-    }
-
     const interval = setInterval(() => {
+      // Em PvP ao vivo, só rodar timer se sala estiver ativa e for seu turno
+      // Usar refs para evitar closure bugs
+      if (pvpAoVivo && (!salaAtivaRef.current || !isYourTurnRef.current)) {
+        return;
+      }
+
       setTempoRestante((prev) => {
         if (prev <= 1) {
           adicionarLog('⏱️ Tempo esgotado! Defendendo automaticamente...');
@@ -180,7 +186,7 @@ function BatalhaContent() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [timerAtivo, turnoIA, processando, resultado, pvpAoVivo, salaAtiva, isYourTurn]);
+  }, [timerAtivo, turnoIA, processando, resultado, pvpAoVivo]);
 
   // Cleanup PvP ao sair
   useEffect(() => {
@@ -342,10 +348,15 @@ function BatalhaContent() {
   };
 
   const handleRoomStateUpdate = (roomState) => {
-    // Verificar se ambos estão prontos e sala ficou ativa
-    if (roomState.room.status === 'active' && !salaAtiva) {
+    // Verificar se ambos estão prontos e sala ficou ativa (usar ref para evitar repetição)
+    if (roomState.room.status === 'active' && !salaAtivadaRef.current) {
+      salaAtivadaRef.current = true;
+      salaAtivaRef.current = true;
       setSalaAtiva(true);
-      adicionarLog(`🎮 Ambos prontos! Batalha iniciada!`);
+      adicionarLog(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+      adicionarLog(`🎮 BATALHA INICIADA!`);
+      adicionarLog(`Primeiro turno: Player ${roomState.room.current_player}`);
+      adicionarLog(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
     }
 
     const opponent = roomState.playerNumber === 1 ? roomState.player2 : roomState.player1;
@@ -372,7 +383,9 @@ function BatalhaContent() {
       return;
     }
 
+    // Atualizar estado e refs
     setIsYourTurn(roomState.isYourTurn);
+    isYourTurnRef.current = roomState.isYourTurn;
     setAguardandoOponente(!roomState.isYourTurn && roomState.room.status === 'active');
   };
 
@@ -414,7 +427,9 @@ function BatalhaContent() {
     });
 
     setIsYourTurn(true);
+    isYourTurnRef.current = true;
     setAguardandoOponente(false);
+    setTempoRestante(30); // Resetar timer para seu turno
 
     if (action.resultado === 'vitoria') {
       adicionarLog(`☠️ Voce foi derrotado!`);
@@ -486,8 +501,9 @@ function BatalhaContent() {
 
         setEstado(resultado.novoEstado);
         setIsYourTurn(false);
+        isYourTurnRef.current = false;
         setAguardandoOponente(true);
-        adicionarLog('⏳ Aguardando oponente...');
+        adicionarLog('⏳ Aguardando ação do oponente...');
 
         if (resultado.fimBatalha) {
           await new Promise(resolve => setTimeout(resolve, 1000));
