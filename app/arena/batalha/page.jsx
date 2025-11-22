@@ -68,6 +68,8 @@ function BatalhaContent() {
 
   // Ref para controle de registro de batalha (anti-abandono)
   const batalhaRegistradaRef = useRef(false);
+  // Ref para evitar múltiplas detecções de W.O.
+  const woDetectadoRef = useRef(false);
 
   useEffect(() => {
     let batalhaJSON;
@@ -292,15 +294,17 @@ function BatalhaContent() {
   };
 
   const handleRoomStateUpdate = (roomState) => {
+    // Verificar se ambos estão prontos e sala ficou ativa
     if (roomState.room.status === 'active' && !estado) {
       adicionarLog(`🎮 Ambos prontos! Batalha iniciada!`);
     }
 
     const opponent = roomState.playerNumber === 1 ? roomState.player2 : roomState.player1;
 
-    // Evitar mensagens repetidas de W.O.
-    // Só considerar desconectado se connected for explicitamente false
-    if (opponent.connected === false && !oponenteDesconectou) {
+    // Só verificar desconexão se a sala estiver ativa (ambos marcaram como pronto)
+    // Evitar W.O. falso durante a fase de preparação
+    if (roomState.room.status === 'active' && opponent.connected === false && !woDetectadoRef.current) {
+      woDetectadoRef.current = true;
       setOponenteDesconectou(true);
       const nomeOponente = opponent.nome || 'Oponente';
       adicionarLog(`🚪 ${nomeOponente} desconectou!`);
