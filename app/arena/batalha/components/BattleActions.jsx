@@ -4,7 +4,9 @@ export default function BattleActions({
   estado,
   turnoIA,
   processando,
-  executarAcao
+  executarAcao,
+  pvpAoVivo = false,
+  onSurrender = null
 }) {
   return (
     <div className="bg-slate-900/80 rounded-lg p-6 border-2 border-slate-700">
@@ -55,6 +57,20 @@ export default function BattleActions({
           <div className="mt-2 text-xs text-blue-400">🛡️ Resistencia: {estado.jogador.resistencia}</div>
         </button>
       </div>
+
+      {/* Botão Render - Apenas PvP */}
+      {pvpAoVivo && onSurrender && (
+        <div className="mt-4">
+          <button
+            onClick={onSurrender}
+            disabled={turnoIA || processando}
+            className="w-full p-3 rounded-lg border-2 transition-all text-center bg-gradient-to-r from-gray-800 to-gray-900 border-gray-600 hover:from-red-900/40 hover:to-red-800/40 hover:border-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <div className="font-bold text-gray-400 hover:text-red-400">🏳️ Se Render</div>
+            <div className="text-xs text-gray-500">Desistir da batalha</div>
+          </button>
+        </div>
+      )}
 
       {/* Info D20 */}
       <div className="mt-4 pt-4 border-t border-slate-700 text-xs text-slate-500">

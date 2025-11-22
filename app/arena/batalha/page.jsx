@@ -66,6 +66,7 @@ function BatalhaContent() {
   const [aguardandoOponente, setAguardandoOponente] = useState(false);
   const [oponenteDesconectou, setOponenteDesconectou] = useState(false);
   const [salaAtiva, setSalaAtiva] = useState(false); // Sala está ativa (ambos prontos)
+  const [jogadorPronto, setJogadorPronto] = useState(false); // Jogador clicou em Pronto
 
   // Ref para controle de registro de batalha (anti-abandono)
   const batalhaRegistradaRef = useRef(false);
@@ -271,10 +272,11 @@ function BatalhaContent() {
 
       setPlayerNumber(roomState.playerNumber);
       setIsYourTurn(roomState.isYourTurn);
+      setMatchId(dados.matchId);
 
-      await marcarComoPronto(dados.matchId, userData.id);
       adicionarLog(`✅ Conectado a sala de batalha!`);
       adicionarLog(`🎮 Voce e o Player ${roomState.playerNumber}`);
+      adicionarLog(`👆 Clique em PRONTO quando estiver preparado!`);
 
       const sync = new BattleSyncManager(
         dados.matchId,
@@ -286,13 +288,57 @@ function BatalhaContent() {
       sync.startPolling(2000);
       setSyncManager(sync);
 
-      adicionarLog(`⏳ Aguardando ambos jogadores estarem prontos...`);
-
     } catch (error) {
       console.error('Erro ao inicializar PvP ao vivo:', error);
       adicionarLog('❌ Erro ao conectar a sala. Retornando ao lobby...');
       setTimeout(() => router.push('/arena/pvp'), 3000);
     }
+  };
+
+  // Função para marcar jogador como pronto
+  const clicarPronto = async () => {
+    if (jogadorPronto || !matchId) return;
+
+    try {
+      const userData = JSON.parse(localStorage.getItem('user'));
+      if (!userData) return;
+
+      await marcarComoPronto(matchId, userData.id);
+      setJogadorPronto(true);
+      adicionarLog(`✅ Voce está pronto!`);
+      adicionarLog(`⏳ Aguardando oponente...`);
+    } catch (error) {
+      console.error('Erro ao marcar como pronto:', error);
+      adicionarLog('❌ Erro ao confirmar. Tente novamente.');
+    }
+  };
+
+  // Função para se render (PvP)
+  const seRender = async () => {
+    if (!estado || resultado) return;
+
+    adicionarLog('🏳️ Voce se rendeu!');
+    adicionarLog('☠️ DERROTA por rendição!');
+
+    // Notificar servidor sobre rendição
+    if (pvpAoVivo && matchId) {
+      try {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        await enviarAcaoPvP(matchId, userData.id, {
+          tipo: 'render',
+          dano: 0,
+          cura: 0,
+          hp_jogador_atual: 0,
+          hp_inimigo_atual: estado.inimigo.hp_atual,
+          resultado: 'derrota'
+        });
+      } catch (error) {
+        console.error('Erro ao notificar rendição:', error);
+      }
+    }
+
+    // Finalizar como derrota
+    finalizarBatalha(estado, 'inimigo');
   };
 
   const handleRoomStateUpdate = (roomState) => {
@@ -756,6 +802,32 @@ function BatalhaContent() {
           );
         })()}
 
+        {/* Botão Pronto - PvP Ao Vivo */}
+        {pvpAoVivo && !salaAtiva && (
+          <div className="mb-4 bg-gradient-to-r from-purple-900/50 to-indigo-900/50 rounded-lg p-4 border border-purple-500/50 text-center">
+            {!jogadorPronto ? (
+              <>
+                <p className="text-slate-300 mb-3">
+                  Clique no botão abaixo quando estiver pronto para começar!
+                </p>
+                <button
+                  onClick={clicarPronto}
+                  className="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-bold rounded-lg text-lg transform hover:scale-105 transition-all animate-pulse"
+                >
+                  ✅ PRONTO!
+                </button>
+              </>
+            ) : (
+              <div className="flex items-center justify-center gap-3">
+                <div className="animate-spin text-2xl">⏳</div>
+                <p className="text-yellow-400 font-bold">
+                  Aguardando oponente ficar pronto...
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="grid lg:grid-cols-3 gap-2">
           {/* Arena de Combate */}
           <BattleArena
@@ -773,6 +845,8 @@ function BatalhaContent() {
             turnoIA={turnoIA}
             processando={processando}
             executarAcao={executarAcao}
+            pvpAoVivo={pvpAoVivo}
+            onSurrender={seRender}
           />
         </div>
 
