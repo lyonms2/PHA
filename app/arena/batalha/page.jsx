@@ -80,6 +80,28 @@ function BatalhaContent() {
 
         const isPvpRealTime = dados.pvpAoVivo === true;
         setPvpAoVivo(isPvpRealTime);
+        setMatchId(dados.matchId);
+
+        // Se for PvP ao vivo e não tiver dados do oponente, aguardar inicialização
+        if (isPvpRealTime && !dados.avatarOponente) {
+          adicionarLog('⚔️ CONECTANDO À SALA PvP...');
+          adicionarLog(`Preparando batalha...`);
+          inicializarPvPAoVivo(dados);
+          return;
+        }
+
+        // Criar avatar oponente padrão se não existir (fallback)
+        const avatarOponente = dados.avatarOponente || {
+          id: 'oponente_pvp',
+          nome: dados.nomeOponente || 'Oponente',
+          nivel: dados.avatarJogador.nivel || 1,
+          elemento: 'Neutro',
+          forca: dados.avatarJogador.forca || 10,
+          agilidade: dados.avatarJogador.agilidade || 10,
+          resistencia: dados.avatarJogador.resistencia || 10,
+          foco: dados.avatarJogador.foco || 10,
+          habilidades: []
+        };
 
         const batalha = inicializarBatalhaD20(
           {
@@ -87,9 +109,9 @@ function BatalhaContent() {
             habilidades: Array.isArray(dados.avatarJogador.habilidades) ? dados.avatarJogador.habilidades : [],
           },
           {
-            ...dados.avatarOponente,
-            nome: dados.nomeOponente || dados.avatarOponente.nome,
-            habilidades: Array.isArray(dados.avatarOponente.habilidades) ? dados.avatarOponente.habilidades : [],
+            ...avatarOponente,
+            nome: dados.nomeOponente || avatarOponente.nome,
+            habilidades: Array.isArray(avatarOponente.habilidades) ? avatarOponente.habilidades : [],
           },
           'normal'
         );
@@ -99,7 +121,7 @@ function BatalhaContent() {
         adicionarLog('⚔️ BATALHA PvP INICIADA!');
         adicionarLog(`Voce: ${batalha.jogador.nome} (${batalha.jogador.elemento})`);
         adicionarLog(`VS`);
-        adicionarLog(`${dados.nomeOponente}: ${batalha.inimigo.nome} (${batalha.inimigo.elemento})`);
+        adicionarLog(`${dados.nomeOponente || 'Oponente'}: ${batalha.inimigo.nome} (${batalha.inimigo.elemento})`);
         if (dados.tierJogador) {
           adicionarLog(`Tier: ${dados.tierJogador.nome} ${dados.tierJogador.icone}`);
         }
