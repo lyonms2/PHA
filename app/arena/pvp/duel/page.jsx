@@ -9,9 +9,11 @@ function DuelContent() {
   const roomIdParam = searchParams.get('room');
 
   const [visitorId, setVisitorId] = useState(null);
+  const [meuNome, setMeuNome] = useState('');
   const [roomId, setRoomId] = useState(roomIdParam);
-  const [roomCode, setRoomCode] = useState('');
-  const [inputCode, setInputCode] = useState('');
+  const [players, setPlayers] = useState([]);
+  const [pendingChallenge, setPendingChallenge] = useState(null);
+  const [challenging, setChallenging] = useState(false);
   const [room, setRoom] = useState(null);
   const [role, setRole] = useState(null);
   const [isYourTurn, setIsYourTurn] = useState(false);
@@ -19,8 +21,7 @@ function DuelContent() {
   const [opponentHp, setOpponentHp] = useState(100);
   const [opponentNome, setOpponentNome] = useState('');
   const [log, setLog] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [inLobby, setInLobby] = useState(false);
 
   const pollingRef = useRef(null);
   const lastTurnRef = useRef(null);
@@ -34,13 +35,49 @@ function DuelContent() {
     }
     const parsed = JSON.parse(userData);
     setVisitorId(parsed.visitorId || parsed.id);
+    setMeuNome(parsed.nome_operacao || parsed.nome || 'Jogador');
   }, [router]);
 
-  // Polling para estado da sala
+  // Polling do lobby
+  useEffect(() => {
+    if (!visitorId || roomId) return;
+
+    const pollLobby = async () => {
+      try {
+        const res = await fetch(`/api/pvp/lobby?visitorId=${visitorId}`);
+        const data = await res.json();
+
+        if (data.success) {
+          // Filtrar para não mostrar a si mesmo
+          setPlayers(data.players.filter(p => p.visitorId !== visitorId));
+
+          // Verificar desafio pendente
+          if (data.pendingChallenge) {
+            setPendingChallenge(data.pendingChallenge);
+          } else {
+            setPendingChallenge(null);
+          }
+        }
+      } catch (err) {
+        console.error('Erro no polling lobby:', err);
+      }
+    };
+
+    if (inLobby) {
+      pollLobby();
+      pollingRef.current = setInterval(pollLobby, 1500);
+    }
+
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, [visitorId, inLobby, roomId]);
+
+  // Polling da batalha
   useEffect(() => {
     if (!roomId || !visitorId) return;
 
-    const poll = async () => {
+    const pollBattle = async () => {
       try {
         const res = await fetch(`/api/pvp/room/state?roomId=${roomId}&visitorId=${visitorId}`);
         const data = await res.json();
@@ -76,90 +113,124 @@ function DuelContent() {
       }
     };
 
-    poll(); // Primeira chamada
-    pollingRef.current = setInterval(poll, 1000); // Poll a cada 1 segundo
+    pollBattle();
+    pollingRef.current = setInterval(pollBattle, 1000);
 
     return () => {
       if (pollingRef.current) clearInterval(pollingRef.current);
     };
   }, [roomId, visitorId]);
 
+  // Cleanup ao sair
+  useEffect(() => {
+    return () => {
+      if (visitorId && inLobby) {
+        fetch('/api/pvp/lobby', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ visitorId, action: 'leave' })
+        }).catch(() => {});
+      }
+    };
+  }, [visitorId, inLobby]);
+
   const addLog = (msg) => {
     setLog(prev => [msg, ...prev]);
   };
 
-  // Criar sala
-  const criarSala = async () => {
+  // Entrar no lobby
+  const entrarLobby = async () => {
     if (!visitorId) return;
-    setLoading(true);
-    setError('');
 
     try {
-      const res = await fetch('/api/pvp/room/create', {
+      const res = await fetch('/api/pvp/lobby', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: visitorId, visitorId })
+        body: JSON.stringify({ visitorId, action: 'enter' })
       });
       const data = await res.json();
 
       if (data.success) {
-        setRoomId(data.roomId);
-        setRoomCode(data.roomCode);
-        addLog(`Sala criada! Código: ${data.roomCode}`);
-      } else {
-        setError(data.error || 'Erro ao criar sala');
+        setInLobby(true);
       }
     } catch (err) {
-      setError('Erro de conexão');
-    } finally {
-      setLoading(false);
+      console.error('Erro ao entrar no lobby:', err);
     }
   };
 
-  // Entrar na sala
-  const entrarSala = async () => {
-    if (!visitorId || !inputCode) return;
-    setLoading(true);
-    setError('');
-
+  // Sair do lobby
+  const sairLobby = async () => {
     try {
-      const res = await fetch('/api/pvp/room/join', {
+      await fetch('/api/pvp/lobby', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ visitorId, roomCode: inputCode })
+        body: JSON.stringify({ visitorId, action: 'leave' })
       });
-      const data = await res.json();
-
-      if (data.success) {
-        setRoomId(data.roomId);
-        addLog(`Entrou na sala de ${data.hostNome}!`);
-      } else {
-        setError(data.error || 'Sala não encontrada');
-      }
+      setInLobby(false);
+      router.push('/arena/pvp');
     } catch (err) {
-      setError('Erro de conexão');
-    } finally {
-      setLoading(false);
+      console.error('Erro ao sair do lobby:', err);
     }
   };
 
-  // Marcar como pronto
-  const marcarPronto = async () => {
-    if (!roomId || !visitorId) return;
+  // Desafiar jogador
+  const desafiar = async (targetId) => {
+    if (!visitorId || challenging) return;
 
+    setChallenging(true);
     try {
-      const res = await fetch('/api/pvp/room/state', {
+      const res = await fetch('/api/pvp/lobby', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomId, visitorId, action: 'ready' })
+        body: JSON.stringify({ visitorId, action: 'challenge', targetId })
       });
       const data = await res.json();
 
       if (data.success) {
-        addLog('✅ Você está pronto!');
+        addLog('⚔️ Desafio enviado! Aguardando resposta...');
       }
     } catch (err) {
-      console.error('Erro ao marcar pronto:', err);
+      console.error('Erro ao desafiar:', err);
+    } finally {
+      setChallenging(false);
+    }
+  };
+
+  // Aceitar desafio
+  const aceitarDesafio = async () => {
+    if (!visitorId || !pendingChallenge) return;
+
+    try {
+      const res = await fetch('/api/pvp/lobby', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ visitorId, action: 'accept' })
+      });
+      const data = await res.json();
+
+      if (data.success && data.roomId) {
+        setRoomId(data.roomId);
+        setInLobby(false);
+        addLog('⚔️ Desafio aceito! Batalha iniciada!');
+      }
+    } catch (err) {
+      console.error('Erro ao aceitar desafio:', err);
+    }
+  };
+
+  // Recusar desafio
+  const recusarDesafio = async () => {
+    if (!visitorId) return;
+
+    try {
+      await fetch('/api/pvp/lobby', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ visitorId, action: 'reject' })
+      });
+      setPendingChallenge(null);
+    } catch (err) {
+      console.error('Erro ao recusar desafio:', err);
     }
   };
 
@@ -191,11 +262,11 @@ function DuelContent() {
     }
   };
 
-  // Renderizar lobby (sem sala)
-  if (!roomId) {
+  // Tela inicial - entrar no lobby
+  if (!inLobby && !roomId) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 text-gray-100 p-6">
-        <div className="max-w-md mx-auto">
+        <div className="max-w-md mx-auto text-center">
           <button
             onClick={() => router.push('/arena/pvp')}
             className="text-cyan-400 hover:text-cyan-300 mb-6"
@@ -203,118 +274,120 @@ function DuelContent() {
             ← Voltar
           </button>
 
-          <h1 className="text-3xl font-bold text-center mb-8">⚔️ DUELO PvP</h1>
+          <h1 className="text-3xl font-bold mb-8">⚔️ DUELO PvP</h1>
 
-          {error && (
-            <div className="bg-red-900/50 border border-red-500 rounded p-3 mb-4 text-red-300">
-              {error}
+          <div className="bg-slate-900 border border-orange-500 rounded-lg p-8">
+            <p className="text-slate-300 mb-6">
+              Entre no lobby para ver outros jogadores e desafiá-los para um duelo!
+            </p>
+            <button
+              onClick={entrarLobby}
+              className="px-8 py-4 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 rounded-lg font-bold text-xl"
+            >
+              🎮 ENTRAR NO LOBBY
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Tela do lobby
+  if (inLobby && !roomId) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 text-gray-100 p-6">
+        <div className="max-w-md mx-auto">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold">⚔️ LOBBY</h1>
+            <button
+              onClick={sairLobby}
+              className="text-red-400 hover:text-red-300 text-sm"
+            >
+              Sair
+            </button>
+          </div>
+
+          {/* Desafio recebido */}
+          {pendingChallenge && (
+            <div className="bg-gradient-to-r from-yellow-900/50 to-orange-900/50 border border-yellow-500 rounded-lg p-4 mb-4 animate-pulse">
+              <p className="text-yellow-400 font-bold mb-3">
+                ⚔️ {pendingChallenge.challenger_nome || 'Alguém'} te desafiou!
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={aceitarDesafio}
+                  className="flex-1 py-2 bg-green-600 hover:bg-green-500 rounded font-bold"
+                >
+                  ✅ Aceitar
+                </button>
+                <button
+                  onClick={recusarDesafio}
+                  className="flex-1 py-2 bg-red-600 hover:bg-red-500 rounded font-bold"
+                >
+                  ❌ Recusar
+                </button>
+              </div>
             </div>
           )}
 
-          {/* Criar Sala */}
-          <div className="bg-slate-900 border border-cyan-500 rounded-lg p-6 mb-4">
-            <h2 className="text-xl font-bold text-cyan-400 mb-4">Criar Sala</h2>
-            <button
-              onClick={criarSala}
-              disabled={loading}
-              className="w-full py-3 bg-cyan-600 hover:bg-cyan-500 rounded font-bold disabled:opacity-50"
-            >
-              {loading ? 'Criando...' : 'CRIAR SALA'}
-            </button>
-          </div>
+          {/* Lista de jogadores */}
+          <div className="bg-slate-900 border border-slate-700 rounded-lg p-4">
+            <h2 className="text-sm font-bold text-slate-400 mb-3">
+              Jogadores Online ({players.length})
+            </h2>
 
-          {/* Entrar em Sala */}
-          <div className="bg-slate-900 border border-purple-500 rounded-lg p-6">
-            <h2 className="text-xl font-bold text-purple-400 mb-4">Entrar em Sala</h2>
-            <input
-              type="text"
-              value={inputCode}
-              onChange={(e) => setInputCode(e.target.value.toUpperCase())}
-              placeholder="Código da sala"
-              className="w-full p-3 bg-slate-800 border border-slate-600 rounded mb-3 text-center text-xl tracking-widest"
-              maxLength={6}
-            />
-            <button
-              onClick={entrarSala}
-              disabled={loading || inputCode.length < 6}
-              className="w-full py-3 bg-purple-600 hover:bg-purple-500 rounded font-bold disabled:opacity-50"
-            >
-              {loading ? 'Entrando...' : 'ENTRAR'}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Renderizar sala de espera
-  if (room && room.status === 'waiting') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 text-gray-100 p-6">
-        <div className="max-w-md mx-auto text-center">
-          <h1 className="text-3xl font-bold mb-8">⏳ AGUARDANDO</h1>
-
-          <div className="bg-slate-900 border border-yellow-500 rounded-lg p-6 mb-4">
-            <p className="text-slate-300 mb-2">Código da Sala:</p>
-            <p className="text-4xl font-mono font-bold text-yellow-400 tracking-widest">
-              {room.code || roomCode}
-            </p>
-            <p className="text-sm text-slate-500 mt-2">
-              Compartilhe este código com seu oponente
-            </p>
-          </div>
-
-          <div className="animate-pulse text-slate-400">
-            Aguardando oponente entrar...
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Renderizar sala pronta (ambos entraram, aguardando ready)
-  if (room && room.status === 'ready') {
-    const myReady = role === 'host' ? room.hostReady : room.guestReady;
-    const opReady = role === 'host' ? room.guestReady : room.hostReady;
-
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 text-gray-100 p-6">
-        <div className="max-w-md mx-auto text-center">
-          <h1 className="text-3xl font-bold mb-8">⚔️ PREPARAR!</h1>
-
-          <div className="bg-slate-900 border border-green-500 rounded-lg p-6 mb-4">
-            <p className="text-xl mb-4">
-              VS <span className="text-orange-400 font-bold">{opponentNome}</span>
-            </p>
-
-            <div className="flex justify-center gap-8 mb-6">
-              <div className={`text-center ${myReady ? 'text-green-400' : 'text-gray-500'}`}>
-                <div className="text-2xl">{myReady ? '✅' : '⏳'}</div>
-                <div className="text-sm">Você</div>
+            {players.length === 0 ? (
+              <div className="text-center py-8 text-slate-500">
+                <div className="text-4xl mb-2">👀</div>
+                <p>Nenhum jogador no lobby</p>
+                <p className="text-xs mt-1">Aguardando oponentes...</p>
               </div>
-              <div className={`text-center ${opReady ? 'text-green-400' : 'text-gray-500'}`}>
-                <div className="text-2xl">{opReady ? '✅' : '⏳'}</div>
-                <div className="text-sm">Oponente</div>
-              </div>
-            </div>
-
-            {!myReady ? (
-              <button
-                onClick={marcarPronto}
-                className="px-8 py-4 bg-green-600 hover:bg-green-500 rounded-lg font-bold text-xl animate-pulse"
-              >
-                ✅ PRONTO!
-              </button>
             ) : (
-              <p className="text-yellow-400">Aguardando oponente...</p>
+              <div className="space-y-2">
+                {players.map((player) => (
+                  <div
+                    key={player.id}
+                    className="flex items-center justify-between bg-slate-800 rounded p-3"
+                  >
+                    <div>
+                      <span className="font-bold text-white">{player.nome}</span>
+                      {player.status === 'challenging' && (
+                        <span className="text-xs text-yellow-400 ml-2">
+                          (desafiando...)
+                        </span>
+                      )}
+                    </div>
+                    {player.status === 'waiting' && (
+                      <button
+                        onClick={() => desafiar(player.visitorId)}
+                        disabled={challenging}
+                        className="px-3 py-1 bg-red-600 hover:bg-red-500 rounded text-sm font-bold disabled:opacity-50"
+                      >
+                        ⚔️ Desafiar
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
             )}
           </div>
+
+          {/* Log */}
+          {log.length > 0 && (
+            <div className="mt-4 bg-slate-900/50 rounded-lg p-3 border border-slate-700 max-h-32 overflow-y-auto">
+              {log.map((msg, i) => (
+                <div key={i} className="text-sm text-slate-300 py-1">
+                  {msg}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
-  // Renderizar batalha ativa
+  // Tela de batalha
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 text-gray-100 p-6">
       <div className="max-w-lg mx-auto">
@@ -381,7 +454,7 @@ function DuelContent() {
           </button>
         )}
 
-        {/* Botão Voltar (fim da batalha) */}
+        {/* Botão Voltar */}
         {room?.status === 'finished' && (
           <button
             onClick={() => router.push('/arena/pvp')}
@@ -404,7 +477,6 @@ function DuelContent() {
     </div>
   );
 }
-
 
 export default function DuelPage() {
   return (
