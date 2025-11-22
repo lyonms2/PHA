@@ -37,6 +37,10 @@ export async function GET(request) {
       );
     }
 
+    // Buscar nomes dos jogadores
+    const player1Stats = await getDocument('player_stats', room.player1_user_id);
+    const player2Stats = await getDocument('player_stats', room.player2_user_id);
+
     // Determinar qual player é o usuário
     const playerNumber = room.player1_user_id === userId ? 1 : 2;
     const isYourTurn = room.current_player === playerNumber;
@@ -49,6 +53,7 @@ export async function GET(request) {
       player1: {
         userId: room.player1_user_id,
         avatarId: room.player1_avatar_id,
+        nome: player1Stats?.nome_operacao || 'Jogador 1',
         ready: room.player1_ready,
         connected: room.player1_connected,
         lastAction: room.player1_last_action
@@ -56,6 +61,7 @@ export async function GET(request) {
       player2: {
         userId: room.player2_user_id,
         avatarId: room.player2_avatar_id,
+        nome: player2Stats?.nome_operacao || 'Jogador 2',
         ready: room.player2_ready,
         connected: room.player2_connected,
         lastAction: room.player2_last_action
