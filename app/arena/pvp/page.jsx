@@ -347,6 +347,12 @@ export default function PvPPage() {
 
             <div className="flex gap-2 flex-wrap">
               <button
+                onClick={() => router.push('/arena/pvp/duel')}
+                className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white px-4 py-2 rounded-lg font-bold text-sm animate-pulse"
+              >
+                ⚔️ Duelo Direto
+              </button>
+              <button
                 onClick={() => router.push('/arena/pvp/leaderboard')}
                 className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 text-white px-4 py-2 rounded-lg font-bold text-sm"
               >
