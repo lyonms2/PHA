@@ -144,9 +144,10 @@ export default function PvPPage() {
       if (data.matched && data.matchId) {
         clearInterval(intervalRef.current);
 
+        const oponenteNome = data.opponent?.nome || 'Oponente';
         setPartidaEncontrada({
           matchId: data.matchId,
-          oponente: { nome: 'Oponente' }
+          oponente: { nome: oponenteNome }
         });
 
         const dadosPartida = {
@@ -158,6 +159,8 @@ export default function PvPPage() {
             ...statsComPenalidades,
             habilidades: avatarAtivo.habilidades || []
           },
+          avatarOponente: data.opponent?.avatar || null,
+          nomeOponente: oponenteNome,
           morteReal: true
         };
 
@@ -178,9 +181,10 @@ export default function PvPPage() {
             clearInterval(intervalRef.current);
             clearInterval(pollingRef.current);
 
+            const oponenteNome = checkData.opponent?.nome || 'Oponente encontrado';
             setPartidaEncontrada({
               matchId: checkData.matchId,
-              oponente: { nome: 'Oponente encontrado' }
+              oponente: { nome: oponenteNome }
             });
 
             const dadosPartida = {
@@ -192,6 +196,8 @@ export default function PvPPage() {
                 ...statsComPenalidades,
                 habilidades: avatarAtivo.habilidades || []
               },
+              avatarOponente: checkData.opponent?.avatar || null,
+              nomeOponente: oponenteNome,
               morteReal: true
             };
 

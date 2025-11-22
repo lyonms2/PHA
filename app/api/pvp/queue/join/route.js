@@ -18,6 +18,16 @@ export async function POST(request) {
       );
     }
 
+    // Limpar entradas expiradas antes de buscar
+    const allQueueEntries = await getDocuments('pvp_matchmaking_queue', {});
+    const now = new Date().toISOString();
+
+    for (const entry of allQueueEntries || []) {
+      if (entry.expires_at && entry.expires_at < now) {
+        await deleteDocument('pvp_matchmaking_queue', entry.id);
+      }
+    }
+
     // Verificar se já está na fila
     const existingQueue = await getDocuments('pvp_matchmaking_queue', {
       where: [['user_id', '==', userId]]
