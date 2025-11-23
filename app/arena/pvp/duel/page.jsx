@@ -753,18 +753,18 @@ function DuelContent() {
 
   // Tela de batalha
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 text-gray-100 p-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 text-gray-100 p-3">
+      <div className="max-w-xl mx-auto">
 
         {/* Header com título */}
-        <div className="text-center mb-4">
-          <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400">
+        <div className="text-center mb-3">
+          <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400">
             ⚔️ BATALHA PVP
           </h1>
         </div>
 
         {/* Indicador de Turno */}
-        <div className={`text-center py-2 px-4 rounded-lg mb-4 font-bold ${
+        <div className={`text-center py-1.5 px-3 rounded-lg mb-3 font-bold text-sm ${
           room?.status === 'finished'
             ? 'bg-gradient-to-r from-purple-900/80 to-pink-900/80 border border-purple-500'
             : isYourTurn
@@ -779,39 +779,39 @@ function DuelContent() {
         </div>
 
         {/* Arena - Cards dos Avatares */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-2 gap-3 mb-3">
 
           {/* Seu Avatar */}
           <div className="relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/30 to-cyan-500/30 rounded-xl blur"></div>
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/30 to-cyan-500/30 rounded-xl blur"></div>
             <div className="relative bg-slate-900/95 rounded-xl border-2 border-blue-500 overflow-hidden">
               {/* Header */}
-              <div className="bg-gradient-to-r from-blue-900/50 to-cyan-900/50 px-3 py-2 border-b border-blue-500/50">
-                <div className="text-xs text-blue-300 font-bold uppercase tracking-wider">VOCÊ</div>
-                <div className="font-bold text-white truncate">{meuAvatar?.nome || 'Avatar'}</div>
-                <div className="text-xs text-slate-400 truncate">🎯 {meuNome || 'Caçador Misterioso'}</div>
+              <div className="bg-gradient-to-r from-blue-900/50 to-cyan-900/50 px-2 py-1.5 border-b border-blue-500/50">
+                <div className="text-[10px] text-blue-300 font-bold uppercase tracking-wider">VOCÊ</div>
+                <div className="font-bold text-white text-sm truncate">{meuAvatar?.nome || 'Avatar'}</div>
+                <div className="text-[10px] text-slate-400 truncate">🎯 {meuNome || 'Caçador Misterioso'}</div>
               </div>
 
-              {/* Avatar Grande */}
-              <div className="p-4 flex justify-center bg-gradient-to-b from-blue-950/30 to-transparent">
-                {meuAvatar && <AvatarSVG avatar={meuAvatar} tamanho={120} />}
+              {/* Avatar */}
+              <div className="p-3 flex justify-center bg-gradient-to-b from-blue-950/30 to-transparent">
+                {meuAvatar && <AvatarSVG avatar={meuAvatar} tamanho={90} />}
               </div>
 
               {/* Info */}
-              <div className="px-3 pb-3 space-y-2">
+              <div className="px-2 pb-2 space-y-1.5">
                 {/* Elemento e Exaustão */}
-                <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center justify-between text-[10px]">
                   <span>{getElementoEmoji(meuAvatar?.elemento)} {meuAvatar?.elemento}</span>
                   {myExaustao > 0 && <span className="text-orange-400">😰 {myExaustao}%</span>}
                 </div>
 
                 {/* HP Bar */}
                 <div>
-                  <div className="flex justify-between text-xs mb-1">
+                  <div className="flex justify-between text-[10px] mb-0.5">
                     <span className="text-red-400 font-bold">❤️ HP</span>
                     <span className="font-mono">{myHp}/{myHpMax}</span>
                   </div>
-                  <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+                  <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
                     <div
                       className={`h-full transition-all duration-500 ${
                         (myHp / myHpMax) > 0.5 ? 'bg-gradient-to-r from-green-500 to-emerald-400' :
@@ -825,16 +825,16 @@ function DuelContent() {
 
                 {/* Energia */}
                 <div className="flex items-center justify-between">
-                  <span className="text-yellow-400 font-bold text-xs">⚡ Energia</span>
-                  <span className="font-mono text-sm text-yellow-300">{myEnergy}/100</span>
+                  <span className="text-yellow-400 font-bold text-[10px]">⚡ Energia</span>
+                  <span className="font-mono text-xs text-yellow-300">{myEnergy}/100</span>
                 </div>
 
                 {/* Efeitos */}
                 {myEffects.length > 0 && (
-                  <div className="flex flex-wrap gap-1 pt-1 border-t border-slate-700">
+                  <div className="flex flex-wrap gap-0.5 pt-1 border-t border-slate-700">
                     {myEffects.map((ef, i) => (
-                      <span key={i} className="text-xs bg-slate-800/80 px-1.5 py-0.5 rounded border border-slate-600" title={`${ef.tipo} (${ef.turnosRestantes})`}>
-                        {getEfeitoEmoji(ef.tipo)}<span className="text-[10px] ml-0.5">{ef.turnosRestantes}</span>
+                      <span key={i} className="text-[10px] bg-slate-800/80 px-1 py-0.5 rounded border border-slate-600" title={`${ef.tipo} (${ef.turnosRestantes})`}>
+                        {getEfeitoEmoji(ef.tipo)}{ef.turnosRestantes}
                       </span>
                     ))}
                   </div>
@@ -845,35 +845,35 @@ function DuelContent() {
 
           {/* Avatar do Oponente */}
           <div className="relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-red-500/30 to-orange-500/30 rounded-xl blur"></div>
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-red-500/30 to-orange-500/30 rounded-xl blur"></div>
             <div className="relative bg-slate-900/95 rounded-xl border-2 border-red-500 overflow-hidden">
               {/* Header */}
-              <div className="bg-gradient-to-r from-red-900/50 to-orange-900/50 px-3 py-2 border-b border-red-500/50">
-                <div className="text-xs text-red-300 font-bold uppercase tracking-wider">OPONENTE</div>
-                <div className="font-bold text-white truncate">{opponentAvatar?.nome || 'Avatar'}</div>
-                <div className="text-xs text-slate-400 truncate">🎯 {opponentNome || 'Caçador Misterioso'}</div>
+              <div className="bg-gradient-to-r from-red-900/50 to-orange-900/50 px-2 py-1.5 border-b border-red-500/50">
+                <div className="text-[10px] text-red-300 font-bold uppercase tracking-wider">OPONENTE</div>
+                <div className="font-bold text-white text-sm truncate">{opponentAvatar?.nome || 'Avatar'}</div>
+                <div className="text-[10px] text-slate-400 truncate">🎯 {opponentNome || 'Caçador Misterioso'}</div>
               </div>
 
-              {/* Avatar Grande */}
-              <div className="p-4 flex justify-center bg-gradient-to-b from-red-950/30 to-transparent">
-                {opponentAvatar && <AvatarSVG avatar={opponentAvatar} tamanho={120} />}
+              {/* Avatar */}
+              <div className="p-3 flex justify-center bg-gradient-to-b from-red-950/30 to-transparent">
+                {opponentAvatar && <AvatarSVG avatar={opponentAvatar} tamanho={90} />}
               </div>
 
               {/* Info */}
-              <div className="px-3 pb-3 space-y-2">
+              <div className="px-2 pb-2 space-y-1.5">
                 {/* Elemento e Exaustão */}
-                <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center justify-between text-[10px]">
                   <span>{getElementoEmoji(opponentAvatar?.elemento)} {opponentAvatar?.elemento}</span>
                   {opponentExaustao > 0 && <span className="text-orange-400">😰 {opponentExaustao}%</span>}
                 </div>
 
                 {/* HP Bar */}
                 <div>
-                  <div className="flex justify-between text-xs mb-1">
+                  <div className="flex justify-between text-[10px] mb-0.5">
                     <span className="text-red-400 font-bold">❤️ HP</span>
                     <span className="font-mono">{opponentHp}/{opponentHpMax}</span>
                   </div>
-                  <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+                  <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
                     <div
                       className={`h-full transition-all duration-500 ${
                         (opponentHp / opponentHpMax) > 0.5 ? 'bg-gradient-to-r from-green-500 to-emerald-400' :
@@ -887,16 +887,16 @@ function DuelContent() {
 
                 {/* Energia */}
                 <div className="flex items-center justify-between">
-                  <span className="text-yellow-400 font-bold text-xs">⚡ Energia</span>
-                  <span className="font-mono text-sm text-yellow-300">{opponentEnergy}/100</span>
+                  <span className="text-yellow-400 font-bold text-[10px]">⚡ Energia</span>
+                  <span className="font-mono text-xs text-yellow-300">{opponentEnergy}/100</span>
                 </div>
 
                 {/* Efeitos */}
                 {opponentEffects.length > 0 && (
-                  <div className="flex flex-wrap gap-1 pt-1 border-t border-slate-700">
+                  <div className="flex flex-wrap gap-0.5 pt-1 border-t border-slate-700">
                     {opponentEffects.map((ef, i) => (
-                      <span key={i} className="text-xs bg-slate-800/80 px-1.5 py-0.5 rounded border border-slate-600" title={`${ef.tipo} (${ef.turnosRestantes})`}>
-                        {getEfeitoEmoji(ef.tipo)}<span className="text-[10px] ml-0.5">{ef.turnosRestantes}</span>
+                      <span key={i} className="text-[10px] bg-slate-800/80 px-1 py-0.5 rounded border border-slate-600" title={`${ef.tipo} (${ef.turnosRestantes})`}>
+                        {getEfeitoEmoji(ef.tipo)}{ef.turnosRestantes}
                       </span>
                     ))}
                   </div>
@@ -909,60 +909,60 @@ function DuelContent() {
         {/* Painel de Ações */}
         {room?.status === 'active' && (
           <div className="relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl blur"></div>
-            <div className="relative bg-slate-900/95 rounded-xl border border-purple-500/50 p-4">
-              <div className="text-xs font-bold text-purple-300 uppercase tracking-wider mb-3 text-center">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl blur"></div>
+            <div className="relative bg-slate-900/95 rounded-xl border border-purple-500/50 p-3">
+              <div className="text-[10px] font-bold text-purple-300 uppercase tracking-wider mb-2 text-center">
                 ⚔️ AÇÕES DE COMBATE
               </div>
 
               {/* Ataque e Defesa */}
-              <div className="grid grid-cols-2 gap-2 mb-3">
+              <div className="grid grid-cols-2 gap-2 mb-2">
                 <button
                   onClick={atacar}
                   disabled={!isYourTurn || myEnergy < 10}
-                  className={`relative group py-3 rounded-lg font-bold transition-all ${
+                  className={`py-2 rounded-lg font-bold transition-all ${
                     isYourTurn && myEnergy >= 10
                       ? 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 hover:scale-[1.02] active:scale-95'
                       : 'bg-slate-700 cursor-not-allowed opacity-50'
                   }`}
                 >
-                  <div className="text-lg">⚔️ Atacar</div>
-                  <div className="text-xs opacity-75">-10 ⚡</div>
+                  <div className="text-sm">⚔️ Atacar</div>
+                  <div className="text-[10px] opacity-75">-10 ⚡</div>
                 </button>
                 <button
                   onClick={defender}
                   disabled={!isYourTurn}
-                  className={`relative group py-3 rounded-lg font-bold transition-all ${
+                  className={`py-2 rounded-lg font-bold transition-all ${
                     isYourTurn
                       ? 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 hover:scale-[1.02] active:scale-95'
                       : 'bg-slate-700 cursor-not-allowed opacity-50'
                   }`}
                 >
-                  <div className="text-lg">🛡️ Defender</div>
-                  <div className="text-xs opacity-75">+20 ⚡ | 50% redução</div>
+                  <div className="text-sm">🛡️ Defender</div>
+                  <div className="text-[10px] opacity-75">+20 ⚡ | -50%</div>
                 </button>
               </div>
 
               {/* Habilidades */}
               {meuAvatar?.habilidades && meuAvatar.habilidades.length > 0 && (
                 <>
-                  <div className="text-xs font-bold text-pink-300 uppercase tracking-wider mb-2 text-center">
-                    ✨ HABILIDADES ESPECIAIS
+                  <div className="text-[10px] font-bold text-pink-300 uppercase tracking-wider mb-1.5 text-center">
+                    ✨ HABILIDADES
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-1.5">
                     {meuAvatar.habilidades.slice(0, 5).map((hab, index) => (
                       <button
                         key={index}
                         onClick={() => usarHabilidade(index)}
                         disabled={!isYourTurn || myEnergy < (hab.custo_energia || 20)}
-                        className={`py-2 px-2 rounded-lg text-sm font-bold transition-all text-left ${
+                        className={`py-1.5 px-2 rounded text-left transition-all ${
                           isYourTurn && myEnergy >= (hab.custo_energia || 20)
                             ? 'bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500 hover:to-pink-500 hover:scale-[1.02] active:scale-95 border border-purple-400/30'
                             : 'bg-slate-700/50 cursor-not-allowed opacity-40 border border-slate-600/30'
                         }`}
                       >
-                        <div className="truncate text-xs">{hab.nome}</div>
-                        <div className="text-[10px] opacity-75">-{hab.custo_energia || 20} ⚡</div>
+                        <div className="truncate text-[10px] font-bold">{hab.nome}</div>
+                        <div className="text-[9px] opacity-75">-{hab.custo_energia || 20} ⚡</div>
                       </button>
                     ))}
                   </div>
@@ -976,23 +976,23 @@ function DuelContent() {
         {room?.status === 'finished' && (
           <button
             onClick={() => router.push('/arena/pvp')}
-            className="w-full py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-lg font-bold mt-4"
+            className="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-lg font-bold mt-3"
           >
             🏠 Voltar ao Lobby
           </button>
         )}
 
         {/* Log de Batalha */}
-        <div className="mt-4 bg-slate-950/80 rounded-xl border border-slate-700 overflow-hidden">
-          <div className="bg-slate-800/50 px-4 py-2 border-b border-slate-700">
-            <h3 className="text-sm font-bold text-slate-300">📜 Log de Batalha</h3>
+        <div className="mt-3 bg-slate-950/80 rounded-xl border border-slate-700 overflow-hidden">
+          <div className="bg-slate-800/50 px-3 py-1.5 border-b border-slate-700">
+            <h3 className="text-xs font-bold text-slate-300">📜 Log de Batalha</h3>
           </div>
-          <div className="p-3 max-h-32 overflow-y-auto space-y-1">
+          <div className="p-2 max-h-28 overflow-y-auto space-y-0.5">
             {log.length === 0 ? (
-              <div className="text-xs text-slate-500 text-center py-2">Aguardando ações...</div>
+              <div className="text-[10px] text-slate-500 text-center py-2">Aguardando ações...</div>
             ) : (
               log.map((msg, i) => (
-                <div key={i} className="text-xs text-slate-300 py-1 px-2 bg-slate-800/30 rounded">
+                <div key={i} className="text-[10px] text-slate-300 py-0.5 px-1.5 bg-slate-800/30 rounded">
                   {msg}
                 </div>
               ))
