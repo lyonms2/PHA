@@ -32,11 +32,14 @@ function DuelContent() {
   const [opponentEnergy, setOpponentEnergy] = useState(100);
   const [opponentNome, setOpponentNome] = useState('');
   const [opponentAvatar, setOpponentAvatar] = useState(null);
+  const [myEffects, setMyEffects] = useState([]);
+  const [opponentEffects, setOpponentEffects] = useState([]);
   const [log, setLog] = useState([]);
   const [inLobby, setInLobby] = useState(false);
 
   const pollingRef = useRef(null);
   const lastTurnRef = useRef(null);
+  const effectsProcessedRef = useRef(false);
 
   // Carregar usuário e avatar
   useEffect(() => {
@@ -132,10 +135,15 @@ function DuelContent() {
           setOpponentEnergy(data.opponentEnergy || 10);
           setOpponentNome(data.opponentNome || 'Oponente');
           setOpponentAvatar(data.opponentAvatar || null);
+          setMyEffects(data.myEffects || []);
+          setOpponentEffects(data.opponentEffects || []);
 
           // Detectar mudança de turno
           if (lastTurnRef.current && lastTurnRef.current !== data.room.currentTurn) {
             if (data.isYourTurn) {
+              // Processar efeitos no início do meu turno
+              effectsProcessedRef.current = false;
+              processarEfeitos();
               addLog('🟢 SEU TURNO!');
             }
           }
@@ -311,6 +319,17 @@ function DuelContent() {
       if (data.success) {
         const d = data.detalhes;
 
+        // Verificar se errou (esquiva)
+        if (data.errou) {
+          addLog(`💨 ERROU! O oponente esquivou!`);
+          if (d) {
+            addLog(`📊 Chance: ${d.chanceAcerto}% | AGI: ${d.agilidade} vs ${d.agilidadeOponente} | Rolou: ${d.rolouAcerto}`);
+          }
+          addLog(`⚡ Energia: -10 → ${data.newEnergy}`);
+          setMyEnergy(data.newEnergy);
+          return;
+        }
+
         // Log principal
         let emoji = '⚔️';
         let tipo = 'ATAQUE';
@@ -389,6 +408,41 @@ function DuelContent() {
     } catch (err) {
       console.error('Erro ao defender:', err);
       addLog('❌ Erro ao defender');
+    }
+  };
+
+  // Processar efeitos no início do turno
+  const processarEfeitos = async () => {
+    if (!roomId || !visitorId || effectsProcessedRef.current) return;
+    if (myEffects.length === 0) return;
+
+    effectsProcessedRef.current = true;
+
+    try {
+      const res = await fetch('/api/pvp/room/state', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId, visitorId, action: 'process_effects' })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        // Mostrar logs dos efeitos
+        if (data.logsEfeitos && data.logsEfeitos.length > 0) {
+          for (const log of data.logsEfeitos) {
+            addLog(log);
+          }
+        }
+
+        setMyHp(data.newHp);
+        setMyEffects(data.efeitosRestantes || []);
+
+        if (data.finished) {
+          addLog('☠️ Você morreu por efeitos!');
+        }
+      }
+    } catch (err) {
+      console.error('Erro ao processar efeitos:', err);
     }
   };
 
@@ -486,6 +540,22 @@ function DuelContent() {
       'Sombra': '🌑'
     };
     return emojis[elemento] || '⚪';
+  };
+
+  // Emoji do efeito
+  const getEfeitoEmoji = (tipo) => {
+    const emojis = {
+      'queimadura': '🔥', 'queimadura_intensa': '🔥🔥', 'veneno': '💀', 'sangramento': '🩸',
+      'eletrocutado': '⚡', 'afogamento': '💧', 'erosão': '🌪️',
+      'defesa_aumentada': '🛡️', 'velocidade': '💨', 'foco_aumentado': '🎯',
+      'forca_aumentada': '💪', 'regeneração': '✨', 'escudo': '🛡️',
+      'lentidão': '🐌', 'fraqueza': '⬇️', 'confusão': '🌀',
+      'medo': '😱', 'cegueira': '🌑', 'silêncio': '🔇',
+      'congelado': '❄️', 'atordoado': '💫', 'paralisado': '⚡⚡',
+      'imobilizado': '🔒', 'sono': '😴',
+      'fantasma': '👻', 'drenar': '🗡️', 'maldição': '💀'
+    };
+    return emojis[tipo] || '✨';
   };
 
   // Tela inicial - entrar no lobby
@@ -726,6 +796,16 @@ function DuelContent() {
                   <span className="text-white font-mono">❤️ {myHp}/{myHpMax}</span>
                   <span className="text-yellow-400 font-mono">⚡ {myEnergy}</span>
                 </div>
+                {/* Efeitos ativos */}
+                {myEffects.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {myEffects.map((ef, i) => (
+                      <span key={i} className="text-xs bg-slate-800 px-1.5 py-0.5 rounded" title={`${ef.tipo} (${ef.turnosRestantes} turnos)`}>
+                        {getEfeitoEmoji(ef.tipo)} {ef.turnosRestantes}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             <div className="w-full bg-slate-700 rounded-full h-4 overflow-hidden">
@@ -762,6 +842,16 @@ function DuelContent() {
                   <span className="text-white font-mono">❤️ {opponentHp}/{opponentHpMax}</span>
                   <span className="text-yellow-400 font-mono">⚡ {opponentEnergy}</span>
                 </div>
+                {/* Efeitos ativos do oponente */}
+                {opponentEffects.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {opponentEffects.map((ef, i) => (
+                      <span key={i} className="text-xs bg-slate-800 px-1.5 py-0.5 rounded" title={`${ef.tipo} (${ef.turnosRestantes} turnos)`}>
+                        {getEfeitoEmoji(ef.tipo)} {ef.turnosRestantes}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             <div className="w-full bg-slate-700 rounded-full h-4 overflow-hidden">
