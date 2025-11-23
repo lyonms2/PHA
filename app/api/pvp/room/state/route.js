@@ -174,6 +174,32 @@ export async function POST(request) {
       const foco = myAvatar?.foco ?? 10;
       const resistenciaOponente = opponentAvatar?.resistencia ?? 10;
       const vinculo = myAvatar?.vinculo ?? 0;
+      const meuElemento = myAvatar?.elemento || 'Neutro';
+      const elementoOponente = opponentAvatar?.elemento || 'Neutro';
+
+      // Calcular multiplicador elemental
+      const calcularMultiplicadorElemental = (atacante, defensor) => {
+        // Ciclo: Fogo > Vento > Terra > Eletricidade > Água > Fogo
+        const vantagens = {
+          'Fogo': 'Vento',
+          'Vento': 'Terra',
+          'Terra': 'Eletricidade',
+          'Eletricidade': 'Água',
+          'Água': 'Fogo',
+          'Luz': 'Sombra',
+          'Sombra': 'Luz'
+        };
+
+        if (vantagens[atacante] === defensor) {
+          return { mult: 1.5, tipo: 'vantagem' };
+        }
+        if (vantagens[defensor] === atacante) {
+          return { mult: 0.75, tipo: 'desvantagem' };
+        }
+        return { mult: 1.0, tipo: 'neutro' };
+      };
+
+      const elemental = calcularMultiplicadorElemental(meuElemento, elementoOponente);
 
       // Calcular dano base: 5 + (força × 0.5) + random(1-5)
       let dano = 5 + (forca * 0.5) + Math.floor(Math.random() * 5) + 1;
@@ -194,6 +220,9 @@ export async function POST(request) {
       else if (vinculo >= 60) bonusVinculo = 1.15;
       else if (vinculo >= 40) bonusVinculo = 1.1;
       dano = dano * bonusVinculo;
+
+      // Multiplicador elemental
+      dano = dano * elemental.mult;
 
       // Chance de crítico: 5% + (foco × 0.3%)
       const chanceCritico = 5 + (foco * 0.3);
@@ -239,6 +268,7 @@ export async function POST(request) {
         dano,
         critico,
         bloqueado: opponentDefending,
+        elemental: elemental.tipo,
         newOpponentHp,
         newEnergy,
         finished: newOpponentHp <= 0,
