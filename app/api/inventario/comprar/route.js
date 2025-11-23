@@ -73,16 +73,20 @@ export async function POST(request) {
 
     const inventoryItem = inventoryItems && inventoryItems.length > 0 ? inventoryItems[0] : null;
 
+    // Determinar max stack (suporta max_stack e max_pilha)
+    const maxStack = item.max_stack || item.max_pilha || 99;
+    const isStackable = maxStack > 1;
+
     // Se já tem o item e é empilhável, aumentar quantidade
-    if (inventoryItem && item.empilhavel) {
+    if (inventoryItem && isStackable) {
       const novaQuantidade = Math.min(
         inventoryItem.quantidade + quantidade,
-        item.max_pilha
+        maxStack
       );
 
       if (novaQuantidade === inventoryItem.quantidade) {
         return Response.json(
-          { message: `Você já tem o máximo de ${item.nome} (${item.max_pilha})` },
+          { message: `Você já tem o máximo de ${item.nome} (${maxStack})` },
           { status: 400 }
         );
       }
