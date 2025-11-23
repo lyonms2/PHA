@@ -110,6 +110,9 @@ export async function POST(request) {
           maxPower: maxPower || 999,
           avatar: avatar || null,
           poder: avatar ? (avatar.forca + avatar.agilidade + avatar.resistencia + avatar.foco) : 0,
+          hp_atual: avatar?.hp_atual || 100,
+          hp_maximo: avatar?.hp_maximo || 100,
+          exaustao: avatar?.exaustao || 0,
           created_at: new Date().toISOString()
         });
         return NextResponse.json({ success: true, message: 'Atualizado no lobby' });
@@ -127,6 +130,9 @@ export async function POST(request) {
         maxPower: maxPower || 999,
         avatar: avatar || null,
         poder: avatar ? (avatar.forca + avatar.agilidade + avatar.resistencia + avatar.foco) : 0,
+        hp_atual: avatar?.hp_atual || 100,
+        hp_maximo: avatar?.hp_maximo || 100,
+        exaustao: avatar?.exaustao || 0,
         created_at: new Date().toISOString()
       });
 
@@ -211,19 +217,31 @@ export async function POST(request) {
       const myEntry = myEntries && myEntries.length > 0 ? myEntries[0] : null;
 
       // Criar sala de duelo com avatares e energia
+      // Usar HP real dos avatares
+      const hostHpAtual = challenge.hp_atual || 100;
+      const hostHpMax = challenge.hp_maximo || 100;
+      const hostExaustao = challenge.exaustao || 0;
+      const guestHpAtual = myEntry?.hp_atual || 100;
+      const guestHpMax = myEntry?.hp_maximo || 100;
+      const guestExaustao = myEntry?.exaustao || 0;
+
       const roomId = await createDocument('pvp_duel_rooms', {
         code: null,
         host_user_id: challengerId,
         host_nome: challengerStats?.nome_operacao || 'Jogador 1',
         host_avatar: challenge.avatar || null,
+        host_hp: hostHpAtual,
+        host_hp_max: hostHpMax,
+        host_exaustao: hostExaustao,
         guest_user_id: visitorId,
         guest_nome: targetStats?.nome_operacao || 'Jogador 2',
         guest_avatar: myEntry?.avatar || null,
+        guest_hp: guestHpAtual,
+        guest_hp_max: guestHpMax,
+        guest_exaustao: guestExaustao,
         status: 'active',
         host_ready: true,
         guest_ready: true,
-        host_hp: 100,
-        guest_hp: 100,
         host_energy: 10,
         guest_energy: 10,
         current_turn: 'host',
