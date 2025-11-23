@@ -310,6 +310,15 @@ function DuelContent() {
 
       if (data.success) {
         let msg = '';
+        let elementalMsg = '';
+
+        // Mensagem elemental
+        if (data.elemental === 'vantagem') {
+          elementalMsg = ' 🔥 Super efetivo!';
+        } else if (data.elemental === 'desvantagem') {
+          elementalMsg = ' 💨 Pouco efetivo...';
+        }
+
         if (data.bloqueado) {
           msg = `🛡️ Bloqueado! Dano: ${data.dano}`;
         } else if (data.critico) {
@@ -317,7 +326,7 @@ function DuelContent() {
         } else {
           msg = `⚔️ Você atacou! Dano: ${data.dano}`;
         }
-        addLog(`${msg} | -10 ⚡`);
+        addLog(`${msg}${elementalMsg} | -10 ⚡`);
         setOpponentHp(data.newOpponentHp);
         setMyEnergy(data.newEnergy);
 
@@ -363,6 +372,20 @@ function DuelContent() {
     if (maxPower <= 60) return '⚡ Sala Intermediário';
     if (maxPower <= 90) return '🔥 Sala Avançado';
     return '👑 Sala Elite';
+  };
+
+  // Emoji do elemento
+  const getElementoEmoji = (elemento) => {
+    const emojis = {
+      'Fogo': '🔥',
+      'Água': '💧',
+      'Terra': '🪨',
+      'Vento': '🌪️',
+      'Eletricidade': '⚡',
+      'Luz': '✨',
+      'Sombra': '🌑'
+    };
+    return emojis[elemento] || '⚪';
   };
 
   // Tela inicial - entrar no lobby
@@ -555,6 +578,9 @@ function DuelContent() {
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-blue-400">VOCÊ</span>
+                  {meuAvatar?.elemento && (
+                    <span className="text-xs">{getElementoEmoji(meuAvatar.elemento)}</span>
+                  )}
                   {myExaustao > 0 && (
                     <span className="text-xs text-orange-400">😰 {myExaustao}%</span>
                   )}
@@ -580,6 +606,9 @@ function DuelContent() {
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-red-400">{opponentNome}</span>
+                  {opponentAvatar?.elemento && (
+                    <span className="text-xs">{getElementoEmoji(opponentAvatar.elemento)}</span>
+                  )}
                   {opponentExaustao > 0 && (
                     <span className="text-xs text-orange-400">😰 {opponentExaustao}%</span>
                   )}
