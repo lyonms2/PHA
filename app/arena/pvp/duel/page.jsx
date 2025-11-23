@@ -28,8 +28,8 @@ function DuelContent() {
   const [opponentHp, setOpponentHp] = useState(100);
   const [opponentHpMax, setOpponentHpMax] = useState(100);
   const [opponentExaustao, setOpponentExaustao] = useState(0);
-  const [myEnergy, setMyEnergy] = useState(10);
-  const [opponentEnergy, setOpponentEnergy] = useState(10);
+  const [myEnergy, setMyEnergy] = useState(100);
+  const [opponentEnergy, setOpponentEnergy] = useState(100);
   const [opponentNome, setOpponentNome] = useState('');
   const [opponentAvatar, setOpponentAvatar] = useState(null);
   const [log, setLog] = useState([]);

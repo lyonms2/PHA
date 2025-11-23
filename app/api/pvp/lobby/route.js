@@ -242,8 +242,8 @@ export async function POST(request) {
         status: 'active',
         host_ready: true,
         guest_ready: true,
-        host_energy: 10,
-        guest_energy: 10,
+        host_energy: 100,
+        guest_energy: 100,
         current_turn: 'host',
         created_at: new Date().toISOString()
       });
