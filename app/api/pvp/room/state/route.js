@@ -202,23 +202,27 @@ export async function POST(request) {
       const elemental = calcularMultiplicadorElemental(meuElemento, elementoOponente);
 
       // Calcular dano base: 5 + (força × 0.5) + random(1-5)
-      let dano = 5 + (forca * 0.5) + Math.floor(Math.random() * 5) + 1;
+      const random = Math.floor(Math.random() * 5) + 1;
+      let danoBase = 5 + (forca * 0.5) + random;
 
       // Redução por defesa: - (resistência × 0.3)
-      dano = dano - (resistenciaOponente * 0.3);
+      const reducaoDefesa = resistenciaOponente * 0.3;
+      let dano = danoBase - reducaoDefesa;
 
       // Penalidade de exaustão
       let penalidade = 1.0;
-      if (myExaustao >= 80) penalidade = 0.5;
-      else if (myExaustao >= 60) penalidade = 0.75;
-      else if (myExaustao >= 40) penalidade = 0.95;
+      let penalidadeTexto = '';
+      if (myExaustao >= 80) { penalidade = 0.5; penalidadeTexto = '-50%'; }
+      else if (myExaustao >= 60) { penalidade = 0.75; penalidadeTexto = '-25%'; }
+      else if (myExaustao >= 40) { penalidade = 0.95; penalidadeTexto = '-5%'; }
       dano = dano * penalidade;
 
       // Bônus de vínculo
       let bonusVinculo = 1.0;
-      if (vinculo >= 80) bonusVinculo = 1.2;
-      else if (vinculo >= 60) bonusVinculo = 1.15;
-      else if (vinculo >= 40) bonusVinculo = 1.1;
+      let vinculoTexto = '';
+      if (vinculo >= 80) { bonusVinculo = 1.2; vinculoTexto = '+20%'; }
+      else if (vinculo >= 60) { bonusVinculo = 1.15; vinculoTexto = '+15%'; }
+      else if (vinculo >= 40) { bonusVinculo = 1.1; vinculoTexto = '+10%'; }
       dano = dano * bonusVinculo;
 
       // Multiplicador elemental
@@ -241,6 +245,19 @@ export async function POST(request) {
       if (opponentDefending) {
         dano = Math.floor(dano * 0.5);
       }
+
+      // Detalhes do cálculo para o log
+      const detalhes = {
+        danoBase: Math.floor(danoBase),
+        forca,
+        random,
+        reducaoDefesa: Math.floor(reducaoDefesa),
+        resistenciaOponente,
+        penalidadeExaustao: penalidadeTexto,
+        bonusVinculo: vinculoTexto,
+        elementalMult: elemental.mult,
+        chanceCritico: Math.floor(chanceCritico)
+      };
 
       // Atualizar HP do oponente e energia do atacante
       const opponentHpField = isHost ? 'guest_hp' : 'host_hp';
@@ -272,7 +289,8 @@ export async function POST(request) {
         newOpponentHp,
         newEnergy,
         finished: newOpponentHp <= 0,
-        winner: newOpponentHp <= 0 ? role : null
+        winner: newOpponentHp <= 0 ? role : null,
+        detalhes
       });
     }
 

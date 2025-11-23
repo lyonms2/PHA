@@ -309,24 +309,50 @@ function DuelContent() {
       const data = await res.json();
 
       if (data.success) {
-        let msg = '';
-        let elementalMsg = '';
+        const d = data.detalhes;
+
+        // Log principal
+        let emoji = '⚔️';
+        let tipo = 'ATAQUE';
+        if (data.critico) { emoji = '💥'; tipo = 'CRÍTICO'; }
+        if (data.bloqueado) { emoji = '🛡️'; tipo = 'BLOQUEADO'; }
+
+        addLog(`${emoji} ${tipo}! Dano Final: ${data.dano}`);
+
+        // Detalhes do cálculo
+        if (d) {
+          let calc = `📊 Base: ${d.danoBase} (5+${d.forca}×0.5+${d.random})`;
+          calc += ` | -${d.reducaoDefesa} RES`;
+
+          if (d.penalidadeExaustao) {
+            calc += ` | 😰 ${d.penalidadeExaustao}`;
+          }
+          if (d.bonusVinculo) {
+            calc += ` | 💕 ${d.bonusVinculo}`;
+          }
+          if (d.elementalMult !== 1.0) {
+            const elemEmoji = d.elementalMult > 1 ? '🔥' : '💨';
+            calc += ` | ${elemEmoji} ×${d.elementalMult}`;
+          }
+          if (data.critico) {
+            calc += ` | 💥 ×2`;
+          }
+          if (data.bloqueado) {
+            calc += ` | 🛡️ ×0.5`;
+          }
+
+          addLog(calc);
+        }
 
         // Mensagem elemental
         if (data.elemental === 'vantagem') {
-          elementalMsg = ' 🔥 Super efetivo!';
+          addLog('🔥 Super efetivo!');
         } else if (data.elemental === 'desvantagem') {
-          elementalMsg = ' 💨 Pouco efetivo...';
+          addLog('💨 Pouco efetivo...');
         }
 
-        if (data.bloqueado) {
-          msg = `🛡️ Bloqueado! Dano: ${data.dano}`;
-        } else if (data.critico) {
-          msg = `💥 CRÍTICO! Dano: ${data.dano}`;
-        } else {
-          msg = `⚔️ Você atacou! Dano: ${data.dano}`;
-        }
-        addLog(`${msg}${elementalMsg} | -10 ⚡`);
+        addLog(`⚡ Energia: -10 → ${data.newEnergy}`);
+
         setOpponentHp(data.newOpponentHp);
         setMyEnergy(data.newEnergy);
 
@@ -466,32 +492,62 @@ function DuelContent() {
   if (!inLobby && !roomId) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 text-gray-100 p-6">
-        <div className="max-w-md mx-auto text-center">
+        <div className="max-w-md mx-auto">
           <button
             onClick={() => router.push('/arena/pvp')}
-            className="text-cyan-400 hover:text-cyan-300 mb-6"
+            className="text-cyan-400 hover:text-cyan-300 mb-6 block"
           >
             ← Voltar
           </button>
 
-          <h1 className="text-3xl font-bold mb-2">{getNomeSala()}</h1>
-          <p className="text-slate-400 mb-6">Poder: {minPower} - {maxPower}</p>
+          <h1 className="text-3xl font-bold mb-2 text-center">{getNomeSala()}</h1>
+          <p className="text-slate-400 mb-6 text-center">Poder: {minPower} - {maxPower}</p>
 
+          {/* Card do Avatar Completo */}
           {meuAvatar && (
-            <div className="bg-slate-900 border border-purple-500/50 rounded-lg p-4 mb-6">
-              <div className="flex items-center gap-4">
-                <AvatarSVG avatar={meuAvatar} tamanho={60} />
-                <div className="text-left">
-                  <div className="font-bold text-white">{meuAvatar.nome}</div>
-                  <div className="text-sm text-cyan-400">
-                    Poder: {calcularPoderTotal(meuAvatar)}
+            <div className="relative group mb-6">
+              <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-purple-500/20 rounded-xl blur opacity-50"></div>
+              <div className="relative bg-slate-950/90 backdrop-blur-xl border border-cyan-900/50 rounded-xl overflow-hidden">
+                {/* Header do Card */}
+                <div className="bg-gradient-to-r from-cyan-900/30 to-blue-900/30 p-4 border-b border-cyan-500/30">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-xs text-slate-400 uppercase font-mono tracking-wider">Seu Combatente</div>
+                    <div className={`px-3 py-1 rounded text-xs font-bold uppercase tracking-wider ${
+                      meuAvatar.raridade === 'Lendário' || meuAvatar.raridade === 'Mítico' ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' :
+                      meuAvatar.raridade === 'Épico' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white' :
+                      meuAvatar.raridade === 'Raro' ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white' :
+                      'bg-slate-700 text-slate-300'
+                    }`}>
+                      {meuAvatar.raridade}
+                    </div>
+                  </div>
+                  <h2 className="text-2xl font-bold text-cyan-400">{meuAvatar.nome}</h2>
+                  <div className="text-sm text-slate-400 mt-1">
+                    🎯 {meuNome || 'Caçador Misterioso'}
+                  </div>
+                  <div className="flex items-center gap-3 mt-2">
+                    <span className="text-sm text-slate-300">Nv.{meuAvatar.nivel}</span>
+                    <span className="text-slate-600">•</span>
+                    <span className="text-sm">{getElementoEmoji(meuAvatar.elemento)} {meuAvatar.elemento}</span>
+                  </div>
+                </div>
+
+                {/* Avatar Image */}
+                <div className="p-6 flex justify-center bg-gradient-to-b from-slate-950/30 to-transparent">
+                  <AvatarSVG avatar={meuAvatar} tamanho={120} />
+                </div>
+
+                {/* Stats */}
+                <div className="p-4 border-t border-slate-800">
+                  <div className="text-center">
+                    <span className="text-cyan-400 font-bold text-lg">⚔️ Poder: {calcularPoderTotal(meuAvatar)}</span>
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          <div className="bg-slate-900 border border-orange-500 rounded-lg p-8">
+          <div className="bg-slate-900 border border-orange-500 rounded-lg p-8 text-center">
             <p className="text-slate-300 mb-6">
               Entre no lobby para ver outros jogadores e desafiá-los!
             </p>
@@ -578,15 +634,18 @@ function DuelContent() {
                   >
                     <div className="flex items-center gap-3">
                       {player.avatar && (
-                        <AvatarSVG avatar={player.avatar} tamanho={40} />
+                        <AvatarSVG avatar={player.avatar} tamanho={50} />
                       )}
                       <div>
-                        <span className="font-bold text-white">{player.nome}</span>
+                        <div className="font-bold text-cyan-400">{player.avatar?.nome || 'Avatar'}</div>
+                        <div className="text-xs text-slate-400">
+                          🎯 {player.nome || 'Caçador Misterioso'}
+                        </div>
                         {player.poder && (
-                          <div className="text-xs text-cyan-400">Poder: {player.poder}</div>
+                          <div className="text-xs text-yellow-400 mt-1">⚔️ Poder: {player.poder}</div>
                         )}
                         {player.status === 'challenging' && (
-                          <span className="text-xs text-yellow-400">
+                          <span className="text-xs text-orange-400">
                             (desafiando...)
                           </span>
                         )}
@@ -647,19 +706,23 @@ function DuelContent() {
         <div className="space-y-4 mb-6">
           {/* Seu Card */}
           <div className="bg-slate-900 rounded-lg p-4 border border-blue-500">
-            <div className="flex items-center gap-3 mb-3">
-              {meuAvatar && <AvatarSVG avatar={meuAvatar} tamanho={50} />}
+            <div className="flex items-center gap-4 mb-3">
+              {meuAvatar && <AvatarSVG avatar={meuAvatar} tamanho={100} />}
               <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-blue-400">VOCÊ</span>
+                <div className="text-xs text-slate-400 mb-1">VOCÊ</div>
+                <div className="font-bold text-blue-400 text-lg">{meuAvatar?.nome || 'Avatar'}</div>
+                <div className="text-xs text-slate-400">
+                  🎯 {meuNome || 'Caçador Misterioso'}
+                </div>
+                <div className="flex items-center gap-2 mt-1">
                   {meuAvatar?.elemento && (
-                    <span className="text-xs">{getElementoEmoji(meuAvatar.elemento)}</span>
+                    <span className="text-sm">{getElementoEmoji(meuAvatar.elemento)} {meuAvatar.elemento}</span>
                   )}
                   {myExaustao > 0 && (
                     <span className="text-xs text-orange-400">😰 {myExaustao}%</span>
                   )}
                 </div>
-                <div className="flex gap-4 text-sm">
+                <div className="flex gap-4 text-sm mt-2">
                   <span className="text-white font-mono">❤️ {myHp}/{myHpMax}</span>
                   <span className="text-yellow-400 font-mono">⚡ {myEnergy}</span>
                 </div>
@@ -667,7 +730,11 @@ function DuelContent() {
             </div>
             <div className="w-full bg-slate-700 rounded-full h-4 overflow-hidden">
               <div
-                className="bg-blue-500 h-4 transition-all duration-500"
+                className={`h-4 transition-all duration-500 ${
+                  (myHp / myHpMax) > 0.5 ? 'bg-blue-500' :
+                  (myHp / myHpMax) > 0.25 ? 'bg-yellow-500' :
+                  'bg-red-500'
+                }`}
                 style={{ width: `${(myHp / myHpMax) * 100}%` }}
               />
             </div>
@@ -675,19 +742,23 @@ function DuelContent() {
 
           {/* Card do Oponente */}
           <div className="bg-slate-900 rounded-lg p-4 border border-red-500">
-            <div className="flex items-center gap-3 mb-3">
-              {opponentAvatar && <AvatarSVG avatar={opponentAvatar} tamanho={50} />}
+            <div className="flex items-center gap-4 mb-3">
+              {opponentAvatar && <AvatarSVG avatar={opponentAvatar} tamanho={100} />}
               <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-red-400">{opponentNome}</span>
+                <div className="text-xs text-slate-400 mb-1">OPONENTE</div>
+                <div className="font-bold text-red-400 text-lg">{opponentAvatar?.nome || 'Avatar'}</div>
+                <div className="text-xs text-slate-400">
+                  🎯 {opponentNome || 'Caçador Misterioso'}
+                </div>
+                <div className="flex items-center gap-2 mt-1">
                   {opponentAvatar?.elemento && (
-                    <span className="text-xs">{getElementoEmoji(opponentAvatar.elemento)}</span>
+                    <span className="text-sm">{getElementoEmoji(opponentAvatar.elemento)} {opponentAvatar.elemento}</span>
                   )}
                   {opponentExaustao > 0 && (
                     <span className="text-xs text-orange-400">😰 {opponentExaustao}%</span>
                   )}
                 </div>
-                <div className="flex gap-4 text-sm">
+                <div className="flex gap-4 text-sm mt-2">
                   <span className="text-white font-mono">❤️ {opponentHp}/{opponentHpMax}</span>
                   <span className="text-yellow-400 font-mono">⚡ {opponentEnergy}</span>
                 </div>
@@ -695,7 +766,11 @@ function DuelContent() {
             </div>
             <div className="w-full bg-slate-700 rounded-full h-4 overflow-hidden">
               <div
-                className="bg-red-500 h-4 transition-all duration-500"
+                className={`h-4 transition-all duration-500 ${
+                  (opponentHp / opponentHpMax) > 0.5 ? 'bg-red-500' :
+                  (opponentHp / opponentHpMax) > 0.25 ? 'bg-yellow-500' :
+                  'bg-orange-600'
+                }`}
                 style={{ width: `${(opponentHp / opponentHpMax) * 100}%` }}
               />
             </div>
@@ -706,13 +781,13 @@ function DuelContent() {
         {room?.status === 'active' && (
           <div className="space-y-3">
             {/* Ataque e Defesa */}
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <button
                 onClick={atacar}
                 disabled={!isYourTurn || myEnergy < 10}
-                className={`flex-1 py-4 rounded-lg font-bold text-xl transition-all ${
+                className={`flex-1 py-3 rounded-lg font-bold text-base transition-all ${
                   isYourTurn && myEnergy >= 10
-                    ? 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 transform hover:scale-105'
+                    ? 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500'
                     : 'bg-gray-700 cursor-not-allowed opacity-50'
                 }`}
               >
@@ -722,9 +797,9 @@ function DuelContent() {
               <button
                 onClick={defender}
                 disabled={!isYourTurn}
-                className={`flex-1 py-4 rounded-lg font-bold text-xl transition-all ${
+                className={`flex-1 py-3 rounded-lg font-bold text-base transition-all ${
                   isYourTurn
-                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 transform hover:scale-105'
+                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500'
                     : 'bg-gray-700 cursor-not-allowed opacity-50'
                 }`}
               >
