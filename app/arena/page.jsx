@@ -152,16 +152,16 @@ export default function ArenaLobby() {
         </div>
       )}
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 py-4">
 
         {/* Modos de Jogo */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-3 gap-4 mb-6">
           {modos.map((modo) => (
             <button
               key={modo.id}
               onClick={() => modo.disponivel && router.push(modo.rota)}
               disabled={!modo.disponivel}
-              className={`relative group text-left overflow-hidden rounded-2xl border-2 transition-all duration-300 ${
+              className={`relative group text-left overflow-hidden rounded-xl border-2 transition-all duration-300 ${
                 modo.disponivel
                   ? `${modo.corBorda} ${modo.corBg} ${modo.corHover} hover:scale-105 hover:shadow-2xl cursor-pointer`
                   : 'border-slate-700 bg-slate-900/30 opacity-60 cursor-not-allowed'
@@ -174,45 +174,45 @@ export default function ArenaLobby() {
 
               {/* Badge "Em Breve" ou "BETA" */}
               {modo.emBreve && (
-                <div className="absolute top-4 right-4 z-10">
-                  <div className="bg-yellow-500 text-slate-900 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">
+                <div className="absolute top-3 right-3 z-10">
+                  <div className="bg-yellow-500 text-slate-900 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
                     Em Breve
                   </div>
                 </div>
               )}
               {modo.beta && (
-                <div className="absolute top-4 right-4 z-10">
-                  <div className="bg-orange-500 text-white text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider animate-pulse">
+                <div className="absolute top-3 right-3 z-10">
+                  <div className="bg-orange-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse">
                     BETA
                   </div>
                 </div>
               )}
 
-              <div className="relative p-6">
+              <div className="relative p-4">
                 {/* Emoji */}
-                <div className={`text-7xl mb-4 ${modo.disponivel ? 'group-hover:scale-110' : ''} transition-transform duration-300`}>
+                <div className={`text-5xl mb-3 ${modo.disponivel ? 'group-hover:scale-110' : ''} transition-transform duration-300`}>
                   {modo.emoji}
                 </div>
 
                 {/* Nome */}
-                <h2 className="text-3xl font-black text-white mb-2">
+                <h2 className="text-2xl font-black text-white mb-1">
                   {modo.nome}
                 </h2>
 
                 {/* Descrição */}
-                <p className="text-slate-300 font-semibold mb-3">
+                <p className="text-sm text-slate-300 font-semibold mb-2">
                   {modo.descricao}
                 </p>
 
-                <p className="text-sm text-slate-400 leading-relaxed mb-4">
+                <p className="text-xs text-slate-400 leading-relaxed mb-3">
                   {modo.detalhes}
                 </p>
 
                 {/* Recursos */}
-                <div className="space-y-2 mb-6">
+                <div className="space-y-1 mb-4">
                   {modo.recursos.map((recurso, index) => (
-                    <div key={index} className="flex items-center gap-2 text-sm">
-                      <div className={`w-1.5 h-1.5 rounded-full ${modo.disponivel ? 'bg-cyan-400' : 'bg-slate-600'}`}></div>
+                    <div key={index} className="flex items-center gap-1.5 text-xs">
+                      <div className={`w-1 h-1 rounded-full ${modo.disponivel ? 'bg-cyan-400' : 'bg-slate-600'}`}></div>
                       <span className="text-slate-400">{recurso}</span>
                     </div>
                   ))}
@@ -220,11 +220,11 @@ export default function ArenaLobby() {
 
                 {/* Botão */}
                 {modo.disponivel ? (
-                  <div className={`bg-gradient-to-r ${modo.cor} text-white font-black py-3 px-6 rounded-lg text-center uppercase tracking-wider group-hover:shadow-lg transition-shadow`}>
+                  <div className={`bg-gradient-to-r ${modo.cor} text-white font-black py-2 px-4 rounded-lg text-sm text-center uppercase tracking-wider group-hover:shadow-lg transition-shadow`}>
                     Entrar →
                   </div>
                 ) : (
-                  <div className="bg-slate-800 text-slate-500 font-black py-3 px-6 rounded-lg text-center uppercase tracking-wider">
+                  <div className="bg-slate-800 text-slate-500 font-black py-2 px-4 rounded-lg text-sm text-center uppercase tracking-wider">
                     Bloqueado
                   </div>
                 )}
@@ -234,52 +234,52 @@ export default function ArenaLobby() {
         </div>
 
         {/* Informações Adicionais */}
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 gap-4">
           {/* Dicas */}
-          <div className="bg-slate-900/50 rounded-xl p-6 border border-slate-800">
-            <h3 className="text-xl font-bold text-cyan-400 mb-4 flex items-center gap-2">
+          <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-800">
+            <h3 className="text-base font-bold text-cyan-400 mb-3 flex items-center gap-2">
               <span>💡</span> Dicas de Combate
             </h3>
-            <ul className="space-y-2 text-sm text-slate-300">
-              <li className="flex items-start gap-2">
-                <span className="text-cyan-400 mt-1">▸</span>
-                <span><strong>Gerencie energia:</strong> Use "Esperar" (+30 energia) ou "Defender" (+15 energia + buff) quando necessário.</span>
+            <ul className="space-y-1.5 text-xs text-slate-300">
+              <li className="flex items-start gap-1.5">
+                <span className="text-cyan-400 mt-0.5">▸</span>
+                <span><strong>Gerencie energia:</strong> Use "Esperar" (+30) ou "Defender" (+15 + buff).</span>
               </li>
-              <li className="flex items-start gap-2">
-                <span className="text-cyan-400 mt-1">▸</span>
-                <span><strong>Vantagem elemental:</strong> Fogo &gt; Terra &gt; Vento &gt; Água &gt; Fogo. Luz ↔ Sombra.</span>
+              <li className="flex items-start gap-1.5">
+                <span className="text-cyan-400 mt-0.5">▸</span>
+                <span><strong>Vantagem elemental:</strong> Fogo &gt; Terra &gt; Vento &gt; Água &gt; Fogo.</span>
               </li>
-              <li className="flex items-start gap-2">
-                <span className="text-cyan-400 mt-1">▸</span>
-                <span><strong>Observe buffs/debuffs:</strong> Ícones mostram efeitos ativos. Use-os a seu favor!</span>
+              <li className="flex items-start gap-1.5">
+                <span className="text-cyan-400 mt-0.5">▸</span>
+                <span><strong>Buffs/debuffs:</strong> Ícones mostram efeitos ativos.</span>
               </li>
-              <li className="flex items-start gap-2">
-                <span className="text-cyan-400 mt-1">▸</span>
-                <span><strong>Exaustão:</strong> Avatares cansados têm stats reduzidos. Deixe-os descansar!</span>
+              <li className="flex items-start gap-1.5">
+                <span className="text-cyan-400 mt-0.5">▸</span>
+                <span><strong>Exaustão:</strong> Avatares cansados têm stats reduzidos.</span>
               </li>
             </ul>
           </div>
 
           {/* Estatísticas */}
-          <div className="bg-slate-900/50 rounded-xl p-6 border border-slate-800">
-            <h3 className="text-xl font-bold text-purple-400 mb-4 flex items-center gap-2">
+          <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-800">
+            <h3 className="text-base font-bold text-purple-400 mb-3 flex items-center gap-2">
               <span>📊</span> Suas Estatísticas
             </h3>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center p-3 bg-slate-950/50 rounded-lg">
-                <span className="text-slate-400">Vitórias em Treinamento</span>
-                <span className="text-2xl font-bold text-green-400">-</span>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center p-2 bg-slate-950/50 rounded-lg">
+                <span className="text-xs text-slate-400">Vitórias em Treinamento</span>
+                <span className="text-lg font-bold text-green-400">-</span>
               </div>
-              <div className="flex justify-between items-center p-3 bg-slate-950/50 rounded-lg">
-                <span className="text-slate-400">Ranking PvP</span>
-                <span className="text-2xl font-bold text-red-400">-</span>
+              <div className="flex justify-between items-center p-2 bg-slate-950/50 rounded-lg">
+                <span className="text-xs text-slate-400">Ranking PvP</span>
+                <span className="text-lg font-bold text-red-400">-</span>
               </div>
-              <div className="flex justify-between items-center p-3 bg-slate-950/50 rounded-lg">
-                <span className="text-slate-400">Recorde Sobrevivência</span>
-                <span className="text-2xl font-bold text-purple-400">-</span>
+              <div className="flex justify-between items-center p-2 bg-slate-950/50 rounded-lg">
+                <span className="text-xs text-slate-400">Recorde Sobrevivência</span>
+                <span className="text-lg font-bold text-purple-400">-</span>
               </div>
             </div>
-            <p className="text-xs text-slate-500 mt-4 text-center">
+            <p className="text-[10px] text-slate-500 mt-3 text-center">
               * Estatísticas serão implementadas em breve
             </p>
           </div>
