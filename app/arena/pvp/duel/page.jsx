@@ -753,195 +753,251 @@ function DuelContent() {
 
   // Tela de batalha
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 text-gray-100 p-6">
-      <div className="max-w-lg mx-auto">
-        <h1 className="text-2xl font-bold text-center mb-4">⚔️ BATALHA!</h1>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 text-gray-100 p-4">
+      <div className="max-w-2xl mx-auto">
+
+        {/* Header com título */}
+        <div className="text-center mb-4">
+          <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400">
+            ⚔️ BATALHA PVP
+          </h1>
+        </div>
 
         {/* Indicador de Turno */}
-        <div className={`text-center py-3 rounded-lg mb-4 font-bold text-lg ${
+        <div className={`text-center py-2 px-4 rounded-lg mb-4 font-bold ${
           room?.status === 'finished'
-            ? 'bg-purple-900/50 border border-purple-500'
+            ? 'bg-gradient-to-r from-purple-900/80 to-pink-900/80 border border-purple-500'
             : isYourTurn
-              ? 'bg-green-900/50 border border-green-500 animate-pulse'
-              : 'bg-orange-900/50 border border-orange-500'
+              ? 'bg-gradient-to-r from-green-900/80 to-emerald-900/80 border border-green-500 animate-pulse'
+              : 'bg-gradient-to-r from-orange-900/80 to-red-900/80 border border-orange-500'
         }`}>
           {room?.status === 'finished'
             ? (room.winner === role ? '🏆 VITÓRIA!' : '☠️ DERROTA!')
             : isYourTurn
-              ? '🟢 SEU TURNO!'
-              : '🟠 TURNO DO OPONENTE...'}
+              ? '🟢 SEU TURNO - ESCOLHA SUA AÇÃO!'
+              : '🟠 AGUARDANDO OPONENTE...'}
         </div>
 
-        {/* Cards dos Jogadores */}
-        <div className="space-y-4 mb-6">
-          {/* Seu Card */}
-          <div className="bg-slate-900 rounded-lg p-4 border border-blue-500">
-            <div className="flex items-center gap-4 mb-3">
-              {meuAvatar && <AvatarSVG avatar={meuAvatar} tamanho={100} />}
-              <div className="flex-1">
-                <div className="text-xs text-slate-400 mb-1">VOCÊ</div>
-                <div className="font-bold text-blue-400 text-lg">{meuAvatar?.nome || 'Avatar'}</div>
-                <div className="text-xs text-slate-400">
-                  🎯 {meuNome || 'Caçador Misterioso'}
-                </div>
-                <div className="flex items-center gap-2 mt-1">
-                  {meuAvatar?.elemento && (
-                    <span className="text-sm">{getElementoEmoji(meuAvatar.elemento)} {meuAvatar.elemento}</span>
-                  )}
-                  {myExaustao > 0 && (
-                    <span className="text-xs text-orange-400">😰 {myExaustao}%</span>
-                  )}
-                </div>
-                <div className="flex gap-4 text-sm mt-2">
-                  <span className="text-white font-mono">❤️ {myHp}/{myHpMax}</span>
-                  <span className="text-yellow-400 font-mono">⚡ {myEnergy}</span>
-                </div>
-                {/* Efeitos ativos */}
-                {myEffects.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {myEffects.map((ef, i) => (
-                      <span key={i} className="text-xs bg-slate-800 px-1.5 py-0.5 rounded" title={`${ef.tipo} (${ef.turnosRestantes} turnos)`}>
-                        {getEfeitoEmoji(ef.tipo)} {ef.turnosRestantes}
-                      </span>
-                    ))}
-                  </div>
-                )}
+        {/* Arena - Cards dos Avatares */}
+        <div className="grid grid-cols-2 gap-4 mb-4">
+
+          {/* Seu Avatar */}
+          <div className="relative">
+            <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/30 to-cyan-500/30 rounded-xl blur"></div>
+            <div className="relative bg-slate-900/95 rounded-xl border-2 border-blue-500 overflow-hidden">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-blue-900/50 to-cyan-900/50 px-3 py-2 border-b border-blue-500/50">
+                <div className="text-xs text-blue-300 font-bold uppercase tracking-wider">VOCÊ</div>
+                <div className="font-bold text-white truncate">{meuAvatar?.nome || 'Avatar'}</div>
+                <div className="text-xs text-slate-400 truncate">🎯 {meuNome || 'Caçador Misterioso'}</div>
               </div>
-            </div>
-            <div className="w-full bg-slate-700 rounded-full h-4 overflow-hidden">
-              <div
-                className={`h-4 transition-all duration-500 ${
-                  (myHp / myHpMax) > 0.5 ? 'bg-blue-500' :
-                  (myHp / myHpMax) > 0.25 ? 'bg-yellow-500' :
-                  'bg-red-500'
-                }`}
-                style={{ width: `${(myHp / myHpMax) * 100}%` }}
-              />
-            </div>
-          </div>
 
-          {/* Card do Oponente */}
-          <div className="bg-slate-900 rounded-lg p-4 border border-red-500">
-            <div className="flex items-center gap-4 mb-3">
-              {opponentAvatar && <AvatarSVG avatar={opponentAvatar} tamanho={100} />}
-              <div className="flex-1">
-                <div className="text-xs text-slate-400 mb-1">OPONENTE</div>
-                <div className="font-bold text-red-400 text-lg">{opponentAvatar?.nome || 'Avatar'}</div>
-                <div className="text-xs text-slate-400">
-                  🎯 {opponentNome || 'Caçador Misterioso'}
-                </div>
-                <div className="flex items-center gap-2 mt-1">
-                  {opponentAvatar?.elemento && (
-                    <span className="text-sm">{getElementoEmoji(opponentAvatar.elemento)} {opponentAvatar.elemento}</span>
-                  )}
-                  {opponentExaustao > 0 && (
-                    <span className="text-xs text-orange-400">😰 {opponentExaustao}%</span>
-                  )}
-                </div>
-                <div className="flex gap-4 text-sm mt-2">
-                  <span className="text-white font-mono">❤️ {opponentHp}/{opponentHpMax}</span>
-                  <span className="text-yellow-400 font-mono">⚡ {opponentEnergy}</span>
-                </div>
-                {/* Efeitos ativos do oponente */}
-                {opponentEffects.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {opponentEffects.map((ef, i) => (
-                      <span key={i} className="text-xs bg-slate-800 px-1.5 py-0.5 rounded" title={`${ef.tipo} (${ef.turnosRestantes} turnos)`}>
-                        {getEfeitoEmoji(ef.tipo)} {ef.turnosRestantes}
-                      </span>
-                    ))}
-                  </div>
-                )}
+              {/* Avatar Grande */}
+              <div className="p-4 flex justify-center bg-gradient-to-b from-blue-950/30 to-transparent">
+                {meuAvatar && <AvatarSVG avatar={meuAvatar} tamanho={120} />}
               </div>
-            </div>
-            <div className="w-full bg-slate-700 rounded-full h-4 overflow-hidden">
-              <div
-                className={`h-4 transition-all duration-500 ${
-                  (opponentHp / opponentHpMax) > 0.5 ? 'bg-red-500' :
-                  (opponentHp / opponentHpMax) > 0.25 ? 'bg-yellow-500' :
-                  'bg-orange-600'
-                }`}
-                style={{ width: `${(opponentHp / opponentHpMax) * 100}%` }}
-              />
-            </div>
-          </div>
-        </div>
 
-        {/* Botões de Ação */}
-        {room?.status === 'active' && (
-          <div className="space-y-3">
-            {/* Ataque e Defesa */}
-            <div className="flex gap-2">
-              <button
-                onClick={atacar}
-                disabled={!isYourTurn || myEnergy < 10}
-                className={`flex-1 py-3 rounded-lg font-bold text-base transition-all ${
-                  isYourTurn && myEnergy >= 10
-                    ? 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500'
-                    : 'bg-gray-700 cursor-not-allowed opacity-50'
-                }`}
-              >
-                ⚔️ Atacar
-                <div className="text-xs opacity-75">-10 ⚡</div>
-              </button>
-              <button
-                onClick={defender}
-                disabled={!isYourTurn}
-                className={`flex-1 py-3 rounded-lg font-bold text-base transition-all ${
-                  isYourTurn
-                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500'
-                    : 'bg-gray-700 cursor-not-allowed opacity-50'
-                }`}
-              >
-                🛡️ Defender
-                <div className="text-xs opacity-75">+20 ⚡</div>
-              </button>
-            </div>
+              {/* Info */}
+              <div className="px-3 pb-3 space-y-2">
+                {/* Elemento e Exaustão */}
+                <div className="flex items-center justify-between text-xs">
+                  <span>{getElementoEmoji(meuAvatar?.elemento)} {meuAvatar?.elemento}</span>
+                  {myExaustao > 0 && <span className="text-orange-400">😰 {myExaustao}%</span>}
+                </div>
 
-            {/* Habilidades */}
-            {meuAvatar?.habilidades && meuAvatar.habilidades.length > 0 && (
-              <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-700">
-                <div className="text-xs font-bold text-slate-400 mb-2">✨ HABILIDADES</div>
-                <div className="grid grid-cols-2 gap-2">
-                  {meuAvatar.habilidades.slice(0, 5).map((hab, index) => (
-                    <button
-                      key={index}
-                      onClick={() => usarHabilidade(index)}
-                      disabled={!isYourTurn || myEnergy < (hab.custo_energia || 20)}
-                      className={`py-2 px-3 rounded text-sm font-bold transition-all text-left ${
-                        isYourTurn && myEnergy >= (hab.custo_energia || 20)
-                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500'
-                          : 'bg-gray-700 cursor-not-allowed opacity-50'
+                {/* HP Bar */}
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-red-400 font-bold">❤️ HP</span>
+                    <span className="font-mono">{myHp}/{myHpMax}</span>
+                  </div>
+                  <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-500 ${
+                        (myHp / myHpMax) > 0.5 ? 'bg-gradient-to-r from-green-500 to-emerald-400' :
+                        (myHp / myHpMax) > 0.25 ? 'bg-gradient-to-r from-yellow-500 to-orange-400' :
+                        'bg-gradient-to-r from-red-600 to-red-400'
                       }`}
-                    >
-                      <div className="truncate">{hab.nome}</div>
-                      <div className="text-xs opacity-75">-{hab.custo_energia || 20} ⚡</div>
-                    </button>
-                  ))}
+                      style={{ width: `${(myHp / myHpMax) * 100}%` }}
+                    />
+                  </div>
                 </div>
+
+                {/* Energia */}
+                <div className="flex items-center justify-between">
+                  <span className="text-yellow-400 font-bold text-xs">⚡ Energia</span>
+                  <span className="font-mono text-sm text-yellow-300">{myEnergy}/100</span>
+                </div>
+
+                {/* Efeitos */}
+                {myEffects.length > 0 && (
+                  <div className="flex flex-wrap gap-1 pt-1 border-t border-slate-700">
+                    {myEffects.map((ef, i) => (
+                      <span key={i} className="text-xs bg-slate-800/80 px-1.5 py-0.5 rounded border border-slate-600" title={`${ef.tipo} (${ef.turnosRestantes})`}>
+                        {getEfeitoEmoji(ef.tipo)}<span className="text-[10px] ml-0.5">{ef.turnosRestantes}</span>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+          </div>
+
+          {/* Avatar do Oponente */}
+          <div className="relative">
+            <div className="absolute -inset-1 bg-gradient-to-r from-red-500/30 to-orange-500/30 rounded-xl blur"></div>
+            <div className="relative bg-slate-900/95 rounded-xl border-2 border-red-500 overflow-hidden">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-red-900/50 to-orange-900/50 px-3 py-2 border-b border-red-500/50">
+                <div className="text-xs text-red-300 font-bold uppercase tracking-wider">OPONENTE</div>
+                <div className="font-bold text-white truncate">{opponentAvatar?.nome || 'Avatar'}</div>
+                <div className="text-xs text-slate-400 truncate">🎯 {opponentNome || 'Caçador Misterioso'}</div>
+              </div>
+
+              {/* Avatar Grande */}
+              <div className="p-4 flex justify-center bg-gradient-to-b from-red-950/30 to-transparent">
+                {opponentAvatar && <AvatarSVG avatar={opponentAvatar} tamanho={120} />}
+              </div>
+
+              {/* Info */}
+              <div className="px-3 pb-3 space-y-2">
+                {/* Elemento e Exaustão */}
+                <div className="flex items-center justify-between text-xs">
+                  <span>{getElementoEmoji(opponentAvatar?.elemento)} {opponentAvatar?.elemento}</span>
+                  {opponentExaustao > 0 && <span className="text-orange-400">😰 {opponentExaustao}%</span>}
+                </div>
+
+                {/* HP Bar */}
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-red-400 font-bold">❤️ HP</span>
+                    <span className="font-mono">{opponentHp}/{opponentHpMax}</span>
+                  </div>
+                  <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-500 ${
+                        (opponentHp / opponentHpMax) > 0.5 ? 'bg-gradient-to-r from-green-500 to-emerald-400' :
+                        (opponentHp / opponentHpMax) > 0.25 ? 'bg-gradient-to-r from-yellow-500 to-orange-400' :
+                        'bg-gradient-to-r from-red-600 to-red-400'
+                      }`}
+                      style={{ width: `${(opponentHp / opponentHpMax) * 100}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Energia */}
+                <div className="flex items-center justify-between">
+                  <span className="text-yellow-400 font-bold text-xs">⚡ Energia</span>
+                  <span className="font-mono text-sm text-yellow-300">{opponentEnergy}/100</span>
+                </div>
+
+                {/* Efeitos */}
+                {opponentEffects.length > 0 && (
+                  <div className="flex flex-wrap gap-1 pt-1 border-t border-slate-700">
+                    {opponentEffects.map((ef, i) => (
+                      <span key={i} className="text-xs bg-slate-800/80 px-1.5 py-0.5 rounded border border-slate-600" title={`${ef.tipo} (${ef.turnosRestantes})`}>
+                        {getEfeitoEmoji(ef.tipo)}<span className="text-[10px] ml-0.5">{ef.turnosRestantes}</span>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Painel de Ações */}
+        {room?.status === 'active' && (
+          <div className="relative">
+            <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl blur"></div>
+            <div className="relative bg-slate-900/95 rounded-xl border border-purple-500/50 p-4">
+              <div className="text-xs font-bold text-purple-300 uppercase tracking-wider mb-3 text-center">
+                ⚔️ AÇÕES DE COMBATE
+              </div>
+
+              {/* Ataque e Defesa */}
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                <button
+                  onClick={atacar}
+                  disabled={!isYourTurn || myEnergy < 10}
+                  className={`relative group py-3 rounded-lg font-bold transition-all ${
+                    isYourTurn && myEnergy >= 10
+                      ? 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 hover:scale-[1.02] active:scale-95'
+                      : 'bg-slate-700 cursor-not-allowed opacity-50'
+                  }`}
+                >
+                  <div className="text-lg">⚔️ Atacar</div>
+                  <div className="text-xs opacity-75">-10 ⚡</div>
+                </button>
+                <button
+                  onClick={defender}
+                  disabled={!isYourTurn}
+                  className={`relative group py-3 rounded-lg font-bold transition-all ${
+                    isYourTurn
+                      ? 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 hover:scale-[1.02] active:scale-95'
+                      : 'bg-slate-700 cursor-not-allowed opacity-50'
+                  }`}
+                >
+                  <div className="text-lg">🛡️ Defender</div>
+                  <div className="text-xs opacity-75">+20 ⚡ | 50% redução</div>
+                </button>
+              </div>
+
+              {/* Habilidades */}
+              {meuAvatar?.habilidades && meuAvatar.habilidades.length > 0 && (
+                <>
+                  <div className="text-xs font-bold text-pink-300 uppercase tracking-wider mb-2 text-center">
+                    ✨ HABILIDADES ESPECIAIS
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {meuAvatar.habilidades.slice(0, 5).map((hab, index) => (
+                      <button
+                        key={index}
+                        onClick={() => usarHabilidade(index)}
+                        disabled={!isYourTurn || myEnergy < (hab.custo_energia || 20)}
+                        className={`py-2 px-2 rounded-lg text-sm font-bold transition-all text-left ${
+                          isYourTurn && myEnergy >= (hab.custo_energia || 20)
+                            ? 'bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500 hover:to-pink-500 hover:scale-[1.02] active:scale-95 border border-purple-400/30'
+                            : 'bg-slate-700/50 cursor-not-allowed opacity-40 border border-slate-600/30'
+                        }`}
+                      >
+                        <div className="truncate text-xs">{hab.nome}</div>
+                        <div className="text-[10px] opacity-75">-{hab.custo_energia || 20} ⚡</div>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         )}
 
-        {/* Botão Voltar */}
+        {/* Botão Voltar após fim */}
         {room?.status === 'finished' && (
           <button
             onClick={() => router.push('/arena/pvp')}
-            className="w-full py-4 bg-cyan-600 hover:bg-cyan-500 rounded-lg font-bold mt-4"
+            className="w-full py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-lg font-bold mt-4"
           >
-            Voltar ao Lobby
+            🏠 Voltar ao Lobby
           </button>
         )}
 
-        {/* Log */}
-        <div className="mt-6 bg-slate-900/50 rounded-lg p-4 border border-slate-700 max-h-40 overflow-y-auto">
-          <h3 className="text-sm font-bold text-slate-400 mb-2">Log:</h3>
-          {log.map((msg, i) => (
-            <div key={i} className="text-sm text-slate-300 py-1 border-b border-slate-800">
-              {msg}
-            </div>
-          ))}
+        {/* Log de Batalha */}
+        <div className="mt-4 bg-slate-950/80 rounded-xl border border-slate-700 overflow-hidden">
+          <div className="bg-slate-800/50 px-4 py-2 border-b border-slate-700">
+            <h3 className="text-sm font-bold text-slate-300">📜 Log de Batalha</h3>
+          </div>
+          <div className="p-3 max-h-32 overflow-y-auto space-y-1">
+            {log.length === 0 ? (
+              <div className="text-xs text-slate-500 text-center py-2">Aguardando ações...</div>
+            ) : (
+              log.map((msg, i) => (
+                <div key={i} className="text-xs text-slate-300 py-1 px-2 bg-slate-800/30 rounded">
+                  {msg}
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>
