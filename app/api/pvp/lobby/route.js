@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createDocument, getDocuments, deleteDocument, getDocument } from '@/lib/firebase/firestore';
+import { createDocument, getDocuments, deleteDocument, getDocument, updateDocument } from '@/lib/firebase/firestore';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,6 +11,8 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const visitorId = searchParams.get('visitorId');
+    const minPower = parseInt(searchParams.get('minPower') || '0');
+    const maxPower = parseInt(searchParams.get('maxPower') || '999');
 
     // Limpar entradas expiradas (mais de 2 minutos)
     const allEntries = await getDocuments('pvp_lobby', {});
@@ -23,9 +25,17 @@ export async function GET(request) {
       }
     }
 
-    // Buscar jogadores no lobby
-    const players = await getDocuments('pvp_lobby', {
+    // Buscar jogadores no lobby com filtro de poder
+    const allPlayers = await getDocuments('pvp_lobby', {
       where: [['status', '==', 'waiting']]
+    });
+
+    // Filtrar por faixa de poder
+    const players = (allPlayers || []).filter(p => {
+      const playerMin = p.minPower || 0;
+      const playerMax = p.maxPower || 999;
+      // Jogador está na mesma sala se as faixas coincidem
+      return playerMin === minPower && playerMax === maxPower;
     });
 
     // Buscar desafios pendentes para o usuário atual
@@ -77,7 +87,7 @@ export async function GET(request) {
  */
 export async function POST(request) {
   try {
-    const { visitorId, action, targetId } = await request.json();
+    const { visitorId, action, targetId, minPower, maxPower, avatar } = await request.json();
 
     if (!visitorId || !action) {
       return NextResponse.json(
@@ -94,7 +104,15 @@ export async function POST(request) {
       });
 
       if (existing && existing.length > 0) {
-        return NextResponse.json({ success: true, message: 'Já está no lobby' });
+        // Atualizar entrada existente com novos dados
+        await updateDocument('pvp_lobby', existing[0].id, {
+          minPower: minPower || 0,
+          maxPower: maxPower || 999,
+          avatar: avatar || null,
+          poder: avatar ? (avatar.forca + avatar.agilidade + avatar.resistencia + avatar.foco) : 0,
+          created_at: new Date().toISOString()
+        });
+        return NextResponse.json({ success: true, message: 'Atualizado no lobby' });
       }
 
       // Buscar nome do jogador
@@ -105,6 +123,10 @@ export async function POST(request) {
         nome: playerStats?.nome_operacao || 'Jogador',
         status: 'waiting',
         target_id: null,
+        minPower: minPower || 0,
+        maxPower: maxPower || 999,
+        avatar: avatar || null,
+        poder: avatar ? (avatar.forca + avatar.agilidade + avatar.resistencia + avatar.foco) : 0,
         created_at: new Date().toISOString()
       });
 
@@ -149,7 +171,6 @@ export async function POST(request) {
       const playerStats = await getDocument('player_stats', visitorId);
 
       // Atualizar para challenging
-      const { updateDocument } = await import('@/lib/firebase/firestore');
       await updateDocument('pvp_lobby', myEntries[0].id, {
         status: 'challenging',
         target_id: targetId,
@@ -179,37 +200,43 @@ export async function POST(request) {
       const challenge = challenges[0];
       const challengerId = challenge.visitorId;
 
-      // Buscar nomes
+      // Buscar dados dos jogadores
       const challengerStats = await getDocument('player_stats', challengerId);
       const targetStats = await getDocument('player_stats', visitorId);
 
-      // Criar sala de duelo
+      // Buscar entrada do aceitante para pegar avatar
+      const myEntries = await getDocuments('pvp_lobby', {
+        where: [['visitorId', '==', visitorId]]
+      });
+      const myEntry = myEntries && myEntries.length > 0 ? myEntries[0] : null;
+
+      // Criar sala de duelo com avatares e energia
       const roomId = await createDocument('pvp_duel_rooms', {
         code: null,
         host_user_id: challengerId,
         host_nome: challengerStats?.nome_operacao || 'Jogador 1',
+        host_avatar: challenge.avatar || null,
         guest_user_id: visitorId,
         guest_nome: targetStats?.nome_operacao || 'Jogador 2',
-        status: 'active', // Já ativa!
+        guest_avatar: myEntry?.avatar || null,
+        status: 'active',
         host_ready: true,
         guest_ready: true,
         host_hp: 100,
         guest_hp: 100,
+        host_energy: 10,
+        guest_energy: 10,
         current_turn: 'host',
         created_at: new Date().toISOString()
       });
 
-      // Atualizar entrada do desafiante com o roomId (para ele detectar via polling)
-      const { updateDocument } = await import('@/lib/firebase/firestore');
+      // Atualizar entrada do desafiante com o roomId
       await updateDocument('pvp_lobby', challenge.id, {
         room_id: roomId,
         status: 'matched'
       });
 
       // Remover entrada do aceitante do lobby
-      const myEntries = await getDocuments('pvp_lobby', {
-        where: [['visitorId', '==', visitorId]]
-      });
       for (const entry of myEntries || []) {
         await deleteDocument('pvp_lobby', entry.id);
       }
@@ -231,7 +258,6 @@ export async function POST(request) {
       });
 
       if (challenges && challenges.length > 0) {
-        const { updateDocument } = await import('@/lib/firebase/firestore');
         await updateDocument('pvp_lobby', challenges[0].id, {
           status: 'waiting',
           target_id: null

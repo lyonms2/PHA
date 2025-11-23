@@ -388,145 +388,145 @@ export default function PvPPage() {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Coluna Esquerda - Avatar e Stats */}
+          {/* Coluna Esquerda - Avatar e Salas */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Seu Avatar */}
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/30 via-pink-500/30 to-purple-500/30 rounded-lg blur opacity-75"></div>
-              <div className="relative bg-gradient-to-br from-slate-900 to-slate-950 rounded-xl border-2 border-purple-500 p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-black text-purple-400 flex items-center gap-2">
-                    <span className="text-2xl">👤</span> SEU AVATAR ATIVO
-                  </h2>
-                  <button
-                    onClick={() => router.push('/avatares')}
-                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 transition-colors text-sm"
-                  >
-                    Trocar Avatar
-                  </button>
-                </div>
-
-                <div className="flex flex-col md:flex-row items-center gap-6">
-                  {/* Avatar SVG */}
-                  <div className="flex-shrink-0">
-                    <div className="relative">
-                      <AvatarSVG avatar={avatarAtivo} tamanho={140} />
-                      <div className={`absolute -top-2 -right-2 px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                        avatarAtivo.raridade === 'Lendário' ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' :
-                        avatarAtivo.raridade === 'Épico' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white' :
-                        avatarAtivo.raridade === 'Raro' ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white' :
-                        'bg-slate-700 text-slate-300'
-                      }`}>
-                        {avatarAtivo.raridade}
-                      </div>
-                    </div>
+            {/* Seu Avatar Resumido */}
+            <div className="bg-gradient-to-br from-slate-900 to-slate-950 rounded-xl border border-purple-500/50 p-4">
+              <div className="flex items-center gap-4">
+                <AvatarSVG avatar={avatarAtivo} tamanho={80} />
+                <div className="flex-1">
+                  <div className="font-bold text-xl text-white">{avatarAtivo.nome}</div>
+                  <div className="text-sm text-slate-400">
+                    Nv.{avatarAtivo.nivel} • {avatarAtivo.elemento}
                   </div>
-
-                  {/* Info do Avatar */}
-                  <div className="flex-1 w-full">
-                    <div className="text-center md:text-left mb-3">
-                      <div className="font-black text-2xl text-white mb-1">{avatarAtivo.nome}</div>
-                      <div className="flex items-center justify-center md:justify-start gap-3 text-sm">
-                        <span className="text-purple-400 font-bold">Nv.{avatarAtivo.nivel}</span>
-                        <span className="text-slate-500">•</span>
-                        <span className={getElementoColor(avatarAtivo.elemento)}>{avatarAtivo.elemento}</span>
-                      </div>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="bg-slate-950/50 rounded-lg p-3 mb-3">
-                      <div className="grid grid-cols-4 gap-3 text-center">
-                        <div>
-                          <div className="text-red-400 font-bold text-lg">{avatarAtivo.forca}</div>
-                          <div className="text-slate-500 text-xs font-semibold">FOR</div>
-                        </div>
-                        <div>
-                          <div className="text-green-400 font-bold text-lg">{avatarAtivo.agilidade}</div>
-                          <div className="text-slate-500 text-xs font-semibold">AGI</div>
-                        </div>
-                        <div>
-                          <div className="text-blue-400 font-bold text-lg">{avatarAtivo.resistencia}</div>
-                          <div className="text-slate-500 text-xs font-semibold">RES</div>
-                        </div>
-                        <div>
-                          <div className="text-purple-400 font-bold text-lg">{avatarAtivo.foco}</div>
-                          <div className="text-slate-500 text-xs font-semibold">FOC</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Info adicional */}
-                    <div className="flex justify-between text-sm">
-                      <div>⚔️ Poder: <span className="text-cyan-400 font-bold">{poderTotal}</span></div>
-                      <div>❤️ HP: <span className="text-green-400 font-bold">{calcularHPMaximoCompleto(avatarAtivo)}</span></div>
-                    </div>
-
-                    {avatarAtivo.exaustao >= 40 && (
-                      <div className="mt-2 text-orange-400 text-sm text-center md:text-left">
-                        ⚠️ Exaustão: {avatarAtivo.exaustao}%
-                      </div>
-                    )}
+                  <div className="text-cyan-400 font-bold mt-1">
+                    ⚔️ Poder: {poderTotal}
                   </div>
                 </div>
+                <button
+                  onClick={() => router.push('/avatares')}
+                  className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-sm"
+                >
+                  Trocar
+                </button>
               </div>
             </div>
 
-            {/* Matchmaking */}
-            <div className="bg-slate-900 border border-orange-500 rounded-lg p-8 text-center">
-              {partidaEncontrada ? (
-                <div className="animate-pulse">
-                  <div className="text-6xl mb-4">⚔️</div>
-                  <h2 className="text-3xl font-bold text-green-400 mb-2">
-                    PARTIDA ENCONTRADA!
-                  </h2>
-                  <p className="text-gray-300 mb-4">
-                    Oponente: <span className="text-orange-400 font-bold">{partidaEncontrada.oponente.nome}</span>
-                  </p>
-                  <p className="text-cyan-400">Entrando na batalha...</p>
-                </div>
-              ) : buscandoPartida ? (
-                <div>
-                  <div className="text-6xl mb-4 animate-spin">⏳</div>
-                  <h2 className="text-2xl font-bold text-yellow-400 mb-2">
-                    Buscando Oponente...
-                  </h2>
-                  <p className="text-gray-400 mb-4">
-                    Tempo de espera: <span className="text-white font-mono">{formatarTempo(tempoEspera)}</span>
-                  </p>
-                  <p className="text-sm text-gray-500 mb-6">
-                    Procurando jogadores com poder similar ({poderTotal} ± 30%)
-                  </p>
-                  <button
-                    onClick={cancelarMatchmaking}
-                    className="bg-red-600 hover:bg-red-500 text-white px-8 py-3 rounded-lg font-bold"
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              ) : (
-                <div>
-                  <div className="text-6xl mb-4">🎮</div>
-                  <h2 className="text-2xl font-bold text-white mb-4">
-                    Pronto para Batalhar?
-                  </h2>
-                  <p className="text-gray-400 mb-6">
-                    Entre na fila e enfrente outros caçadores em batalhas em tempo real!
-                  </p>
+            {/* Salas por Poder */}
+            <div className="bg-slate-900 border border-orange-500 rounded-lg p-6">
+              <h2 className="text-xl font-bold text-orange-400 mb-4 text-center">
+                🏟️ SALAS POR PODER
+              </h2>
+              <p className="text-slate-400 text-center mb-6 text-sm">
+                Entre em uma sala compatível com o poder do seu avatar
+              </p>
 
-                  <button
-                    onClick={iniciarMatchmaking}
-                    disabled={avatarAtivo.exaustao >= 60}
-                    className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 disabled:from-gray-600 disabled:to-gray-600 text-white px-12 py-4 rounded-lg font-bold text-xl transition-all transform hover:scale-105 disabled:hover:scale-100"
-                  >
-                    ⚔️ BUSCAR PARTIDA
-                  </button>
-
-                  {avatarAtivo.exaustao >= 60 && (
-                    <p className="text-red-400 text-sm mt-4">
-                      Avatar muito exausto para batalhar
-                    </p>
-                  )}
+              <div className="space-y-4">
+                {/* Sala Iniciante */}
+                <div className={`bg-slate-800 rounded-lg p-4 border-2 transition-all ${
+                  poderTotal >= 0 && poderTotal <= 39
+                    ? 'border-green-500 shadow-lg shadow-green-500/20'
+                    : 'border-slate-700 opacity-50'
+                }`}>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="font-bold text-green-400 text-lg">🌱 Iniciante</h3>
+                      <p className="text-sm text-slate-400">Poder: 0 - 39</p>
+                    </div>
+                    <button
+                      onClick={() => router.push('/arena/pvp/duel?minPower=0&maxPower=39')}
+                      disabled={poderTotal < 0 || poderTotal > 39}
+                      className={`px-6 py-2 rounded-lg font-bold ${
+                        poderTotal >= 0 && poderTotal <= 39
+                          ? 'bg-green-600 hover:bg-green-500 text-white'
+                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                      }`}
+                    >
+                      Entrar
+                    </button>
+                  </div>
                 </div>
+
+                {/* Sala Intermediário */}
+                <div className={`bg-slate-800 rounded-lg p-4 border-2 transition-all ${
+                  poderTotal >= 40 && poderTotal <= 60
+                    ? 'border-blue-500 shadow-lg shadow-blue-500/20'
+                    : 'border-slate-700 opacity-50'
+                }`}>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="font-bold text-blue-400 text-lg">⚡ Intermediário</h3>
+                      <p className="text-sm text-slate-400">Poder: 40 - 60</p>
+                    </div>
+                    <button
+                      onClick={() => router.push('/arena/pvp/duel?minPower=40&maxPower=60')}
+                      disabled={poderTotal < 40 || poderTotal > 60}
+                      className={`px-6 py-2 rounded-lg font-bold ${
+                        poderTotal >= 40 && poderTotal <= 60
+                          ? 'bg-blue-600 hover:bg-blue-500 text-white'
+                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                      }`}
+                    >
+                      Entrar
+                    </button>
+                  </div>
+                </div>
+
+                {/* Sala Avançado */}
+                <div className={`bg-slate-800 rounded-lg p-4 border-2 transition-all ${
+                  poderTotal >= 61 && poderTotal <= 90
+                    ? 'border-purple-500 shadow-lg shadow-purple-500/20'
+                    : 'border-slate-700 opacity-50'
+                }`}>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="font-bold text-purple-400 text-lg">🔥 Avançado</h3>
+                      <p className="text-sm text-slate-400">Poder: 61 - 90</p>
+                    </div>
+                    <button
+                      onClick={() => router.push('/arena/pvp/duel?minPower=61&maxPower=90')}
+                      disabled={poderTotal < 61 || poderTotal > 90}
+                      className={`px-6 py-2 rounded-lg font-bold ${
+                        poderTotal >= 61 && poderTotal <= 90
+                          ? 'bg-purple-600 hover:bg-purple-500 text-white'
+                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                      }`}
+                    >
+                      Entrar
+                    </button>
+                  </div>
+                </div>
+
+                {/* Sala Elite (poder alto) */}
+                <div className={`bg-slate-800 rounded-lg p-4 border-2 transition-all ${
+                  poderTotal > 90
+                    ? 'border-red-500 shadow-lg shadow-red-500/20'
+                    : 'border-slate-700 opacity-50'
+                }`}>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="font-bold text-red-400 text-lg">👑 Elite</h3>
+                      <p className="text-sm text-slate-400">Poder: 91+</p>
+                    </div>
+                    <button
+                      onClick={() => router.push('/arena/pvp/duel?minPower=91&maxPower=999')}
+                      disabled={poderTotal <= 90}
+                      className={`px-6 py-2 rounded-lg font-bold ${
+                        poderTotal > 90
+                          ? 'bg-red-600 hover:bg-red-500 text-white'
+                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                      }`}
+                    >
+                      Entrar
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {avatarAtivo.exaustao >= 60 && (
+                <p className="text-red-400 text-sm mt-4 text-center">
+                  ⚠️ Avatar muito exausto para batalhar
+                </p>
               )}
             </div>
           </div>

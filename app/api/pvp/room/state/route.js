@@ -62,7 +62,10 @@ export async function GET(request) {
       isYourTurn,
       myHp: isHost ? room.host_hp : room.guest_hp,
       opponentHp: isHost ? room.guest_hp : room.host_hp,
-      opponentNome: isHost ? room.guest_nome : room.host_nome
+      myEnergy: isHost ? (room.host_energy ?? 10) : (room.guest_energy ?? 10),
+      opponentEnergy: isHost ? (room.guest_energy ?? 10) : (room.host_energy ?? 10),
+      opponentNome: isHost ? room.guest_nome : room.host_nome,
+      opponentAvatar: isHost ? room.guest_avatar : room.host_avatar
     });
 
   } catch (error) {
@@ -147,15 +150,27 @@ export async function POST(request) {
         );
       }
 
+      // Verificar energia
+      const myEnergyField = isHost ? 'host_energy' : 'guest_energy';
+      const currentEnergy = room[myEnergyField] ?? 10;
+      if (currentEnergy < 1) {
+        return NextResponse.json(
+          { error: 'Sem energia para atacar!' },
+          { status: 400 }
+        );
+      }
+
       // Calcular dano (simples: 10-20)
       const dano = Math.floor(Math.random() * 11) + 10;
 
-      // Atualizar HP do oponente
+      // Atualizar HP do oponente e energia do atacante
       const opponentHpField = isHost ? 'guest_hp' : 'host_hp';
       const newOpponentHp = Math.max(0, (isHost ? room.guest_hp : room.host_hp) - dano);
+      const newEnergy = currentEnergy - 1;
 
       const updates = {
         [opponentHpField]: newOpponentHp,
+        [myEnergyField]: newEnergy,
         current_turn: isHost ? 'guest' : 'host' // Passa o turno
       };
 
@@ -171,6 +186,7 @@ export async function POST(request) {
         success: true,
         dano,
         newOpponentHp,
+        newEnergy,
         finished: newOpponentHp <= 0,
         winner: newOpponentHp <= 0 ? role : null
       });
