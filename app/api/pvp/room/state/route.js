@@ -157,20 +157,60 @@ export async function POST(request) {
       // Verificar energia
       const myEnergyField = isHost ? 'host_energy' : 'guest_energy';
       const currentEnergy = room[myEnergyField] ?? 100;
-      if (currentEnergy < 1) {
+      if (currentEnergy < 10) {
         return NextResponse.json(
-          { error: 'Sem energia para atacar!' },
+          { error: 'Energia insuficiente! (10 necessária)' },
           { status: 400 }
         );
       }
 
-      // Calcular dano (simples: 10-20)
-      const dano = Math.floor(Math.random() * 11) + 10;
+      // Pegar stats dos avatares
+      const myAvatar = isHost ? room.host_avatar : room.guest_avatar;
+      const opponentAvatar = isHost ? room.guest_avatar : room.host_avatar;
+      const myExaustao = isHost ? (room.host_exaustao ?? 0) : (room.guest_exaustao ?? 0);
+
+      // Stats do atacante e defensor
+      const forca = myAvatar?.forca ?? 10;
+      const foco = myAvatar?.foco ?? 10;
+      const resistenciaOponente = opponentAvatar?.resistencia ?? 10;
+      const vinculo = myAvatar?.vinculo ?? 0;
+
+      // Calcular dano base: 5 + (força × 0.5) + random(1-5)
+      let dano = 5 + (forca * 0.5) + Math.floor(Math.random() * 5) + 1;
+
+      // Redução por defesa: - (resistência × 0.3)
+      dano = dano - (resistenciaOponente * 0.3);
+
+      // Penalidade de exaustão
+      let penalidade = 1.0;
+      if (myExaustao >= 80) penalidade = 0.5;
+      else if (myExaustao >= 60) penalidade = 0.75;
+      else if (myExaustao >= 40) penalidade = 0.95;
+      dano = dano * penalidade;
+
+      // Bônus de vínculo
+      let bonusVinculo = 1.0;
+      if (vinculo >= 80) bonusVinculo = 1.2;
+      else if (vinculo >= 60) bonusVinculo = 1.15;
+      else if (vinculo >= 40) bonusVinculo = 1.1;
+      dano = dano * bonusVinculo;
+
+      // Chance de crítico: 5% + (foco × 0.3%)
+      const chanceCritico = 5 + (foco * 0.3);
+      const rolou = Math.random() * 100;
+      const critico = rolou < chanceCritico;
+
+      if (critico) {
+        dano = dano * 2;
+      }
+
+      // Garantir dano mínimo de 1
+      dano = Math.max(1, Math.floor(dano));
 
       // Atualizar HP do oponente e energia do atacante
       const opponentHpField = isHost ? 'guest_hp' : 'host_hp';
       const newOpponentHp = Math.max(0, (isHost ? room.guest_hp : room.host_hp) - dano);
-      const newEnergy = currentEnergy - 1;
+      const newEnergy = currentEnergy - 10;
 
       const updates = {
         [opponentHpField]: newOpponentHp,
@@ -189,6 +229,7 @@ export async function POST(request) {
       return NextResponse.json({
         success: true,
         dano,
+        critico,
         newOpponentHp,
         newEnergy,
         finished: newOpponentHp <= 0,

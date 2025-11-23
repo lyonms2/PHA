@@ -295,8 +295,8 @@ function DuelContent() {
     if (!roomId || !visitorId || !isYourTurn) return;
 
     // Verificar energia
-    if (myEnergy < 1) {
-      addLog('❌ Sem energia para atacar!');
+    if (myEnergy < 10) {
+      addLog('❌ Energia insuficiente! (10 necessária)');
       return;
     }
 
@@ -309,9 +309,13 @@ function DuelContent() {
       const data = await res.json();
 
       if (data.success) {
-        addLog(`⚔️ Você atacou! Dano: ${data.dano} | -1 energia`);
+        if (data.critico) {
+          addLog(`💥 CRÍTICO! Dano: ${data.dano} | -10 ⚡`);
+        } else {
+          addLog(`⚔️ Você atacou! Dano: ${data.dano} | -10 ⚡`);
+        }
         setOpponentHp(data.newOpponentHp);
-        setMyEnergy(prev => Math.max(0, prev - 1));
+        setMyEnergy(data.newEnergy);
 
         if (data.finished) {
           addLog('🏆 VOCÊ VENCEU!');
@@ -571,14 +575,14 @@ function DuelContent() {
         {room?.status === 'active' && (
           <button
             onClick={atacar}
-            disabled={!isYourTurn || myEnergy < 1}
+            disabled={!isYourTurn || myEnergy < 10}
             className={`w-full py-6 rounded-lg font-bold text-2xl transition-all ${
-              isYourTurn && myEnergy >= 1
+              isYourTurn && myEnergy >= 10
                 ? 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 transform hover:scale-105'
                 : 'bg-gray-700 cursor-not-allowed opacity-50'
             }`}
           >
-            ⚔️ ATACAR! (1 ⚡)
+            ⚔️ ATACAR! (10 ⚡)
           </button>
         )}
 
