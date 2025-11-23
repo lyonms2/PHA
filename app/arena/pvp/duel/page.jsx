@@ -2,14 +2,19 @@
 
 import { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import AvatarSVG from "../../../components/AvatarSVG";
+import { calcularPoderTotal } from "@/lib/gameLogic";
 
 function DuelContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const roomIdParam = searchParams.get('room');
+  const minPower = parseInt(searchParams.get('minPower') || '0');
+  const maxPower = parseInt(searchParams.get('maxPower') || '999');
 
   const [visitorId, setVisitorId] = useState(null);
   const [meuNome, setMeuNome] = useState('');
+  const [meuAvatar, setMeuAvatar] = useState(null);
   const [roomId, setRoomId] = useState(roomIdParam);
   const [players, setPlayers] = useState([]);
   const [pendingChallenge, setPendingChallenge] = useState(null);
@@ -19,14 +24,17 @@ function DuelContent() {
   const [isYourTurn, setIsYourTurn] = useState(false);
   const [myHp, setMyHp] = useState(100);
   const [opponentHp, setOpponentHp] = useState(100);
+  const [myEnergy, setMyEnergy] = useState(10);
+  const [opponentEnergy, setOpponentEnergy] = useState(10);
   const [opponentNome, setOpponentNome] = useState('');
+  const [opponentAvatar, setOpponentAvatar] = useState(null);
   const [log, setLog] = useState([]);
   const [inLobby, setInLobby] = useState(false);
 
   const pollingRef = useRef(null);
   const lastTurnRef = useRef(null);
 
-  // Carregar usuário
+  // Carregar usuário e avatar
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (!userData) {
@@ -36,7 +44,23 @@ function DuelContent() {
     const parsed = JSON.parse(userData);
     setVisitorId(parsed.visitorId || parsed.id);
     setMeuNome(parsed.nome_operacao || parsed.nome || 'Jogador');
+
+    // Carregar avatar ativo
+    carregarAvatar(parsed.id);
   }, [router]);
+
+  const carregarAvatar = async (userId) => {
+    try {
+      const response = await fetch(`/api/meus-avatares?userId=${userId}`);
+      const data = await response.json();
+      if (response.ok) {
+        const ativo = data.avatares.find(av => av.ativo && av.vivo);
+        setMeuAvatar(ativo || null);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar avatar:", error);
+    }
+  };
 
   // Polling do lobby
   useEffect(() => {
@@ -44,7 +68,7 @@ function DuelContent() {
 
     const pollLobby = async () => {
       try {
-        const res = await fetch(`/api/pvp/lobby?visitorId=${visitorId}`);
+        const res = await fetch(`/api/pvp/lobby?visitorId=${visitorId}&minPower=${minPower}&maxPower=${maxPower}`);
         const data = await res.json();
 
         if (data.success) {
@@ -79,7 +103,7 @@ function DuelContent() {
     return () => {
       if (pollingRef.current) clearInterval(pollingRef.current);
     };
-  }, [visitorId, inLobby, roomId]);
+  }, [visitorId, inLobby, roomId, minPower, maxPower]);
 
   // Polling da batalha
   useEffect(() => {
@@ -96,7 +120,10 @@ function DuelContent() {
           setIsYourTurn(data.isYourTurn);
           setMyHp(data.myHp);
           setOpponentHp(data.opponentHp);
+          setMyEnergy(data.myEnergy || 10);
+          setOpponentEnergy(data.opponentEnergy || 10);
           setOpponentNome(data.opponentNome || 'Oponente');
+          setOpponentAvatar(data.opponentAvatar || null);
 
           // Detectar mudança de turno
           if (lastTurnRef.current && lastTurnRef.current !== data.room.currentTurn) {
@@ -148,13 +175,26 @@ function DuelContent() {
 
   // Entrar no lobby
   const entrarLobby = async () => {
-    if (!visitorId) return;
+    if (!visitorId || !meuAvatar) return;
+
+    // Verificar se poder está na faixa
+    const poder = calcularPoderTotal(meuAvatar);
+    if (poder < minPower || poder > maxPower) {
+      addLog(`❌ Seu avatar (Poder ${poder}) não pode entrar nesta sala (${minPower}-${maxPower})`);
+      return;
+    }
 
     try {
       const res = await fetch('/api/pvp/lobby', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ visitorId, action: 'enter' })
+        body: JSON.stringify({
+          visitorId,
+          action: 'enter',
+          minPower,
+          maxPower,
+          avatar: meuAvatar
+        })
       });
       const data = await res.json();
 
@@ -246,6 +286,12 @@ function DuelContent() {
   const atacar = async () => {
     if (!roomId || !visitorId || !isYourTurn) return;
 
+    // Verificar energia
+    if (myEnergy < 1) {
+      addLog('❌ Sem energia para atacar!');
+      return;
+    }
+
     try {
       const res = await fetch('/api/pvp/room/state', {
         method: 'POST',
@@ -255,8 +301,9 @@ function DuelContent() {
       const data = await res.json();
 
       if (data.success) {
-        addLog(`⚔️ Você atacou! Dano: ${data.dano}`);
+        addLog(`⚔️ Você atacou! Dano: ${data.dano} | -1 energia`);
         setOpponentHp(data.newOpponentHp);
+        setMyEnergy(prev => Math.max(0, prev - 1));
 
         if (data.finished) {
           addLog('🏆 VOCÊ VENCEU!');
@@ -268,6 +315,14 @@ function DuelContent() {
       console.error('Erro ao atacar:', err);
       addLog('❌ Erro ao atacar');
     }
+  };
+
+  // Nome da sala baseado no poder
+  const getNomeSala = () => {
+    if (maxPower <= 39) return '🌱 Sala Iniciante';
+    if (maxPower <= 60) return '⚡ Sala Intermediário';
+    if (maxPower <= 90) return '🔥 Sala Avançado';
+    return '👑 Sala Elite';
   };
 
   // Tela inicial - entrar no lobby
@@ -282,19 +337,43 @@ function DuelContent() {
             ← Voltar
           </button>
 
-          <h1 className="text-3xl font-bold mb-8">⚔️ DUELO PvP</h1>
+          <h1 className="text-3xl font-bold mb-2">{getNomeSala()}</h1>
+          <p className="text-slate-400 mb-6">Poder: {minPower} - {maxPower}</p>
+
+          {meuAvatar && (
+            <div className="bg-slate-900 border border-purple-500/50 rounded-lg p-4 mb-6">
+              <div className="flex items-center gap-4">
+                <AvatarSVG avatar={meuAvatar} tamanho={60} />
+                <div className="text-left">
+                  <div className="font-bold text-white">{meuAvatar.nome}</div>
+                  <div className="text-sm text-cyan-400">
+                    Poder: {calcularPoderTotal(meuAvatar)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="bg-slate-900 border border-orange-500 rounded-lg p-8">
             <p className="text-slate-300 mb-6">
-              Entre no lobby para ver outros jogadores e desafiá-los para um duelo!
+              Entre no lobby para ver outros jogadores e desafiá-los!
             </p>
             <button
               onClick={entrarLobby}
-              className="px-8 py-4 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 rounded-lg font-bold text-xl"
+              disabled={!meuAvatar}
+              className="px-8 py-4 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 disabled:from-gray-600 disabled:to-gray-600 rounded-lg font-bold text-xl"
             >
               🎮 ENTRAR NO LOBBY
             </button>
           </div>
+
+          {log.length > 0 && (
+            <div className="mt-4 bg-slate-900/50 rounded-lg p-3 border border-slate-700">
+              {log.map((msg, i) => (
+                <div key={i} className="text-sm text-slate-300 py-1">{msg}</div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -306,7 +385,10 @@ function DuelContent() {
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 text-gray-100 p-6">
         <div className="max-w-md mx-auto">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">⚔️ LOBBY</h1>
+            <div>
+              <h1 className="text-2xl font-bold">{getNomeSala()}</h1>
+              <p className="text-xs text-slate-400">Poder: {minPower} - {maxPower}</p>
+            </div>
             <button
               onClick={sairLobby}
               className="text-red-400 hover:text-red-300 text-sm"
@@ -357,13 +439,21 @@ function DuelContent() {
                     key={player.id}
                     className="flex items-center justify-between bg-slate-800 rounded p-3"
                   >
-                    <div>
-                      <span className="font-bold text-white">{player.nome}</span>
-                      {player.status === 'challenging' && (
-                        <span className="text-xs text-yellow-400 ml-2">
-                          (desafiando...)
-                        </span>
+                    <div className="flex items-center gap-3">
+                      {player.avatar && (
+                        <AvatarSVG avatar={player.avatar} tamanho={40} />
                       )}
+                      <div>
+                        <span className="font-bold text-white">{player.nome}</span>
+                        {player.poder && (
+                          <div className="text-xs text-cyan-400">Poder: {player.poder}</div>
+                        )}
+                        {player.status === 'challenging' && (
+                          <span className="text-xs text-yellow-400">
+                            (desafiando...)
+                          </span>
+                        )}
+                      </div>
                     </div>
                     {player.status === 'waiting' && (
                       <button
@@ -416,31 +506,43 @@ function DuelContent() {
               : '🟠 TURNO DO OPONENTE...'}
         </div>
 
-        {/* Barras de HP */}
+        {/* Cards dos Jogadores */}
         <div className="space-y-4 mb-6">
-          {/* Seu HP */}
+          {/* Seu Card */}
           <div className="bg-slate-900 rounded-lg p-4 border border-blue-500">
-            <div className="flex justify-between mb-2">
-              <span className="font-bold text-blue-400">VOCÊ</span>
-              <span className="text-white font-mono">{myHp}/100</span>
+            <div className="flex items-center gap-3 mb-3">
+              {meuAvatar && <AvatarSVG avatar={meuAvatar} tamanho={50} />}
+              <div className="flex-1">
+                <span className="font-bold text-blue-400">VOCÊ</span>
+                <div className="flex gap-4 text-sm">
+                  <span className="text-white font-mono">❤️ {myHp}/100</span>
+                  <span className="text-yellow-400 font-mono">⚡ {myEnergy}</span>
+                </div>
+              </div>
             </div>
-            <div className="w-full bg-slate-700 rounded-full h-6 overflow-hidden">
+            <div className="w-full bg-slate-700 rounded-full h-4 overflow-hidden">
               <div
-                className="bg-blue-500 h-6 transition-all duration-500"
+                className="bg-blue-500 h-4 transition-all duration-500"
                 style={{ width: `${myHp}%` }}
               />
             </div>
           </div>
 
-          {/* HP do Oponente */}
+          {/* Card do Oponente */}
           <div className="bg-slate-900 rounded-lg p-4 border border-red-500">
-            <div className="flex justify-between mb-2">
-              <span className="font-bold text-red-400">{opponentNome}</span>
-              <span className="text-white font-mono">{opponentHp}/100</span>
+            <div className="flex items-center gap-3 mb-3">
+              {opponentAvatar && <AvatarSVG avatar={opponentAvatar} tamanho={50} />}
+              <div className="flex-1">
+                <span className="font-bold text-red-400">{opponentNome}</span>
+                <div className="flex gap-4 text-sm">
+                  <span className="text-white font-mono">❤️ {opponentHp}/100</span>
+                  <span className="text-yellow-400 font-mono">⚡ {opponentEnergy}</span>
+                </div>
+              </div>
             </div>
-            <div className="w-full bg-slate-700 rounded-full h-6 overflow-hidden">
+            <div className="w-full bg-slate-700 rounded-full h-4 overflow-hidden">
               <div
-                className="bg-red-500 h-6 transition-all duration-500"
+                className="bg-red-500 h-4 transition-all duration-500"
                 style={{ width: `${opponentHp}%` }}
               />
             </div>
@@ -451,14 +553,14 @@ function DuelContent() {
         {room?.status === 'active' && (
           <button
             onClick={atacar}
-            disabled={!isYourTurn}
+            disabled={!isYourTurn || myEnergy < 1}
             className={`w-full py-6 rounded-lg font-bold text-2xl transition-all ${
-              isYourTurn
+              isYourTurn && myEnergy >= 1
                 ? 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 transform hover:scale-105'
                 : 'bg-gray-700 cursor-not-allowed opacity-50'
             }`}
           >
-            ⚔️ ATACAR!
+            ⚔️ ATACAR! (1 ⚡)
           </button>
         )}
 
