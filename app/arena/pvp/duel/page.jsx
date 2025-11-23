@@ -309,11 +309,15 @@ function DuelContent() {
       const data = await res.json();
 
       if (data.success) {
-        if (data.critico) {
-          addLog(`💥 CRÍTICO! Dano: ${data.dano} | -10 ⚡`);
+        let msg = '';
+        if (data.bloqueado) {
+          msg = `🛡️ Bloqueado! Dano: ${data.dano}`;
+        } else if (data.critico) {
+          msg = `💥 CRÍTICO! Dano: ${data.dano}`;
         } else {
-          addLog(`⚔️ Você atacou! Dano: ${data.dano} | -10 ⚡`);
+          msg = `⚔️ Você atacou! Dano: ${data.dano}`;
         }
+        addLog(`${msg} | -10 ⚡`);
         setOpponentHp(data.newOpponentHp);
         setMyEnergy(data.newEnergy);
 
@@ -326,6 +330,30 @@ function DuelContent() {
     } catch (err) {
       console.error('Erro ao atacar:', err);
       addLog('❌ Erro ao atacar');
+    }
+  };
+
+  // Defender
+  const defender = async () => {
+    if (!roomId || !visitorId || !isYourTurn) return;
+
+    try {
+      const res = await fetch('/api/pvp/room/state', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId, visitorId, action: 'defend' })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        addLog(`🛡️ Você defendeu! +${data.energyGained} ⚡`);
+        setMyEnergy(data.newEnergy);
+      } else {
+        addLog(`❌ ${data.error}`);
+      }
+    } catch (err) {
+      console.error('Erro ao defender:', err);
+      addLog('❌ Erro ao defender');
     }
   };
 
@@ -571,19 +599,34 @@ function DuelContent() {
           </div>
         </div>
 
-        {/* Botão de Ataque */}
+        {/* Botões de Ação */}
         {room?.status === 'active' && (
-          <button
-            onClick={atacar}
-            disabled={!isYourTurn || myEnergy < 10}
-            className={`w-full py-6 rounded-lg font-bold text-2xl transition-all ${
-              isYourTurn && myEnergy >= 10
-                ? 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 transform hover:scale-105'
-                : 'bg-gray-700 cursor-not-allowed opacity-50'
-            }`}
-          >
-            ⚔️ ATACAR! (10 ⚡)
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={atacar}
+              disabled={!isYourTurn || myEnergy < 10}
+              className={`flex-1 py-4 rounded-lg font-bold text-xl transition-all ${
+                isYourTurn && myEnergy >= 10
+                  ? 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 transform hover:scale-105'
+                  : 'bg-gray-700 cursor-not-allowed opacity-50'
+              }`}
+            >
+              ⚔️ Atacar
+              <div className="text-xs opacity-75">-10 ⚡</div>
+            </button>
+            <button
+              onClick={defender}
+              disabled={!isYourTurn}
+              className={`flex-1 py-4 rounded-lg font-bold text-xl transition-all ${
+                isYourTurn
+                  ? 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 transform hover:scale-105'
+                  : 'bg-gray-700 cursor-not-allowed opacity-50'
+              }`}
+            >
+              🛡️ Defender
+              <div className="text-xs opacity-75">+20 ⚡</div>
+            </button>
+          </div>
         )}
 
         {/* Botão Voltar */}

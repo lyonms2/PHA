@@ -207,14 +207,22 @@ export async function POST(request) {
       // Garantir dano mínimo de 1
       dano = Math.max(1, Math.floor(dano));
 
+      // Verificar se oponente está defendendo (reduz dano em 50%)
+      const opponentDefending = isHost ? room.guest_defending : room.host_defending;
+      if (opponentDefending) {
+        dano = Math.floor(dano * 0.5);
+      }
+
       // Atualizar HP do oponente e energia do atacante
       const opponentHpField = isHost ? 'guest_hp' : 'host_hp';
+      const opponentDefendingField = isHost ? 'guest_defending' : 'host_defending';
       const newOpponentHp = Math.max(0, (isHost ? room.guest_hp : room.host_hp) - dano);
       const newEnergy = currentEnergy - 10;
 
       const updates = {
         [opponentHpField]: newOpponentHp,
         [myEnergyField]: newEnergy,
+        [opponentDefendingField]: false, // Reset defesa do oponente após ser atacado
         current_turn: isHost ? 'guest' : 'host' // Passa o turno
       };
 
@@ -230,10 +238,51 @@ export async function POST(request) {
         success: true,
         dano,
         critico,
+        bloqueado: opponentDefending,
         newOpponentHp,
         newEnergy,
         finished: newOpponentHp <= 0,
         winner: newOpponentHp <= 0 ? role : null
+      });
+    }
+
+    // Ação: defender
+    if (action === 'defend') {
+      // Verificar se é seu turno
+      if (room.current_turn !== role) {
+        return NextResponse.json(
+          { error: 'Não é seu turno!' },
+          { status: 400 }
+        );
+      }
+
+      // Verificar se sala está ativa
+      if (room.status !== 'active') {
+        return NextResponse.json(
+          { error: 'Batalha não está ativa' },
+          { status: 400 }
+        );
+      }
+
+      const myEnergyField = isHost ? 'host_energy' : 'guest_energy';
+      const myDefendingField = isHost ? 'host_defending' : 'guest_defending';
+      const currentEnergy = room[myEnergyField] ?? 100;
+
+      // Recuperar energia (+20, max 100)
+      const newEnergy = Math.min(100, currentEnergy + 20);
+
+      const updates = {
+        [myEnergyField]: newEnergy,
+        [myDefendingField]: true, // Ativa defesa
+        current_turn: isHost ? 'guest' : 'host' // Passa o turno
+      };
+
+      await updateDocument('pvp_duel_rooms', roomId, updates);
+
+      return NextResponse.json({
+        success: true,
+        newEnergy,
+        energyGained: newEnergy - currentEnergy
       });
     }
 
