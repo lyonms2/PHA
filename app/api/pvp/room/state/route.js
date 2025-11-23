@@ -61,9 +61,13 @@ export async function GET(request) {
       role,
       isYourTurn,
       myHp: isHost ? room.host_hp : room.guest_hp,
+      myHpMax: isHost ? (room.host_hp_max ?? 100) : (room.guest_hp_max ?? 100),
+      myExaustao: isHost ? (room.host_exaustao ?? 0) : (room.guest_exaustao ?? 0),
       opponentHp: isHost ? room.guest_hp : room.host_hp,
-      myEnergy: isHost ? (room.host_energy ?? 10) : (room.guest_energy ?? 10),
-      opponentEnergy: isHost ? (room.guest_energy ?? 10) : (room.host_energy ?? 10),
+      opponentHpMax: isHost ? (room.guest_hp_max ?? 100) : (room.host_hp_max ?? 100),
+      opponentExaustao: isHost ? (room.guest_exaustao ?? 0) : (room.host_exaustao ?? 0),
+      myEnergy: isHost ? (room.host_energy ?? 100) : (room.guest_energy ?? 100),
+      opponentEnergy: isHost ? (room.guest_energy ?? 100) : (room.host_energy ?? 100),
       opponentNome: isHost ? room.guest_nome : room.host_nome,
       opponentAvatar: isHost ? room.guest_avatar : room.host_avatar
     });
@@ -152,7 +156,7 @@ export async function POST(request) {
 
       // Verificar energia
       const myEnergyField = isHost ? 'host_energy' : 'guest_energy';
-      const currentEnergy = room[myEnergyField] ?? 10;
+      const currentEnergy = room[myEnergyField] ?? 100;
       if (currentEnergy < 1) {
         return NextResponse.json(
           { error: 'Sem energia para atacar!' },

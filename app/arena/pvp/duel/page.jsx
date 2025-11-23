@@ -23,9 +23,13 @@ function DuelContent() {
   const [role, setRole] = useState(null);
   const [isYourTurn, setIsYourTurn] = useState(false);
   const [myHp, setMyHp] = useState(100);
+  const [myHpMax, setMyHpMax] = useState(100);
+  const [myExaustao, setMyExaustao] = useState(0);
   const [opponentHp, setOpponentHp] = useState(100);
-  const [myEnergy, setMyEnergy] = useState(10);
-  const [opponentEnergy, setOpponentEnergy] = useState(10);
+  const [opponentHpMax, setOpponentHpMax] = useState(100);
+  const [opponentExaustao, setOpponentExaustao] = useState(0);
+  const [myEnergy, setMyEnergy] = useState(100);
+  const [opponentEnergy, setOpponentEnergy] = useState(100);
   const [opponentNome, setOpponentNome] = useState('');
   const [opponentAvatar, setOpponentAvatar] = useState(null);
   const [log, setLog] = useState([]);
@@ -119,7 +123,11 @@ function DuelContent() {
           setRole(data.role);
           setIsYourTurn(data.isYourTurn);
           setMyHp(data.myHp);
+          setMyHpMax(data.myHpMax || 100);
+          setMyExaustao(data.myExaustao || 0);
           setOpponentHp(data.opponentHp);
+          setOpponentHpMax(data.opponentHpMax || 100);
+          setOpponentExaustao(data.opponentExaustao || 0);
           setMyEnergy(data.myEnergy || 10);
           setOpponentEnergy(data.opponentEnergy || 10);
           setOpponentNome(data.opponentNome || 'Oponente');
@@ -513,9 +521,14 @@ function DuelContent() {
             <div className="flex items-center gap-3 mb-3">
               {meuAvatar && <AvatarSVG avatar={meuAvatar} tamanho={50} />}
               <div className="flex-1">
-                <span className="font-bold text-blue-400">VOCÊ</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-blue-400">VOCÊ</span>
+                  {myExaustao > 0 && (
+                    <span className="text-xs text-orange-400">😰 {myExaustao}%</span>
+                  )}
+                </div>
                 <div className="flex gap-4 text-sm">
-                  <span className="text-white font-mono">❤️ {myHp}/100</span>
+                  <span className="text-white font-mono">❤️ {myHp}/{myHpMax}</span>
                   <span className="text-yellow-400 font-mono">⚡ {myEnergy}</span>
                 </div>
               </div>
@@ -523,7 +536,7 @@ function DuelContent() {
             <div className="w-full bg-slate-700 rounded-full h-4 overflow-hidden">
               <div
                 className="bg-blue-500 h-4 transition-all duration-500"
-                style={{ width: `${myHp}%` }}
+                style={{ width: `${(myHp / myHpMax) * 100}%` }}
               />
             </div>
           </div>
@@ -533,9 +546,14 @@ function DuelContent() {
             <div className="flex items-center gap-3 mb-3">
               {opponentAvatar && <AvatarSVG avatar={opponentAvatar} tamanho={50} />}
               <div className="flex-1">
-                <span className="font-bold text-red-400">{opponentNome}</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-red-400">{opponentNome}</span>
+                  {opponentExaustao > 0 && (
+                    <span className="text-xs text-orange-400">😰 {opponentExaustao}%</span>
+                  )}
+                </div>
                 <div className="flex gap-4 text-sm">
-                  <span className="text-white font-mono">❤️ {opponentHp}/100</span>
+                  <span className="text-white font-mono">❤️ {opponentHp}/{opponentHpMax}</span>
                   <span className="text-yellow-400 font-mono">⚡ {opponentEnergy}</span>
                 </div>
               </div>
@@ -543,7 +561,7 @@ function DuelContent() {
             <div className="w-full bg-slate-700 rounded-full h-4 overflow-hidden">
               <div
                 className="bg-red-500 h-4 transition-all duration-500"
-                style={{ width: `${opponentHp}%` }}
+                style={{ width: `${(opponentHp / opponentHpMax) * 100}%` }}
               />
             </div>
           </div>
