@@ -366,6 +366,80 @@ function DuelContent() {
     }
   };
 
+  // Usar habilidade
+  const usarHabilidade = async (index) => {
+    if (!roomId || !visitorId || !isYourTurn) return;
+
+    const hab = meuAvatar?.habilidades?.[index];
+    if (!hab) return;
+
+    const custoEnergia = hab.custo_energia || 20;
+    if (myEnergy < custoEnergia) {
+      addLog(`❌ Energia insuficiente! (${custoEnergia} necessária)`);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/pvp/room/state', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roomId,
+          visitorId,
+          action: 'ability',
+          abilityIndex: index
+        })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        let msg = `✨ ${hab.nome}!`;
+
+        if (data.dano > 0) {
+          if (data.critico) {
+            msg += ` 💥 CRÍTICO! Dano: ${data.dano}`;
+          } else {
+            msg += ` Dano: ${data.dano}`;
+          }
+        }
+
+        if (data.cura > 0) {
+          msg += ` ❤️ Curou: ${data.cura}`;
+        }
+
+        if (data.elemental === 'vantagem') {
+          msg += ' 🔥 Super efetivo!';
+        } else if (data.elemental === 'desvantagem') {
+          msg += ' 💨 Pouco efetivo...';
+        }
+
+        if (data.efeito) {
+          msg += ` | ${data.efeito}`;
+        }
+
+        msg += ` | -${custoEnergia} ⚡`;
+        addLog(msg);
+
+        if (data.newOpponentHp !== undefined) {
+          setOpponentHp(data.newOpponentHp);
+        }
+        if (data.newMyHp !== undefined) {
+          setMyHp(data.newMyHp);
+        }
+        setMyEnergy(data.newEnergy);
+
+        if (data.finished) {
+          addLog('🏆 VOCÊ VENCEU!');
+        }
+      } else {
+        addLog(`❌ ${data.error}`);
+      }
+    } catch (err) {
+      console.error('Erro ao usar habilidade:', err);
+      addLog('❌ Erro ao usar habilidade');
+    }
+  };
+
   // Nome da sala baseado no poder
   const getNomeSala = () => {
     if (maxPower <= 39) return '🌱 Sala Iniciante';
@@ -630,31 +704,58 @@ function DuelContent() {
 
         {/* Botões de Ação */}
         {room?.status === 'active' && (
-          <div className="flex gap-3">
-            <button
-              onClick={atacar}
-              disabled={!isYourTurn || myEnergy < 10}
-              className={`flex-1 py-4 rounded-lg font-bold text-xl transition-all ${
-                isYourTurn && myEnergy >= 10
-                  ? 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 transform hover:scale-105'
-                  : 'bg-gray-700 cursor-not-allowed opacity-50'
-              }`}
-            >
-              ⚔️ Atacar
-              <div className="text-xs opacity-75">-10 ⚡</div>
-            </button>
-            <button
-              onClick={defender}
-              disabled={!isYourTurn}
-              className={`flex-1 py-4 rounded-lg font-bold text-xl transition-all ${
-                isYourTurn
-                  ? 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 transform hover:scale-105'
-                  : 'bg-gray-700 cursor-not-allowed opacity-50'
-              }`}
-            >
-              🛡️ Defender
-              <div className="text-xs opacity-75">+20 ⚡</div>
-            </button>
+          <div className="space-y-3">
+            {/* Ataque e Defesa */}
+            <div className="flex gap-3">
+              <button
+                onClick={atacar}
+                disabled={!isYourTurn || myEnergy < 10}
+                className={`flex-1 py-4 rounded-lg font-bold text-xl transition-all ${
+                  isYourTurn && myEnergy >= 10
+                    ? 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 transform hover:scale-105'
+                    : 'bg-gray-700 cursor-not-allowed opacity-50'
+                }`}
+              >
+                ⚔️ Atacar
+                <div className="text-xs opacity-75">-10 ⚡</div>
+              </button>
+              <button
+                onClick={defender}
+                disabled={!isYourTurn}
+                className={`flex-1 py-4 rounded-lg font-bold text-xl transition-all ${
+                  isYourTurn
+                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 transform hover:scale-105'
+                    : 'bg-gray-700 cursor-not-allowed opacity-50'
+                }`}
+              >
+                🛡️ Defender
+                <div className="text-xs opacity-75">+20 ⚡</div>
+              </button>
+            </div>
+
+            {/* Habilidades */}
+            {meuAvatar?.habilidades && meuAvatar.habilidades.length > 0 && (
+              <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-700">
+                <div className="text-xs font-bold text-slate-400 mb-2">✨ HABILIDADES</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {meuAvatar.habilidades.slice(0, 5).map((hab, index) => (
+                    <button
+                      key={index}
+                      onClick={() => usarHabilidade(index)}
+                      disabled={!isYourTurn || myEnergy < (hab.custo_energia || 20)}
+                      className={`py-2 px-3 rounded text-sm font-bold transition-all text-left ${
+                        isYourTurn && myEnergy >= (hab.custo_energia || 20)
+                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500'
+                          : 'bg-gray-700 cursor-not-allowed opacity-50'
+                      }`}
+                    >
+                      <div className="truncate">{hab.nome}</div>
+                      <div className="text-xs opacity-75">-{hab.custo_energia || 20} ⚡</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
