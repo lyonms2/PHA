@@ -162,8 +162,17 @@ export async function POST(request) {
           hp_novo: novoHP,
           hp_maximo: hpMaximo
         };
-      } else if (efeito === 'exaustao' || efeito === 'cura_exaustao') {
+      } else if (efeito === 'exaustao' || efeito === 'cura_exaustao' || efeito === 'exaustão') {
         const exaustaoAtual = avatarAtivo.exaustao || 0;
+
+        // Verificar se já está com exaustão zerada
+        if (exaustaoAtual <= 0) {
+          return Response.json(
+            { message: "Avatar não está com exaustão!" },
+            { status: 400 }
+          );
+        }
+
         // valor_efeito negativo = reduz exaustão
         const reducao = item.valor_efeito < 0 ? Math.abs(item.valor_efeito) : item.valor_efeito;
         novaExaustao = Math.max(0, exaustaoAtual - reducao);
@@ -229,7 +238,7 @@ export async function POST(request) {
           hp_atual: novoHP,
           updated_at: new Date().toISOString()
         });
-      } else if (efeito === 'exaustao' || efeito === 'cura_exaustao') {
+      } else if (efeito === 'exaustao' || efeito === 'cura_exaustao' || efeito === 'exaustão') {
         await updateDocument('avatares', avatarAtivo.id, {
           exaustao: novaExaustao,
           updated_at: new Date().toISOString()

@@ -538,7 +538,21 @@ function BatalhaContent() {
       setEstado(resultado.novoEstado);
 
       // Salvar estado atualizado no banco (anti-abandono)
-      atualizarEstadoBatalha(novoEstado);
+      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      if (userData.id && resultado.novoEstado.jogador?.id) {
+        fetch('/api/batalha/ativa', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: userData.id,
+            avatarId: resultado.novoEstado.jogador.id,
+            acao: 'atualizar',
+            dados: {
+              estadoBatalha: resultado.novoEstado
+            }
+          })
+        }).catch(err => console.error('Erro ao atualizar estado batalha:', err));
+      }
 
     } catch (error) {
       console.error('Erro ao executar acao:', error);

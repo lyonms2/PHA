@@ -69,7 +69,9 @@ export async function GET(request) {
       myEnergy: isHost ? (room.host_energy ?? 100) : (room.guest_energy ?? 100),
       opponentEnergy: isHost ? (room.guest_energy ?? 100) : (room.host_energy ?? 100),
       opponentNome: isHost ? room.guest_nome : room.host_nome,
-      opponentAvatar: isHost ? room.guest_avatar : room.host_avatar
+      opponentAvatar: isHost ? room.guest_avatar : room.host_avatar,
+      myEffects: isHost ? (room.host_effects || []) : (room.guest_effects || []),
+      opponentEffects: isHost ? (room.guest_effects || []) : (room.host_effects || [])
     });
 
   } catch (error) {
@@ -172,10 +174,41 @@ export async function POST(request) {
       // Stats do atacante e defensor
       const forca = myAvatar?.forca ?? 10;
       const foco = myAvatar?.foco ?? 10;
+      const agilidade = myAvatar?.agilidade ?? 10;
       const resistenciaOponente = opponentAvatar?.resistencia ?? 10;
+      const agilidadeOponente = opponentAvatar?.agilidade ?? 10;
       const vinculo = myAvatar?.vinculo ?? 0;
       const meuElemento = myAvatar?.elemento || 'Neutro';
       const elementoOponente = opponentAvatar?.elemento || 'Neutro';
+
+      // ===== TESTE DE AGILIDADE (HIT CHECK) =====
+      // Base 70% + diferença de agilidade * 2%
+      const chanceAcerto = Math.min(95, Math.max(30, 70 + (agilidade - agilidadeOponente) * 2));
+      const rolouAcerto = Math.random() * 100;
+      const acertou = rolouAcerto < chanceAcerto;
+
+      if (!acertou) {
+        // Errou o ataque - passa o turno sem causar dano
+        const newEnergy = currentEnergy - 10;
+        await updateDocument('pvp_duel_rooms', roomId, {
+          [myEnergyField]: newEnergy,
+          current_turn: isHost ? 'guest' : 'host'
+        });
+
+        return NextResponse.json({
+          success: true,
+          errou: true,
+          dano: 0,
+          newOpponentHp: isHost ? room.guest_hp : room.host_hp,
+          newEnergy,
+          detalhes: {
+            chanceAcerto: Math.floor(chanceAcerto),
+            agilidade,
+            agilidadeOponente,
+            rolouAcerto: Math.floor(rolouAcerto)
+          }
+        });
+      }
 
       // Calcular multiplicador elemental
       const calcularMultiplicadorElemental = (atacante, defensor) => {
@@ -202,23 +235,27 @@ export async function POST(request) {
       const elemental = calcularMultiplicadorElemental(meuElemento, elementoOponente);
 
       // Calcular dano base: 5 + (força × 0.5) + random(1-5)
-      let dano = 5 + (forca * 0.5) + Math.floor(Math.random() * 5) + 1;
+      const random = Math.floor(Math.random() * 5) + 1;
+      let danoBase = 5 + (forca * 0.5) + random;
 
       // Redução por defesa: - (resistência × 0.3)
-      dano = dano - (resistenciaOponente * 0.3);
+      const reducaoDefesa = resistenciaOponente * 0.3;
+      let dano = danoBase - reducaoDefesa;
 
       // Penalidade de exaustão
       let penalidade = 1.0;
-      if (myExaustao >= 80) penalidade = 0.5;
-      else if (myExaustao >= 60) penalidade = 0.75;
-      else if (myExaustao >= 40) penalidade = 0.95;
+      let penalidadeTexto = '';
+      if (myExaustao >= 80) { penalidade = 0.5; penalidadeTexto = '-50%'; }
+      else if (myExaustao >= 60) { penalidade = 0.75; penalidadeTexto = '-25%'; }
+      else if (myExaustao >= 40) { penalidade = 0.95; penalidadeTexto = '-5%'; }
       dano = dano * penalidade;
 
       // Bônus de vínculo
       let bonusVinculo = 1.0;
-      if (vinculo >= 80) bonusVinculo = 1.2;
-      else if (vinculo >= 60) bonusVinculo = 1.15;
-      else if (vinculo >= 40) bonusVinculo = 1.1;
+      let vinculoTexto = '';
+      if (vinculo >= 80) { bonusVinculo = 1.2; vinculoTexto = '+20%'; }
+      else if (vinculo >= 60) { bonusVinculo = 1.15; vinculoTexto = '+15%'; }
+      else if (vinculo >= 40) { bonusVinculo = 1.1; vinculoTexto = '+10%'; }
       dano = dano * bonusVinculo;
 
       // Multiplicador elemental
@@ -241,6 +278,19 @@ export async function POST(request) {
       if (opponentDefending) {
         dano = Math.floor(dano * 0.5);
       }
+
+      // Detalhes do cálculo para o log
+      const detalhes = {
+        danoBase: Math.floor(danoBase),
+        forca,
+        random,
+        reducaoDefesa: Math.floor(reducaoDefesa),
+        resistenciaOponente,
+        penalidadeExaustao: penalidadeTexto,
+        bonusVinculo: vinculoTexto,
+        elementalMult: elemental.mult,
+        chanceCritico: Math.floor(chanceCritico)
+      };
 
       // Atualizar HP do oponente e energia do atacante
       const opponentHpField = isHost ? 'guest_hp' : 'host_hp';
@@ -272,7 +322,8 @@ export async function POST(request) {
         newOpponentHp,
         newEnergy,
         finished: newOpponentHp <= 0,
-        winner: newOpponentHp <= 0 ? role : null
+        winner: newOpponentHp <= 0 ? role : null,
+        detalhes
       });
     }
 
@@ -429,21 +480,94 @@ export async function POST(request) {
         }
 
         dano = Math.max(1, Math.floor(dano));
+      }
 
-        // Efeitos de status
-        if (habilidade.efeitos_status && habilidade.efeitos_status.length > 0) {
-          const efeitoStatus = habilidade.efeitos_status[0];
-          efeito = `${efeitoStatus.tipo}: ${efeitoStatus.valor}`;
+      // ===== SISTEMA DE EFEITOS DE STATUS =====
+      const efeitosAplicados = [];
+      const opponentEffectsField = isHost ? 'guest_effects' : 'host_effects';
+      const myEffectsField = isHost ? 'host_effects' : 'guest_effects';
+      let currentOpponentEffects = room[opponentEffectsField] || [];
+      let currentMyEffects = room[myEffectsField] || [];
+
+      // Emojis por tipo de efeito
+      const efeitoEmojis = {
+        // Dano contínuo
+        'queimadura': '🔥', 'queimadura_intensa': '🔥🔥', 'veneno': '💀', 'sangramento': '🩸',
+        'eletrocutado': '⚡', 'afogamento': '💧', 'erosão': '🌪️',
+        // Buffs
+        'defesa_aumentada': '🛡️', 'velocidade': '💨', 'foco_aumentado': '🎯',
+        'forca_aumentada': '💪', 'regeneração': '✨', 'escudo': '🛡️',
+        // Debuffs
+        'lentidão': '🐌', 'fraqueza': '⬇️', 'confusão': '🌀',
+        'medo': '😱', 'cegueira': '🌑', 'silêncio': '🔇',
+        // Controle
+        'congelado': '❄️', 'atordoado': '💫', 'paralisado': '⚡⚡',
+        'imobilizado': '🔒', 'sono': '😴',
+        // Especiais
+        'fantasma': '👻', 'drenar': '🗡️', 'maldição': '💀',
+        'queimadura_contra_ataque': '🔥🛡️'
+      };
+
+      // Processar efeitos da habilidade
+      if (habilidade.efeitos_status && habilidade.efeitos_status.length > 0) {
+        for (const efeitoConfig of habilidade.efeitos_status) {
+          const tipoEfeito = typeof efeitoConfig === 'string' ? efeitoConfig : efeitoConfig.tipo || efeitoConfig;
+          const valorEfeito = typeof efeitoConfig === 'object' ? (efeitoConfig.valor || 10) : 10;
+          const duracaoEfeito = habilidade.duracao_efeito || 3;
+
+          // Determinar dano por turno baseado no tipo
+          let danoPorTurno = 0;
+          if (['queimadura', 'veneno', 'sangramento', 'eletrocutado', 'afogamento', 'erosão'].includes(tipoEfeito)) {
+            danoPorTurno = Math.floor(forca * 0.2) + 5;
+          }
+          if (tipoEfeito === 'queimadura_intensa') {
+            danoPorTurno = Math.floor(forca * 0.4) + 10;
+          }
+
+          const novoEfeito = {
+            tipo: tipoEfeito,
+            valor: valorEfeito,
+            danoPorTurno,
+            duracao: duracaoEfeito,
+            turnosRestantes: duracaoEfeito,
+            origem: meuElemento
+          };
+
+          // Aplicar no alvo correto
+          if (['defesa_aumentada', 'velocidade', 'foco_aumentado', 'forca_aumentada', 'regeneração', 'escudo'].includes(tipoEfeito)) {
+            // Buffs aplicam em si mesmo
+            currentMyEffects = [...currentMyEffects.filter(e => e.tipo !== tipoEfeito), novoEfeito];
+          } else {
+            // Debuffs e dano aplicam no oponente
+            currentOpponentEffects = [...currentOpponentEffects.filter(e => e.tipo !== tipoEfeito), novoEfeito];
+          }
+
+          const emoji = efeitoEmojis[tipoEfeito] || '✨';
+          efeitosAplicados.push(`${emoji} ${tipoEfeito}`);
         }
-      } else if (habilidade.tipo === 'cura') {
-        // Cura baseada em foco
+      }
+
+      // Montar mensagem de efeito
+      if (efeitosAplicados.length > 0) {
+        efeito = efeitosAplicados.join(', ');
+      }
+
+      // Tipo cura
+      if (habilidade.tipo === 'cura' || habilidade.tipo === 'Suporte') {
         const curaBase = habilidade.dano_base || 20;
         cura = curaBase + (foco * 0.5);
         cura = Math.floor(cura);
-      } else if (habilidade.tipo === 'buff') {
-        efeito = 'Buff aplicado!';
-      } else if (habilidade.tipo === 'debuff') {
-        efeito = 'Debuff aplicado!';
+        if (!efeito) efeito = '💚 Vida restaurada';
+      }
+
+      // Tipo buff puro
+      if (habilidade.tipo === 'buff' || habilidade.tipo === 'Defensiva') {
+        if (!efeito) efeito = '🛡️ Buff aplicado!';
+      }
+
+      // Tipo debuff puro
+      if (habilidade.tipo === 'debuff' || habilidade.tipo === 'Controle') {
+        if (!efeito) efeito = '⬇️ Debuff aplicado!';
       }
 
       // Atualizar valores
@@ -462,6 +586,8 @@ export async function POST(request) {
       const updates = {
         [myEnergyField]: newEnergy,
         [opponentDefendingField]: false,
+        [opponentEffectsField]: currentOpponentEffects,
+        [myEffectsField]: currentMyEffects,
         current_turn: isHost ? 'guest' : 'host'
       };
 
@@ -487,11 +613,77 @@ export async function POST(request) {
         critico,
         elemental: elemental.tipo,
         efeito,
+        efeitosAplicados,
         newOpponentHp: dano > 0 ? newOpponentHp : undefined,
         newMyHp: cura > 0 ? newMyHp : undefined,
         newEnergy,
         finished: newOpponentHp <= 0,
         winner: newOpponentHp <= 0 ? role : null
+      });
+    }
+
+    // Ação: processar efeitos (chamado no início do turno)
+    if (action === 'process_effects') {
+      const myEffectsField = isHost ? 'host_effects' : 'guest_effects';
+      const myHpField = isHost ? 'host_hp' : 'guest_hp';
+      let myEffects = room[myEffectsField] || [];
+      let currentHp = isHost ? room.host_hp : room.guest_hp;
+      const hpMax = isHost ? (room.host_hp_max || 100) : (room.guest_hp_max || 100);
+
+      const logsEfeitos = [];
+      let danoTotal = 0;
+      let curaTotal = 0;
+
+      // Processar cada efeito
+      const efeitosRestantes = [];
+      for (const ef of myEffects) {
+        // Aplicar dano contínuo
+        if (ef.danoPorTurno > 0) {
+          danoTotal += ef.danoPorTurno;
+          const emoji = ef.tipo === 'queimadura' ? '🔥' : ef.tipo === 'veneno' ? '💀' : '💥';
+          logsEfeitos.push(`${emoji} ${ef.tipo}: -${ef.danoPorTurno} HP`);
+        }
+
+        // Regeneração
+        if (ef.tipo === 'regeneração') {
+          const curaEfeito = Math.floor(hpMax * 0.05);
+          curaTotal += curaEfeito;
+          logsEfeitos.push(`✨ Regeneração: +${curaEfeito} HP`);
+        }
+
+        // Decrementar duração
+        ef.turnosRestantes -= 1;
+        if (ef.turnosRestantes > 0) {
+          efeitosRestantes.push(ef);
+        } else {
+          logsEfeitos.push(`✖️ ${ef.tipo} expirou`);
+        }
+      }
+
+      // Calcular novo HP
+      const newHp = Math.min(hpMax, Math.max(0, currentHp - danoTotal + curaTotal));
+
+      const updates = {
+        [myHpField]: newHp,
+        [myEffectsField]: efeitosRestantes
+      };
+
+      // Verificar morte por efeito
+      if (newHp <= 0) {
+        updates.status = 'finished';
+        updates.winner = isHost ? 'guest' : 'host';
+      }
+
+      await updateDocument('pvp_duel_rooms', roomId, updates);
+
+      return NextResponse.json({
+        success: true,
+        newHp,
+        danoTotal,
+        curaTotal,
+        logsEfeitos,
+        efeitosRestantes,
+        finished: newHp <= 0
       });
     }
 

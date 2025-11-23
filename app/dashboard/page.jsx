@@ -280,75 +280,75 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-gray-100 relative overflow-hidden">
       <BackgroundEffects />
 
-      <div className="relative z-10 container mx-auto px-4 py-8">
+      <div className="relative z-10 container mx-auto px-3 py-4">
         {/* Header */}
-        <div className="flex justify-between items-center mb-12">
+        <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-4xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent mb-2">
+            <h1 className="text-3xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent mb-1">
               CENTRAL DE COMANDO
             </h1>
-            <p className="text-slate-400 font-mono text-sm">Bem-vindo de volta, Caçador!</p>
+            <p className="text-slate-400 font-mono text-xs">Bem-vindo de volta, Caçador!</p>
           </div>
-          
+
           <button
             onClick={handleLogout}
-            className="group relative px-6 py-3"
+            className="group relative px-4 py-2"
           >
             <div className="absolute -inset-0.5 bg-gradient-to-r from-red-500/30 to-red-600/30 rounded blur opacity-50 group-hover:opacity-75 transition-opacity"></div>
-            <div className="relative px-6 py-3 bg-slate-950 rounded border border-red-500/50 group-hover:border-red-400 transition-all">
-              <span className="text-sm font-bold tracking-wider uppercase text-red-400">
+            <div className="relative px-4 py-2 bg-slate-950 rounded border border-red-500/50 group-hover:border-red-400 transition-all">
+              <span className="text-xs font-bold tracking-wider uppercase text-red-400">
                 Sair
               </span>
             </div>
           </button>
         </div>
 
-        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Coluna Esquerda - Info do Jogador */}
           <div className="lg:col-span-2">
             {/* Carteira de Identidade de Caçador */}
-            <div className="relative group mb-6">
+            <div className="relative group mb-4">
               <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-purple-500/20 rounded-lg blur opacity-50"></div>
-              
+
               <div className="relative bg-slate-950/90 backdrop-blur-xl border-2 border-cyan-900/50 rounded-lg overflow-hidden">
                 {/* Header da Carteira */}
-                <div className="bg-gradient-to-r from-cyan-900/30 to-blue-900/30 border-b border-cyan-500/30 px-6 py-3">
+                <div className="bg-gradient-to-r from-cyan-900/30 to-blue-900/30 border-b border-cyan-500/30 px-4 py-2">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-cyan-500/20 rounded border border-cyan-500/50 flex items-center justify-center">
-                        <span className="text-cyan-400 text-xl">{getEmojiAvatarAtivo()}</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-cyan-500/20 rounded border border-cyan-500/50 flex items-center justify-center">
+                        <span className="text-cyan-400 text-lg">{getEmojiAvatarAtivo()}</span>
                       </div>
                       <div>
-                        <div className="text-xs text-slate-400 font-mono uppercase tracking-wider">Organização de Caçadores Dimensionais</div>
-                        <div className="text-sm font-bold text-cyan-400">CARTEIRA OFICIAL</div>
+                        <div className="text-[10px] text-slate-400 font-mono uppercase tracking-wider">Organização de Caçadores Dimensionais</div>
+                        <div className="text-xs font-bold text-cyan-400">CARTEIRA OFICIAL</div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-xs text-slate-500 font-mono">ID DE REGISTRO</div>
-                      <div className="text-sm font-bold text-cyan-400 font-mono">{gerarCodigoCacador(user?.id)}</div>
+                      <div className="text-[10px] text-slate-500 font-mono">ID DE REGISTRO</div>
+                      <div className="text-xs font-bold text-cyan-400 font-mono">{gerarCodigoCacador(user?.id)}</div>
                     </div>
                   </div>
                 </div>
 
-                <div className="p-6">
-                  <div className="flex gap-6 mb-6">
+                <div className="p-4">
+                  <div className="flex gap-4 mb-4">
                     {/* Foto/Avatar - CLASSIFIED */}
                     <div className="flex-shrink-0">
-                      <div className="w-32 h-32 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg flex items-center justify-center border-2 border-red-500/50 relative overflow-hidden">
+                      <div className="w-24 h-24 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg flex items-center justify-center border-2 border-red-500/50 relative overflow-hidden">
                         {/* Efeito de barras diagonais */}
                         <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(239,68,68,0.1)_10px,rgba(239,68,68,0.1)_20px)]"></div>
                         
                         {/* Texto CLASSIFIED */}
                         <div className="relative z-10 text-center">
-                          <div className="text-4xl mb-1 opacity-50">🕶️</div>
-                          <div className="text-xs font-bold text-red-400 tracking-wider bg-red-950/50 px-2 py-1 border border-red-500/30">
+                          <div className="text-3xl mb-1 opacity-50">🕶️</div>
+                          <div className="text-[10px] font-bold text-red-400 tracking-wider bg-red-950/50 px-1.5 py-0.5 border border-red-500/30">
                             CLASSIFIED
                           </div>
                         </div>
                       </div>
-                      <div className="mt-2">
-                        <div className={`text-center px-3 py-1.5 rounded border ${classificacao.borda} ${classificacao.bg}`}>
-                          <div className={`text-xs font-bold ${classificacao.cor} font-mono flex items-center justify-center gap-1.5`}>
+                      <div className="mt-1.5">
+                        <div className={`text-center px-2 py-1 rounded border ${classificacao.borda} ${classificacao.bg}`}>
+                          <div className={`text-[10px] font-bold ${classificacao.cor} font-mono flex items-center justify-center gap-1`}>
                             <span>{classificacao.icone}</span>
                             <span>{classificacao.nome}</span>
                           </div>
@@ -357,53 +357,53 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Informações do Caçador */}
-                    <div className="flex-1 space-y-3">
+                    <div className="flex-1 space-y-2">
                       <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <div className="text-xs text-slate-500 uppercase font-mono">Nome de Operação</div>
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <div className="text-[10px] text-slate-500 uppercase font-mono">Nome de Operação</div>
                           <button
                             onClick={abrirModalEditarNome}
-                            className="text-cyan-400 hover:text-cyan-300 transition-colors"
+                            className="text-cyan-400 hover:text-cyan-300 transition-colors text-sm"
                             title="Editar nome"
                           >
                             ✏️
                           </button>
                         </div>
-                        <div className="text-2xl font-bold text-cyan-400">{getNomeOperacao()}</div>
+                        <div className="text-xl font-bold text-cyan-400">{getNomeOperacao()}</div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <div className="text-xs text-slate-500 uppercase font-mono mb-1">Rank de Cacador</div>
+                          <div className="text-[10px] text-slate-500 uppercase font-mono mb-0.5">Rank de Cacador</div>
                           <HunterRankBadge xpTotal={stats?.hunterRankXp || 0} compact={true} />
                         </div>
                         <div>
-                          <div className="text-xs text-slate-500 uppercase font-mono mb-1">Dias Ativos</div>
-                          <div className="text-lg font-bold text-slate-300">{calcularDiasRegistro()} dias</div>
+                          <div className="text-[10px] text-slate-500 uppercase font-mono mb-0.5">Dias Ativos</div>
+                          <div className="text-base font-bold text-slate-300">{calcularDiasRegistro()} dias</div>
                         </div>
                       </div>
 
                       <div>
-                        <div className="text-xs text-slate-500 uppercase font-mono mb-1">Status Operacional</div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                          <span className="text-sm text-green-400 font-bold">ATIVO E OPERACIONAL</span>
+                        <div className="text-[10px] text-slate-500 uppercase font-mono mb-0.5">Status Operacional</div>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+                          <span className="text-xs text-green-400 font-bold">ATIVO E OPERACIONAL</span>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent mb-4"></div>
+                  <div className="h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent mb-3"></div>
 
                   {/* Recursos */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-slate-900/50 rounded p-3 border border-amber-500/20">
-                      <div className="text-xs text-slate-500 uppercase font-mono mb-1">💰 Moedas</div>
-                      <div className="text-xl font-bold text-amber-400">{stats?.moedas || 0}</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-slate-900/50 rounded p-2 border border-amber-500/20">
+                      <div className="text-[10px] text-slate-500 uppercase font-mono mb-0.5">💰 Moedas</div>
+                      <div className="text-lg font-bold text-amber-400">{stats?.moedas || 0}</div>
                     </div>
-                    <div className="bg-slate-900/50 rounded p-3 border border-purple-500/20">
-                      <div className="text-xs text-slate-500 uppercase font-mono mb-1">💎 Fragmentos</div>
-                      <div className="text-xl font-bold text-purple-400">{stats?.fragmentos || 0}</div>
+                    <div className="bg-slate-900/50 rounded p-2 border border-purple-500/20">
+                      <div className="text-[10px] text-slate-500 uppercase font-mono mb-0.5">💎 Fragmentos</div>
+                      <div className="text-lg font-bold text-purple-400">{stats?.fragmentos || 0}</div>
                     </div>
                   </div>
 
@@ -422,7 +422,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Botões de Modos de Jogo - Abaixo da Carteira */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Botão MODO HISTÓRIA */}
               <button
                 onClick={() => router.push("/missoes")}
@@ -430,28 +430,28 @@ export default function DashboardPage() {
               >
                 <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/30 via-blue-500/30 to-purple-500/30 rounded-lg blur opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
 
-                <div className="relative bg-slate-950/90 backdrop-blur-xl border-2 border-cyan-900/40 rounded-lg p-6 group-hover:border-cyan-500/60 transition-all h-full">
+                <div className="relative bg-slate-950/90 backdrop-blur-xl border-2 border-cyan-900/40 rounded-lg p-4 group-hover:border-cyan-500/60 transition-all h-full">
                   <div className="flex flex-col h-full">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-lg flex items-center justify-center border-2 border-cyan-500/30 group-hover:border-cyan-400/50 transition-all">
-                        <span className="text-4xl animate-spin-slow">🌀</span>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-lg flex items-center justify-center border-2 border-cyan-500/30 group-hover:border-cyan-400/50 transition-all">
+                        <span className="text-2xl animate-spin-slow">🌀</span>
                       </div>
                       <div className="flex-1 text-left">
-                        <div className="font-black text-2xl bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent mb-1 group-hover:from-cyan-200 group-hover:to-blue-200 transition-all">
+                        <div className="font-black text-lg bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent mb-0.5 group-hover:from-cyan-200 group-hover:to-blue-200 transition-all">
                           MODO HISTÓRIA
                         </div>
-                        <div className="text-xs text-slate-400 font-mono uppercase tracking-wider">
+                        <div className="text-[10px] text-slate-400 font-mono uppercase tracking-wider">
                           Em Desenvolvimento
                         </div>
                       </div>
                     </div>
-                    <p className="text-sm text-slate-400 leading-relaxed mb-4">
-                      Explore portais dimensionais, desvende a lore do jogo e complete missões épicas. O destino dos mundos está em suas mãos!
+                    <p className="text-xs text-slate-400 leading-relaxed mb-3">
+                      Explore portais dimensionais, desvende a lore do jogo e complete missões épicas.
                     </p>
-                    <div className="mt-auto pt-4 border-t border-cyan-500/20">
+                    <div className="mt-auto pt-3 border-t border-cyan-500/20">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-cyan-400 font-mono">Portal temporário ativo</span>
-                        <span className="text-cyan-400 group-hover:translate-x-1 transition-transform text-2xl">→</span>
+                        <span className="text-[10px] text-cyan-400 font-mono">Portal temporário ativo</span>
+                        <span className="text-cyan-400 group-hover:translate-x-1 transition-transform text-xl">→</span>
                       </div>
                     </div>
                   </div>
@@ -465,28 +465,28 @@ export default function DashboardPage() {
               >
                 <div className="absolute -inset-1 bg-gradient-to-r from-red-500/30 via-orange-500/30 to-red-500/30 rounded-lg blur opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
 
-                <div className="relative bg-slate-950/90 backdrop-blur-xl border-2 border-red-900/40 rounded-lg p-6 group-hover:border-red-500/60 transition-all h-full">
+                <div className="relative bg-slate-950/90 backdrop-blur-xl border-2 border-red-900/40 rounded-lg p-4 group-hover:border-red-500/60 transition-all h-full">
                   <div className="flex flex-col h-full">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-red-500/20 to-orange-500/20 rounded-lg flex items-center justify-center border-2 border-red-500/30 group-hover:border-red-400/50 transition-all">
-                        <span className="text-4xl">⚔️</span>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-red-500/20 to-orange-500/20 rounded-lg flex items-center justify-center border-2 border-red-500/30 group-hover:border-red-400/50 transition-all">
+                        <span className="text-2xl">⚔️</span>
                       </div>
                       <div className="flex-1 text-left">
-                        <div className="font-black text-2xl bg-gradient-to-r from-red-300 to-orange-300 bg-clip-text text-transparent mb-1 group-hover:from-red-200 group-hover:to-orange-200 transition-all">
+                        <div className="font-black text-lg bg-gradient-to-r from-red-300 to-orange-300 bg-clip-text text-transparent mb-0.5 group-hover:from-red-200 group-hover:to-orange-200 transition-all">
                           ARENA DE COMBATE
                         </div>
-                        <div className="text-xs text-slate-400 font-mono uppercase tracking-wider">
+                        <div className="text-[10px] text-slate-400 font-mono uppercase tracking-wider">
                           3 Modos Disponíveis
                         </div>
                       </div>
                     </div>
-                    <p className="text-sm text-slate-400 leading-relaxed mb-4">
-                      Treinamento contra IA, PvP competitivo e modo Sobrevivência. Teste suas habilidades e prove seu valor em combate!
+                    <p className="text-xs text-slate-400 leading-relaxed mb-3">
+                      Treinamento contra IA, PvP competitivo e modo Sobrevivência.
                     </p>
-                    <div className="mt-auto pt-4 border-t border-red-500/20">
+                    <div className="mt-auto pt-3 border-t border-red-500/20">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-red-400 font-mono">Pronto para batalha</span>
-                        <span className="text-red-400 group-hover:translate-x-1 transition-transform text-2xl">→</span>
+                        <span className="text-[10px] text-red-400 font-mono">Pronto para batalha</span>
+                        <span className="text-red-400 group-hover:translate-x-1 transition-transform text-xl">→</span>
                       </div>
                     </div>
                   </div>
@@ -496,28 +496,28 @@ export default function DashboardPage() {
           </div>
 
           {/* Coluna Direita - Ações Rápidas */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             {/* Botão Invocar Avatar - O OCULTISTA */}
             <button
               onClick={() => router.push("/ocultista")}
               className="w-full group relative"
             >
               <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-cyan-500/20 rounded-lg blur opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
-              
-              <div className="relative bg-slate-950/80 backdrop-blur-xl border border-purple-900/30 rounded-lg p-5 group-hover:border-purple-500/50 transition-all">
-                <div className="flex items-center gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-lg flex items-center justify-center border border-purple-500/30 group-hover:border-purple-400/50 transition-all">
-                    <span className="text-2xl">🔮</span>
+
+              <div className="relative bg-slate-950/80 backdrop-blur-xl border border-purple-900/30 rounded-lg p-3 group-hover:border-purple-500/50 transition-all">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-lg flex items-center justify-center border border-purple-500/30 group-hover:border-purple-400/50 transition-all">
+                    <span className="text-xl">🔮</span>
                   </div>
                   <div className="flex-1 text-left">
-                    <div className="font-bold text-purple-300 text-base mb-0.5 group-hover:text-purple-200 transition-colors">
+                    <div className="font-bold text-purple-300 text-sm mb-0.5 group-hover:text-purple-200 transition-colors">
                       O OCULTISTA
                     </div>
-                    <div className="text-xs text-slate-400 font-mono">
+                    <div className="text-[10px] text-slate-400 font-mono">
                       {stats?.primeira_invocacao ? "Primeira invocação GRATUITA" : "Invocar novos avatares"}
                     </div>
                   </div>
-                  <div className="text-purple-400 group-hover:translate-x-1 group-hover:text-purple-300 transition-all text-xl">
+                  <div className="text-purple-400 group-hover:translate-x-1 group-hover:text-purple-300 transition-all text-lg">
                     →
                   </div>
                 </div>
@@ -530,21 +530,21 @@ export default function DashboardPage() {
               className="w-full group relative"
             >
               <div className="absolute -inset-1 bg-gradient-to-r from-red-500/20 via-purple-500/20 to-red-500/20 rounded-lg blur opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
-              
-              <div className="relative bg-slate-950/80 backdrop-blur-xl border border-red-900/30 rounded-lg p-5 group-hover:border-red-500/50 transition-all">
-                <div className="flex items-center gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-red-500/20 to-purple-500/20 rounded-lg flex items-center justify-center border border-red-500/30 group-hover:border-red-400/50 transition-all">
-                    <span className="text-2xl">⚰️</span>
+
+              <div className="relative bg-slate-950/80 backdrop-blur-xl border border-red-900/30 rounded-lg p-3 group-hover:border-red-500/50 transition-all">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-red-500/20 to-purple-500/20 rounded-lg flex items-center justify-center border border-red-500/30 group-hover:border-red-400/50 transition-all">
+                    <span className="text-xl">⚰️</span>
                   </div>
                   <div className="flex-1 text-left">
-                    <div className="font-bold text-red-300 text-base mb-0.5 group-hover:text-red-200 transition-colors">
+                    <div className="font-bold text-red-300 text-sm mb-0.5 group-hover:text-red-200 transition-colors">
                       O NECROMANTE
                     </div>
-                    <div className="text-xs text-slate-400 font-mono">
+                    <div className="text-[10px] text-slate-400 font-mono">
                       Ressuscitar avatares caídos
                     </div>
                   </div>
-                  <div className="text-red-400 group-hover:translate-x-1 group-hover:text-red-300 transition-all text-xl">
+                  <div className="text-red-400 group-hover:translate-x-1 group-hover:text-red-300 transition-all text-lg">
                     →
                   </div>
                 </div>
@@ -558,20 +558,20 @@ export default function DashboardPage() {
             >
               <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-cyan-500/20 rounded-lg blur opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
 
-              <div className="relative bg-slate-950/80 backdrop-blur-xl border border-cyan-900/30 rounded-lg p-5 group-hover:border-cyan-500/50 transition-all">
-                <div className="flex items-center gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-lg flex items-center justify-center border border-cyan-500/30 group-hover:border-cyan-400/50 transition-all">
-                    <span className="text-2xl">✨</span>
+              <div className="relative bg-slate-950/80 backdrop-blur-xl border border-cyan-900/30 rounded-lg p-3 group-hover:border-cyan-500/50 transition-all">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-lg flex items-center justify-center border border-cyan-500/30 group-hover:border-cyan-400/50 transition-all">
+                    <span className="text-xl">✨</span>
                   </div>
                   <div className="flex-1 text-left">
-                    <div className="font-bold text-cyan-300 text-base mb-0.5 group-hover:text-cyan-200 transition-colors">
+                    <div className="font-bold text-cyan-300 text-sm mb-0.5 group-hover:text-cyan-200 transition-colors">
                       O PURIFICADOR
                     </div>
-                    <div className="text-xs text-slate-400 font-mono">
+                    <div className="text-[10px] text-slate-400 font-mono">
                       Remover Marca da Morte
                     </div>
                   </div>
-                  <div className="text-cyan-400 group-hover:translate-x-1 group-hover:text-cyan-300 transition-all text-xl">
+                  <div className="text-cyan-400 group-hover:translate-x-1 group-hover:text-cyan-300 transition-all text-lg">
                     →
                   </div>
                 </div>
@@ -584,21 +584,21 @@ export default function DashboardPage() {
               className="w-full group relative"
             >
               <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-cyan-500/20 rounded-lg blur opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
-              
-              <div className="relative bg-slate-950/80 backdrop-blur-xl border border-cyan-900/30 rounded-lg p-5 group-hover:border-cyan-500/50 transition-all">
-                <div className="flex items-center gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-lg flex items-center justify-center border border-cyan-500/30 group-hover:border-cyan-400/50 transition-all">
-                    <span className="text-2xl">📚</span>
+
+              <div className="relative bg-slate-950/80 backdrop-blur-xl border border-cyan-900/30 rounded-lg p-3 group-hover:border-cyan-500/50 transition-all">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-lg flex items-center justify-center border border-cyan-500/30 group-hover:border-cyan-400/50 transition-all">
+                    <span className="text-xl">📚</span>
                   </div>
                   <div className="flex-1 text-left">
-                    <div className="font-bold text-cyan-300 text-base mb-0.5 group-hover:text-cyan-200 transition-colors">
+                    <div className="font-bold text-cyan-300 text-sm mb-0.5 group-hover:text-cyan-200 transition-colors">
                       MEUS AVATARES
                     </div>
-                    <div className="text-xs text-slate-400 font-mono">
+                    <div className="text-[10px] text-slate-400 font-mono">
                       {loadingAvatares ? 'Carregando...' : `${avatares.length} ${avatares.length === 1 ? 'avatar' : 'avatares'} invocados`}
                     </div>
                   </div>
-                  <div className="text-cyan-400 group-hover:translate-x-1 group-hover:text-cyan-300 transition-all text-xl">
+                  <div className="text-cyan-400 group-hover:translate-x-1 group-hover:text-cyan-300 transition-all text-lg">
                     →
                   </div>
                 </div>
@@ -612,20 +612,20 @@ export default function DashboardPage() {
             >
               <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-amber-500/20 rounded-lg blur opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
 
-              <div className="relative bg-slate-950/80 backdrop-blur-xl border border-amber-900/30 rounded-lg p-5 group-hover:border-amber-500/50 transition-all">
-                <div className="flex items-center gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-amber-500/20 to-yellow-500/20 rounded-lg flex items-center justify-center border border-amber-500/30 group-hover:border-amber-400/50 transition-all">
-                    <span className="text-2xl">🎒</span>
+              <div className="relative bg-slate-950/80 backdrop-blur-xl border border-amber-900/30 rounded-lg p-3 group-hover:border-amber-500/50 transition-all">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-amber-500/20 to-yellow-500/20 rounded-lg flex items-center justify-center border border-amber-500/30 group-hover:border-amber-400/50 transition-all">
+                    <span className="text-xl">🎒</span>
                   </div>
                   <div className="flex-1 text-left">
-                    <div className="font-bold text-amber-300 text-base mb-0.5 group-hover:text-amber-200 transition-colors">
+                    <div className="font-bold text-amber-300 text-sm mb-0.5 group-hover:text-amber-200 transition-colors">
                       INVENTÁRIO
                     </div>
-                    <div className="text-xs text-slate-400 font-mono">
+                    <div className="text-[10px] text-slate-400 font-mono">
                       Itens, poções e equipamentos
                     </div>
                   </div>
-                  <div className="text-amber-400 group-hover:translate-x-1 group-hover:text-amber-300 transition-all text-xl">
+                  <div className="text-amber-400 group-hover:translate-x-1 group-hover:text-amber-300 transition-all text-lg">
                     →
                   </div>
                 </div>
