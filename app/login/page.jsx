@@ -67,37 +67,37 @@ export default function LoginPage() {
         </button>
 
         {/* Container do formulário */}
-        <div className="w-full max-w-lg">
+        <div className="w-full max-w-md">
           {/* Cabeçalho */}
-          <div className="text-center mb-10">
-            <div className="inline-block relative mb-4">
-              <h2 className="text-5xl font-black tracking-tight bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent">
+          <div className="text-center mb-6">
+            <div className="inline-block relative mb-3">
+              <h2 className="text-4xl font-black tracking-tight bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent">
                 AUTENTICAÇÃO
               </h2>
               <div className="absolute -bottom-2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
             </div>
-            <p className="text-slate-400 font-mono text-sm mt-6">Identifique-se para acessar o sistema</p>
+            <p className="text-slate-400 font-mono text-xs mt-4">Identifique-se para acessar o sistema</p>
           </div>
 
           {/* Mensagem de feedback */}
           {mensagem.texto && (
-            <div className={`mb-6 p-4 rounded-lg border ${
-              mensagem.tipo === 'success' 
-                ? 'bg-green-950/50 border-green-500/30 text-green-400' 
+            <div className={`mb-4 p-3 rounded-lg border ${
+              mensagem.tipo === 'success'
+                ? 'bg-green-950/50 border-green-500/30 text-green-400'
                 : 'bg-red-950/50 border-red-500/30 text-red-400'
             }`}>
-              <p className="text-sm font-mono">{mensagem.texto}</p>
+              <p className="text-xs font-mono">{mensagem.texto}</p>
             </div>
           )}
 
           {/* Formulário */}
-          <div className="relative group mb-6">
+          <div className="relative group mb-4">
             <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-purple-500/20 rounded-lg blur opacity-50 group-hover:opacity-75 transition-opacity"></div>
-            
-            <div className="relative bg-slate-950/90 backdrop-blur-xl border border-cyan-900/30 rounded-lg p-8 shadow-2xl">
+
+            <div className="relative bg-slate-950/90 backdrop-blur-xl border border-cyan-900/30 rounded-lg p-6 shadow-2xl">
               {/* Email */}
-              <div className="mb-6">
-                <label className="block text-cyan-400 text-xs uppercase tracking-widest mb-3 font-mono">
+              <div className="mb-4">
+                <label className="block text-cyan-400 text-[10px] uppercase tracking-widest mb-2 font-mono">
                   ID de Usuário
                 </label>
                 <div className="relative">
@@ -108,7 +108,7 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     onKeyPress={handleKeyPress}
                     disabled={loading}
-                    className="w-full px-4 py-3.5 bg-slate-900/80 border border-slate-700/50 rounded text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all font-mono disabled:opacity-50"
+                    className="w-full px-3 py-2.5 bg-slate-900/80 border border-slate-700/50 rounded text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all font-mono disabled:opacity-50"
                   />
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
                     <div className="w-2 h-2 bg-slate-600 rounded-full"></div>
@@ -117,8 +117,8 @@ export default function LoginPage() {
               </div>
 
               {/* Senha */}
-              <div className="mb-8">
-                <label className="block text-cyan-400 text-xs uppercase tracking-widest mb-3 font-mono">
+              <div className="mb-6">
+                <label className="block text-cyan-400 text-[10px] uppercase tracking-widest mb-2 font-mono">
                   Código de Acesso
                 </label>
                 <div className="relative">
@@ -129,7 +129,7 @@ export default function LoginPage() {
                     onChange={(e) => setSenha(e.target.value)}
                     onKeyPress={handleKeyPress}
                     disabled={loading}
-                    className="w-full px-4 py-3.5 bg-slate-900/80 border border-slate-700/50 rounded text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all font-mono disabled:opacity-50"
+                    className="w-full px-3 py-2.5 bg-slate-900/80 border border-slate-700/50 rounded text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all font-mono disabled:opacity-50"
                   />
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
                     <div className="w-2 h-2 bg-slate-600 rounded-full"></div>
@@ -141,24 +141,24 @@ export default function LoginPage() {
               <button
                 onClick={handleLogin}
                 disabled={loading}
-                className="w-full group/btn relative mb-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full group/btn relative mb-4 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 rounded blur opacity-40 group-hover/btn:opacity-75 transition-all duration-300"></div>
-                
-                <div className="relative px-6 py-4 bg-slate-950 rounded border border-cyan-500/50 group-hover/btn:border-cyan-400 transition-all">
-                  <span className="text-lg font-bold tracking-wider uppercase bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
+
+                <div className="relative px-4 py-3 bg-slate-950 rounded border border-cyan-500/50 group-hover/btn:border-cyan-400 transition-all">
+                  <span className="text-base font-bold tracking-wider uppercase bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
                     {loading ? "Autenticando..." : "Iniciar Sessão"}
                   </span>
                 </div>
               </button>
 
               {/* Links de recuperação */}
-              <div className="flex items-center justify-between text-xs font-mono">
+              <div className="flex items-center justify-between text-[10px] font-mono">
                 <button className="text-slate-500 hover:text-cyan-400 transition-colors">
                   Recuperar acesso
                 </button>
                 <span className="text-slate-700">|</span>
-                <button 
+                <button
                   onClick={() => router.push("/cadastro")}
                   className="text-slate-500 hover:text-cyan-400 transition-colors"
                 >

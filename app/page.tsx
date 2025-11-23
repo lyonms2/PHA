@@ -19,14 +19,14 @@ export default function HomePage() {
       {/* Vinheta */}
       <div className="absolute inset-0 shadow-[inset_0_0_120px_rgba(0,0,0,0.9)] pointer-events-none"></div>
 
-      <div className="relative z-10 container mx-auto px-4 py-8">
+      <div className="relative z-10 container mx-auto px-4 py-6">
         <div className="flex flex-col items-center justify-center min-h-screen">
           {/* Logo/Título com efeito holográfico */}
-          <div className="mb-16 text-center relative">
+          <div className="mb-12 text-center relative">
             <div className="absolute inset-0 blur-2xl bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-purple-500/20 animate-pulse"></div>
-            
-            <div className="relative mb-6">
-              <h1 className="text-8xl font-black tracking-tight relative">
+
+            <div className="relative mb-4">
+              <h1 className="text-6xl font-black tracking-tight relative">
                 <span className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent blur-sm">
                   PORTAL HUNTER
                 </span>
@@ -34,7 +34,7 @@ export default function HomePage() {
                   PORTAL HUNTER
                 </span>
               </h1>
-              
+
               {/* Glitch effect decorativo */}
               <div className="absolute -inset-4 opacity-30">
                 <div className="absolute left-0 top-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent"></div>
@@ -43,14 +43,14 @@ export default function HomePage() {
             </div>
 
             <div className="relative">
-              <p className="text-3xl text-cyan-400/90 tracking-[0.4em] font-light uppercase mb-4">
+              <p className="text-2xl text-cyan-400/90 tracking-[0.4em] font-light uppercase mb-3">
                 Awakening
               </p>
-              <div className="h-px w-80 mx-auto bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"></div>
+              <div className="h-px w-64 mx-auto bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"></div>
             </div>
 
             {/* Indicador de sistema */}
-            <div className="mt-6 flex items-center justify-center gap-2 text-xs text-cyan-400/50 font-mono">
+            <div className="mt-4 flex items-center justify-center gap-2 text-xs text-cyan-400/50 font-mono">
               <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse"></div>
               <span>SISTEMA OPERACIONAL</span>
               <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse"></div>
@@ -58,36 +58,35 @@ export default function HomePage() {
           </div>
 
           {/* Terminal de contexto */}
-          <div className="max-w-3xl mb-16 relative group">
+          <div className="max-w-2xl mb-12 relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-purple-500/20 rounded-lg blur opacity-50 group-hover:opacity-75 transition-opacity"></div>
-            
+
             <div className="relative bg-slate-950/80 backdrop-blur-xl border border-cyan-900/30 rounded-lg overflow-hidden">
               {/* Terminal header */}
-              <div className="flex items-center gap-2 px-4 py-2 bg-slate-900/50 border-b border-cyan-900/20">
-                <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-slate-600"></div>
-                  <div className="w-3 h-3 rounded-full bg-slate-600"></div>
-                  <div className="w-3 h-3 rounded-full bg-slate-600"></div>
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border-b border-cyan-900/20">
+                <div className="flex gap-1">
+                  <div className="w-2.5 h-2.5 rounded-full bg-slate-600"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-slate-600"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-slate-600"></div>
                 </div>
-                <span className="text-xs text-cyan-400/60 font-mono ml-2">~ / briefing / intro.log</span>
+                <span className="text-[10px] text-cyan-400/60 font-mono ml-2">~ / briefing / intro.log</span>
               </div>
-              
+
               {/* Terminal content */}
-              <div className="p-6 font-mono text-sm space-y-3">
+              <div className="p-4 font-mono text-xs space-y-2">
                 <p className="text-cyan-400/40">
                   <span className="text-cyan-400">{'>'}</span> Iniciando transmissão...
                 </p>
                 <p className="text-slate-300 leading-relaxed">
                   O colapso aconteceu há 15 anos. Anomalias dimensionais — <span className="text-cyan-400">os Portais</span> —
-                  rasgaram a realidade, liberando o acesso a dimensões paralelas. A <span className="text-purple-400">Organização de Caçadores Dimensionais</span>
-                  foi fundada para explorar essas fendas e estabelecer contratos com entidades de outros planos.
+                  rasgaram a realidade, liberando o acesso a dimensões paralelas. A <span className="text-purple-400">Organização de Caçadores Dimensionais</span> foi fundada para explorar essas fendas e estabelecer contratos com entidades de outros planos.
                 </p>
                 <p className="text-slate-300 leading-relaxed">
                   Você é um <span className="text-blue-400 font-semibold">Invocador</span> — capaz de convocar <span className="text-amber-400">Avatares</span> de
                   dimensões distantes para lutar ao seu lado. Treine seus guerreiros, domine as arenas e construa uma
                   reputação que ecoe através dos planos. <span className="text-cyan-400">Cada vínculo forjado é uma arma. Cada batalha, um teste.</span>
                 </p>
-                <p className="text-cyan-400/40 mt-4">
+                <p className="text-cyan-400/40 mt-3">
                   <span className="text-cyan-400">{'>'}</span> Transmissão concluída.
                 </p>
               </div>
@@ -97,16 +96,16 @@ export default function HomePage() {
           {/* Botão Principal */}
           <button
             onClick={() => window.location.href = "/login"}
-            className="group relative mb-12"
+            className="group relative mb-8"
           >
             <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 rounded-lg blur opacity-40 group-hover:opacity-75 transition-all duration-500 group-hover:blur-xl"></div>
-            
-            <div className="relative px-16 py-5 bg-slate-950 rounded-lg border border-cyan-500/50 group-hover:border-cyan-400 transition-all duration-300">
-              <div className="flex items-center gap-4">
-                <span className="text-xl font-bold tracking-wider uppercase bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
+
+            <div className="relative px-12 py-4 bg-slate-950 rounded-lg border border-cyan-500/50 group-hover:border-cyan-400 transition-all duration-300">
+              <div className="flex items-center gap-3">
+                <span className="text-lg font-bold tracking-wider uppercase bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
                   Acessar Portal
                 </span>
-                <span className="text-cyan-400 group-hover:translate-x-1 transition-transform text-xl">→</span>
+                <span className="text-cyan-400 group-hover:translate-x-1 transition-transform text-lg">→</span>
               </div>
             </div>
           </button>
