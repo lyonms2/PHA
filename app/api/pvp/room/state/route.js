@@ -87,7 +87,7 @@ export async function GET(request) {
  */
 export async function POST(request) {
   try {
-    const { roomId, visitorId, action } = await request.json();
+    const { roomId, visitorId, action, abilityIndex } = await request.json();
 
     if (!roomId || !visitorId || !action) {
       return NextResponse.json(
@@ -313,6 +313,185 @@ export async function POST(request) {
         success: true,
         newEnergy,
         energyGained: newEnergy - currentEnergy
+      });
+    }
+
+    // Ação: usar habilidade
+    if (action === 'ability') {
+
+      // Verificar se é seu turno
+      if (room.current_turn !== role) {
+        return NextResponse.json(
+          { error: 'Não é seu turno!' },
+          { status: 400 }
+        );
+      }
+
+      // Verificar se sala está ativa
+      if (room.status !== 'active') {
+        return NextResponse.json(
+          { error: 'Batalha não está ativa' },
+          { status: 400 }
+        );
+      }
+
+      // Pegar avatar e habilidade
+      const myAvatar = isHost ? room.host_avatar : room.guest_avatar;
+      const opponentAvatar = isHost ? room.guest_avatar : room.host_avatar;
+
+      if (!myAvatar?.habilidades || !myAvatar.habilidades[abilityIndex]) {
+        return NextResponse.json(
+          { error: 'Habilidade não encontrada' },
+          { status: 400 }
+        );
+      }
+
+      const habilidade = myAvatar.habilidades[abilityIndex];
+      const custoEnergia = habilidade.custo_energia || 20;
+
+      // Verificar energia
+      const myEnergyField = isHost ? 'host_energy' : 'guest_energy';
+      const currentEnergy = room[myEnergyField] ?? 100;
+      if (currentEnergy < custoEnergia) {
+        return NextResponse.json(
+          { error: `Energia insuficiente! (${custoEnergia} necessária)` },
+          { status: 400 }
+        );
+      }
+
+      // Stats do atacante
+      const forca = myAvatar?.forca ?? 10;
+      const foco = myAvatar?.foco ?? 10;
+      const resistenciaOponente = opponentAvatar?.resistencia ?? 10;
+      const myExaustao = isHost ? (room.host_exaustao ?? 0) : (room.guest_exaustao ?? 0);
+      const meuElemento = myAvatar?.elemento || 'Neutro';
+      const elementoOponente = opponentAvatar?.elemento || 'Neutro';
+
+      // Calcular multiplicador elemental
+      const calcularMultiplicadorElemental = (atacante, defensor) => {
+        const vantagens = {
+          'Fogo': 'Vento',
+          'Vento': 'Terra',
+          'Terra': 'Eletricidade',
+          'Eletricidade': 'Água',
+          'Água': 'Fogo',
+          'Luz': 'Sombra',
+          'Sombra': 'Luz'
+        };
+        if (vantagens[atacante] === defensor) {
+          return { mult: 1.5, tipo: 'vantagem' };
+        }
+        if (vantagens[defensor] === atacante) {
+          return { mult: 0.75, tipo: 'desvantagem' };
+        }
+        return { mult: 1.0, tipo: 'neutro' };
+      };
+
+      const elemental = calcularMultiplicadorElemental(meuElemento, elementoOponente);
+
+      let dano = 0;
+      let cura = 0;
+      let efeito = '';
+      let critico = false;
+
+      // Calcular dano baseado no tipo de habilidade
+      if (habilidade.tipo === 'dano' || habilidade.tipo === 'dano_status') {
+        // Dano base da habilidade + multiplicador de stat
+        const danoBase = habilidade.dano_base || 15;
+        const multiplicadorStat = habilidade.multiplicador_stat || 0.5;
+
+        dano = danoBase + (forca * multiplicadorStat) + Math.floor(Math.random() * 5) + 1;
+
+        // Redução por defesa
+        dano = dano - (resistenciaOponente * 0.2);
+
+        // Penalidade de exaustão
+        let penalidade = 1.0;
+        if (myExaustao >= 80) penalidade = 0.5;
+        else if (myExaustao >= 60) penalidade = 0.75;
+        else if (myExaustao >= 40) penalidade = 0.95;
+        dano = dano * penalidade;
+
+        // Multiplicador elemental
+        dano = dano * elemental.mult;
+
+        // Chance de crítico
+        const chanceCritico = 5 + (foco * 0.3);
+        critico = Math.random() * 100 < chanceCritico;
+        if (critico) {
+          dano = dano * 2;
+        }
+
+        // Verificar defesa do oponente
+        const opponentDefending = isHost ? room.guest_defending : room.host_defending;
+        if (opponentDefending) {
+          dano = Math.floor(dano * 0.5);
+        }
+
+        dano = Math.max(1, Math.floor(dano));
+
+        // Efeitos de status
+        if (habilidade.efeitos_status && habilidade.efeitos_status.length > 0) {
+          const efeitoStatus = habilidade.efeitos_status[0];
+          efeito = `${efeitoStatus.tipo}: ${efeitoStatus.valor}`;
+        }
+      } else if (habilidade.tipo === 'cura') {
+        // Cura baseada em foco
+        const curaBase = habilidade.dano_base || 20;
+        cura = curaBase + (foco * 0.5);
+        cura = Math.floor(cura);
+      } else if (habilidade.tipo === 'buff') {
+        efeito = 'Buff aplicado!';
+      } else if (habilidade.tipo === 'debuff') {
+        efeito = 'Debuff aplicado!';
+      }
+
+      // Atualizar valores
+      const opponentHpField = isHost ? 'guest_hp' : 'host_hp';
+      const myHpField = isHost ? 'host_hp' : 'guest_hp';
+      const myHpMax = isHost ? (room.host_hp_max || 100) : (room.guest_hp_max || 100);
+      const opponentDefendingField = isHost ? 'guest_defending' : 'host_defending';
+
+      const currentOpponentHp = isHost ? room.guest_hp : room.host_hp;
+      const currentMyHp = isHost ? room.host_hp : room.guest_hp;
+
+      const newOpponentHp = Math.max(0, currentOpponentHp - dano);
+      const newMyHp = Math.min(myHpMax, currentMyHp + cura);
+      const newEnergy = currentEnergy - custoEnergia;
+
+      const updates = {
+        [myEnergyField]: newEnergy,
+        [opponentDefendingField]: false,
+        current_turn: isHost ? 'guest' : 'host'
+      };
+
+      if (dano > 0) {
+        updates[opponentHpField] = newOpponentHp;
+      }
+      if (cura > 0) {
+        updates[myHpField] = newMyHp;
+      }
+
+      // Verificar fim
+      if (newOpponentHp <= 0) {
+        updates.status = 'finished';
+        updates.winner = role;
+      }
+
+      await updateDocument('pvp_duel_rooms', roomId, updates);
+
+      return NextResponse.json({
+        success: true,
+        dano,
+        cura,
+        critico,
+        elemental: elemental.tipo,
+        efeito,
+        newOpponentHp: dano > 0 ? newOpponentHp : undefined,
+        newMyHp: cura > 0 ? newMyHp : undefined,
+        newEnergy,
+        finished: newOpponentHp <= 0,
+        winner: newOpponentHp <= 0 ? role : null
       });
     }
 

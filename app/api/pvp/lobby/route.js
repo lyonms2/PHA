@@ -3,6 +3,24 @@ import { createDocument, getDocuments, deleteDocument, getDocument, updateDocume
 
 export const dynamic = 'force-dynamic';
 
+// Calcular HP máximo baseado nos stats
+const calcularHpMaximo = (avatar) => {
+  if (!avatar) return 100;
+
+  const resistencia = avatar.resistencia || 10;
+  const nivel = avatar.nivel || 1;
+  const raridade = avatar.raridade || 'Comum';
+
+  // Bônus de raridade
+  let bonusRaridade = 0;
+  if (raridade === 'Lendário' || raridade === 'Mítico') bonusRaridade = 100;
+  else if (raridade === 'Épico') bonusRaridade = 75;
+  else if (raridade === 'Raro') bonusRaridade = 50;
+  else if (raridade === 'Incomum') bonusRaridade = 25;
+
+  return (resistencia * 10) + (nivel * 5) + bonusRaridade;
+};
+
 /**
  * GET /api/pvp/lobby
  * Lista jogadores no lobby esperando duelo
@@ -105,13 +123,14 @@ export async function POST(request) {
 
       if (existing && existing.length > 0) {
         // Atualizar entrada existente com novos dados
+        const hpMax = calcularHpMaximo(avatar);
         await updateDocument('pvp_lobby', existing[0].id, {
           minPower: minPower || 0,
           maxPower: maxPower || 999,
           avatar: avatar || null,
           poder: avatar ? (avatar.forca + avatar.agilidade + avatar.resistencia + avatar.foco) : 0,
-          hp_atual: avatar?.hp_atual || 100,
-          hp_maximo: avatar?.hp_maximo || 100,
+          hp_atual: avatar?.hp_atual || hpMax,
+          hp_maximo: hpMax,
           exaustao: avatar?.exaustao || 0,
           created_at: new Date().toISOString()
         });
@@ -120,6 +139,7 @@ export async function POST(request) {
 
       // Buscar nome do jogador
       const playerStats = await getDocument('player_stats', visitorId);
+      const hpMax = calcularHpMaximo(avatar);
 
       await createDocument('pvp_lobby', {
         visitorId,
@@ -130,8 +150,8 @@ export async function POST(request) {
         maxPower: maxPower || 999,
         avatar: avatar || null,
         poder: avatar ? (avatar.forca + avatar.agilidade + avatar.resistencia + avatar.foco) : 0,
-        hp_atual: avatar?.hp_atual || 100,
-        hp_maximo: avatar?.hp_maximo || 100,
+        hp_atual: avatar?.hp_atual || hpMax,
+        hp_maximo: hpMax,
         exaustao: avatar?.exaustao || 0,
         created_at: new Date().toISOString()
       });
@@ -217,12 +237,12 @@ export async function POST(request) {
       const myEntry = myEntries && myEntries.length > 0 ? myEntries[0] : null;
 
       // Criar sala de duelo com avatares e energia
-      // Usar HP real dos avatares
-      const hostHpAtual = challenge.hp_atual || 100;
-      const hostHpMax = challenge.hp_maximo || 100;
+      // Usar HP real dos avatares (calculado corretamente)
+      const hostHpMax = challenge.hp_maximo || calcularHpMaximo(challenge.avatar);
+      const hostHpAtual = challenge.hp_atual || hostHpMax;
       const hostExaustao = challenge.exaustao || 0;
-      const guestHpAtual = myEntry?.hp_atual || 100;
-      const guestHpMax = myEntry?.hp_maximo || 100;
+      const guestHpMax = myEntry?.hp_maximo || calcularHpMaximo(myEntry?.avatar);
+      const guestHpAtual = myEntry?.hp_atual || guestHpMax;
       const guestExaustao = myEntry?.exaustao || 0;
 
       const roomId = await createDocument('pvp_duel_rooms', {
