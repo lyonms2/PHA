@@ -560,80 +560,195 @@ function DuelContent() {
 
   // Tela inicial - entrar no lobby
   if (!inLobby && !roomId) {
+    const poder = meuAvatar ? calcularPoderTotal(meuAvatar) : 0;
+    const hpMax = meuAvatar ? (meuAvatar.resistencia * 10) + (meuAvatar.nivel * 5) : 100;
+    const hpAtual = meuAvatar?.hp_atual ?? hpMax;
+
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 text-gray-100 p-6">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 text-gray-100 p-4">
         <div className="max-w-md mx-auto">
           <button
             onClick={() => router.push('/arena/pvp')}
-            className="text-cyan-400 hover:text-cyan-300 mb-6 block"
+            className="text-cyan-400 hover:text-cyan-300 mb-4 text-sm"
           >
-            ← Voltar
+            ← Voltar às Salas
           </button>
 
-          <h1 className="text-3xl font-bold mb-2 text-center">{getNomeSala()}</h1>
-          <p className="text-slate-400 mb-6 text-center">Poder: {minPower} - {maxPower}</p>
+          {/* Header da Sala */}
+          <div className="text-center mb-4">
+            <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400">
+              {getNomeSala()}
+            </h1>
+            <p className="text-slate-400 text-sm">Poder: {minPower} - {maxPower}</p>
+          </div>
 
           {/* Card do Avatar Completo */}
           {meuAvatar && (
-            <div className="relative group mb-6">
-              <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-purple-500/20 rounded-xl blur opacity-50"></div>
-              <div className="relative bg-slate-950/90 backdrop-blur-xl border border-cyan-900/50 rounded-xl overflow-hidden">
-                {/* Header do Card */}
-                <div className="bg-gradient-to-r from-cyan-900/30 to-blue-900/30 p-4 border-b border-cyan-500/30">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-xs text-slate-400 uppercase font-mono tracking-wider">Seu Combatente</div>
-                    <div className={`px-3 py-1 rounded text-xs font-bold uppercase tracking-wider ${
-                      meuAvatar.raridade === 'Lendário' || meuAvatar.raridade === 'Mítico' ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' :
-                      meuAvatar.raridade === 'Épico' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white' :
-                      meuAvatar.raridade === 'Raro' ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white' :
-                      'bg-slate-700 text-slate-300'
+            <div className="relative mb-4">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/30 via-blue-500/30 to-purple-500/30 rounded-xl blur"></div>
+              <div className="relative bg-slate-900/95 rounded-xl border border-cyan-500/50 overflow-hidden">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-cyan-900/50 to-blue-900/50 px-3 py-2 border-b border-cyan-500/30">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Seu Combatente</div>
+                      <div className="font-bold text-cyan-400">{meuAvatar.nome}</div>
+                    </div>
+                    <div className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                      meuAvatar.raridade === 'Lendário' || meuAvatar.raridade === 'Mítico' ? 'bg-gradient-to-r from-purple-600 to-pink-600' :
+                      meuAvatar.raridade === 'Épico' ? 'bg-purple-600' :
+                      meuAvatar.raridade === 'Raro' ? 'bg-blue-600' :
+                      meuAvatar.raridade === 'Incomum' ? 'bg-green-600' :
+                      'bg-slate-600'
                     }`}>
                       {meuAvatar.raridade}
                     </div>
                   </div>
-                  <h2 className="text-2xl font-bold text-cyan-400">{meuAvatar.nome}</h2>
-                  <div className="text-sm text-slate-400 mt-1">
-                    🎯 {meuNome || 'Caçador Misterioso'}
+                  <div className="text-xs text-slate-400 mt-1">🎯 {meuNome || 'Caçador Misterioso'}</div>
+                </div>
+
+                {/* Avatar e Stats lado a lado */}
+                <div className="p-3 flex gap-3">
+                  {/* Avatar */}
+                  <div className="flex-shrink-0">
+                    <AvatarSVG avatar={meuAvatar} tamanho={100} />
                   </div>
-                  <div className="flex items-center gap-3 mt-2">
-                    <span className="text-sm text-slate-300">Nv.{meuAvatar.nivel}</span>
-                    <span className="text-slate-600">•</span>
-                    <span className="text-sm">{getElementoEmoji(meuAvatar.elemento)} {meuAvatar.elemento}</span>
+
+                  {/* Stats */}
+                  <div className="flex-1 space-y-1.5 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Nível</span>
+                      <span className="text-white font-bold">{meuAvatar.nivel}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Elemento</span>
+                      <span>{getElementoEmoji(meuAvatar.elemento)} {meuAvatar.elemento}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">⚔️ Poder</span>
+                      <span className="text-cyan-400 font-bold">{poder}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">💪 Força</span>
+                      <span className="text-orange-400">{meuAvatar.forca}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">💨 Agilidade</span>
+                      <span className="text-green-400">{meuAvatar.agilidade}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">🛡️ Resistência</span>
+                      <span className="text-blue-400">{meuAvatar.resistencia}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">🎯 Foco</span>
+                      <span className="text-purple-400">{meuAvatar.foco}</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Avatar Image */}
-                <div className="p-6 flex justify-center bg-gradient-to-b from-slate-950/30 to-transparent">
-                  <AvatarSVG avatar={meuAvatar} tamanho={120} />
+                {/* Barras de Status */}
+                <div className="px-3 pb-3 space-y-2">
+                  {/* HP */}
+                  <div>
+                    <div className="flex justify-between text-[10px] mb-0.5">
+                      <span className="text-red-400 font-bold">❤️ HP</span>
+                      <span className="font-mono">{hpAtual}/{hpMax}</span>
+                    </div>
+                    <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                      <div
+                        className={`h-full transition-all ${
+                          (hpAtual / hpMax) > 0.5 ? 'bg-gradient-to-r from-green-500 to-emerald-400' :
+                          (hpAtual / hpMax) > 0.25 ? 'bg-gradient-to-r from-yellow-500 to-orange-400' :
+                          'bg-gradient-to-r from-red-600 to-red-400'
+                        }`}
+                        style={{ width: `${(hpAtual / hpMax) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Exaustão */}
+                  {(meuAvatar.exaustao || 0) > 0 && (
+                    <div>
+                      <div className="flex justify-between text-[10px] mb-0.5">
+                        <span className="text-orange-400 font-bold">😰 Exaustão</span>
+                        <span className="font-mono">{meuAvatar.exaustao}%</span>
+                      </div>
+                      <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-orange-500 to-red-500"
+                          style={{ width: `${meuAvatar.exaustao}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Vínculo */}
+                  {(meuAvatar.vinculo || 0) > 0 && (
+                    <div>
+                      <div className="flex justify-between text-[10px] mb-0.5">
+                        <span className="text-pink-400 font-bold">💕 Vínculo</span>
+                        <span className="font-mono">{meuAvatar.vinculo}%</span>
+                      </div>
+                      <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-pink-500 to-purple-500"
+                          style={{ width: `${meuAvatar.vinculo}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                {/* Stats */}
-                <div className="p-4 border-t border-slate-800">
-                  <div className="text-center">
-                    <span className="text-cyan-400 font-bold text-lg">⚔️ Poder: {calcularPoderTotal(meuAvatar)}</span>
+                {/* Habilidades */}
+                {meuAvatar.habilidades && meuAvatar.habilidades.length > 0 && (
+                  <div className="px-3 pb-3 border-t border-slate-800 pt-2">
+                    <div className="text-[10px] text-slate-400 font-bold uppercase mb-1">✨ Habilidades ({meuAvatar.habilidades.length})</div>
+                    <div className="flex flex-wrap gap-1">
+                      {meuAvatar.habilidades.slice(0, 5).map((hab, i) => (
+                        <span key={i} className="text-[9px] bg-purple-900/50 text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/30">
+                          {hab.nome}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           )}
 
-          <div className="bg-slate-900 border border-orange-500 rounded-lg p-8 text-center">
-            <p className="text-slate-300 mb-6">
-              Entre no lobby para ver outros jogadores e desafiá-los!
-            </p>
-            <button
-              onClick={entrarLobby}
-              disabled={!meuAvatar}
-              className="px-8 py-4 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 disabled:from-gray-600 disabled:to-gray-600 rounded-lg font-bold text-xl"
-            >
-              🎮 ENTRAR NO LOBBY
-            </button>
+          {/* Aviso de compatibilidade */}
+          {meuAvatar && (poder < minPower || poder > maxPower) && (
+            <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-3 mb-4 text-center">
+              <div className="text-red-400 font-bold text-sm">⚠️ Avatar Incompatível</div>
+              <div className="text-xs text-red-300">
+                Poder {poder} fora da faixa {minPower}-{maxPower}
+              </div>
+            </div>
+          )}
+
+          {/* Botão Entrar */}
+          <button
+            onClick={entrarLobby}
+            disabled={!meuAvatar || poder < minPower || poder > maxPower}
+            className={`w-full py-3 rounded-lg font-bold text-lg transition-all ${
+              meuAvatar && poder >= minPower && poder <= maxPower
+                ? 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 hover:scale-[1.02] active:scale-95'
+                : 'bg-slate-700 cursor-not-allowed opacity-50'
+            }`}
+          >
+            🎮 ENTRAR NO LOBBY
+          </button>
+
+          {/* Info */}
+          <div className="mt-3 text-center text-[10px] text-slate-500">
+            Encontre oponentes e desafie para batalha
           </div>
 
           {log.length > 0 && (
-            <div className="mt-4 bg-slate-900/50 rounded-lg p-3 border border-slate-700">
+            <div className="mt-3 bg-slate-900/50 rounded-lg p-2 border border-slate-700 max-h-24 overflow-y-auto">
               {log.map((msg, i) => (
-                <div key={i} className="text-sm text-slate-300 py-1">{msg}</div>
+                <div key={i} className="text-[10px] text-slate-300 py-0.5">{msg}</div>
               ))}
             </div>
           )}
