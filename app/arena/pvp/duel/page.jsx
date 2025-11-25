@@ -375,9 +375,7 @@ function DuelContent() {
         setOpponentHp(data.newOpponentHp);
         setMyEnergy(data.newEnergy);
 
-        if (data.finished) {
-          addLog('🏆 VOCÊ VENCEU!');
-        }
+        // Não adicionar log de vitória aqui - o polling vai detectar
       } else {
         addLog(`❌ ${data.error}`);
       }
@@ -553,9 +551,7 @@ function DuelContent() {
         }
         setMyEnergy(data.newEnergy);
 
-        if (data.finished) {
-          addLog('🏆 VOCÊ VENCEU!');
-        }
+        // Não adicionar log de vitória aqui - o polling vai detectar
       } else {
         addLog(`❌ ${data.error}`);
       }
