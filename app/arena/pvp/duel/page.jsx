@@ -542,9 +542,18 @@ function DuelContent() {
           addLog(`✨ ${data.efeito}`);
         }
 
-        // Debug: mostrar se efeitos foram aplicados no oponente
+        // Mostrar efeitos aplicados
         if (data.efeitosAplicados && data.efeitosAplicados.length > 0) {
-          addLog(`🎯 Aplicado no oponente: ${data.efeitosAplicados.join(', ')}`);
+          // Verificar se são buffs (aplicados em si mesmo) ou debuffs (no oponente)
+          const buffsPositivos = ['defesa_aumentada', 'velocidade', 'regeneração', 'regeneracao', 'escudo', 'foco_aumentado', 'forca_aumentada', 'sobrecarga', 'benção', 'bencao'];
+          const primeiroEfeito = data.efeitosAplicados[0].replace(/[^\w]/g, '').toLowerCase();
+          const ehBuff = buffsPositivos.some(buff => primeiroEfeito.includes(buff.replace(/[^\w]/g, '').toLowerCase()));
+
+          if (ehBuff) {
+            addLog(`💚 Aplicado em você: ${data.efeitosAplicados.join(', ')}`);
+          } else {
+            addLog(`🎯 Aplicado no oponente: ${data.efeitosAplicados.join(', ')}`);
+          }
         }
 
         addLog(`⚡ Energia: -${custoEnergia} → ${data.newEnergy}`);
