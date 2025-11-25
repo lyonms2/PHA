@@ -375,9 +375,7 @@ function DuelContent() {
         setOpponentHp(data.newOpponentHp);
         setMyEnergy(data.newEnergy);
 
-        if (data.finished) {
-          addLog('🏆 VOCÊ VENCEU!');
-        }
+        // Não adicionar log de vitória aqui - o polling vai detectar
       } else {
         addLog(`❌ ${data.error}`);
       }
@@ -414,8 +412,9 @@ function DuelContent() {
   // Processar efeitos no início do turno
   const processarEfeitos = async () => {
     if (!roomId || !visitorId || effectsProcessedRef.current) return;
-    if (myEffects.length === 0) return;
 
+    // IMPORTANTE: Não verificar myEffects aqui - o backend vai verificar
+    // porque o estado local pode estar desatualizado (race condition)
     effectsProcessedRef.current = true;
 
     try {
@@ -473,32 +472,82 @@ function DuelContent() {
       const data = await res.json();
 
       if (data.success) {
-        let msg = `✨ ${hab.nome}!`;
+        // Verificar se errou
+        if (data.errou) {
+          addLog(`💨 ${hab.nome} ERROU! O oponente esquivou!`);
+          if (data.detalhes) {
+            const d = data.detalhes;
+            addLog(`📊 Chance: ${d.chanceAcerto}% (Base: ${d.chanceAcertoBase}% - ${d.reducaoEvasao}% AGI) | Rolou: ${d.rolouAcerto}`);
+          }
+          addLog(`⚡ Energia: -${custoEnergia} → ${data.newEnergy}`);
+          setMyEnergy(data.newEnergy);
+          return;
+        }
+
+        // Log principal da habilidade
+        let emoji = '✨';
+        let tipo = hab.nome.toUpperCase();
+        if (data.critico) { emoji = '💥'; tipo = `${hab.nome.toUpperCase()} CRÍTICO`; }
+        if (data.bloqueado) { emoji = '🛡️'; tipo = `${hab.nome.toUpperCase()} BLOQUEADO`; }
+
+        let msg = `${emoji} ${tipo}!`;
 
         if (data.dano > 0) {
-          if (data.critico) {
-            msg += ` 💥 CRÍTICO! Dano: ${data.dano}`;
-          } else {
-            msg += ` Dano: ${data.dano}`;
-          }
+          msg += ` Dano: ${data.dano}`;
         }
 
         if (data.cura > 0) {
           msg += ` ❤️ Curou: ${data.cura}`;
         }
 
-        if (data.elemental === 'vantagem') {
-          msg += ' 🔥 Super efetivo!';
-        } else if (data.elemental === 'desvantagem') {
-          msg += ' 💨 Pouco efetivo...';
-        }
-
-        if (data.efeito) {
-          msg += ` | ${data.efeito}`;
-        }
-
-        msg += ` | -${custoEnergia} ⚡`;
         addLog(msg);
+
+        // Detalhes do cálculo
+        if (data.detalhes && data.dano > 0) {
+          const d = data.detalhes;
+          let calc = `📊 ${d.stat.toUpperCase()}: ${d.statValue} | Base: ${d.danoBase}`;
+
+          if (d.reducaoResistencia) {
+            calc += ` | -${d.reducaoResistencia} RES`;
+          }
+          if (d.penalidadeExaustao) {
+            calc += ` | 😰 ${d.penalidadeExaustao}`;
+          }
+          if (d.bonusVinculo) {
+            calc += ` | 💕 ${d.bonusVinculo}`;
+          }
+          if (d.elementalMult !== 1.0) {
+            const elemEmoji = d.elementalMult > 1 ? '🔥' : '💨';
+            calc += ` | ${elemEmoji} ×${d.elementalMult}`;
+          }
+          if (data.critico) {
+            calc += ` | 💥 ×2`;
+          }
+          if (data.bloqueado) {
+            calc += ` | 🛡️ ×0.5`;
+          }
+
+          addLog(calc);
+        }
+
+        // Mensagem elemental
+        if (data.elemental === 'vantagem') {
+          addLog('🔥 Super efetivo!');
+        } else if (data.elemental === 'desvantagem') {
+          addLog('💨 Pouco efetivo...');
+        }
+
+        // Efeitos aplicados
+        if (data.efeito) {
+          addLog(`✨ ${data.efeito}`);
+        }
+
+        // Debug: mostrar se efeitos foram aplicados no oponente
+        if (data.efeitosAplicados && data.efeitosAplicados.length > 0) {
+          addLog(`🎯 Aplicado no oponente: ${data.efeitosAplicados.join(', ')}`);
+        }
+
+        addLog(`⚡ Energia: -${custoEnergia} → ${data.newEnergy}`);
 
         if (data.newOpponentHp !== undefined) {
           setOpponentHp(data.newOpponentHp);
@@ -508,9 +557,7 @@ function DuelContent() {
         }
         setMyEnergy(data.newEnergy);
 
-        if (data.finished) {
-          addLog('🏆 VOCÊ VENCEU!');
-        }
+        // Não adicionar log de vitória aqui - o polling vai detectar
       } else {
         addLog(`❌ ${data.error}`);
       }
