@@ -445,6 +445,43 @@ export async function POST(request) {
       let efeito = '';
       let critico = false;
 
+      // ===== TESTE DE ACERTO DA HABILIDADE =====
+      // Habilidades têm chance de acerto configurada (padrão 100% se não especificado)
+      const chanceAcertoBase = habilidade.chance_acerto ?? 100;
+      const agilidadeOponente = opponentAvatar?.agilidade ?? 10;
+
+      // Chance final = chance base da habilidade - (agilidade oponente × 0.5%)
+      // Exemplo: habilidade 90% contra oponente com 20 AGI = 90% - 10% = 80%
+      const chanceAcertoFinal = Math.min(100, Math.max(30, chanceAcertoBase - (agilidadeOponente * 0.5)));
+      const rolouAcerto = Math.random() * 100;
+      const acertou = rolouAcerto < chanceAcertoFinal;
+
+      let detalhesCalculo = {};
+
+      if (!acertou && (habilidade.tipo === 'Ofensiva' || habilidade.tipo === 'Controle')) {
+        // Habilidade ERROU - consome energia mas não causa efeito
+        const newEnergy = currentEnergy - custoEnergia;
+        await updateDocument('pvp_duel_rooms', roomId, {
+          [myEnergyField]: newEnergy,
+          current_turn: isHost ? 'guest' : 'host'
+        });
+
+        return NextResponse.json({
+          success: true,
+          errou: true,
+          dano: 0,
+          nomeHabilidade: habilidade.nome,
+          newEnergy,
+          detalhes: {
+            chanceAcerto: Math.floor(chanceAcertoFinal),
+            chanceAcertoBase,
+            agilidadeOponente,
+            reducaoEvasao: Math.floor(agilidadeOponente * 0.5),
+            rolouAcerto: Math.floor(rolouAcerto)
+          }
+        });
+      }
+
       // Calcular dano baseado no tipo de habilidade
       // Habilidades Ofensivas e de Controle geralmente causam dano
       if (habilidade.tipo === 'Ofensiva' || habilidade.tipo === 'Controle' || habilidade.dano_base > 0) {
@@ -456,35 +493,65 @@ export async function POST(request) {
         const statPrimario = habilidade.stat_primario || 'forca';
         const statValue = myAvatar?.[statPrimario] ?? forca;
 
-        dano = danoBase + (statValue * multiplicadorStat) + Math.floor(Math.random() * 5) + 1;
+        const random = Math.floor(Math.random() * 5) + 1;
+        dano = danoBase + (statValue * multiplicadorStat) + random;
 
-        // Redução por defesa
-        dano = dano - (resistenciaOponente * 0.2);
+        // ===== REDUÇÃO POR RESISTÊNCIA DO OPONENTE =====
+        // Fórmula: Redução = resistência × 0.4 (mais impactante que ataques normais)
+        const reducaoResistencia = resistenciaOponente * 0.4;
+        dano = dano - reducaoResistencia;
 
-        // Penalidade de exaustão
+        // ===== PENALIDADE DE EXAUSTÃO =====
         let penalidade = 1.0;
-        if (myExaustao >= 80) penalidade = 0.5;
-        else if (myExaustao >= 60) penalidade = 0.75;
-        else if (myExaustao >= 40) penalidade = 0.95;
+        let penalidadeTexto = '';
+        if (myExaustao >= 80) { penalidade = 0.5; penalidadeTexto = '-50%'; }
+        else if (myExaustao >= 60) { penalidade = 0.75; penalidadeTexto = '-25%'; }
+        else if (myExaustao >= 40) { penalidade = 0.95; penalidadeTexto = '-5%'; }
         dano = dano * penalidade;
 
-        // Multiplicador elemental
+        // ===== BÔNUS DE VÍNCULO =====
+        const vinculo = myAvatar?.vinculo ?? 0;
+        let bonusVinculo = 1.0;
+        let vinculoTexto = '';
+        if (vinculo >= 80) { bonusVinculo = 1.2; vinculoTexto = '+20%'; }
+        else if (vinculo >= 60) { bonusVinculo = 1.15; vinculoTexto = '+15%'; }
+        else if (vinculo >= 40) { bonusVinculo = 1.1; vinculoTexto = '+10%'; }
+        dano = dano * bonusVinculo;
+
+        // ===== MULTIPLICADOR ELEMENTAL =====
         dano = dano * elemental.mult;
 
-        // Chance de crítico
+        // ===== CHANCE DE CRÍTICO =====
         const chanceCritico = 5 + (foco * 0.3);
         critico = Math.random() * 100 < chanceCritico;
         if (critico) {
           dano = dano * 2;
         }
 
-        // Verificar defesa do oponente
+        // ===== BLOQUEIO (DEFENDENDO) =====
         const opponentDefending = isHost ? room.guest_defending : room.host_defending;
-        if (opponentDefending) {
+        const bloqueado = opponentDefending;
+        if (bloqueado) {
           dano = Math.floor(dano * 0.5);
         }
 
+        // Garantir dano mínimo de 1
         dano = Math.max(1, Math.floor(dano));
+
+        // Salvar detalhes do cálculo
+        detalhesCalculo = {
+          danoBase: Math.floor(danoBase + (statValue * multiplicadorStat)),
+          stat: statPrimario,
+          statValue,
+          random,
+          reducaoResistencia: Math.floor(reducaoResistencia),
+          resistenciaOponente,
+          penalidadeExaustao: penalidadeTexto,
+          bonusVinculo: vinculoTexto,
+          elementalMult: elemental.mult,
+          chanceCritico: Math.floor(chanceCritico),
+          bloqueado
+        };
       }
 
       // ===== SISTEMA DE EFEITOS DE STATUS =====
@@ -618,6 +685,7 @@ export async function POST(request) {
         dano,
         cura,
         critico,
+        bloqueado: detalhesCalculo.bloqueado || false,
         elemental: elemental.tipo,
         efeito,
         efeitosAplicados,
@@ -625,7 +693,8 @@ export async function POST(request) {
         newMyHp: cura > 0 ? newMyHp : undefined,
         newEnergy,
         finished: newOpponentHp <= 0,
-        winner: newOpponentHp <= 0 ? role : null
+        winner: newOpponentHp <= 0 ? role : null,
+        detalhes: detalhesCalculo
       });
     }
 
