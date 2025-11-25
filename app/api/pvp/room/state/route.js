@@ -710,6 +710,19 @@ export async function POST(request) {
       let danoTotal = 0;
       let curaTotal = 0;
 
+      // Se não há efeitos, retornar sem fazer nada
+      if (myEffects.length === 0) {
+        return NextResponse.json({
+          success: true,
+          newHp: currentHp,
+          danoTotal: 0,
+          curaTotal: 0,
+          logsEfeitos: [],
+          efeitosRestantes: [],
+          finished: false
+        });
+      }
+
       // Processar cada efeito
       const efeitosRestantes = [];
       for (const ef of myEffects) {

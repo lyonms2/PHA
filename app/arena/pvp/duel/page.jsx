@@ -412,8 +412,9 @@ function DuelContent() {
   // Processar efeitos no início do turno
   const processarEfeitos = async () => {
     if (!roomId || !visitorId || effectsProcessedRef.current) return;
-    if (myEffects.length === 0) return;
 
+    // IMPORTANTE: Não verificar myEffects aqui - o backend vai verificar
+    // porque o estado local pode estar desatualizado (race condition)
     effectsProcessedRef.current = true;
 
     try {
@@ -539,6 +540,11 @@ function DuelContent() {
         // Efeitos aplicados
         if (data.efeito) {
           addLog(`✨ ${data.efeito}`);
+        }
+
+        // Debug: mostrar se efeitos foram aplicados no oponente
+        if (data.efeitosAplicados && data.efeitosAplicados.length > 0) {
+          addLog(`🎯 Aplicado no oponente: ${data.efeitosAplicados.join(', ')}`);
         }
 
         addLog(`⚡ Energia: -${custoEnergia} → ${data.newEnergy}`);
