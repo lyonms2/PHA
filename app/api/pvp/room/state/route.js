@@ -606,7 +606,15 @@ export async function POST(request) {
           };
 
           // Aplicar no alvo correto
-          if (['defesa_aumentada', 'velocidade', 'foco_aumentado', 'forca_aumentada', 'regeneração', 'escudo'].includes(tipoEfeito)) {
+          // Lista completa de buffs que aplicam em si mesmo
+          const buffsPositivos = [
+            'defesa_aumentada', 'velocidade', 'velocidade_aumentada', 'evasao_aumentada',
+            'foco_aumentado', 'forca_aumentada', 'regeneração', 'regeneracao',
+            'escudo', 'sobrecarga', 'benção', 'bencao', 'invisível', 'invisivel',
+            'proteção', 'protecao'
+          ];
+
+          if (buffsPositivos.includes(tipoEfeito)) {
             // Buffs aplicam em si mesmo
             currentMyEffects = [...currentMyEffects.filter(e => e.tipo !== tipoEfeito), novoEfeito];
           } else {
