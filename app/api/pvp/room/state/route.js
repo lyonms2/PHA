@@ -741,8 +741,8 @@ export async function POST(request) {
           logsEfeitos.push(`${emoji} ${ef.tipo}: -${ef.danoPorTurno} HP`);
         }
 
-        // Regeneração
-        if (ef.tipo === 'regeneração') {
+        // Regeneração (com ou sem acento)
+        if (ef.tipo === 'regeneração' || ef.tipo === 'regeneracao') {
           const curaEfeito = Math.floor(hpMax * 0.05);
           curaTotal += curaEfeito;
           logsEfeitos.push(`✨ Regeneração: +${curaEfeito} HP`);
