@@ -446,12 +446,17 @@ export async function POST(request) {
       let critico = false;
 
       // Calcular dano baseado no tipo de habilidade
-      if (habilidade.tipo === 'dano' || habilidade.tipo === 'dano_status') {
+      // Habilidades Ofensivas e de Controle geralmente causam dano
+      if (habilidade.tipo === 'Ofensiva' || habilidade.tipo === 'Controle' || habilidade.dano_base > 0) {
         // Dano base da habilidade + multiplicador de stat
         const danoBase = habilidade.dano_base || 15;
         const multiplicadorStat = habilidade.multiplicador_stat || 0.5;
 
-        dano = danoBase + (forca * multiplicadorStat) + Math.floor(Math.random() * 5) + 1;
+        // Usar o stat primário da habilidade (forca, foco, agilidade, etc.)
+        const statPrimario = habilidade.stat_primario || 'forca';
+        const statValue = myAvatar?.[statPrimario] ?? forca;
+
+        dano = danoBase + (statValue * multiplicadorStat) + Math.floor(Math.random() * 5) + 1;
 
         // Redução por defesa
         dano = dano - (resistenciaOponente * 0.2);
@@ -552,22 +557,24 @@ export async function POST(request) {
         efeito = efeitosAplicados.join(', ');
       }
 
-      // Tipo cura
-      if (habilidade.tipo === 'cura' || habilidade.tipo === 'Suporte') {
-        const curaBase = habilidade.dano_base || 20;
-        cura = curaBase + (foco * 0.5);
+      // Tipo Suporte (cura)
+      if (habilidade.tipo === 'Suporte' && habilidade.dano_base < 0) {
+        const curaBase = Math.abs(habilidade.dano_base) || 20;
+        const statPrimario = habilidade.stat_primario || 'foco';
+        const statValue = myAvatar?.[statPrimario] ?? foco;
+        cura = curaBase + (statValue * (habilidade.multiplicador_stat || 0.5));
         cura = Math.floor(cura);
         if (!efeito) efeito = '💚 Vida restaurada';
       }
 
-      // Tipo buff puro
-      if (habilidade.tipo === 'buff' || habilidade.tipo === 'Defensiva') {
+      // Tipo Defensiva (buff puro)
+      if (habilidade.tipo === 'Defensiva') {
         if (!efeito) efeito = '🛡️ Buff aplicado!';
       }
 
-      // Tipo debuff puro
-      if (habilidade.tipo === 'debuff' || habilidade.tipo === 'Controle') {
-        if (!efeito) efeito = '⬇️ Debuff aplicado!';
+      // Tipo Controle (debuff/controle)
+      if (habilidade.tipo === 'Controle' && dano === 0) {
+        if (!efeito) efeito = '⬇️ Controle aplicado!';
       }
 
       // Atualizar valores
