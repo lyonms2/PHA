@@ -840,6 +840,8 @@ export async function POST(request) {
         contraAtaque: contraAtaqueAplicado,
         efeito,
         efeitosAplicados,
+        nomeHabilidade: habilidade.nome,
+        numGolpes: numGolpes > 1 ? numGolpes : undefined,
         newOpponentHp: dano > 0 ? newOpponentHp : undefined,
         newMyHp: cura > 0 ? newMyHp : undefined,
         newEnergy,
