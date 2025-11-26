@@ -852,6 +852,30 @@ export async function POST(request) {
       });
     }
 
+    // Ação: render-se
+    if (action === 'surrender') {
+      // Verificar se sala está ativa
+      if (room.status !== 'active') {
+        return NextResponse.json(
+          { error: 'Batalha não está ativa' },
+          { status: 400 }
+        );
+      }
+
+      // Marcar como finalizada e o oponente como vencedor
+      const opponentRole = isHost ? 'guest' : 'host';
+      await updateDocument('pvp_duel_rooms', roomId, {
+        status: 'finished',
+        winner: opponentRole
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: 'Você se rendeu. O oponente venceu!',
+        winner: opponentRole
+      });
+    }
+
     // Ação: processar efeitos (chamado no início do turno)
     if (action === 'process_effects') {
       const myEffectsField = isHost ? 'host_effects' : 'guest_effects';
