@@ -37,6 +37,10 @@ function DuelContent() {
   const [log, setLog] = useState([]);
   const [inLobby, setInLobby] = useState(false);
 
+  // Estados para efeitos visuais
+  const [myDamageEffect, setMyDamageEffect] = useState(null);
+  const [opponentDamageEffect, setOpponentDamageEffect] = useState(null);
+
   const pollingRef = useRef(null);
   const lastTurnRef = useRef(null);
   const effectsProcessedRef = useRef(false);
@@ -298,6 +302,18 @@ function DuelContent() {
     }
   };
 
+  // Mostrar efeito visual de dano/cura
+  const showDamageEffect = (target, value, type = 'damage') => {
+    const effect = { value, type };
+    if (target === 'me') {
+      setMyDamageEffect(effect);
+      setTimeout(() => setMyDamageEffect(null), 1500);
+    } else {
+      setOpponentDamageEffect(effect);
+      setTimeout(() => setOpponentDamageEffect(null), 1500);
+    }
+  };
+
   // Atacar
   const atacar = async () => {
     if (!roomId || !visitorId || !isYourTurn) return;
@@ -376,6 +392,14 @@ function DuelContent() {
         }
 
         addLog(`⚡ Energia: -10 → ${data.newEnergy}`);
+
+        // Efeito visual de dano no oponente
+        showDamageEffect('opponent', data.dano, data.critico ? 'critical' : 'damage');
+
+        // Efeito visual de contra-ataque em mim
+        if (data.contraAtaque) {
+          setTimeout(() => showDamageEffect('me', '🔥', 'burn'), 500);
+        }
 
         setOpponentHp(data.newOpponentHp);
         setMyEnergy(data.newEnergy);
@@ -567,6 +591,19 @@ function DuelContent() {
         }
 
         addLog(`⚡ Energia: -${custoEnergia} → ${data.newEnergy}`);
+
+        // Efeitos visuais de dano/cura
+        if (data.dano > 0) {
+          showDamageEffect('opponent', data.dano, data.critico ? 'critical' : 'damage');
+        }
+        if (data.cura > 0) {
+          showDamageEffect('me', data.cura, 'heal');
+        }
+
+        // Efeito visual de contra-ataque
+        if (data.contraAtaque) {
+          setTimeout(() => showDamageEffect('me', '🔥', 'burn'), 500);
+        }
 
         if (data.newOpponentHp !== undefined) {
           setOpponentHp(data.newOpponentHp);
@@ -1027,6 +1064,21 @@ function DuelContent() {
 
   // Tela de batalha
   return (
+    <>
+      <style jsx>{`
+        @keyframes spin-slow {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+        .animate-spin-slow {
+          animation: spin-slow 8s linear infinite;
+        }
+      `}</style>
+
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 text-gray-100 p-3">
       <div className="max-w-xl mx-auto">
 
@@ -1053,10 +1105,10 @@ function DuelContent() {
         </div>
 
         {/* Arena - Cards dos Avatares */}
-        <div className="grid grid-cols-2 gap-3 mb-3">
+        <div className="flex items-center gap-3 mb-3">
 
           {/* Seu Avatar */}
-          <div className="relative">
+          <div className="relative flex-1">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/30 to-cyan-500/30 rounded-xl blur"></div>
             <div className="relative bg-slate-900/95 rounded-xl border-2 border-blue-500 overflow-hidden">
               {/* Header */}
@@ -1067,8 +1119,26 @@ function DuelContent() {
               </div>
 
               {/* Avatar */}
-              <div className="p-3 flex justify-center bg-gradient-to-b from-blue-950/30 to-transparent">
+              <div className="p-3 flex justify-center bg-gradient-to-b from-blue-950/30 to-transparent relative">
                 {meuAvatar && <AvatarSVG avatar={meuAvatar} tamanho={90} />}
+
+                {/* Efeito Visual de Dano/Cura */}
+                {myDamageEffect && (
+                  <div className={`absolute inset-0 flex items-center justify-center pointer-events-none z-20 ${
+                    myDamageEffect.type === 'heal' ? 'animate-bounce' : 'animate-pulse'
+                  }`}>
+                    <div className={`text-4xl font-black drop-shadow-2xl ${
+                      myDamageEffect.type === 'critical' ? 'text-red-500 scale-150 animate-ping' :
+                      myDamageEffect.type === 'heal' ? 'text-green-400' :
+                      myDamageEffect.type === 'burn' ? 'text-orange-500 text-5xl' :
+                      'text-red-400'
+                    }`}>
+                      {myDamageEffect.type === 'heal' ? `+${myDamageEffect.value} ❤️` :
+                       myDamageEffect.type === 'burn' ? myDamageEffect.value :
+                       `-${myDamageEffect.value}`}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Info */}
@@ -1097,10 +1167,18 @@ function DuelContent() {
                   </div>
                 </div>
 
-                {/* Energia */}
-                <div className="flex items-center justify-between">
-                  <span className="text-yellow-400 font-bold text-[10px]">⚡ Energia</span>
-                  <span className="font-mono text-xs text-yellow-300">{myEnergy}/100</span>
+                {/* Energia Bar */}
+                <div>
+                  <div className="flex justify-between text-[10px] mb-0.5">
+                    <span className="text-yellow-400 font-bold">⚡ Energia</span>
+                    <span className="font-mono">{myEnergy}/100</span>
+                  </div>
+                  <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="h-full transition-all duration-500 bg-gradient-to-r from-yellow-500 to-amber-400"
+                      style={{ width: `${(myEnergy / 100) * 100}%` }}
+                    />
+                  </div>
                 </div>
 
                 {/* Efeitos */}
@@ -1117,8 +1195,25 @@ function DuelContent() {
             </div>
           </div>
 
+          {/* VS Épico */}
+          <div className="relative flex-shrink-0 z-10">
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-600/50 via-pink-600/50 to-red-600/50 rounded-full blur-xl animate-pulse"></div>
+            <div className="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 rounded-full w-20 h-20 flex items-center justify-center border-4 border-gradient-to-r from-yellow-400 via-pink-500 to-red-500 shadow-2xl">
+              <div className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-400 to-red-400 animate-pulse">
+                VS
+              </div>
+            </div>
+            {/* Raios */}
+            <div className="absolute inset-0 animate-spin-slow">
+              <div className="absolute top-0 left-1/2 w-1 h-8 bg-gradient-to-b from-yellow-400 to-transparent -translate-x-1/2 -translate-y-full"></div>
+              <div className="absolute bottom-0 left-1/2 w-1 h-8 bg-gradient-to-t from-red-400 to-transparent -translate-x-1/2 translate-y-full"></div>
+              <div className="absolute left-0 top-1/2 h-1 w-8 bg-gradient-to-r from-blue-400 to-transparent -translate-y-1/2 -translate-x-full"></div>
+              <div className="absolute right-0 top-1/2 h-1 w-8 bg-gradient-to-l from-purple-400 to-transparent -translate-y-1/2 translate-x-full"></div>
+            </div>
+          </div>
+
           {/* Avatar do Oponente */}
-          <div className="relative">
+          <div className="relative flex-1">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-red-500/30 to-orange-500/30 rounded-xl blur"></div>
             <div className="relative bg-slate-900/95 rounded-xl border-2 border-red-500 overflow-hidden">
               {/* Header */}
@@ -1129,8 +1224,26 @@ function DuelContent() {
               </div>
 
               {/* Avatar */}
-              <div className="p-3 flex justify-center bg-gradient-to-b from-red-950/30 to-transparent">
+              <div className="p-3 flex justify-center bg-gradient-to-b from-red-950/30 to-transparent relative">
                 {opponentAvatar && <AvatarSVG avatar={opponentAvatar} tamanho={90} />}
+
+                {/* Efeito Visual de Dano/Cura */}
+                {opponentDamageEffect && (
+                  <div className={`absolute inset-0 flex items-center justify-center pointer-events-none z-20 ${
+                    opponentDamageEffect.type === 'heal' ? 'animate-bounce' : 'animate-pulse'
+                  }`}>
+                    <div className={`text-4xl font-black drop-shadow-2xl ${
+                      opponentDamageEffect.type === 'critical' ? 'text-red-500 scale-150 animate-ping' :
+                      opponentDamageEffect.type === 'heal' ? 'text-green-400' :
+                      opponentDamageEffect.type === 'burn' ? 'text-orange-500 text-5xl' :
+                      'text-red-400'
+                    }`}>
+                      {opponentDamageEffect.type === 'heal' ? `+${opponentDamageEffect.value} ❤️` :
+                       opponentDamageEffect.type === 'burn' ? opponentDamageEffect.value :
+                       `-${opponentDamageEffect.value}`}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Info */}
@@ -1159,10 +1272,18 @@ function DuelContent() {
                   </div>
                 </div>
 
-                {/* Energia */}
-                <div className="flex items-center justify-between">
-                  <span className="text-yellow-400 font-bold text-[10px]">⚡ Energia</span>
-                  <span className="font-mono text-xs text-yellow-300">{opponentEnergy}/100</span>
+                {/* Energia Bar */}
+                <div>
+                  <div className="flex justify-between text-[10px] mb-0.5">
+                    <span className="text-yellow-400 font-bold">⚡ Energia</span>
+                    <span className="font-mono">{opponentEnergy}/100</span>
+                  </div>
+                  <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="h-full transition-all duration-500 bg-gradient-to-r from-yellow-500 to-amber-400"
+                      style={{ width: `${(opponentEnergy / 100) * 100}%` }}
+                    />
+                  </div>
                 </div>
 
                 {/* Efeitos */}
@@ -1275,6 +1396,7 @@ function DuelContent() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 
