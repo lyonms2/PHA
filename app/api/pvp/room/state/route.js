@@ -812,8 +812,27 @@ export async function POST(request) {
             continue;
           }
 
+          // ===== TESTAR CHANCE DO EFEITO =====
+          const chanceEfeito = habilidade.chance_efeito ?? 100;
+          const rolouEfeito = Math.random() * 100;
+          if (rolouEfeito >= chanceEfeito) {
+            // Efeito não ativou
+            continue;
+          }
+
           const valorEfeito = typeof efeitoConfig === 'object' ? (efeitoConfig.valor || 10) : 10;
           const duracaoEfeito = habilidade.duracao_efeito || 3;
+
+          // ===== VERIFICAR SE JÁ TEM PARALISIA (NÃO EMPILHAR) =====
+          if (tipoEfeito === 'paralisia' || tipoEfeito === 'paralisado') {
+            const jaTemParalisia = currentOpponentEffects.some(ef =>
+              ef.tipo === 'paralisia' || ef.tipo === 'paralisado'
+            );
+            if (jaTemParalisia) {
+              // Já está paralisado, não aplicar novamente
+              continue;
+            }
+          }
 
           // Determinar dano por turno baseado no tipo
           let danoPorTurno = 0;
