@@ -327,7 +327,11 @@ export async function POST(request) {
       let danoBase = 5 + (forca * 0.5) + random;
 
       // Redução por defesa: - (resistência × 0.3)
-      const reducaoDefesa = resistenciaOponente * 0.3;
+      // Se o oponente tem defesa_aumentada, dobra a redução
+      const opponentEffectsDefesa = isHost ? (room.guest_effects || []) : (room.host_effects || []);
+      const temDefesaAumentada = opponentEffectsDefesa.some(ef => ef.tipo === 'defesa_aumentada');
+      const multiplicadorDefesa = temDefesaAumentada ? 2.0 : 1.0;
+      const reducaoDefesa = (resistenciaOponente * 0.3) * multiplicadorDefesa;
       let dano = danoBase - reducaoDefesa;
 
       // Penalidade de exaustão
@@ -700,7 +704,10 @@ export async function POST(request) {
 
         // ===== REDUÇÃO POR RESISTÊNCIA DO OPONENTE =====
         // Fórmula: Redução = resistência × 0.4 (mais impactante que ataques normais)
-        const reducaoResistencia = resistenciaOponente * 0.4;
+        // Se o oponente tem defesa_aumentada, dobra a redução
+        const temDefesaAumentadaHab = opponentEffects.some(ef => ef.tipo === 'defesa_aumentada');
+        const multiplicadorDefesaHab = temDefesaAumentadaHab ? 2.0 : 1.0;
+        const reducaoResistencia = (resistenciaOponente * 0.4) * multiplicadorDefesaHab;
         dano = dano - reducaoResistencia;
 
         // ===== PENALIDADE DE EXAUSTÃO =====
@@ -1031,6 +1038,42 @@ export async function POST(request) {
       const logsEfeitos = [];
       let danoTotal = 0;
       let curaTotal = 0;
+      let paralisado = false;
+
+      // ===== VERIFICAR PARALISIA - PULA TURNO =====
+      const efeitoParalisia = myEffects.find(ef => ef.tipo === 'paralisia' || ef.tipo === 'paralisado');
+      if (efeitoParalisia) {
+        paralisado = true;
+        logsEfeitos.push('⚡⚡ PARALISADO! Você não pode agir neste turno!');
+
+        // Remover ou decrementar paralisia
+        myEffects = myEffects.map(ef => {
+          if (ef.tipo === 'paralisia' || ef.tipo === 'paralisado') {
+            ef.turnosRestantes -= 1;
+            if (ef.turnosRestantes <= 0) {
+              logsEfeitos.push('✖️ Paralisia expirou');
+            }
+          }
+          return ef;
+        }).filter(ef => ef.turnosRestantes > 0);
+
+        // Passar o turno automaticamente
+        await updateDocument('pvp_duel_rooms', roomId, {
+          [myEffectsField]: myEffects,
+          current_turn: isHost ? 'guest' : 'host'
+        });
+
+        return NextResponse.json({
+          success: true,
+          newHp: currentHp,
+          danoTotal: 0,
+          curaTotal: 0,
+          logsEfeitos,
+          efeitosRestantes: myEffects,
+          finished: false,
+          paralisado: true
+        });
+      }
 
       // Se não há efeitos, retornar sem fazer nada
       if (myEffects.length === 0) {
