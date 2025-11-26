@@ -182,8 +182,42 @@ export async function POST(request) {
       const elementoOponente = opponentAvatar?.elemento || 'Neutro';
 
       // ===== TESTE DE AGILIDADE (HIT CHECK) =====
-      // Base 70% + diferença de agilidade * 2%
-      const chanceAcerto = Math.min(95, Math.max(30, 70 + (agilidade - agilidadeOponente) * 2));
+      // Verificar buffs de evasão do oponente
+      const opponentEffectsAtk = isHost ? (room.guest_effects || []) : (room.host_effects || []);
+      const temInvisibilidadeAtk = opponentEffectsAtk.some(ef => ef.tipo === 'invisivel' || ef.tipo === 'invisível');
+      const temEvasaoAumentadaAtk = opponentEffectsAtk.some(ef => ef.tipo === 'evasao_aumentada');
+      const temVelocidadeAumentadaAtk = opponentEffectsAtk.some(ef => ef.tipo === 'velocidade' || ef.tipo === 'velocidade_aumentada');
+
+      // Invisibilidade = sempre esquiva
+      if (temInvisibilidadeAtk) {
+        const newEnergy = currentEnergy - 10;
+        await updateDocument('pvp_duel_rooms', roomId, {
+          [myEnergyField]: newEnergy,
+          current_turn: isHost ? 'guest' : 'host'
+        });
+
+        return NextResponse.json({
+          success: true,
+          errou: true,
+          esquivou: true,
+          invisivel: true,
+          dano: 0,
+          newOpponentHp: isHost ? room.guest_hp : room.host_hp,
+          newEnergy,
+          detalhes: {
+            mensagem: 'Oponente está invisível!'
+          }
+        });
+      }
+
+      // Calcular bônus de evasão de buffs
+      let bonusEvasaoAtk = 0;
+      if (temEvasaoAumentadaAtk) bonusEvasaoAtk += 30; // +30% evasão
+      if (temVelocidadeAumentadaAtk) bonusEvasaoAtk += 15; // +15% evasão
+
+      // Base 70% + diferença de agilidade * 2% - bônus evasão
+      let chanceAcerto = 70 + (agilidade - agilidadeOponente) * 2 - bonusEvasaoAtk;
+      chanceAcerto = Math.min(95, Math.max(5, chanceAcerto)); // Mínimo 5%, máximo 95%
       const rolouAcerto = Math.random() * 100;
       const acertou = rolouAcerto < chanceAcerto;
 
@@ -474,9 +508,44 @@ export async function POST(request) {
       const chanceAcertoBase = habilidade.chance_acerto ?? 100;
       const agilidadeOponente = opponentAvatar?.agilidade ?? 10;
 
-      // Chance final = chance base da habilidade - (agilidade oponente × 0.5%)
-      // Exemplo: habilidade 90% contra oponente com 20 AGI = 90% - 10% = 80%
-      const chanceAcertoFinal = Math.min(100, Math.max(30, chanceAcertoBase - (agilidadeOponente * 0.5)));
+      // Verificar buffs de evasão do oponente
+      const opponentEffects = isHost ? (room.guest_effects || []) : (room.host_effects || []);
+      const temInvisibilidade = opponentEffects.some(ef => ef.tipo === 'invisivel' || ef.tipo === 'invisível');
+      const temEvasaoAumentada = opponentEffects.some(ef => ef.tipo === 'evasao_aumentada');
+      const temVelocidadeAumentada = opponentEffects.some(ef => ef.tipo === 'velocidade' || ef.tipo === 'velocidade_aumentada');
+
+      // Invisibilidade = sempre esquiva (a menos que seja habilidade de 100% acerto)
+      if (temInvisibilidade && chanceAcertoBase < 100) {
+        // Invisível = evasão automática
+        const newEnergy = currentEnergy - custoEnergia;
+        await updateDocument('pvp_duel_rooms', roomId, {
+          [myEnergyField]: newEnergy,
+          current_turn: isHost ? 'guest' : 'host'
+        });
+
+        return NextResponse.json({
+          success: true,
+          errou: true,
+          esquivou: true,
+          invisivel: true,
+          dano: 0,
+          nomeHabilidade: habilidade.nome,
+          newEnergy,
+          detalhes: {
+            mensagem: 'Oponente está invisível!'
+          }
+        });
+      }
+
+      // Calcular bônus de evasão de buffs
+      let bonusEvasao = 0;
+      if (temEvasaoAumentada) bonusEvasao += 30; // +30% evasão
+      if (temVelocidadeAumentada) bonusEvasao += 15; // +15% evasão
+
+      // Chance final = chance base da habilidade - (agilidade oponente × 0.5%) - bônus de evasão
+      // Exemplo: habilidade 90% contra oponente com 20 AGI + evasão aumentada = 90% - 10% - 30% = 50%
+      let chanceAcertoFinal = chanceAcertoBase - (agilidadeOponente * 0.5) - bonusEvasao;
+      chanceAcertoFinal = Math.min(100, Math.max(5, chanceAcertoFinal)); // Mínimo 5%, máximo 100%
       const rolouAcerto = Math.random() * 100;
       const acertou = rolouAcerto < chanceAcertoFinal;
 
@@ -561,6 +630,13 @@ export async function POST(request) {
 
         // Garantir dano mínimo de 1
         dano = Math.max(1, Math.floor(dano));
+
+        // ===== MÚLTIPLOS GOLPES =====
+        // Se a habilidade tem num_golpes, multiplica o dano
+        const numGolpes = habilidade.num_golpes || 1;
+        if (numGolpes > 1) {
+          dano = dano * numGolpes;
+        }
 
         // Salvar detalhes do cálculo
         detalhesCalculo = {
@@ -659,6 +735,27 @@ export async function POST(request) {
       // Montar mensagem de efeito
       if (efeitosAplicados.length > 0) {
         efeito = efeitosAplicados.join(', ');
+      }
+
+      // ===== ROUBO DE VIDA =====
+      // Se a habilidade tem efeito roubo_vida e causou dano, cura o atacante
+      if (dano > 0 && habilidade.efeitos_status) {
+        const temRouboVida = habilidade.efeitos_status.some(ef =>
+          typeof ef === 'string' && (ef === 'roubo_vida' || ef === 'roubo_vida_intenso' || ef === 'roubo_vida_massivo')
+        );
+
+        if (temRouboVida) {
+          // Roubo de vida normal: 25% do dano
+          // Roubo de vida intenso: 40% do dano
+          // Roubo de vida massivo: 50% do dano
+          let percentualRoubo = 0.25;
+          if (habilidade.efeitos_status.includes('roubo_vida_intenso')) percentualRoubo = 0.40;
+          if (habilidade.efeitos_status.includes('roubo_vida_massivo')) percentualRoubo = 0.50;
+
+          const curaRoubo = Math.floor(dano * percentualRoubo);
+          cura += curaRoubo;
+          efeitosAplicados.push(`🩸 Roubou ${curaRoubo} HP`);
+        }
       }
 
       // Tipo Suporte (cura)

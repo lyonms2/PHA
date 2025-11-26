@@ -337,9 +337,17 @@ function DuelContent() {
 
         // Verificar se errou (esquiva)
         if (data.errou) {
-          addLog(`💨 ERROU! O oponente esquivou!`);
-          if (d) {
+          if (data.invisivel) {
+            addLog(`👻 ERROU! Oponente está INVISÍVEL!`);
+          } else if (data.esquivou) {
+            addLog(`💨 ERROU! O oponente esquivou com maestria!`);
+          } else {
+            addLog(`💨 ERROU! O oponente esquivou!`);
+          }
+          if (d && d.chanceAcerto) {
             addLog(`📊 Chance: ${d.chanceAcerto}% | AGI: ${d.agilidade} vs ${d.agilidadeOponente} | Rolou: ${d.rolouAcerto}`);
+          } else if (d && d.mensagem) {
+            addLog(`📊 ${d.mensagem}`);
           }
           addLog(`⚡ Energia: -10 → ${data.newEnergy}`);
           setMyEnergy(data.newEnergy);
@@ -503,10 +511,20 @@ function DuelContent() {
       if (data.success) {
         // Verificar se errou
         if (data.errou) {
-          addLog(`💨 ${hab.nome} ERROU! O oponente esquivou!`);
+          if (data.invisivel) {
+            addLog(`👻 ${hab.nome} ERROU! Oponente está INVISÍVEL!`);
+          } else if (data.esquivou) {
+            addLog(`💨 ${hab.nome} ERROU! O oponente esquivou com maestria!`);
+          } else {
+            addLog(`💨 ${hab.nome} ERROU! O oponente esquivou!`);
+          }
           if (data.detalhes) {
             const d = data.detalhes;
-            addLog(`📊 Chance: ${d.chanceAcerto}% (Base: ${d.chanceAcertoBase}% - ${d.reducaoEvasao}% AGI) | Rolou: ${d.rolouAcerto}`);
+            if (d.chanceAcerto) {
+              addLog(`📊 Chance: ${d.chanceAcerto}% (Base: ${d.chanceAcertoBase}% - ${d.reducaoEvasao}% AGI) | Rolou: ${d.rolouAcerto}`);
+            } else if (d.mensagem) {
+              addLog(`📊 ${d.mensagem}`);
+            }
           }
           addLog(`⚡ Energia: -${custoEnergia} → ${data.newEnergy}`);
           setMyEnergy(data.newEnergy);
