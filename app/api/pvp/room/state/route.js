@@ -502,6 +502,7 @@ export async function POST(request) {
       let cura = 0;
       let efeito = '';
       let critico = false;
+      let numGolpes = 1;
 
       // ===== TESTE DE ACERTO DA HABILIDADE =====
       // Habilidades têm chance de acerto configurada (padrão 100% se não especificado)
@@ -633,7 +634,7 @@ export async function POST(request) {
 
         // ===== MÚLTIPLOS GOLPES =====
         // Se a habilidade tem num_golpes, multiplica o dano
-        const numGolpes = habilidade.num_golpes || 1;
+        numGolpes = habilidade.num_golpes || 1;
         if (numGolpes > 1) {
           dano = dano * numGolpes;
         }
@@ -848,6 +849,30 @@ export async function POST(request) {
         finished: newOpponentHp <= 0,
         winner: newOpponentHp <= 0 ? role : null,
         detalhes: detalhesCalculo
+      });
+    }
+
+    // Ação: render-se
+    if (action === 'surrender') {
+      // Verificar se sala está ativa
+      if (room.status !== 'active') {
+        return NextResponse.json(
+          { error: 'Batalha não está ativa' },
+          { status: 400 }
+        );
+      }
+
+      // Marcar como finalizada e o oponente como vencedor
+      const opponentRole = isHost ? 'guest' : 'host';
+      await updateDocument('pvp_duel_rooms', roomId, {
+        status: 'finished',
+        winner: opponentRole
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: 'Você se rendeu. O oponente venceu!',
+        winner: opponentRole
       });
     }
 

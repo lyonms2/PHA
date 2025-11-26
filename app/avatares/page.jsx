@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import AvatarSVG from '../components/AvatarSVG';
 import AvatarDetalhes from "./components/AvatarDetalhes";
 import GameNav, { COMMON_ACTIONS } from '../components/GameNav';
+import { calcularPoderTotal } from '@/lib/gameLogic';
 
 export default function AvatarsPage() {
   const router = useRouter();
@@ -601,6 +602,31 @@ export default function AvatarsPage() {
                     <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
                       <span className={getCorElemento(avatar.elemento)}>{getEmojiElemento(avatar.elemento)} {avatar.elemento}</span>
                       <span>Nv.{avatar.nivel}</span>
+                    </div>
+
+                    {/* HP, Poder e Exaustão */}
+                    <div className="space-y-1 mb-2 pb-2 border-b border-slate-700/50">
+                      {/* HP */}
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-red-400">❤️ HP</span>
+                        <span className="font-mono text-slate-300">{avatar.hp_atual || 0}/{(avatar.resistencia * 10) + (avatar.nivel * 5)}</span>
+                      </div>
+                      {/* Poder Total */}
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-cyan-400">⚔️ Poder</span>
+                        <span className="font-mono text-slate-300">{calcularPoderTotal(avatar)}</span>
+                      </div>
+                      {/* Exaustão */}
+                      {(avatar.exaustao || 0) > 0 && (
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-orange-400">😰 Exaustão</span>
+                          <span className={`font-mono ${
+                            (avatar.exaustao || 0) < 40 ? 'text-green-400' :
+                            (avatar.exaustao || 0) < 70 ? 'text-yellow-400' :
+                            'text-red-400'
+                          }`}>{avatar.exaustao || 0}%</span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Status */}

@@ -41,6 +41,9 @@ function DuelContent() {
   const [myDamageEffect, setMyDamageEffect] = useState(null);
   const [opponentDamageEffect, setOpponentDamageEffect] = useState(null);
 
+  // Estado para prevenir cliques múltiplos
+  const [actionInProgress, setActionInProgress] = useState(false);
+
   const pollingRef = useRef(null);
   const lastTurnRef = useRef(null);
   const effectsProcessedRef = useRef(false);
@@ -316,7 +319,7 @@ function DuelContent() {
 
   // Atacar
   const atacar = async () => {
-    if (!roomId || !visitorId || !isYourTurn) return;
+    if (!roomId || !visitorId || !isYourTurn || actionInProgress) return;
 
     // Verificar energia
     if (myEnergy < 10) {
@@ -324,6 +327,7 @@ function DuelContent() {
       return;
     }
 
+    setActionInProgress(true);
     try {
       const res = await fetch('/api/pvp/room/state', {
         method: 'POST',
@@ -422,13 +426,45 @@ function DuelContent() {
     } catch (err) {
       console.error('Erro ao atacar:', err);
       addLog('❌ Erro ao atacar');
+    } finally {
+      setActionInProgress(false);
+    }
+  };
+
+  // Render-se
+  const renderSe = async () => {
+    if (!roomId || !visitorId) return;
+
+    const confirmar = confirm('🏳️ Tem certeza que deseja se render? O oponente vencerá automaticamente.');
+    if (!confirmar) return;
+
+    setActionInProgress(true);
+    try {
+      const res = await fetch('/api/pvp/room/state', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId, visitorId, action: 'surrender' })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        addLog('🏳️ Você se rendeu! O oponente venceu.');
+      } else {
+        addLog(`❌ ${data.error}`);
+      }
+    } catch (err) {
+      console.error('Erro ao render-se:', err);
+      addLog('❌ Erro ao render-se');
+    } finally {
+      setActionInProgress(false);
     }
   };
 
   // Defender
   const defender = async () => {
-    if (!roomId || !visitorId || !isYourTurn) return;
+    if (!roomId || !visitorId || !isYourTurn || actionInProgress) return;
 
+    setActionInProgress(true);
     try {
       const res = await fetch('/api/pvp/room/state', {
         method: 'POST',
@@ -446,6 +482,8 @@ function DuelContent() {
     } catch (err) {
       console.error('Erro ao defender:', err);
       addLog('❌ Erro ao defender');
+    } finally {
+      setActionInProgress(false);
     }
   };
 
@@ -487,7 +525,7 @@ function DuelContent() {
 
   // Usar habilidade
   const usarHabilidade = async (index) => {
-    if (!roomId || !visitorId || !isYourTurn) return;
+    if (!roomId || !visitorId || !isYourTurn || actionInProgress) return;
 
     const hab = meuAvatar?.habilidades?.[index];
     if (!hab) return;
@@ -498,6 +536,7 @@ function DuelContent() {
       return;
     }
 
+    setActionInProgress(true);
     try {
       const res = await fetch('/api/pvp/room/state', {
         method: 'POST',
@@ -659,6 +698,8 @@ function DuelContent() {
     } catch (err) {
       console.error('Erro ao usar habilidade:', err);
       addLog('❌ Erro ao usar habilidade');
+    } finally {
+      setActionInProgress(false);
     }
   };
 
@@ -1394,9 +1435,9 @@ function DuelContent() {
               <div className="grid grid-cols-2 gap-2 mb-2">
                 <button
                   onClick={atacar}
-                  disabled={!isYourTurn || myEnergy < 10}
+                  disabled={!isYourTurn || myEnergy < 10 || actionInProgress}
                   className={`py-2 rounded-lg font-bold transition-all ${
-                    isYourTurn && myEnergy >= 10
+                    isYourTurn && myEnergy >= 10 && !actionInProgress
                       ? 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 hover:scale-[1.02] active:scale-95'
                       : 'bg-slate-700 cursor-not-allowed opacity-50'
                   }`}
@@ -1406,9 +1447,9 @@ function DuelContent() {
                 </button>
                 <button
                   onClick={defender}
-                  disabled={!isYourTurn}
+                  disabled={!isYourTurn || actionInProgress}
                   className={`py-2 rounded-lg font-bold transition-all ${
-                    isYourTurn
+                    isYourTurn && !actionInProgress
                       ? 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 hover:scale-[1.02] active:scale-95'
                       : 'bg-slate-700 cursor-not-allowed opacity-50'
                   }`}
@@ -1417,6 +1458,19 @@ function DuelContent() {
                   <div className="text-[10px] opacity-75">+20 ⚡ | -50%</div>
                 </button>
               </div>
+
+              {/* Botão de Rendição */}
+              <button
+                onClick={renderSe}
+                disabled={room?.status !== 'active' || actionInProgress}
+                className={`w-full py-1.5 rounded text-sm font-bold transition-all mb-2 ${
+                  room?.status === 'active' && !actionInProgress
+                    ? 'bg-gradient-to-r from-gray-600 to-slate-600 hover:from-gray-500 hover:to-slate-500 hover:scale-[1.01] active:scale-95 border border-gray-500/50'
+                    : 'bg-slate-700/50 cursor-not-allowed opacity-40 border border-slate-600/30'
+                }`}
+              >
+                🏳️ Render-se
+              </button>
 
               {/* Habilidades */}
               {meuAvatar?.habilidades && meuAvatar.habilidades.length > 0 && (
@@ -1429,9 +1483,9 @@ function DuelContent() {
                       <button
                         key={index}
                         onClick={() => usarHabilidade(index)}
-                        disabled={!isYourTurn || myEnergy < (hab.custo_energia || 20)}
+                        disabled={!isYourTurn || myEnergy < (hab.custo_energia || 20) || actionInProgress}
                         className={`py-1.5 px-2 rounded text-left transition-all ${
-                          isYourTurn && myEnergy >= (hab.custo_energia || 20)
+                          isYourTurn && myEnergy >= (hab.custo_energia || 20) && !actionInProgress
                             ? 'bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500 hover:to-pink-500 hover:scale-[1.02] active:scale-95 border border-purple-400/30'
                             : 'bg-slate-700/50 cursor-not-allowed opacity-40 border border-slate-600/30'
                         }`}
