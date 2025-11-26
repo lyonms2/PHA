@@ -502,6 +502,7 @@ export async function POST(request) {
       let cura = 0;
       let efeito = '';
       let critico = false;
+      let numGolpes = 1;
 
       // ===== TESTE DE ACERTO DA HABILIDADE =====
       // Habilidades têm chance de acerto configurada (padrão 100% se não especificado)
@@ -633,7 +634,7 @@ export async function POST(request) {
 
         // ===== MÚLTIPLOS GOLPES =====
         // Se a habilidade tem num_golpes, multiplica o dano
-        const numGolpes = habilidade.num_golpes || 1;
+        numGolpes = habilidade.num_golpes || 1;
         if (numGolpes > 1) {
           dano = dano * numGolpes;
         }
