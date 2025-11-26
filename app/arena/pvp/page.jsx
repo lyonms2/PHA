@@ -385,24 +385,81 @@ export default function PvPPage() {
           {/* Coluna Esquerda - Avatar e Salas */}
           <div className="lg:col-span-2 space-y-6">
             {/* Seu Avatar Resumido */}
-            <div className="bg-gradient-to-br from-slate-900 to-slate-950 rounded-xl border border-purple-500/50 p-4">
-              <div className="flex items-center gap-4">
-                <AvatarSVG avatar={avatarAtivo} tamanho={80} />
-                <div className="flex-1">
-                  <div className="font-bold text-xl text-white">{avatarAtivo.nome}</div>
-                  <div className="text-sm text-slate-400">
-                    Nv.{avatarAtivo.nivel} • {avatarAtivo.elemento}
+            <div className="relative">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/30 to-cyan-500/30 rounded-xl blur"></div>
+              <div className="relative bg-slate-900/95 rounded-xl border-2 border-purple-500 overflow-hidden">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-purple-900/50 to-cyan-900/50 px-3 py-2 border-b border-purple-500/50 flex justify-between items-center">
+                  <div>
+                    <div className="text-[10px] text-purple-300 font-bold uppercase tracking-wider">SEU AVATAR</div>
+                    <div className="font-bold text-white text-base truncate">{avatarAtivo.nome}</div>
+                    <div className="text-[10px] text-slate-400 truncate">🎯 {user?.nome_operacao || 'Caçador'}</div>
                   </div>
-                  <div className="text-cyan-400 font-bold mt-1">
-                    ⚔️ Poder: {poderTotal}
+                  <button
+                    onClick={() => router.push('/avatares')}
+                    className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs"
+                  >
+                    Trocar
+                  </button>
+                </div>
+
+                {/* Avatar */}
+                <div className="p-3 flex justify-center bg-gradient-to-b from-purple-950/30 to-transparent">
+                  <AvatarSVG avatar={avatarAtivo} tamanho={100} />
+                </div>
+
+                {/* Info */}
+                <div className="px-3 pb-3 space-y-2">
+                  {/* Elemento e Nível */}
+                  <div className="flex items-center justify-between text-xs">
+                    <span className={getElementoColor(avatarAtivo.elemento)}>
+                      {avatarAtivo.elemento === 'Fogo' && '🔥'}
+                      {avatarAtivo.elemento === 'Água' && '💧'}
+                      {avatarAtivo.elemento === 'Terra' && '🪨'}
+                      {avatarAtivo.elemento === 'Vento' && '💨'}
+                      {avatarAtivo.elemento === 'Eletricidade' && '⚡'}
+                      {avatarAtivo.elemento === 'Luz' && '✨'}
+                      {avatarAtivo.elemento === 'Sombra' && '🌑'}
+                      {' '}{avatarAtivo.elemento}
+                    </span>
+                    <span className="text-cyan-400">Nv.{avatarAtivo.nivel}</span>
+                  </div>
+
+                  {/* HP Bar */}
+                  <div>
+                    <div className="flex justify-between text-[10px] mb-0.5">
+                      <span className="text-red-400 font-bold">❤️ HP</span>
+                      <span className="font-mono">{calcularHPMaximoCompleto(avatarAtivo)}</span>
+                    </div>
+                    <div className="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-green-500 to-emerald-400 w-full" />
+                    </div>
+                  </div>
+
+                  {/* Exaustão Bar */}
+                  <div>
+                    <div className="flex justify-between text-[10px] mb-0.5">
+                      <span className="text-orange-400 font-bold">😰 Exaustão</span>
+                      <span className="font-mono">{avatarAtivo.exaustao || 0}%</span>
+                    </div>
+                    <div className="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-500 ${
+                          (avatarAtivo.exaustao || 0) < 40 ? 'bg-gradient-to-r from-green-500 to-emerald-400' :
+                          (avatarAtivo.exaustao || 0) < 70 ? 'bg-gradient-to-r from-yellow-500 to-orange-400' :
+                          'bg-gradient-to-r from-red-600 to-red-400'
+                        }`}
+                        style={{ width: `${avatarAtivo.exaustao || 0}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Poder Total */}
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-700">
+                    <span className="text-cyan-400 font-bold text-sm">⚔️ Poder Total</span>
+                    <span className="font-mono text-lg text-cyan-300 font-bold">{poderTotal}</span>
                   </div>
                 </div>
-                <button
-                  onClick={() => router.push('/avatares')}
-                  className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-sm"
-                >
-                  Trocar
-                </button>
               </div>
             </div>
 
