@@ -229,6 +229,10 @@ function DuelContent() {
       const ehMinhaAcao = jogador === meuNome;
       const targetVisual = ehMinhaAcao ? 'opponent' : 'me';
 
+      // PULAR minhas próprias ações - já foram processadas quando executei
+      // Apenas processar ações do OPONENTE para ver o que ele fez
+      if (ehMinhaAcao) continue;
+
       // ATAQUE
       if (acao === 'attack') {
         if (errou) {
