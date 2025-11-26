@@ -547,6 +547,10 @@ function DuelContent() {
 
         if (data.dano > 0) {
           msg += ` Dano: ${data.dano}`;
+          // Mostrar múltiplos golpes
+          if (data.numGolpes && data.numGolpes > 1) {
+            msg += ` (${data.numGolpes}× golpes)`;
+          }
         }
 
         if (data.cura > 0) {
@@ -578,6 +582,9 @@ function DuelContent() {
           }
           if (data.bloqueado) {
             calc += ` | 🛡️ ×0.5`;
+          }
+          if (data.numGolpes && data.numGolpes > 1) {
+            calc += ` | ⚔️ ×${data.numGolpes} golpes`;
           }
 
           addLog(calc);
@@ -688,9 +695,22 @@ function DuelContent() {
       'medo': '😱', 'cegueira': '🌑', 'silêncio': '🔇',
       'congelado': '❄️', 'atordoado': '💫', 'paralisado': '⚡⚡',
       'imobilizado': '🔒', 'sono': '😴',
-      'fantasma': '👻', 'drenar': '🗡️', 'maldição': '💀'
+      'fantasma': '👻', 'drenar': '🗡️', 'maldição': '💀',
+      'evasao_aumentada': '💨', 'velocidade_aumentada': '⚡', 'invisivel': '👻',
+      'queimadura_contra_ataque': '🔥🛡️', 'sobrecarga': '⚡', 'benção': '✨', 'bencao': '✨',
+      'regeneracao': '✨'
     };
     return emojis[tipo] || '✨';
+  };
+
+  // Verificar se efeito é buff (positivo) ou debuff (negativo)
+  const ehBuff = (tipo) => {
+    const buffsPositivos = [
+      'defesa_aumentada', 'velocidade', 'foco_aumentado', 'forca_aumentada',
+      'regeneração', 'regeneracao', 'escudo', 'evasao_aumentada', 'velocidade_aumentada',
+      'invisivel', 'sobrecarga', 'benção', 'bencao', 'queimadura_contra_ataque'
+    ];
+    return buffsPositivos.includes(tipo);
   };
 
   // Tela inicial - entrar no lobby
@@ -1149,14 +1169,14 @@ function DuelContent() {
                     'animate-pulse'
                   }`}>
                     <div className={`font-black drop-shadow-2xl ${
-                      myDamageEffect.type === 'critical' ? 'text-red-500 text-5xl scale-150 animate-ping' :
-                      myDamageEffect.type === 'heal' ? 'text-green-400 text-4xl' :
-                      myDamageEffect.type === 'burn' ? 'text-orange-500 text-5xl' :
-                      myDamageEffect.type === 'buff' ? 'text-cyan-400 text-3xl' :
-                      myDamageEffect.type === 'multihit' ? 'text-yellow-400 text-5xl' :
-                      myDamageEffect.type === 'dodge' ? 'text-purple-400 text-4xl' :
-                      myDamageEffect.type === 'miss' ? 'text-gray-400 text-3xl' :
-                      'text-red-400 text-4xl'
+                      myDamageEffect.type === 'critical' ? 'text-red-500 text-3xl animate-ping' :
+                      myDamageEffect.type === 'heal' ? 'text-green-400 text-2xl' :
+                      myDamageEffect.type === 'burn' ? 'text-orange-500 text-3xl' :
+                      myDamageEffect.type === 'buff' ? 'text-cyan-400 text-2xl' :
+                      myDamageEffect.type === 'multihit' ? 'text-yellow-400 text-3xl' :
+                      myDamageEffect.type === 'dodge' ? 'text-purple-400 text-2xl' :
+                      myDamageEffect.type === 'miss' ? 'text-gray-400 text-xl' :
+                      'text-red-400 text-2xl'
                     }`}>
                       {myDamageEffect.type === 'heal' ? `+${myDamageEffect.value} ❤️` :
                        myDamageEffect.type === 'burn' ? myDamageEffect.value :
@@ -1210,14 +1230,27 @@ function DuelContent() {
                   </div>
                 </div>
 
-                {/* Efeitos */}
+                {/* Efeitos - Buffs e Debuffs Separados */}
                 {myEffects.length > 0 && (
-                  <div className="flex flex-wrap gap-0.5 pt-1 border-t border-slate-700">
-                    {myEffects.map((ef, i) => (
-                      <span key={i} className="text-[10px] bg-slate-800/80 px-1 py-0.5 rounded border border-slate-600" title={`${ef.tipo} (${ef.turnosRestantes})`}>
-                        {getEfeitoEmoji(ef.tipo)}{ef.turnosRestantes}
-                      </span>
-                    ))}
+                  <div className="pt-1 border-t border-slate-700">
+                    <div className="grid grid-cols-2 gap-1">
+                      {/* Buffs (Esquerda) */}
+                      <div className="flex flex-wrap gap-0.5">
+                        {myEffects.filter(ef => ehBuff(ef.tipo)).map((ef, i) => (
+                          <span key={i} className="text-[10px] bg-green-900/30 px-1 py-0.5 rounded border border-green-600/50" title={`${ef.tipo} (${ef.turnosRestantes})`}>
+                            {getEfeitoEmoji(ef.tipo)}{ef.turnosRestantes}
+                          </span>
+                        ))}
+                      </div>
+                      {/* Debuffs (Direita) */}
+                      <div className="flex flex-wrap gap-0.5 justify-end">
+                        {myEffects.filter(ef => !ehBuff(ef.tipo)).map((ef, i) => (
+                          <span key={i} className="text-[10px] bg-red-900/30 px-1 py-0.5 rounded border border-red-600/50" title={`${ef.tipo} (${ef.turnosRestantes})`}>
+                            {getEfeitoEmoji(ef.tipo)}{ef.turnosRestantes}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -1259,14 +1292,14 @@ function DuelContent() {
                     'animate-pulse'
                   }`}>
                     <div className={`font-black drop-shadow-2xl ${
-                      opponentDamageEffect.type === 'critical' ? 'text-red-500 text-5xl scale-150 animate-ping' :
-                      opponentDamageEffect.type === 'heal' ? 'text-green-400 text-4xl' :
-                      opponentDamageEffect.type === 'burn' ? 'text-orange-500 text-5xl' :
-                      opponentDamageEffect.type === 'buff' ? 'text-cyan-400 text-3xl' :
-                      opponentDamageEffect.type === 'multihit' ? 'text-yellow-400 text-5xl' :
-                      opponentDamageEffect.type === 'dodge' ? 'text-purple-400 text-4xl' :
-                      opponentDamageEffect.type === 'miss' ? 'text-gray-400 text-3xl' :
-                      'text-red-400 text-4xl'
+                      opponentDamageEffect.type === 'critical' ? 'text-red-500 text-3xl animate-ping' :
+                      opponentDamageEffect.type === 'heal' ? 'text-green-400 text-2xl' :
+                      opponentDamageEffect.type === 'burn' ? 'text-orange-500 text-3xl' :
+                      opponentDamageEffect.type === 'buff' ? 'text-cyan-400 text-2xl' :
+                      opponentDamageEffect.type === 'multihit' ? 'text-yellow-400 text-3xl' :
+                      opponentDamageEffect.type === 'dodge' ? 'text-purple-400 text-2xl' :
+                      opponentDamageEffect.type === 'miss' ? 'text-gray-400 text-xl' :
+                      'text-red-400 text-2xl'
                     }`}>
                       {opponentDamageEffect.type === 'heal' ? `+${opponentDamageEffect.value} ❤️` :
                        opponentDamageEffect.type === 'burn' ? opponentDamageEffect.value :
@@ -1320,14 +1353,27 @@ function DuelContent() {
                   </div>
                 </div>
 
-                {/* Efeitos */}
+                {/* Efeitos - Buffs e Debuffs Separados */}
                 {opponentEffects.length > 0 && (
-                  <div className="flex flex-wrap gap-0.5 pt-1 border-t border-slate-700">
-                    {opponentEffects.map((ef, i) => (
-                      <span key={i} className="text-[10px] bg-slate-800/80 px-1 py-0.5 rounded border border-slate-600" title={`${ef.tipo} (${ef.turnosRestantes})`}>
-                        {getEfeitoEmoji(ef.tipo)}{ef.turnosRestantes}
-                      </span>
-                    ))}
+                  <div className="pt-1 border-t border-slate-700">
+                    <div className="grid grid-cols-2 gap-1">
+                      {/* Buffs (Esquerda) */}
+                      <div className="flex flex-wrap gap-0.5">
+                        {opponentEffects.filter(ef => ehBuff(ef.tipo)).map((ef, i) => (
+                          <span key={i} className="text-[10px] bg-green-900/30 px-1 py-0.5 rounded border border-green-600/50" title={`${ef.tipo} (${ef.turnosRestantes})`}>
+                            {getEfeitoEmoji(ef.tipo)}{ef.turnosRestantes}
+                          </span>
+                        ))}
+                      </div>
+                      {/* Debuffs (Direita) */}
+                      <div className="flex flex-wrap gap-0.5 justify-end">
+                        {opponentEffects.filter(ef => !ehBuff(ef.tipo)).map((ef, i) => (
+                          <span key={i} className="text-[10px] bg-red-900/30 px-1 py-0.5 rounded border border-red-600/50" title={`${ef.tipo} (${ef.turnosRestantes})`}>
+                            {getEfeitoEmoji(ef.tipo)}{ef.turnosRestantes}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
