@@ -51,8 +51,8 @@ export async function POST(request) {
       await createDocument('player_stats', {
         user_id: result.user.id,
         email: result.user.email,
-        moedas: 5000,
-        fragmentos: 500,
+        moedas: 1000,
+        fragmentos: 50,
         divida: 0,
         ranking: 'F',
         missoes_completadas: 0,
