@@ -6,10 +6,19 @@ export const dynamic = 'force-dynamic';
 /**
  * Helper: Adicionar log de ação ao histórico da batalha
  * Mantém apenas as últimas 20 ações para não sobrecarregar
+ * Remove campos undefined (Firestore não aceita)
  */
 function adicionarLogBatalha(battleLog = [], novoLog) {
+  // Remover campos undefined (Firestore não aceita)
+  const logLimpo = {};
+  for (const [key, value] of Object.entries(novoLog)) {
+    if (value !== undefined) {
+      logLimpo[key] = value;
+    }
+  }
+
   const logComId = {
-    ...novoLog,
+    ...logLimpo,
     id: Date.now() + Math.random(), // ID único
     timestamp: new Date().toISOString()
   };
