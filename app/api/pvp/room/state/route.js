@@ -292,6 +292,28 @@ export async function POST(request) {
         chanceCritico: Math.floor(chanceCritico)
       };
 
+      // ===== VERIFICAR CONTRA-ATAQUE =====
+      // Se o oponente tem queimadura_contra_ataque, aplicar queimadura no atacante
+      const myEffectsField = isHost ? 'host_effects' : 'guest_effects';
+      let myEffects = room[myEffectsField] || [];
+      const opponentEffectsField = isHost ? 'guest_effects' : 'host_effects';
+      const opponentEffects = room[opponentEffectsField] || [];
+      const temContraAtaque = opponentEffects.some(ef => ef.tipo === 'queimadura_contra_ataque');
+
+      if (temContraAtaque) {
+        // Aplicar queimadura no atacante
+        const danoPorTurno = Math.floor(forca * 0.2) + 5;
+        const queimaduraEfeito = {
+          tipo: 'queimadura',
+          valor: 10,
+          danoPorTurno,
+          duracao: 3,
+          turnosRestantes: 3,
+          origem: elementoOponente
+        };
+        myEffects = [...myEffects.filter(e => e.tipo !== 'queimadura'), queimaduraEfeito];
+      }
+
       // Atualizar HP do oponente e energia do atacante
       const opponentHpField = isHost ? 'guest_hp' : 'host_hp';
       const opponentDefendingField = isHost ? 'guest_defending' : 'host_defending';
@@ -301,6 +323,7 @@ export async function POST(request) {
       const updates = {
         [opponentHpField]: newOpponentHp,
         [myEnergyField]: newEnergy,
+        [myEffectsField]: myEffects, // Atualizar efeitos do atacante (contra-ataque)
         [opponentDefendingField]: false, // Reset defesa do oponente após ser atacado
         current_turn: isHost ? 'guest' : 'host' // Passa o turno
       };
@@ -319,6 +342,7 @@ export async function POST(request) {
         critico,
         bloqueado: opponentDefending,
         elemental: elemental.tipo,
+        contraAtaque: temContraAtaque,
         newOpponentHp,
         newEnergy,
         finished: newOpponentHp <= 0,
@@ -554,6 +578,11 @@ export async function POST(request) {
         };
       }
 
+      // ===== VERIFICAR CONTRA-ATAQUE (HABILIDADES OFENSIVAS) =====
+      let contraAtaqueAplicado = false;
+      const currentOpponentEffectsBeforeAbility = isHost ? (room.guest_effects || []) : (room.host_effects || []);
+      const temContraAtaqueHabilidade = currentOpponentEffectsBeforeAbility.some(ef => ef.tipo === 'queimadura_contra_ataque');
+
       // ===== SISTEMA DE EFEITOS DE STATUS =====
       const efeitosAplicados = [];
       const opponentEffectsField = isHost ? 'guest_effects' : 'host_effects';
@@ -611,7 +640,7 @@ export async function POST(request) {
             'defesa_aumentada', 'velocidade', 'velocidade_aumentada', 'evasao_aumentada',
             'foco_aumentado', 'forca_aumentada', 'regeneração', 'regeneracao',
             'escudo', 'sobrecarga', 'benção', 'bencao', 'invisível', 'invisivel',
-            'proteção', 'protecao'
+            'proteção', 'protecao', 'queimadura_contra_ataque'
           ];
 
           if (buffsPositivos.includes(tipoEfeito)) {
@@ -650,6 +679,22 @@ export async function POST(request) {
       // Tipo Controle (debuff/controle)
       if (habilidade.tipo === 'Controle' && dano === 0) {
         if (!efeito) efeito = '⬇️ Controle aplicado!';
+      }
+
+      // ===== APLICAR CONTRA-ATAQUE (se habilidade causou dano) =====
+      if (temContraAtaqueHabilidade && dano > 0) {
+        // Aplicar queimadura no atacante
+        const danoPorTurnoCA = Math.floor(forca * 0.2) + 5;
+        const queimaduraContraAtaque = {
+          tipo: 'queimadura',
+          valor: 10,
+          danoPorTurno: danoPorTurnoCA,
+          duracao: 3,
+          turnosRestantes: 3,
+          origem: elementoOponente
+        };
+        currentMyEffects = [...currentMyEffects.filter(e => e.tipo !== 'queimadura'), queimaduraContraAtaque];
+        contraAtaqueAplicado = true;
       }
 
       // Atualizar valores
@@ -695,6 +740,7 @@ export async function POST(request) {
         critico,
         bloqueado: detalhesCalculo.bloqueado || false,
         elemental: elemental.tipo,
+        contraAtaque: contraAtaqueAplicado,
         efeito,
         efeitosAplicados,
         newOpponentHp: dano > 0 ? newOpponentHp : undefined,

@@ -370,6 +370,11 @@ function DuelContent() {
           addLog('💨 Pouco efetivo...');
         }
 
+        // Mensagem de contra-ataque
+        if (data.contraAtaque) {
+          addLog('🔥🛡️ CONTRA-ATAQUE! Você foi queimado!');
+        }
+
         addLog(`⚡ Energia: -10 → ${data.newEnergy}`);
 
         setOpponentHp(data.newOpponentHp);
@@ -537,6 +542,11 @@ function DuelContent() {
           addLog('💨 Pouco efetivo...');
         }
 
+        // Mensagem de contra-ataque
+        if (data.contraAtaque) {
+          addLog('🔥🛡️ CONTRA-ATAQUE! Você foi queimado!');
+        }
+
         // Efeitos aplicados
         if (data.efeito) {
           addLog(`✨ ${data.efeito}`);
@@ -545,7 +555,7 @@ function DuelContent() {
         // Mostrar efeitos aplicados
         if (data.efeitosAplicados && data.efeitosAplicados.length > 0) {
           // Verificar se são buffs (aplicados em si mesmo) ou debuffs (no oponente)
-          const buffsPositivos = ['defesa_aumentada', 'velocidade', 'regeneração', 'regeneracao', 'escudo', 'foco_aumentado', 'forca_aumentada', 'sobrecarga', 'benção', 'bencao'];
+          const buffsPositivos = ['defesa_aumentada', 'velocidade', 'regeneração', 'regeneracao', 'escudo', 'foco_aumentado', 'forca_aumentada', 'sobrecarga', 'benção', 'bencao', 'queimadura_contra_ataque'];
           const primeiroEfeito = data.efeitosAplicados[0].replace(/[^\w]/g, '').toLowerCase();
           const ehBuff = buffsPositivos.some(buff => primeiroEfeito.includes(buff.replace(/[^\w]/g, '').toLowerCase()));
 
