@@ -779,7 +779,7 @@ export async function POST(request) {
       const efeitoEmojis = {
         // Dano contínuo
         'queimadura': '🔥', 'queimadura_intensa': '🔥🔥', 'veneno': '💀', 'sangramento': '🩸',
-        'eletrocutado': '⚡', 'afogamento': '💧', 'erosão': '🌪️',
+        'eletrocutado': '⚡', 'eletrocucao': '⚡', 'afogamento': '💧', 'erosão': '🌪️',
         // Buffs
         'defesa_aumentada': '🛡️', 'velocidade': '💨', 'foco_aumentado': '🎯',
         'forca_aumentada': '💪', 'regeneração': '✨', 'escudo': '🛡️',
@@ -787,7 +787,7 @@ export async function POST(request) {
         'lentidão': '🐌', 'fraqueza': '⬇️', 'confusão': '🌀',
         'medo': '😱', 'cegueira': '🌑', 'silêncio': '🔇',
         // Controle
-        'congelado': '❄️', 'atordoado': '💫', 'paralisado': '⚡⚡',
+        'congelado': '❄️', 'atordoado': '💫', 'paralisado': '⚡⚡', 'paralisia': '⚡⚡',
         'imobilizado': '🔒', 'sono': '😴',
         // Especiais
         'fantasma': '👻', 'drenar': '🗡️', 'maldição': '💀',
@@ -810,7 +810,7 @@ export async function POST(request) {
 
           // Determinar dano por turno baseado no tipo
           let danoPorTurno = 0;
-          if (['queimadura', 'veneno', 'sangramento', 'eletrocutado', 'afogamento', 'erosão'].includes(tipoEfeito)) {
+          if (['queimadura', 'veneno', 'sangramento', 'eletrocutado', 'eletrocucao', 'afogamento', 'erosão'].includes(tipoEfeito)) {
             danoPorTurno = Math.floor(forca * 0.2) + 5;
           }
           if (tipoEfeito === 'queimadura_intensa') {
