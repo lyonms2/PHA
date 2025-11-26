@@ -339,10 +339,13 @@ function DuelContent() {
         if (data.errou) {
           if (data.invisivel) {
             addLog(`👻 ERROU! Oponente está INVISÍVEL!`);
+            showDamageEffect('opponent', '', 'dodge');
           } else if (data.esquivou) {
             addLog(`💨 ERROU! O oponente esquivou com maestria!`);
+            showDamageEffect('opponent', '', 'dodge');
           } else {
             addLog(`💨 ERROU! O oponente esquivou!`);
+            showDamageEffect('opponent', '', 'miss');
           }
           if (d && d.chanceAcerto) {
             addLog(`📊 Chance: ${d.chanceAcerto}% | AGI: ${d.agilidade} vs ${d.agilidadeOponente} | Rolou: ${d.rolouAcerto}`);
@@ -513,10 +516,13 @@ function DuelContent() {
         if (data.errou) {
           if (data.invisivel) {
             addLog(`👻 ${hab.nome} ERROU! Oponente está INVISÍVEL!`);
+            showDamageEffect('opponent', '', 'dodge');
           } else if (data.esquivou) {
             addLog(`💨 ${hab.nome} ERROU! O oponente esquivou com maestria!`);
+            showDamageEffect('opponent', '', 'dodge');
           } else {
             addLog(`💨 ${hab.nome} ERROU! O oponente esquivou!`);
+            showDamageEffect('opponent', '', 'miss');
           }
           if (data.detalhes) {
             const d = data.detalhes;
@@ -597,12 +603,14 @@ function DuelContent() {
         // Mostrar efeitos aplicados
         if (data.efeitosAplicados && data.efeitosAplicados.length > 0) {
           // Verificar se são buffs (aplicados em si mesmo) ou debuffs (no oponente)
-          const buffsPositivos = ['defesa_aumentada', 'velocidade', 'regeneração', 'regeneracao', 'escudo', 'foco_aumentado', 'forca_aumentada', 'sobrecarga', 'benção', 'bencao', 'queimadura_contra_ataque'];
+          const buffsPositivos = ['defesa_aumentada', 'velocidade', 'regeneração', 'regeneracao', 'escudo', 'foco_aumentado', 'forca_aumentada', 'sobrecarga', 'benção', 'bencao', 'queimadura_contra_ataque', 'evasao_aumentada', 'velocidade_aumentada', 'invisivel'];
           const primeiroEfeito = data.efeitosAplicados[0].replace(/[^\w]/g, '').toLowerCase();
           const ehBuff = buffsPositivos.some(buff => primeiroEfeito.includes(buff.replace(/[^\w]/g, '').toLowerCase()));
 
           if (ehBuff) {
             addLog(`💚 Aplicado em você: ${data.efeitosAplicados.join(', ')}`);
+            // Efeito visual de buff aplicado
+            showDamageEffect('me', hab.nome, 'buff');
           } else {
             addLog(`🎯 Aplicado no oponente: ${data.efeitosAplicados.join(', ')}`);
           }
@@ -612,7 +620,13 @@ function DuelContent() {
 
         // Efeitos visuais de dano/cura
         if (data.dano > 0) {
-          showDamageEffect('opponent', data.dano, data.critico ? 'critical' : 'damage');
+          // Verificar se é múltiplos golpes
+          const numGolpes = hab.num_golpes || 1;
+          if (numGolpes > 1) {
+            showDamageEffect('opponent', `${data.dano} ×${numGolpes}`, 'multihit');
+          } else {
+            showDamageEffect('opponent', data.dano, data.critico ? 'critical' : 'damage');
+          }
         }
         if (data.cura > 0) {
           showDamageEffect('me', data.cura, 'heal');
@@ -1082,21 +1096,6 @@ function DuelContent() {
 
   // Tela de batalha
   return (
-    <>
-      <style jsx>{`
-        @keyframes spin-slow {
-          from {
-            transform: rotate(0deg);
-          }
-          to {
-            transform: rotate(360deg);
-          }
-        }
-        .animate-spin-slow {
-          animation: spin-slow 8s linear infinite;
-        }
-      `}</style>
-
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 text-gray-100 p-3">
       <div className="max-w-xl mx-auto">
 
@@ -1140,19 +1139,31 @@ function DuelContent() {
               <div className="p-3 flex justify-center bg-gradient-to-b from-blue-950/30 to-transparent relative">
                 {meuAvatar && <AvatarSVG avatar={meuAvatar} tamanho={90} />}
 
-                {/* Efeito Visual de Dano/Cura */}
+                {/* Efeito Visual de Dano/Cura/Buffs */}
                 {myDamageEffect && (
                   <div className={`absolute inset-0 flex items-center justify-center pointer-events-none z-20 ${
-                    myDamageEffect.type === 'heal' ? 'animate-bounce' : 'animate-pulse'
+                    myDamageEffect.type === 'heal' ? 'animate-bounce' :
+                    myDamageEffect.type === 'buff' ? 'animate-pulse' :
+                    myDamageEffect.type === 'multihit' ? 'animate-ping' :
+                    myDamageEffect.type === 'dodge' || myDamageEffect.type === 'miss' ? 'animate-bounce' :
+                    'animate-pulse'
                   }`}>
-                    <div className={`text-4xl font-black drop-shadow-2xl ${
-                      myDamageEffect.type === 'critical' ? 'text-red-500 scale-150 animate-ping' :
-                      myDamageEffect.type === 'heal' ? 'text-green-400' :
+                    <div className={`font-black drop-shadow-2xl ${
+                      myDamageEffect.type === 'critical' ? 'text-red-500 text-5xl scale-150 animate-ping' :
+                      myDamageEffect.type === 'heal' ? 'text-green-400 text-4xl' :
                       myDamageEffect.type === 'burn' ? 'text-orange-500 text-5xl' :
-                      'text-red-400'
+                      myDamageEffect.type === 'buff' ? 'text-cyan-400 text-3xl' :
+                      myDamageEffect.type === 'multihit' ? 'text-yellow-400 text-5xl' :
+                      myDamageEffect.type === 'dodge' ? 'text-purple-400 text-4xl' :
+                      myDamageEffect.type === 'miss' ? 'text-gray-400 text-3xl' :
+                      'text-red-400 text-4xl'
                     }`}>
                       {myDamageEffect.type === 'heal' ? `+${myDamageEffect.value} ❤️` :
                        myDamageEffect.type === 'burn' ? myDamageEffect.value :
+                       myDamageEffect.type === 'buff' ? `${myDamageEffect.value} ✨` :
+                       myDamageEffect.type === 'multihit' ? `${myDamageEffect.value}` :
+                       myDamageEffect.type === 'dodge' ? 'DODGE! 💨' :
+                       myDamageEffect.type === 'miss' ? 'MISS!' :
                        `-${myDamageEffect.value}`}
                     </div>
                   </div>
@@ -1213,20 +1224,13 @@ function DuelContent() {
             </div>
           </div>
 
-          {/* VS Épico */}
+          {/* VS Compacto */}
           <div className="relative flex-shrink-0 z-10">
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-600/50 via-pink-600/50 to-red-600/50 rounded-full blur-xl animate-pulse"></div>
-            <div className="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 rounded-full w-20 h-20 flex items-center justify-center border-4 border-gradient-to-r from-yellow-400 via-pink-500 to-red-500 shadow-2xl">
-              <div className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-400 to-red-400 animate-pulse">
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-600/50 via-pink-600/50 to-red-600/50 rounded-full blur-lg animate-pulse"></div>
+            <div className="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 rounded-full w-14 h-14 flex items-center justify-center border-2 border-pink-500 shadow-xl">
+              <div className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-400 to-red-400 animate-pulse">
                 VS
               </div>
-            </div>
-            {/* Raios */}
-            <div className="absolute inset-0 animate-spin-slow">
-              <div className="absolute top-0 left-1/2 w-1 h-8 bg-gradient-to-b from-yellow-400 to-transparent -translate-x-1/2 -translate-y-full"></div>
-              <div className="absolute bottom-0 left-1/2 w-1 h-8 bg-gradient-to-t from-red-400 to-transparent -translate-x-1/2 translate-y-full"></div>
-              <div className="absolute left-0 top-1/2 h-1 w-8 bg-gradient-to-r from-blue-400 to-transparent -translate-y-1/2 -translate-x-full"></div>
-              <div className="absolute right-0 top-1/2 h-1 w-8 bg-gradient-to-l from-purple-400 to-transparent -translate-y-1/2 translate-x-full"></div>
             </div>
           </div>
 
@@ -1245,19 +1249,31 @@ function DuelContent() {
               <div className="p-3 flex justify-center bg-gradient-to-b from-red-950/30 to-transparent relative">
                 {opponentAvatar && <AvatarSVG avatar={opponentAvatar} tamanho={90} />}
 
-                {/* Efeito Visual de Dano/Cura */}
+                {/* Efeito Visual de Dano/Cura/Buffs */}
                 {opponentDamageEffect && (
                   <div className={`absolute inset-0 flex items-center justify-center pointer-events-none z-20 ${
-                    opponentDamageEffect.type === 'heal' ? 'animate-bounce' : 'animate-pulse'
+                    opponentDamageEffect.type === 'heal' ? 'animate-bounce' :
+                    opponentDamageEffect.type === 'buff' ? 'animate-pulse' :
+                    opponentDamageEffect.type === 'multihit' ? 'animate-ping' :
+                    opponentDamageEffect.type === 'dodge' || opponentDamageEffect.type === 'miss' ? 'animate-bounce' :
+                    'animate-pulse'
                   }`}>
-                    <div className={`text-4xl font-black drop-shadow-2xl ${
-                      opponentDamageEffect.type === 'critical' ? 'text-red-500 scale-150 animate-ping' :
-                      opponentDamageEffect.type === 'heal' ? 'text-green-400' :
+                    <div className={`font-black drop-shadow-2xl ${
+                      opponentDamageEffect.type === 'critical' ? 'text-red-500 text-5xl scale-150 animate-ping' :
+                      opponentDamageEffect.type === 'heal' ? 'text-green-400 text-4xl' :
                       opponentDamageEffect.type === 'burn' ? 'text-orange-500 text-5xl' :
-                      'text-red-400'
+                      opponentDamageEffect.type === 'buff' ? 'text-cyan-400 text-3xl' :
+                      opponentDamageEffect.type === 'multihit' ? 'text-yellow-400 text-5xl' :
+                      opponentDamageEffect.type === 'dodge' ? 'text-purple-400 text-4xl' :
+                      opponentDamageEffect.type === 'miss' ? 'text-gray-400 text-3xl' :
+                      'text-red-400 text-4xl'
                     }`}>
                       {opponentDamageEffect.type === 'heal' ? `+${opponentDamageEffect.value} ❤️` :
                        opponentDamageEffect.type === 'burn' ? opponentDamageEffect.value :
+                       opponentDamageEffect.type === 'buff' ? `${opponentDamageEffect.value} ✨` :
+                       opponentDamageEffect.type === 'multihit' ? `${opponentDamageEffect.value}` :
+                       opponentDamageEffect.type === 'dodge' ? 'DODGE! 💨' :
+                       opponentDamageEffect.type === 'miss' ? 'MISS!' :
                        `-${opponentDamageEffect.value}`}
                     </div>
                   </div>
@@ -1414,7 +1430,6 @@ function DuelContent() {
         </div>
       </div>
     </div>
-    </>
   );
 }
 
