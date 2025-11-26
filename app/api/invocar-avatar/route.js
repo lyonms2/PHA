@@ -78,6 +78,9 @@ function gerarAvatarCompleto(primeiraInvocacao = false, hunterRank = null) {
   console.log(`Habilidades selecionadas: ${habilidades.length}`);
   
   // 8. MONTAR AVATAR COMPLETO
+  // Calcular HP máximo baseado em resistência e nível
+  const hpMaximo = (stats.resistencia * 10) + (1 * 5); // nivel = 1 no início
+
   const avatar = {
     nome,
     descricao,
@@ -87,7 +90,8 @@ function gerarAvatarCompleto(primeiraInvocacao = false, hunterRank = null) {
     experiencia: 0,
     vinculo: 0,
     exaustao: 0, // Novo sistema de exaustão
-    
+    hp_atual: hpMaximo, // Inicializar com HP máximo
+
     // Stats
     forca: stats.forca,
     agilidade: stats.agilidade,
