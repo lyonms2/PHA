@@ -690,6 +690,13 @@ export async function POST(request) {
       if (habilidade.efeitos_status && habilidade.efeitos_status.length > 0) {
         for (const efeitoConfig of habilidade.efeitos_status) {
           const tipoEfeito = typeof efeitoConfig === 'string' ? efeitoConfig : efeitoConfig.tipo || efeitoConfig;
+
+          // PULAR efeitos instantâneos que não são persistentes
+          // Roubo de vida é processado separadamente e não deve criar efeito de status
+          if (['roubo_vida', 'roubo_vida_intenso', 'roubo_vida_massivo'].includes(tipoEfeito)) {
+            continue;
+          }
+
           const valorEfeito = typeof efeitoConfig === 'object' ? (efeitoConfig.valor || 10) : 10;
           const duracaoEfeito = habilidade.duracao_efeito || 3;
 
