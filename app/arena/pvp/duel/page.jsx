@@ -267,7 +267,8 @@ function DuelContent() {
           showDamageEffect(targetVisual, dano, critico ? 'critical' : 'damage');
 
           if (contraAtaque) {
-            setTimeout(() => showDamageEffect(ehMinhaAcao ? 'me' : 'opponent', '🔥', 'burn'), 500);
+            // Contra-ataque sempre aparece no atacante (oponente neste caso)
+            setTimeout(() => showDamageEffect('opponent', '🔥', 'burn'), 500);
           }
         }
       }
@@ -326,11 +327,13 @@ function DuelContent() {
           }
 
           if (cura > 0) {
-            showDamageEffect(ehMinhaAcao ? 'me' : 'opponent', cura, 'heal');
+            // Cura sempre aparece no atacante (oponente neste caso)
+            showDamageEffect('opponent', cura, 'heal');
           }
 
           if (contraAtaque) {
-            setTimeout(() => showDamageEffect(ehMinhaAcao ? 'me' : 'opponent', '🔥', 'burn'), 500);
+            // Contra-ataque sempre aparece no atacante (oponente neste caso)
+            setTimeout(() => showDamageEffect('opponent', '🔥', 'burn'), 500);
           }
         }
       }
