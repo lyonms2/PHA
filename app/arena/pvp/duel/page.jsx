@@ -226,25 +226,26 @@ function DuelContent() {
     for (const logEntry of novosLogs) {
       const { acao, jogador, alvo, dano, cura, critico, errou, esquivou, invisivel, bloqueado, habilidade, efeitos, numGolpes, contraAtaque, vencedor, energiaRecuperada, elemental } = logEntry;
 
-      const ehMinhaAcao = jogador === meuNome;
-      const targetVisual = ehMinhaAcao ? 'opponent' : 'me';
+      // Comparação mais confiável: se jogador === opponentNome, então é ação do oponente
+      // Caso contrário, é minha própria ação
+      const ehAcaoOponente = jogador === opponentNome;
 
       // PULAR minhas próprias ações - já foram processadas quando executei
       // Apenas processar ações do OPONENTE para ver o que ele fez
-      if (ehMinhaAcao) continue;
+      if (!ehAcaoOponente) continue;
 
       // ATAQUE
       if (acao === 'attack') {
         if (errou) {
           if (invisivel) {
             addLog(`👻 ${jogador} ERROU! ${alvo} está INVISÍVEL!`);
-            showDamageEffect(targetVisual, '', 'dodge');
+            showDamageEffect('me', '', 'dodge');
           } else if (esquivou) {
             addLog(`💨 ${jogador} ERROU! ${alvo} esquivou!`);
-            showDamageEffect(targetVisual, '', 'dodge');
+            showDamageEffect('me', '', 'dodge');
           } else {
             addLog(`💨 ${jogador} ERROU! ${alvo} esquivou!`);
-            showDamageEffect(targetVisual, '', 'miss');
+            showDamageEffect('me', '', 'miss');
           }
         } else {
           let emoji = '⚔️';
@@ -264,7 +265,7 @@ function DuelContent() {
             addLog(`🔥🛡️ CONTRA-ATAQUE! ${jogador} foi queimado!`);
           }
 
-          showDamageEffect(targetVisual, dano, critico ? 'critical' : 'damage');
+          showDamageEffect('me', dano, critico ? 'critical' : 'damage');
 
           if (contraAtaque) {
             // Contra-ataque sempre aparece no atacante (oponente neste caso)
@@ -278,13 +279,13 @@ function DuelContent() {
         if (errou) {
           if (invisivel) {
             addLog(`👻 ${jogador} usou ${habilidade} mas ERROU! ${alvo} está INVISÍVEL!`);
-            showDamageEffect(targetVisual, '', 'dodge');
+            showDamageEffect('me', '', 'dodge');
           } else if (esquivou) {
             addLog(`💨 ${jogador} usou ${habilidade} mas ERROU! ${alvo} esquivou!`);
-            showDamageEffect(targetVisual, '', 'dodge');
+            showDamageEffect('me', '', 'dodge');
           } else {
             addLog(`💨 ${jogador} usou ${habilidade} mas ERROU!`);
-            showDamageEffect(targetVisual, '', 'miss');
+            showDamageEffect('me', '', 'miss');
           }
         } else {
           let emoji = '✨';
@@ -320,9 +321,9 @@ function DuelContent() {
           // Efeitos visuais
           if (dano > 0) {
             if (numGolpes && numGolpes > 1) {
-              showDamageEffect(targetVisual, `${dano} ×${numGolpes}`, 'multihit');
+              showDamageEffect('me', `${dano} ×${numGolpes}`, 'multihit');
             } else {
-              showDamageEffect(targetVisual, dano, critico ? 'critical' : 'damage');
+              showDamageEffect('me', dano, critico ? 'critical' : 'damage');
             }
           }
 
