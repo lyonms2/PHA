@@ -148,7 +148,7 @@ function DuelContent() {
 
           // Processar novos logs de batalha
           if (data.battleLog && data.battleLog.length > 0) {
-            processarNovosLogs(data.battleLog);
+            processarNovosLogs(data.battleLog, data.opponentNome);
           }
 
           // Detectar mudança de turno
@@ -203,7 +203,7 @@ function DuelContent() {
   };
 
   // Processar novos logs da batalha
-  const processarNovosLogs = (battleLog) => {
+  const processarNovosLogs = (battleLog, opponentNomeAtual) => {
     if (!battleLog || battleLog.length === 0) return;
 
     // Encontrar logs novos
@@ -226,9 +226,10 @@ function DuelContent() {
     for (const logEntry of novosLogs) {
       const { acao, jogador, alvo, dano, cura, critico, errou, esquivou, invisivel, bloqueado, habilidade, efeitos, numGolpes, contraAtaque, vencedor, energiaRecuperada, elemental } = logEntry;
 
-      // Comparação mais confiável: se jogador === opponentNome, então é ação do oponente
+      // Comparação confiável usando opponentNome do servidor (não do state React)
+      // Se jogador === opponentNome, então é ação do oponente
       // Caso contrário, é minha própria ação
-      const ehAcaoOponente = jogador === opponentNome;
+      const ehAcaoOponente = jogador === opponentNomeAtual;
 
       // PULAR minhas próprias ações - já foram processadas quando executei
       // Apenas processar ações do OPONENTE para ver o que ele fez
