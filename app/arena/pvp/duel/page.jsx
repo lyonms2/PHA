@@ -47,6 +47,7 @@ function DuelContent() {
   const pollingRef = useRef(null);
   const lastTurnRef = useRef(null);
   const effectsProcessedRef = useRef(false);
+  const lastProcessedLogIdRef = useRef(null);
 
   // Carregar usuário e avatar
   useEffect(() => {
@@ -145,6 +146,11 @@ function DuelContent() {
           setMyEffects(data.myEffects || []);
           setOpponentEffects(data.opponentEffects || []);
 
+          // Processar novos logs de batalha
+          if (data.battleLog && data.battleLog.length > 0) {
+            processarNovosLogs(data.battleLog);
+          }
+
           // Detectar mudança de turno
           if (lastTurnRef.current && lastTurnRef.current !== data.room.currentTurn) {
             if (data.isYourTurn) {
@@ -194,6 +200,152 @@ function DuelContent() {
 
   const addLog = (msg) => {
     setLog(prev => [msg, ...prev]);
+  };
+
+  // Processar novos logs da batalha
+  const processarNovosLogs = (battleLog) => {
+    if (!battleLog || battleLog.length === 0) return;
+
+    // Encontrar logs novos
+    const novosLogs = [];
+    let encontrouUltimo = lastProcessedLogIdRef.current === null;
+
+    for (const logEntry of battleLog) {
+      if (!encontrouUltimo) {
+        if (logEntry.id === lastProcessedLogIdRef.current) {
+          encontrouUltimo = true;
+        }
+        continue;
+      }
+      // Pular o log que já foi processado
+      if (logEntry.id === lastProcessedLogIdRef.current) continue;
+      novosLogs.push(logEntry);
+    }
+
+    // Processar cada novo log
+    for (const logEntry of novosLogs) {
+      const { acao, jogador, alvo, dano, cura, critico, errou, esquivou, invisivel, bloqueado, habilidade, efeitos, numGolpes, contraAtaque, vencedor, energiaRecuperada, elemental } = logEntry;
+
+      const ehMinhaAcao = jogador === meuNome;
+      const targetVisual = ehMinhaAcao ? 'opponent' : 'me';
+
+      // ATAQUE
+      if (acao === 'attack') {
+        if (errou) {
+          if (invisivel) {
+            addLog(`👻 ${jogador} ERROU! ${alvo} está INVISÍVEL!`);
+            showDamageEffect(targetVisual, '', 'dodge');
+          } else if (esquivou) {
+            addLog(`💨 ${jogador} ERROU! ${alvo} esquivou!`);
+            showDamageEffect(targetVisual, '', 'dodge');
+          } else {
+            addLog(`💨 ${jogador} ERROU! ${alvo} esquivou!`);
+            showDamageEffect(targetVisual, '', 'miss');
+          }
+        } else {
+          let emoji = '⚔️';
+          let tipo = 'ATAQUE';
+          if (critico) { emoji = '💥'; tipo = 'CRÍTICO'; }
+          if (bloqueado) { emoji = '🛡️'; tipo = 'BLOQUEADO'; }
+
+          addLog(`${emoji} ${jogador} → ${alvo}: ${tipo}! Dano: ${dano}`);
+
+          if (elemental === 'vantagem') {
+            addLog('🔥 Super efetivo!');
+          } else if (elemental === 'desvantagem') {
+            addLog('💨 Pouco efetivo...');
+          }
+
+          if (contraAtaque) {
+            addLog(`🔥🛡️ CONTRA-ATAQUE! ${jogador} foi queimado!`);
+          }
+
+          showDamageEffect(targetVisual, dano, critico ? 'critical' : 'damage');
+
+          if (contraAtaque) {
+            setTimeout(() => showDamageEffect(ehMinhaAcao ? 'me' : 'opponent', '🔥', 'burn'), 500);
+          }
+        }
+      }
+
+      // HABILIDADE
+      if (acao === 'ability') {
+        if (errou) {
+          if (invisivel) {
+            addLog(`👻 ${jogador} usou ${habilidade} mas ERROU! ${alvo} está INVISÍVEL!`);
+            showDamageEffect(targetVisual, '', 'dodge');
+          } else if (esquivou) {
+            addLog(`💨 ${jogador} usou ${habilidade} mas ERROU! ${alvo} esquivou!`);
+            showDamageEffect(targetVisual, '', 'dodge');
+          } else {
+            addLog(`💨 ${jogador} usou ${habilidade} mas ERROU!`);
+            showDamageEffect(targetVisual, '', 'miss');
+          }
+        } else {
+          let emoji = '✨';
+          let msg = `${emoji} ${jogador} usou ${habilidade}!`;
+
+          if (dano > 0) {
+            msg += ` Dano: ${dano}`;
+            if (numGolpes && numGolpes > 1) {
+              msg += ` (${numGolpes}× golpes)`;
+            }
+          }
+
+          if (cura > 0) {
+            msg += ` ❤️ Curou: ${cura}`;
+          }
+
+          addLog(msg);
+
+          if (elemental === 'vantagem') {
+            addLog('🔥 Super efetivo!');
+          } else if (elemental === 'desvantagem') {
+            addLog('💨 Pouco efetivo...');
+          }
+
+          if (contraAtaque) {
+            addLog(`🔥🛡️ CONTRA-ATAQUE! ${jogador} foi queimado!`);
+          }
+
+          if (efeitos && efeitos.length > 0) {
+            addLog(`✨ Efeitos: ${efeitos.join(', ')}`);
+          }
+
+          // Efeitos visuais
+          if (dano > 0) {
+            if (numGolpes && numGolpes > 1) {
+              showDamageEffect(targetVisual, `${dano} ×${numGolpes}`, 'multihit');
+            } else {
+              showDamageEffect(targetVisual, dano, critico ? 'critical' : 'damage');
+            }
+          }
+
+          if (cura > 0) {
+            showDamageEffect(ehMinhaAcao ? 'me' : 'opponent', cura, 'heal');
+          }
+
+          if (contraAtaque) {
+            setTimeout(() => showDamageEffect(ehMinhaAcao ? 'me' : 'opponent', '🔥', 'burn'), 500);
+          }
+        }
+      }
+
+      // DEFESA
+      if (acao === 'defend') {
+        addLog(`🛡️ ${jogador} defendeu! +${energiaRecuperada || 20} ⚡`);
+      }
+
+      // RENDIÇÃO
+      if (acao === 'surrender') {
+        addLog(`🏳️ ${jogador} se rendeu! ${vencedor} venceu!`);
+      }
+    }
+
+    // Atualizar último log processado
+    if (novosLogs.length > 0) {
+      lastProcessedLogIdRef.current = novosLogs[novosLogs.length - 1].id;
+    }
   };
 
   // Entrar no lobby

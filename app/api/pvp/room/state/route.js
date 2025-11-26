@@ -4,6 +4,23 @@ import { getDocument, updateDocument } from '@/lib/firebase/firestore';
 export const dynamic = 'force-dynamic';
 
 /**
+ * Helper: Adicionar log de ação ao histórico da batalha
+ * Mantém apenas as últimas 20 ações para não sobrecarregar
+ */
+function adicionarLogBatalha(battleLog = [], novoLog) {
+  const logComId = {
+    ...novoLog,
+    id: Date.now() + Math.random(), // ID único
+    timestamp: new Date().toISOString()
+  };
+
+  const logsAtualizados = [...battleLog, logComId];
+
+  // Manter apenas últimas 20 ações
+  return logsAtualizados.slice(-20);
+}
+
+/**
  * GET /api/pvp/room/state?roomId=xxx&visitorId=xxx
  * Busca estado da sala
  */
@@ -65,13 +82,14 @@ export async function GET(request) {
       myExaustao: isHost ? (room.host_exaustao ?? 0) : (room.guest_exaustao ?? 0),
       opponentHp: isHost ? room.guest_hp : room.host_hp,
       opponentHpMax: isHost ? (room.guest_hp_max ?? 100) : (room.host_hp_max ?? 100),
-      opponentExaustao: isHost ? (room.guest_exaustao ?? 0) : (room.host_exaustao ?? 0),
+      opponentExaustao: isHost ? (room.guest_exaustao ?? 0) : (room.guest_exaustao ?? 0),
       myEnergy: isHost ? (room.host_energy ?? 100) : (room.guest_energy ?? 100),
       opponentEnergy: isHost ? (room.guest_energy ?? 100) : (room.host_energy ?? 100),
       opponentNome: isHost ? room.guest_nome : room.host_nome,
       opponentAvatar: isHost ? room.guest_avatar : room.host_avatar,
       myEffects: isHost ? (room.host_effects || []) : (room.guest_effects || []),
-      opponentEffects: isHost ? (room.guest_effects || []) : (room.host_effects || [])
+      opponentEffects: isHost ? (room.guest_effects || []) : (room.host_effects || []),
+      battleLog: room.battle_log || []
     });
 
   } catch (error) {
@@ -191,9 +209,23 @@ export async function POST(request) {
       // Invisibilidade = sempre esquiva
       if (temInvisibilidadeAtk) {
         const newEnergy = currentEnergy - 10;
+
+        // Log de esquiva por invisibilidade
+        const meuNome = isHost ? room.host_nome : room.guest_nome;
+        const oponenteNome = isHost ? room.guest_nome : room.host_nome;
+        const battleLog = adicionarLogBatalha(room.battle_log || [], {
+          acao: 'attack',
+          jogador: meuNome,
+          alvo: oponenteNome,
+          errou: true,
+          esquivou: true,
+          invisivel: true
+        });
+
         await updateDocument('pvp_duel_rooms', roomId, {
           [myEnergyField]: newEnergy,
-          current_turn: isHost ? 'guest' : 'host'
+          current_turn: isHost ? 'guest' : 'host',
+          battle_log: battleLog
         });
 
         return NextResponse.json({
@@ -224,9 +256,22 @@ export async function POST(request) {
       if (!acertou) {
         // Errou o ataque - passa o turno sem causar dano
         const newEnergy = currentEnergy - 10;
+
+        // Log de erro
+        const meuNome = isHost ? room.host_nome : room.guest_nome;
+        const oponenteNome = isHost ? room.guest_nome : room.host_nome;
+        const battleLog = adicionarLogBatalha(room.battle_log || [], {
+          acao: 'attack',
+          jogador: meuNome,
+          alvo: oponenteNome,
+          errou: true,
+          chanceAcerto: Math.floor(chanceAcerto)
+        });
+
         await updateDocument('pvp_duel_rooms', roomId, {
           [myEnergyField]: newEnergy,
-          current_turn: isHost ? 'guest' : 'host'
+          current_turn: isHost ? 'guest' : 'host',
+          battle_log: battleLog
         });
 
         return NextResponse.json({
@@ -354,12 +399,27 @@ export async function POST(request) {
       const newOpponentHp = Math.max(0, (isHost ? room.guest_hp : room.host_hp) - dano);
       const newEnergy = currentEnergy - 10;
 
+      // ===== ADICIONAR LOG DE BATALHA =====
+      const meuNome = isHost ? room.host_nome : room.guest_nome;
+      const oponenteNome = isHost ? room.guest_nome : room.host_nome;
+      const battleLog = adicionarLogBatalha(room.battle_log || [], {
+        acao: 'attack',
+        jogador: meuNome,
+        alvo: oponenteNome,
+        dano,
+        critico,
+        bloqueado: opponentDefending,
+        contraAtaque: temContraAtaque,
+        elemental: elemental.tipo
+      });
+
       const updates = {
         [opponentHpField]: newOpponentHp,
         [myEnergyField]: newEnergy,
         [myEffectsField]: myEffects, // Atualizar efeitos do atacante (contra-ataque)
         [opponentDefendingField]: false, // Reset defesa do oponente após ser atacado
-        current_turn: isHost ? 'guest' : 'host' // Passa o turno
+        current_turn: isHost ? 'guest' : 'host', // Passa o turno
+        battle_log: battleLog
       };
 
       // Verificar se acabou
@@ -409,11 +469,21 @@ export async function POST(request) {
 
       // Recuperar energia (+20, max 100)
       const newEnergy = Math.min(100, currentEnergy + 20);
+      const energyGained = newEnergy - currentEnergy;
+
+      // Log de defesa
+      const meuNome = isHost ? room.host_nome : room.guest_nome;
+      const battleLog = adicionarLogBatalha(room.battle_log || [], {
+        acao: 'defend',
+        jogador: meuNome,
+        energiaRecuperada: energyGained
+      });
 
       const updates = {
         [myEnergyField]: newEnergy,
         [myDefendingField]: true, // Ativa defesa
-        current_turn: isHost ? 'guest' : 'host' // Passa o turno
+        current_turn: isHost ? 'guest' : 'host', // Passa o turno
+        battle_log: battleLog
       };
 
       await updateDocument('pvp_duel_rooms', roomId, updates);
@@ -519,9 +589,24 @@ export async function POST(request) {
       if (temInvisibilidade && chanceAcertoBase < 100) {
         // Invisível = evasão automática
         const newEnergy = currentEnergy - custoEnergia;
+
+        // Log de esquiva por invisibilidade
+        const meuNome = isHost ? room.host_nome : room.guest_nome;
+        const oponenteNome = isHost ? room.guest_nome : room.host_nome;
+        const battleLog = adicionarLogBatalha(room.battle_log || [], {
+          acao: 'ability',
+          jogador: meuNome,
+          alvo: oponenteNome,
+          habilidade: habilidade.nome,
+          errou: true,
+          esquivou: true,
+          invisivel: true
+        });
+
         await updateDocument('pvp_duel_rooms', roomId, {
           [myEnergyField]: newEnergy,
-          current_turn: isHost ? 'guest' : 'host'
+          current_turn: isHost ? 'guest' : 'host',
+          battle_log: battleLog
         });
 
         return NextResponse.json({
@@ -555,9 +640,23 @@ export async function POST(request) {
       if (!acertou && (habilidade.tipo === 'Ofensiva' || habilidade.tipo === 'Controle')) {
         // Habilidade ERROU - consome energia mas não causa efeito
         const newEnergy = currentEnergy - custoEnergia;
+
+        // Log de erro
+        const meuNome = isHost ? room.host_nome : room.guest_nome;
+        const oponenteNome = isHost ? room.guest_nome : room.host_nome;
+        const battleLog = adicionarLogBatalha(room.battle_log || [], {
+          acao: 'ability',
+          jogador: meuNome,
+          alvo: oponenteNome,
+          habilidade: habilidade.nome,
+          errou: true,
+          chanceAcerto: Math.floor(chanceAcertoFinal)
+        });
+
         await updateDocument('pvp_duel_rooms', roomId, {
           [myEnergyField]: newEnergy,
-          current_turn: isHost ? 'guest' : 'host'
+          current_turn: isHost ? 'guest' : 'host',
+          battle_log: battleLog
         });
 
         return NextResponse.json({
@@ -815,12 +914,31 @@ export async function POST(request) {
       const newMyHp = Math.min(myHpMax, currentMyHp + cura);
       const newEnergy = currentEnergy - custoEnergia;
 
+      // ===== ADICIONAR LOG DE BATALHA =====
+      const meuNome = isHost ? room.host_nome : room.guest_nome;
+      const oponenteNome = isHost ? room.guest_nome : room.host_nome;
+      const battleLog = adicionarLogBatalha(room.battle_log || [], {
+        acao: 'ability',
+        jogador: meuNome,
+        alvo: habilidade.tipo === 'Suporte' ? meuNome : oponenteNome,
+        habilidade: habilidade.nome,
+        dano: dano > 0 ? dano : undefined,
+        cura: cura > 0 ? cura : undefined,
+        critico,
+        bloqueado: detalhesCalculo.bloqueado || false,
+        contraAtaque: contraAtaqueAplicado,
+        efeitos: efeitosAplicados.length > 0 ? efeitosAplicados : undefined,
+        numGolpes: numGolpes > 1 ? numGolpes : undefined,
+        elemental: elemental.tipo
+      });
+
       const updates = {
         [myEnergyField]: newEnergy,
         [opponentDefendingField]: false,
         [opponentEffectsField]: currentOpponentEffects,
         [myEffectsField]: currentMyEffects,
-        current_turn: isHost ? 'guest' : 'host'
+        current_turn: isHost ? 'guest' : 'host',
+        battle_log: battleLog
       };
 
       if (dano > 0) {
@@ -869,11 +987,21 @@ export async function POST(request) {
         );
       }
 
+      // Log de rendição
+      const meuNome = isHost ? room.host_nome : room.guest_nome;
+      const oponenteNome = isHost ? room.guest_nome : room.host_nome;
+      const battleLog = adicionarLogBatalha(room.battle_log || [], {
+        acao: 'surrender',
+        jogador: meuNome,
+        vencedor: oponenteNome
+      });
+
       // Marcar como finalizada e o oponente como vencedor
       const opponentRole = isHost ? 'guest' : 'host';
       await updateDocument('pvp_duel_rooms', roomId, {
         status: 'finished',
-        winner: opponentRole
+        winner: opponentRole,
+        battle_log: battleLog
       });
 
       return NextResponse.json({
