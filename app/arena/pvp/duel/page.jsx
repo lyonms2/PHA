@@ -890,12 +890,12 @@ function DuelContent() {
   const getEfeitoEmoji = (tipo) => {
     const emojis = {
       'queimadura': '🔥', 'queimadura_intensa': '🔥🔥', 'veneno': '💀', 'sangramento': '🩸',
-      'eletrocutado': '⚡', 'afogamento': '💧', 'erosão': '🌪️',
+      'eletrocutado': '⚡', 'eletrocucao': '⚡', 'afogamento': '💧', 'erosão': '🌪️',
       'defesa_aumentada': '🛡️', 'velocidade': '💨', 'foco_aumentado': '🎯',
       'forca_aumentada': '💪', 'regeneração': '✨', 'escudo': '🛡️',
       'lentidão': '🐌', 'fraqueza': '⬇️', 'confusão': '🌀',
       'medo': '😱', 'cegueira': '🌑', 'silêncio': '🔇',
-      'congelado': '❄️', 'atordoado': '💫', 'paralisado': '⚡⚡',
+      'congelado': '❄️', 'atordoado': '💫', 'paralisado': '⚡⚡', 'paralisia': '⚡⚡',
       'imobilizado': '🔒', 'sono': '😴',
       'fantasma': '👻', 'drenar': '🗡️', 'maldição': '💀',
       'evasao_aumentada': '💨', 'velocidade_aumentada': '⚡', 'invisivel': '👻',
