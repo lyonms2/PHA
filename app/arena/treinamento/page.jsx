@@ -1,79 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { aplicarPenalidadesExaustao, getNivelExaustao } from "../../avatares/sistemas/exhaustionSystem";
-import { getNivelVinculo } from "../../avatares/sistemas/bondSystem";
+import {
+  calcularPoderTotal,
+  calcularHPMaximoCompleto,
+  aplicarPenalidadesExaustao,
+  getNivelExaustao
+} from "@/lib/gameLogic";
 import AvatarSVG from "../../components/AvatarSVG";
-import BackgroundEffects from "@/components/BackgroundEffects";
 
-export default function ArenaTreinamentoPage() {
+export default function TreinamentoAIPage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [avatarAtivo, setAvatarAtivo] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [dificuldadeSelecionada, setDificuldadeSelecionada] = useState('normal');
-  const [iniciandoBatalha, setIniciandoBatalha] = useState(false);
   const [modalAlerta, setModalAlerta] = useState(null);
-
-  const dificuldades = {
-    facil: {
-      nome: "Recruta",
-      emoji: "🟢",
-      descricao: "Adversário inexperiente",
-      detalhes: "Ideal para treinar combos e aprender mecânicas. IA comete erros táticos frequentes.",
-      stats: "70% dos seus stats",
-      iaComportamento: "Joga defensivamente, comete 20% de erros, não usa combos",
-      recompensas: { xp: 25, vinculo: 3 },
-      exaustao: 5,
-      cor: "from-green-600 to-green-700",
-      corBorda: "border-green-500",
-      corBg: "bg-green-900/10",
-      corTexto: "text-green-400"
-    },
-    normal: {
-      nome: "Veterano",
-      emoji: "🟡",
-      descricao: "Desafio equilibrado",
-      detalhes: "Oponente experiente que sabe usar habilidades. IA inteligente mas não perfeita.",
-      stats: "100% dos seus stats",
-      iaComportamento: "Balanceia ataque e defesa, 10% de erros, considera vantagem elemental",
-      recompensas: { xp: 50, vinculo: 5 },
-      exaustao: 10,
-      cor: "from-yellow-600 to-yellow-700",
-      corBorda: "border-yellow-500",
-      corBg: "bg-yellow-900/10",
-      corTexto: "text-yellow-400"
-    },
-    dificil: {
-      nome: "Elite",
-      emoji: "🔴",
-      descricao: "Adversário muito poderoso",
-      detalhes: "Combatente de elite com stats superiores. IA usa combos e tática avançada.",
-      stats: "130% dos seus stats",
-      iaComportamento: "Agressivo mas inteligente, usa combos, remove buffs, 5% de erros",
-      recompensas: { xp: 100, vinculo: 8 },
-      exaustao: 15,
-      cor: "from-red-600 to-red-700",
-      corBorda: "border-red-500",
-      corBg: "bg-red-900/10",
-      corTexto: "text-red-400"
-    },
-    mestre: {
-      nome: "Lendário",
-      emoji: "💀",
-      descricao: "IA perfeita - Desafio supremo",
-      detalhes: "Adversário lendário com IA perfeita. Não comete erros e prevê suas ações.",
-      stats: "150% dos seus stats",
-      iaComportamento: "IA PERFEITA: sem erros, antecipa jogadas, usa tática avançada",
-      recompensas: { xp: 200, vinculo: 15 },
-      exaustao: 20,
-      cor: "from-purple-600 to-purple-800",
-      corBorda: "border-purple-500",
-      corBg: "bg-purple-900/10",
-      corTexto: "text-purple-400"
-    }
-  };
+  const [iniciandoBatalha, setIniciandoBatalha] = useState(false);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -104,11 +47,19 @@ export default function ArenaTreinamentoPage() {
     }
   };
 
-  const iniciarTreino = async () => {
+  const iniciarTreinoIA = async (minPower, maxPower, dificuldade) => {
     if (!avatarAtivo) {
       setModalAlerta({
         titulo: '⚠️ Sem Avatar Ativo',
-        mensagem: 'Você precisa ter um avatar ativo! Vá até a tela de Avatares e selecione um avatar.'
+        mensagem: 'Você precisa ter um avatar ativo para treinar!'
+      });
+      return;
+    }
+
+    if (!avatarAtivo.vivo) {
+      setModalAlerta({
+        titulo: '💀 Avatar Morto',
+        mensagem: 'Seu avatar está morto! Visite o Necromante para ressuscitá-lo.'
       });
       return;
     }
@@ -116,7 +67,7 @@ export default function ArenaTreinamentoPage() {
     if (avatarAtivo.exaustao >= 100) {
       setModalAlerta({
         titulo: '💀 Avatar Colapsado',
-        mensagem: 'Seu avatar está completamente exausto e não pode lutar! Descanse seu avatar antes de treinar.'
+        mensagem: 'Seu avatar está completamente exausto e não pode lutar!'
       });
       return;
     }
@@ -124,533 +75,514 @@ export default function ArenaTreinamentoPage() {
     if (avatarAtivo.exaustao >= 80) {
       setModalAlerta({
         titulo: '⚠️ Avatar Muito Exausto',
-        mensagem: 'Seu avatar está com exaustão crítica! Recomendamos descansar antes de treinar. As penalidades serão severas!'
+        mensagem: 'Seu avatar está com exaustão crítica! As penalidades serão severas!'
       });
-      // Permite continuar após o alerta
     }
 
     setIniciandoBatalha(true);
 
     try {
-      const response = await fetch('/api/arena/treino/iniciar', {
+      const poderTotal = calcularPoderTotal(avatarAtivo);
+      const statsComPenalidades = aplicarPenalidadesExaustao({
+        forca: avatarAtivo.forca,
+        agilidade: avatarAtivo.agilidade,
+        resistencia: avatarAtivo.resistencia,
+        foco: avatarAtivo.foco
+      }, avatarAtivo.exaustao || 0);
+
+      const response = await fetch('/api/arena/treino-ia/iniciar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: user.id,
           avatarId: avatarAtivo.id,
-          dificuldade: dificuldadeSelecionada
+          minPower,
+          maxPower,
+          dificuldade
         })
       });
 
+      if (!response.ok) {
+        throw new Error('Erro ao iniciar treino');
+      }
+
       const data = await response.json();
 
-      if (response.ok) {
-        // Salvar estado da batalha
-        localStorage.setItem('batalha_atual', JSON.stringify(data.batalha));
+      // Preparar dados da batalha
+      const dadosPartida = {
+        tipo: 'treino-ia',
+        pvpAoVivo: false,
+        avatarJogador: {
+          ...avatarAtivo,
+          ...statsComPenalidades,
+          habilidades: avatarAtivo.habilidades || []
+        },
+        avatarOponente: data.oponente,
+        nomeOponente: data.oponente.nome,
+        personalidadeIA: data.personalidadeIA,
+        dificuldade: data.dificuldade,
+        morteReal: false // Treino não causa morte real
+      };
 
-        // Redirecionar para tela de batalha
-        router.push('/arena/batalha');
-      } else {
-        setModalAlerta({
-          titulo: '❌ Erro',
-          mensagem: data.message || 'Erro ao iniciar treino'
-        });
-      }
+      sessionStorage.setItem('batalha_treino_dados', JSON.stringify(dadosPartida));
+
+      // Redirecionar para batalha
+      setTimeout(() => {
+        router.push('/arena/batalha?modo=treino-ia');
+      }, 500);
+
     } catch (error) {
-      console.error('Erro:', error);
+      console.error('Erro ao iniciar treino:', error);
       setModalAlerta({
-        titulo: '❌ Erro de Conexão',
-        mensagem: 'Erro ao iniciar treino. Verifique sua conexão.'
+        titulo: '❌ Erro',
+        mensagem: 'Erro ao iniciar treino. Tente novamente.'
       });
     } finally {
       setIniciandoBatalha(false);
     }
   };
 
+  const getElementoColor = (elemento) => {
+    const cores = {
+      'Fogo': 'text-red-400',
+      'Água': 'text-blue-400',
+      'Terra': 'text-amber-600',
+      'Vento': 'text-cyan-300',
+      'Luz': 'text-yellow-300',
+      'Sombra': 'text-purple-400',
+      'Eletricidade': 'text-yellow-400'
+    };
+    return cores[elemento] || 'text-gray-400';
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex items-center justify-center">
-        <div className="text-cyan-400 font-mono animate-pulse">Carregando Arena de Treino...</div>
+        <div className="text-cyan-400 font-mono animate-pulse text-xl">
+          Carregando Arena de Treino...
+        </div>
       </div>
     );
   }
 
-  // Calcular stats com penalidades de exaustão
-  let statsAtuais = null;
-  let nivelExaustao = null;
-  let temPenalidade = false;
-  let hpMaximo = 0;
-  let hpAtual = 0;
-  let nivelVinculo = null;
+  if (!avatarAtivo) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-gray-100 p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8">
+            <button
+              onClick={() => router.push('/arena')}
+              className="text-cyan-400 hover:text-cyan-300 flex items-center gap-2 mb-4"
+            >
+              ← Voltar para Arena
+            </button>
 
-  if (avatarAtivo) {
-    const statsBase = {
-      forca: avatarAtivo.forca || 0,
-      agilidade: avatarAtivo.agilidade || 0,
-      resistencia: avatarAtivo.resistencia || 0,
-      foco: avatarAtivo.foco || 0
-    };
-    statsAtuais = aplicarPenalidadesExaustao(statsBase, avatarAtivo.exaustao || 0);
-    nivelExaustao = getNivelExaustao(avatarAtivo.exaustao || 0);
-    temPenalidade = nivelExaustao.penalidades.stats !== undefined;
-    hpMaximo = avatarAtivo.resistencia * 10 + avatarAtivo.nivel * 5;
-    hpAtual = avatarAtivo.hp_atual !== null && avatarAtivo.hp_atual !== undefined
-      ? avatarAtivo.hp_atual
-      : hpMaximo;
-    nivelVinculo = getNivelVinculo(avatarAtivo.vinculo || 0);
+            <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 mb-2">
+              🤖 TREINO COM IA
+            </h1>
+          </div>
+
+          <div className="max-w-3xl mx-auto">
+            <div className="bg-slate-950/90 border border-purple-900/50 rounded-xl p-12 text-center">
+              <div className="text-8xl mb-6">🤖</div>
+              <h2 className="text-3xl font-bold text-purple-400 mb-4">
+                Nenhum Avatar Ativo
+              </h2>
+              <p className="text-slate-300 mb-8 text-lg">
+                Você precisa ter um avatar ativo para treinar com IA!
+              </p>
+              <button
+                onClick={() => router.push("/avatares")}
+                className="px-8 py-4 bg-cyan-600 hover:bg-cyan-500 rounded font-bold"
+              >
+                Ir para Avatares
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  const dificuldade = dificuldades[dificuldadeSelecionada];
+  const poderTotal = calcularPoderTotal(avatarAtivo);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-gray-100 relative overflow-hidden">
-      <BackgroundEffects />
-
-      <div className="relative z-10 container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-gray-100 p-6">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-          <div>
-            <h1 className="text-4xl font-black bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 bg-clip-text text-transparent mb-2">
-              🏟️ ARENA DE TREINO
-            </h1>
-            <p className="text-slate-400 font-mono text-sm">
-              Aprimore suas habilidades e fortaleça o vínculo com seu avatar
-            </p>
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
+            <button
+              onClick={() => router.push('/arena')}
+              className="text-cyan-400 hover:text-cyan-300 flex items-center gap-2"
+            >
+              ← Voltar para Arena
+            </button>
           </div>
 
-          <button
-            onClick={() => router.push("/arena")}
-            className="group relative"
-          >
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-slate-500/30 to-slate-600/30 rounded blur opacity-50 group-hover:opacity-75 transition-all"></div>
-            <div className="relative px-6 py-3 bg-slate-950 rounded border border-slate-500/50 group-hover:border-slate-400 transition-all">
-              <span className="font-bold text-slate-400 group-hover:text-slate-300">← Voltar ao Lobby</span>
-            </div>
-          </button>
+          <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 mb-2">
+            🤖 TREINO COM IA
+          </h1>
+          <p className="text-gray-400 text-lg">
+            Treine contra oponentes controlados por IA inteligente - sem risco de morte real!
+          </p>
         </div>
 
-        {/* Sem Avatar Ativo */}
-        {!avatarAtivo && (
-          <div className="max-w-3xl mx-auto">
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-red-500/20 to-orange-500/20 rounded-xl blur opacity-75"></div>
-
-              <div className="relative bg-slate-950/90 backdrop-blur-xl border border-red-900/50 rounded-xl overflow-hidden">
-                <div className="p-12 text-center">
-                  <div className="text-8xl mb-6">⚔️</div>
-                  <h2 className="text-3xl font-bold text-red-400 mb-4">
-                    Nenhum Avatar Ativo
-                  </h2>
-                  <p className="text-slate-300 mb-8 text-lg leading-relaxed">
-                    Você precisa ter um avatar ativo para treinar!<br/>
-                    Vá até a tela de Avatares e selecione seu combatente.
-                  </p>
-                  <div className="flex gap-4 justify-center">
-                    <button
-                      onClick={() => router.push("/avatares")}
-                      className="group/btn relative"
-                    >
-                      <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded blur opacity-50 group-hover/btn:opacity-75 transition-all"></div>
-                      <div className="relative px-8 py-4 bg-slate-950 rounded border border-cyan-500/50 transition-all">
-                        <span className="font-bold text-cyan-400">Ir para Avatares</span>
-                      </div>
-                    </button>
-                    <button
-                      onClick={() => router.push("/ocultista")}
-                      className="group/btn relative"
-                    >
-                      <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded blur opacity-50 group-hover/btn:opacity-75 transition-all"></div>
-                      <div className="relative px-8 py-4 bg-slate-950 rounded border border-purple-500/50 transition-all">
-                        <span className="font-bold text-purple-400">Invocar Novo Avatar</span>
-                      </div>
-                    </button>
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Coluna Esquerda - Avatar e Info */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Seu Avatar Resumido */}
+            <div className="relative">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/30 to-cyan-500/30 rounded-xl blur"></div>
+              <div className="relative bg-slate-900/95 rounded-xl border-2 border-purple-500 overflow-hidden">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-purple-900/50 to-cyan-900/50 px-3 py-2 border-b border-purple-500/50 flex justify-between items-center">
+                  <div>
+                    <div className="text-[10px] text-purple-300 font-bold uppercase tracking-wider">SEU AVATAR</div>
+                    <div className="font-bold text-white text-base truncate">{avatarAtivo.nome}</div>
+                    <div className="text-[10px] text-slate-400 truncate">🎯 {user?.nome_operacao || 'Caçador'}</div>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Interface Principal */}
-        {avatarAtivo && (
-          <div className="grid lg:grid-cols-3 gap-6">
-            {/* Coluna Esquerda - Avatar Ativo */}
-            <div className="lg:col-span-1 space-y-6">
-              {/* Card do Avatar */}
-              <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-purple-500/20 rounded-xl blur opacity-50"></div>
-
-                <div className="relative bg-slate-950/90 backdrop-blur-xl border border-cyan-900/50 rounded-xl overflow-hidden">
-                  {/* Header do Card */}
-                  <div className="bg-gradient-to-r from-cyan-900/30 to-blue-900/30 p-4 border-b border-cyan-500/30">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="text-xs text-slate-400 uppercase font-mono tracking-wider">Seu Combatente</div>
-                      <div className={`px-3 py-1 rounded text-xs font-bold uppercase tracking-wider ${
-                        avatarAtivo.raridade === 'Lendário' ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' :
-                        avatarAtivo.raridade === 'Raro' ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white' :
-                        'bg-slate-700 text-slate-300'
-                      }`}>
-                        {avatarAtivo.raridade}
-                      </div>
-                    </div>
-                    <h2 className="text-2xl font-bold text-cyan-400">{avatarAtivo.nome}</h2>
-                    <div className="flex items-center gap-3 mt-2">
-                      <span className="text-sm text-slate-300">Nv.{avatarAtivo.nivel}</span>
-                      <span className="text-slate-600">•</span>
-                      <span className="text-sm text-slate-400">{avatarAtivo.elemento}</span>
-                    </div>
-                  </div>
-
-                  {/* Avatar Image */}
-                  <div className="p-6 flex justify-center bg-gradient-to-b from-slate-950/30 to-transparent">
-                    <AvatarSVG avatar={avatarAtivo} tamanho={180} />
-                  </div>
-
-                  {/* Stats */}
-                  <div className="p-4 space-y-3">
-                    {/* HP */}
-                    <div>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-green-400 font-bold">❤️ HP</span>
-                        <span className="text-slate-400">{hpAtual} / {hpMaximo}</span>
-                      </div>
-                      <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                        <div
-                          className={`h-full transition-all ${
-                            (hpAtual / hpMaximo) > 0.7 ? 'bg-green-500' :
-                            (hpAtual / hpMaximo) > 0.4 ? 'bg-yellow-500' :
-                            (hpAtual / hpMaximo) > 0.2 ? 'bg-orange-500' :
-                            'bg-red-500'
-                          }`}
-                          style={{ width: `${Math.min((hpAtual / hpMaximo) * 100, 100)}%` }}
-                        ></div>
-                      </div>
-                    </div>
-
-                    {/* XP / Nível */}
-                    <div>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-cyan-400 font-bold">⭐ Nível {avatarAtivo.nivel}</span>
-                        <span className="text-slate-400">
-                          {avatarAtivo.experiencia || 0} / {avatarAtivo.nivel * 100} XP
-                        </span>
-                      </div>
-                      <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all"
-                          style={{
-                            width: `${Math.min(((avatarAtivo.experiencia || 0) / (avatarAtivo.nivel * 100)) * 100, 100)}%`
-                          }}
-                        ></div>
-                      </div>
-                      <div className="text-[10px] text-cyan-400 font-bold mt-1 text-center">
-                        {Math.floor(((avatarAtivo.experiencia || 0) / (avatarAtivo.nivel * 100)) * 100)}% para próximo nível
-                      </div>
-                    </div>
-
-                    {/* Stats com Penalidade */}
-                    <div className="bg-slate-900/50 rounded-lg p-3">
-                      <div className="grid grid-cols-4 gap-2 text-center">
-                        <div>
-                          <div className="text-red-400 font-bold text-lg">
-                            {temPenalidade && <div className="text-[9px] text-slate-700 line-through">{avatarAtivo.forca}</div>}
-                            {statsAtuais.forca}
-                          </div>
-                          <div className="text-[10px] text-slate-500 font-semibold uppercase">For</div>
-                        </div>
-                        <div>
-                          <div className="text-green-400 font-bold text-lg">
-                            {temPenalidade && <div className="text-[9px] text-slate-700 line-through">{avatarAtivo.agilidade}</div>}
-                            {statsAtuais.agilidade}
-                          </div>
-                          <div className="text-[10px] text-slate-500 font-semibold uppercase">Agi</div>
-                        </div>
-                        <div>
-                          <div className="text-blue-400 font-bold text-lg">
-                            {temPenalidade && <div className="text-[9px] text-slate-700 line-through">{avatarAtivo.resistencia}</div>}
-                            {statsAtuais.resistencia}
-                          </div>
-                          <div className="text-[10px] text-slate-500 font-semibold uppercase">Res</div>
-                        </div>
-                        <div>
-                          <div className="text-purple-400 font-bold text-lg">
-                            {temPenalidade && <div className="text-[9px] text-slate-700 line-through">{avatarAtivo.foco}</div>}
-                            {statsAtuais.foco}
-                          </div>
-                          <div className="text-[10px] text-slate-500 font-semibold uppercase">Foc</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Exaustão */}
-                    <div>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-orange-400 font-bold">😰 Exaustão</span>
-                        <span className={nivelExaustao.cor}>{Math.floor(avatarAtivo.exaustao || 0)}%</span>
-                      </div>
-                      <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                        <div
-                          className={`h-full transition-all ${
-                            (avatarAtivo.exaustao || 0) < 20 ? 'bg-green-500' :
-                            (avatarAtivo.exaustao || 0) < 40 ? 'bg-yellow-500' :
-                            (avatarAtivo.exaustao || 0) < 60 ? 'bg-orange-500' :
-                            'bg-red-500'
-                          }`}
-                          style={{ width: `${Math.min(avatarAtivo.exaustao || 0, 100)}%` }}
-                        ></div>
-                      </div>
-                      <div className={`text-[10px] ${nivelExaustao.cor} font-bold mt-1 text-center`}>
-                        {nivelExaustao.nome}
-                      </div>
-                    </div>
-
-                    {/* Vínculo */}
-                    <div>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-pink-400 font-bold">💖 Vínculo</span>
-                        <span className={nivelVinculo.cor}>{Math.floor(avatarAtivo.vinculo || 0)}%</span>
-                      </div>
-                      <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-pink-500 to-purple-500 transition-all"
-                          style={{ width: `${Math.min(avatarAtivo.vinculo || 0, 100)}%` }}
-                        ></div>
-                      </div>
-                      <div className={`text-[10px] ${nivelVinculo.cor} font-bold mt-1 text-center`}>
-                        {nivelVinculo.nome}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Alerta de Status */}
-                  {avatarAtivo.exaustao >= 60 && (
-                    <div className="p-3 bg-orange-950/50 border-t border-orange-500/30">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">⚠️</span>
-                        <div className="text-xs text-orange-400 font-bold">
-                          Avatar {avatarAtivo.exaustao >= 80 ? 'crítico' : 'exausto'} - Penalidades severas em combate!
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Botão Trocar Avatar */}
-                  <div className="p-4 border-t border-slate-700/50">
-                    <button
-                      onClick={() => router.push('/avatares')}
-                      className="w-full group/trocar relative"
-                    >
-                      <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded blur opacity-0 group-hover/trocar:opacity-75 transition-all"></div>
-                      <div className="relative px-4 py-3 bg-slate-900/50 hover:bg-slate-800/50 rounded border border-cyan-500/30 group-hover/trocar:border-cyan-400/50 transition-all">
-                        <div className="flex items-center justify-center gap-2">
-                          <span className="text-cyan-400 font-bold text-sm">🔄 Trocar Avatar</span>
-                        </div>
-                      </div>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Info sobre Treino */}
-              <div className="relative group">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg blur opacity-50"></div>
-
-                <div className="relative bg-slate-950/80 backdrop-blur-xl border border-blue-900/50 rounded-lg p-4">
-                  <h3 className="text-cyan-400 font-bold mb-2 flex items-center gap-2">
-                    <span className="text-xl">ℹ️</span>
-                    <span>SOBRE O TREINO</span>
-                  </h3>
-                  <ul className="text-xs text-slate-300 space-y-2">
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-400 mt-0.5">✓</span>
-                      <span><strong>Ganhe XP</strong> para subir o nível do seu avatar</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-pink-400 mt-0.5">💖</span>
-                      <span><strong>Ganhe Vínculo</strong> para fortalecer sua conexão</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-cyan-400 mt-0.5">🤖</span>
-                      <span><strong>IA Adaptativa</strong> - cada dificuldade tem comportamento único</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-orange-400 mt-0.5">😰</span>
-                      <span><strong>Exaustão</strong> aumenta após cada treino</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            {/* Coluna Direita - Seleção de Dificuldade */}
-            <div className="lg:col-span-2 space-y-6">
-              <div>
-                <h2 className="text-3xl font-black text-orange-400 mb-6 flex items-center gap-3">
-                  <span className="text-4xl">🎯</span> SELECIONAR DIFICULDADE
-                </h2>
-
-                <div className="grid md:grid-cols-2 gap-4 mb-8">
-                  {Object.entries(dificuldades).map(([key, dif]) => {
-                    const selecionada = dificuldadeSelecionada === key;
-
-                    return (
-                      <button
-                        key={key}
-                        onClick={() => setDificuldadeSelecionada(key)}
-                        className={`group/card relative text-left p-5 rounded-xl border-2 transition-all duration-300 ${
-                          selecionada
-                            ? `${dif.corBorda} ${dif.corBg} ring-4 ring-offset-2 ring-offset-slate-950 ${dif.corBorda.replace('border-', 'ring-')} scale-105 shadow-2xl`
-                            : 'border-slate-700 bg-slate-900/50 hover:border-slate-600 hover:bg-slate-900/70 hover:scale-[1.02]'
-                        }`}
-                      >
-                        {/* Badge Selecionado */}
-                        {selecionada && (
-                          <div className="absolute top-3 right-3 bg-cyan-500 text-white text-xs px-3 py-1 rounded-full font-black uppercase tracking-wider animate-pulse">
-                            ✓ Ativo
-                          </div>
-                        )}
-
-                        {/* Header */}
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className={`text-5xl ${selecionada ? 'animate-pulse' : ''}`}>
-                            {dif.emoji}
-                          </div>
-                          <div className="flex-1">
-                            <div className="font-black text-xl text-white mb-1">{dif.nome}</div>
-                            <div className="text-sm text-slate-300 font-semibold">{dif.descricao}</div>
-                          </div>
-                        </div>
-
-                        <div className="text-xs text-slate-400 leading-relaxed mb-4">
-                          {dif.detalhes}
-                        </div>
-
-                        {/* Stats do Inimigo */}
-                        <div className="bg-slate-950/50 rounded-lg p-3 mb-3 space-y-2">
-                          <div className="text-xs font-bold text-red-400 uppercase tracking-wider">⚔️ Inimigo</div>
-                          <div className="flex justify-between text-xs">
-                            <span className="text-slate-500">Poder:</span>
-                            <span className="text-white font-bold">{dif.stats}</span>
-                          </div>
-                          <div className="flex justify-between text-xs">
-                            <span className="text-slate-500">Exaustão Ganho:</span>
-                            <span className="text-orange-400 font-bold">+{dif.exaustao}%</span>
-                          </div>
-                          <div className="text-xs text-slate-400 bg-slate-900/50 p-2 rounded leading-relaxed">
-                            <span className="text-purple-400 font-semibold">IA:</span> {dif.iaComportamento}
-                          </div>
-                        </div>
-
-                        {/* Recompensas */}
-                        <div className="bg-slate-950/50 rounded-lg p-3 space-y-2">
-                          <div className="text-xs font-bold text-green-400 uppercase tracking-wider">🎁 Recompensas</div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="bg-blue-900/30 px-2 py-2 rounded text-center">
-                              <div className="text-[10px] text-blue-300 mb-1">XP</div>
-                              <div className="text-base font-bold text-blue-400">+{dif.recompensas.xp}</div>
-                            </div>
-                            <div className="bg-pink-900/30 px-2 py-2 rounded text-center">
-                              <div className="text-[10px] text-pink-300 mb-1">Vínculo</div>
-                              <div className="text-base font-bold text-pink-400">+{dif.recompensas.vinculo}</div>
-                            </div>
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
+                  <button
+                    onClick={() => router.push('/avatares')}
+                    className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs"
+                  >
+                    Trocar
+                  </button>
                 </div>
 
-                {/* Preview da Dificuldade Selecionada */}
-                <div className="relative group/preview mb-6">
-                  <div className={`absolute -inset-1 bg-gradient-to-r ${dificuldade.cor} rounded-xl blur opacity-30`}></div>
-
-                  <div className="relative bg-slate-950/90 backdrop-blur-xl border-2 ${dificuldade.corBorda} rounded-xl p-6">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="text-6xl">{dificuldade.emoji}</div>
-                      <div>
-                        <div className="text-xs text-slate-500 uppercase font-mono mb-1">Dificuldade Selecionada</div>
-                        <div className={`text-3xl font-black ${dificuldade.corTexto}`}>{dificuldade.nome}</div>
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-3 gap-4 text-center">
-                      <div className="bg-slate-900/50 rounded-lg p-3">
-                        <div className="text-xs text-slate-500 mb-1">Ganho de XP</div>
-                        <div className="text-2xl font-bold text-blue-400">+{dificuldade.recompensas.xp}</div>
-                      </div>
-                      <div className="bg-slate-900/50 rounded-lg p-3">
-                        <div className="text-xs text-slate-500 mb-1">Ganho de Vínculo</div>
-                        <div className="text-2xl font-bold text-pink-400">+{dificuldade.recompensas.vinculo}</div>
-                      </div>
-                      <div className="bg-slate-900/50 rounded-lg p-3">
-                        <div className="text-xs text-slate-500 mb-1">Exaustão</div>
-                        <div className="text-2xl font-bold text-orange-400">+{dificuldade.exaustao}%</div>
-                      </div>
-                    </div>
-                  </div>
+                {/* Avatar */}
+                <div className="p-3 flex justify-center bg-gradient-to-b from-purple-950/30 to-transparent">
+                  <AvatarSVG avatar={avatarAtivo} tamanho={100} />
                 </div>
 
-                {/* Botão Iniciar Treino */}
-                <button
-                  onClick={iniciarTreino}
-                  disabled={!avatarAtivo || avatarAtivo.exaustao >= 100 || iniciandoBatalha}
-                  className="w-full group/btn relative disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <div className="absolute -inset-1 bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 rounded-xl blur opacity-50 group-hover/btn:opacity-75 transition-all"></div>
-
-                  <div className="relative px-12 py-6 bg-slate-950 rounded-xl border-2 border-orange-500 group-hover/btn:border-orange-400 transition-all">
-                    <span className="text-2xl font-black tracking-wider uppercase bg-gradient-to-r from-red-300 to-yellow-300 bg-clip-text text-transparent">
-                      {iniciandoBatalha ? '⏳ Iniciando Treino...' : '⚔️ INICIAR TREINO'}
+                {/* Info */}
+                <div className="px-3 pb-3 space-y-2">
+                  {/* Elemento e Nível */}
+                  <div className="flex items-center justify-between text-xs">
+                    <span className={getElementoColor(avatarAtivo.elemento)}>
+                      {avatarAtivo.elemento === 'Fogo' && '🔥'}
+                      {avatarAtivo.elemento === 'Água' && '💧'}
+                      {avatarAtivo.elemento === 'Terra' && '🪨'}
+                      {avatarAtivo.elemento === 'Vento' && '💨'}
+                      {avatarAtivo.elemento === 'Eletricidade' && '⚡'}
+                      {avatarAtivo.elemento === 'Luz' && '✨'}
+                      {avatarAtivo.elemento === 'Sombra' && '🌑'}
+                      {' '}{avatarAtivo.elemento}
                     </span>
+                    <span className="text-cyan-400">Nv.{avatarAtivo.nivel}</span>
                   </div>
-                </button>
 
-                {avatarAtivo?.exaustao >= 100 && (
-                  <div className="text-center text-sm text-red-400 font-bold mt-4">
-                    💀 Seu avatar está completamente exausto e não pode lutar!
+                  {/* HP Bar */}
+                  <div>
+                    <div className="flex justify-between text-[10px] mb-0.5">
+                      <span className="text-red-400 font-bold">❤️ HP</span>
+                      <span className="font-mono">{calcularHPMaximoCompleto(avatarAtivo)}</span>
+                    </div>
+                    <div className="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-green-500 to-emerald-400 w-full" />
+                    </div>
                   </div>
-                )}
+
+                  {/* Exaustão Bar */}
+                  <div>
+                    <div className="flex justify-between text-[10px] mb-0.5">
+                      <span className="text-orange-400 font-bold">😰 Exaustão</span>
+                      <span className="font-mono">{avatarAtivo.exaustao || 0}%</span>
+                    </div>
+                    <div className="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-500 ${
+                          (avatarAtivo.exaustao || 0) < 40 ? 'bg-gradient-to-r from-green-500 to-emerald-400' :
+                          (avatarAtivo.exaustao || 0) < 70 ? 'bg-gradient-to-r from-yellow-500 to-orange-400' :
+                          'bg-gradient-to-r from-red-600 to-red-400'
+                        }`}
+                        style={{ width: `${avatarAtivo.exaustao || 0}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Poder Total */}
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-700">
+                    <span className="text-cyan-400 font-bold text-sm">⚔️ Poder Total</span>
+                    <span className="font-mono text-lg text-cyan-300 font-bold">{poderTotal}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Info sobre Treino IA */}
+            <div className="bg-slate-900/50 border border-purple-700 rounded-lg p-6">
+              <h3 className="text-lg font-bold text-purple-400 mb-3">🤖 Sobre o Treino IA</h3>
+              <ul className="text-gray-400 text-sm space-y-2">
+                <li>• IA com personalidades únicas</li>
+                <li>• Oponentes gerados com poder similar</li>
+                <li>• Sem risco de morte permanente</li>
+                <li>• Ganhe XP e fortaleça vínculo</li>
+                <li>• Dificuldade adaptativa por sala</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Coluna Direita - Salas por Poder */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-slate-900 border border-purple-500 rounded-lg p-6">
+              <h2 className="text-xl font-bold text-purple-400 mb-4 text-center">
+                🏟️ SALAS DE TREINO POR PODER
+              </h2>
+              <p className="text-slate-400 text-center mb-6 text-sm">
+                Escolha uma sala compatível com o poder do seu avatar
+              </p>
+
+              <div className="space-y-4">
+                {/* Sala Iniciante */}
+                <div className={`bg-slate-800 rounded-lg p-4 border-2 transition-all ${
+                  poderTotal >= 0 && poderTotal <= 39
+                    ? 'border-green-500 shadow-lg shadow-green-500/20'
+                    : 'border-slate-700 opacity-50'
+                }`}>
+                  <div className="flex justify-between items-center mb-3">
+                    <div>
+                      <h3 className="font-bold text-green-400 text-lg">🌱 Iniciante</h3>
+                      <p className="text-sm text-slate-400">Poder: 0 - 39</p>
+                    </div>
+                  </div>
+
+                  {/* Opções de Dificuldade */}
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      onClick={() => iniciarTreinoIA(0, 39, 'facil')}
+                      disabled={poderTotal < 0 || poderTotal > 39 || iniciandoBatalha}
+                      className={`px-3 py-2 rounded-lg font-bold text-sm ${
+                        poderTotal >= 0 && poderTotal <= 39
+                          ? 'bg-green-700 hover:bg-green-600 text-white'
+                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                      }`}
+                    >
+                      Fácil
+                    </button>
+                    <button
+                      onClick={() => iniciarTreinoIA(0, 39, 'normal')}
+                      disabled={poderTotal < 0 || poderTotal > 39 || iniciandoBatalha}
+                      className={`px-3 py-2 rounded-lg font-bold text-sm ${
+                        poderTotal >= 0 && poderTotal <= 39
+                          ? 'bg-yellow-600 hover:bg-yellow-500 text-white'
+                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                      }`}
+                    >
+                      Normal
+                    </button>
+                    <button
+                      onClick={() => iniciarTreinoIA(0, 39, 'dificil')}
+                      disabled={poderTotal < 0 || poderTotal > 39 || iniciandoBatalha}
+                      className={`px-3 py-2 rounded-lg font-bold text-sm ${
+                        poderTotal >= 0 && poderTotal <= 39
+                          ? 'bg-red-600 hover:bg-red-500 text-white'
+                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                      }`}
+                    >
+                      Difícil
+                    </button>
+                  </div>
+                </div>
+
+                {/* Sala Intermediário */}
+                <div className={`bg-slate-800 rounded-lg p-4 border-2 transition-all ${
+                  poderTotal >= 40 && poderTotal <= 60
+                    ? 'border-blue-500 shadow-lg shadow-blue-500/20'
+                    : 'border-slate-700 opacity-50'
+                }`}>
+                  <div className="flex justify-between items-center mb-3">
+                    <div>
+                      <h3 className="font-bold text-blue-400 text-lg">⚡ Intermediário</h3>
+                      <p className="text-sm text-slate-400">Poder: 40 - 60</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      onClick={() => iniciarTreinoIA(40, 60, 'facil')}
+                      disabled={poderTotal < 40 || poderTotal > 60 || iniciandoBatalha}
+                      className={`px-3 py-2 rounded-lg font-bold text-sm ${
+                        poderTotal >= 40 && poderTotal <= 60
+                          ? 'bg-green-700 hover:bg-green-600 text-white'
+                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                      }`}
+                    >
+                      Fácil
+                    </button>
+                    <button
+                      onClick={() => iniciarTreinoIA(40, 60, 'normal')}
+                      disabled={poderTotal < 40 || poderTotal > 60 || iniciandoBatalha}
+                      className={`px-3 py-2 rounded-lg font-bold text-sm ${
+                        poderTotal >= 40 && poderTotal <= 60
+                          ? 'bg-yellow-600 hover:bg-yellow-500 text-white'
+                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                      }`}
+                    >
+                      Normal
+                    </button>
+                    <button
+                      onClick={() => iniciarTreinoIA(40, 60, 'dificil')}
+                      disabled={poderTotal < 40 || poderTotal > 60 || iniciandoBatalha}
+                      className={`px-3 py-2 rounded-lg font-bold text-sm ${
+                        poderTotal >= 40 && poderTotal <= 60
+                          ? 'bg-red-600 hover:bg-red-500 text-white'
+                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                      }`}
+                    >
+                      Difícil
+                    </button>
+                  </div>
+                </div>
+
+                {/* Sala Avançado */}
+                <div className={`bg-slate-800 rounded-lg p-4 border-2 transition-all ${
+                  poderTotal >= 61 && poderTotal <= 90
+                    ? 'border-purple-500 shadow-lg shadow-purple-500/20'
+                    : 'border-slate-700 opacity-50'
+                }`}>
+                  <div className="flex justify-between items-center mb-3">
+                    <div>
+                      <h3 className="font-bold text-purple-400 text-lg">🔥 Avançado</h3>
+                      <p className="text-sm text-slate-400">Poder: 61 - 90</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      onClick={() => iniciarTreinoIA(61, 90, 'facil')}
+                      disabled={poderTotal < 61 || poderTotal > 90 || iniciandoBatalha}
+                      className={`px-3 py-2 rounded-lg font-bold text-sm ${
+                        poderTotal >= 61 && poderTotal <= 90
+                          ? 'bg-green-700 hover:bg-green-600 text-white'
+                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                      }`}
+                    >
+                      Fácil
+                    </button>
+                    <button
+                      onClick={() => iniciarTreinoIA(61, 90, 'normal')}
+                      disabled={poderTotal < 61 || poderTotal > 90 || iniciandoBatalha}
+                      className={`px-3 py-2 rounded-lg font-bold text-sm ${
+                        poderTotal >= 61 && poderTotal <= 90
+                          ? 'bg-yellow-600 hover:bg-yellow-500 text-white'
+                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                      }`}
+                    >
+                      Normal
+                    </button>
+                    <button
+                      onClick={() => iniciarTreinoIA(61, 90, 'dificil')}
+                      disabled={poderTotal < 61 || poderTotal > 90 || iniciandoBatalha}
+                      className={`px-3 py-2 rounded-lg font-bold text-sm ${
+                        poderTotal >= 61 && poderTotal <= 90
+                          ? 'bg-red-600 hover:bg-red-500 text-white'
+                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                      }`}
+                    >
+                      Difícil
+                    </button>
+                  </div>
+                </div>
+
+                {/* Sala Elite */}
+                <div className={`bg-slate-800 rounded-lg p-4 border-2 transition-all ${
+                  poderTotal > 90
+                    ? 'border-red-500 shadow-lg shadow-red-500/20'
+                    : 'border-slate-700 opacity-50'
+                }`}>
+                  <div className="flex justify-between items-center mb-3">
+                    <div>
+                      <h3 className="font-bold text-red-400 text-lg">👑 Elite</h3>
+                      <p className="text-sm text-slate-400">Poder: 91+</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      onClick={() => iniciarTreinoIA(91, 999, 'facil')}
+                      disabled={poderTotal <= 90 || iniciandoBatalha}
+                      className={`px-3 py-2 rounded-lg font-bold text-sm ${
+                        poderTotal > 90
+                          ? 'bg-green-700 hover:bg-green-600 text-white'
+                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                      }`}
+                    >
+                      Fácil
+                    </button>
+                    <button
+                      onClick={() => iniciarTreinoIA(91, 999, 'normal')}
+                      disabled={poderTotal <= 90 || iniciandoBatalha}
+                      className={`px-3 py-2 rounded-lg font-bold text-sm ${
+                        poderTotal > 90
+                          ? 'bg-yellow-600 hover:bg-yellow-500 text-white'
+                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                      }`}
+                    >
+                      Normal
+                    </button>
+                    <button
+                      onClick={() => iniciarTreinoIA(91, 999, 'dificil')}
+                      disabled={poderTotal <= 90 || iniciandoBatalha}
+                      className={`px-3 py-2 rounded-lg font-bold text-sm ${
+                        poderTotal > 90
+                          ? 'bg-red-600 hover:bg-red-500 text-white'
+                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                      }`}
+                    >
+                      Difícil
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {avatarAtivo.exaustao >= 80 && (
+                <p className="text-red-400 text-sm mt-4 text-center">
+                  ⚠️ Avatar com exaustão crítica - penalidades severas!
+                </p>
+              )}
+
+              {iniciandoBatalha && (
+                <p className="text-cyan-400 text-sm mt-4 text-center animate-pulse">
+                  ⏳ Gerando oponente IA...
+                </p>
+              )}
+            </div>
+
+            {/* Legendas de Dificuldade */}
+            <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-6">
+              <h3 className="text-lg font-bold text-cyan-400 mb-3">Níveis de Dificuldade</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="text-green-400 font-bold">Fácil:</span>
+                  <span className="text-gray-400">IA com 70% dos seus stats - Ótimo para praticar</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-yellow-400 font-bold">Normal:</span>
+                  <span className="text-gray-400">IA com 100% dos seus stats - Desafio equilibrado</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-red-400 font-bold">Difícil:</span>
+                  <span className="text-gray-400">IA com 130% dos seus stats - Teste seus limites</span>
+                </div>
               </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Modal de Alerta */}
       {modalAlerta && (
-        <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={() => setModalAlerta(null)}
-        >
-          <div
-            className="max-w-md w-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-red-500/30 to-orange-500/30 rounded-lg blur opacity-75"></div>
-
-              <div className="relative bg-slate-950/95 backdrop-blur-xl border border-red-900/50 rounded-lg overflow-hidden">
-                <div className="p-4 text-center font-bold text-lg bg-gradient-to-r from-red-600 to-orange-600">
-                  {modalAlerta.titulo}
-                </div>
-
-                <div className="p-6">
-                  <p className="text-slate-300 text-center leading-relaxed mb-6">
-                    {modalAlerta.mensagem}
-                  </p>
-
-                  <button
-                    onClick={() => setModalAlerta(null)}
-                    className="w-full group/btn relative"
-                  >
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded blur opacity-50 group-hover/btn:opacity-75 transition-all"></div>
-                    <div className="relative px-4 py-3 bg-slate-950 rounded border border-cyan-500/50 transition-all">
-                      <span className="font-bold text-cyan-400">Entendi</span>
-                    </div>
-                  </button>
-                </div>
-              </div>
-            </div>
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-900 border border-purple-500 rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold text-purple-400 mb-3">{modalAlerta.titulo}</h3>
+            <p className="text-gray-300 mb-6">{modalAlerta.mensagem}</p>
+            <button
+              onClick={() => setModalAlerta(null)}
+              className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 rounded"
+            >
+              OK
+            </button>
           </div>
         </div>
       )}
