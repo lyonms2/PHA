@@ -819,18 +819,26 @@ export async function POST(request) {
         // Dano contínuo
         'queimadura': '🔥', 'queimadura_intensa': '🔥🔥', 'veneno': '💀', 'sangramento': '🩸',
         'eletrocutado': '⚡', 'eletrocucao': '⚡', 'afogamento': '💧', 'erosão': '🌪️',
+        'maldito': '💀',
         // Buffs
-        'defesa_aumentada': '🛡️', 'velocidade': '💨', 'foco_aumentado': '🎯',
-        'forca_aumentada': '💪', 'regeneração': '✨', 'escudo': '🛡️',
+        'defesa_aumentada': '🛡️', 'velocidade': '💨', 'velocidade_aumentada': '⚡💨',
+        'evasao_aumentada': '👻', 'foco_aumentado': '🎯',
+        'forca_aumentada': '💪', 'regeneração': '💚', 'regeneracao': '💚', 'escudo': '🛡️',
+        'bencao': '✨', 'sobrecarga': '⚡🔴', 'precisao_aumentada': '🎯',
+        'invisivel': '👻', 'auto_cura': '💚',
         // Debuffs
-        'lentidão': '🐌', 'fraqueza': '⬇️', 'confusão': '🌀',
+        'lentidão': '🐌', 'lentidao': '🐌', 'fraqueza': '⬇️', 'confusão': '🌀',
         'medo': '😱', 'cegueira': '🌑', 'silêncio': '🔇',
+        'enfraquecido': '⬇️', 'terror': '😱💀', 'desorientado': '🌀',
         // Controle
         'congelado': '❄️', 'atordoado': '💫', 'paralisado': '⚡⚡', 'paralisia': '⚡⚡',
-        'imobilizado': '🔒', 'sono': '😴',
+        'paralisia_intensa': '⚡⚡⚡', 'imobilizado': '🔒', 'sono': '😴',
         // Especiais
         'fantasma': '👻', 'drenar': '🗡️', 'maldição': '💀',
-        'queimadura_contra_ataque': '🔥🛡️'
+        'queimadura_contra_ataque': '🔥🛡️', 'roubo_vida': '🩸', 'roubo_vida_intenso': '🩸🩸',
+        'roubo_vida_massivo': '🩸🩸🩸', 'perfuracao': '🗡️', 'execucao': '💀⚔️',
+        'fissuras_explosivas': '💥🌍', 'vendaval_cortante': '💨⚔️',
+        'limpar_debuffs': '✨🧹', 'dano_massivo_inimigos': '💥'
       };
 
       // Processar efeitos da habilidade
@@ -868,11 +876,14 @@ export async function POST(request) {
 
           // Determinar dano por turno baseado no tipo
           let danoPorTurno = 0;
-          if (['queimadura', 'veneno', 'sangramento', 'eletrocutado', 'eletrocucao', 'afogamento', 'erosão'].includes(tipoEfeito)) {
+          if (['queimadura', 'veneno', 'sangramento', 'eletrocutado', 'eletrocucao', 'afogamento', 'erosão', 'maldito', 'fissuras_explosivas'].includes(tipoEfeito)) {
             danoPorTurno = Math.floor(forca * 0.2) + 5;
           }
           if (tipoEfeito === 'queimadura_intensa') {
             danoPorTurno = Math.floor(forca * 0.4) + 10;
+          }
+          if (tipoEfeito === 'paralisia_intensa') {
+            danoPorTurno = Math.floor(forca * 0.15) + 3; // Dano menor que queimadura
           }
 
           const novoEfeito = {
@@ -1141,11 +1152,17 @@ export async function POST(request) {
 
       // Processar cada efeito
       const efeitosRestantes = [];
+      const emojiMap = {
+        'queimadura': '🔥', 'queimadura_intensa': '🔥🔥', 'veneno': '💀', 'sangramento': '🩸',
+        'eletrocutado': '⚡', 'eletrocucao': '⚡', 'afogamento': '💧', 'maldito': '💀',
+        'paralisia_intensa': '⚡⚡⚡', 'fissuras_explosivas': '💥🌍'
+      };
+
       for (const ef of myEffects) {
         // Aplicar dano contínuo
         if (ef.danoPorTurno > 0) {
           danoTotal += ef.danoPorTurno;
-          const emoji = ef.tipo === 'queimadura' ? '🔥' : ef.tipo === 'veneno' ? '💀' : '💥';
+          const emoji = emojiMap[ef.tipo] || '💥';
           logsEfeitos.push(`${emoji} ${ef.tipo}: -${ef.danoPorTurno} HP`);
         }
 
@@ -1153,7 +1170,14 @@ export async function POST(request) {
         if (ef.tipo === 'regeneração' || ef.tipo === 'regeneracao') {
           const curaEfeito = Math.floor(hpMax * 0.05);
           curaTotal += curaEfeito;
-          logsEfeitos.push(`✨ Regeneração: +${curaEfeito} HP`);
+          logsEfeitos.push(`💚 Regeneração: +${curaEfeito} HP`);
+        }
+
+        // Auto-cura
+        if (ef.tipo === 'auto_cura') {
+          const curaEfeito = Math.floor(hpMax * 0.03);
+          curaTotal += curaEfeito;
+          logsEfeitos.push(`💚 Auto-cura: +${curaEfeito} HP`);
         }
 
         // Decrementar duração

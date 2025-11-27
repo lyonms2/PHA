@@ -921,18 +921,29 @@ function DuelContent() {
   // Emoji do efeito
   const getEfeitoEmoji = (tipo) => {
     const emojis = {
+      // Dano contínuo
       'queimadura': '🔥', 'queimadura_intensa': '🔥🔥', 'veneno': '💀', 'sangramento': '🩸',
       'eletrocutado': '⚡', 'eletrocucao': '⚡', 'afogamento': '💧', 'erosão': '🌪️',
-      'defesa_aumentada': '🛡️', 'velocidade': '💨', 'foco_aumentado': '🎯',
-      'forca_aumentada': '💪', 'regeneração': '✨', 'escudo': '🛡️',
-      'lentidão': '🐌', 'fraqueza': '⬇️', 'confusão': '🌀',
+      'maldito': '💀', 'maldição': '💀',
+      // Buffs
+      'defesa_aumentada': '🛡️', 'velocidade': '💨', 'velocidade_aumentada': '⚡💨',
+      'evasao_aumentada': '👻', 'foco_aumentado': '🎯',
+      'forca_aumentada': '💪', 'regeneração': '💚', 'regeneracao': '💚', 'escudo': '🛡️',
+      'bencao': '✨', 'benção': '✨', 'sobrecarga': '⚡🔴', 'precisao_aumentada': '🎯',
+      'invisivel': '👻', 'auto_cura': '💚',
+      // Debuffs
+      'lentidão': '🐌', 'lentidao': '🐌', 'fraqueza': '⬇️', 'confusão': '🌀',
       'medo': '😱', 'cegueira': '🌑', 'silêncio': '🔇',
+      'enfraquecido': '⬇️', 'terror': '😱💀', 'desorientado': '🌀',
+      // Controle
       'congelado': '❄️', 'atordoado': '💫', 'paralisado': '⚡⚡', 'paralisia': '⚡⚡',
-      'imobilizado': '🔒', 'sono': '😴',
-      'fantasma': '👻', 'drenar': '🗡️', 'maldição': '💀',
-      'evasao_aumentada': '💨', 'velocidade_aumentada': '⚡', 'invisivel': '👻',
-      'queimadura_contra_ataque': '🔥🛡️', 'sobrecarga': '⚡', 'benção': '✨', 'bencao': '✨',
-      'regeneracao': '✨'
+      'paralisia_intensa': '⚡⚡⚡', 'imobilizado': '🔒', 'sono': '😴',
+      // Especiais
+      'fantasma': '👻', 'drenar': '🗡️',
+      'queimadura_contra_ataque': '🔥🛡️', 'roubo_vida': '🩸', 'roubo_vida_intenso': '🩸🩸',
+      'roubo_vida_massivo': '🩸🩸🩸', 'perfuracao': '🗡️', 'execucao': '💀⚔️',
+      'fissuras_explosivas': '💥🌍', 'vendaval_cortante': '💨⚔️',
+      'limpar_debuffs': '✨🧹', 'dano_massivo_inimigos': '💥'
     };
     return emojis[tipo] || '✨';
   };
@@ -940,9 +951,10 @@ function DuelContent() {
   // Verificar se efeito é buff (positivo) ou debuff (negativo)
   const ehBuff = (tipo) => {
     const buffsPositivos = [
-      'defesa_aumentada', 'velocidade', 'foco_aumentado', 'forca_aumentada',
-      'regeneração', 'regeneracao', 'escudo', 'evasao_aumentada', 'velocidade_aumentada',
-      'invisivel', 'sobrecarga', 'benção', 'bencao', 'queimadura_contra_ataque'
+      'defesa_aumentada', 'velocidade', 'velocidade_aumentada', 'foco_aumentado', 'forca_aumentada',
+      'regeneração', 'regeneracao', 'escudo', 'evasao_aumentada',
+      'invisivel', 'sobrecarga', 'benção', 'bencao', 'queimadura_contra_ataque',
+      'precisao_aumentada', 'auto_cura', 'limpar_debuffs'
     ];
     return buffsPositivos.includes(tipo);
   };
