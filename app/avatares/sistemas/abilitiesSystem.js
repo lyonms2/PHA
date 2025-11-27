@@ -421,7 +421,7 @@ export const HABILIDADES_POR_ELEMENTO = {
       efeitos_status: ['paralisia'],
       duracao_efeito: 1,
       chance_efeito: 10,
-      custo_energia: 15,
+      custo_energia: 40,
       cooldown: 0,
       evolui_para: 'RAIO_PERFURANTE',
       nivel_evolucao: 10
