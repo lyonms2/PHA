@@ -4,6 +4,36 @@ import { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AvatarSVG from "../../../components/AvatarSVG";
 import { calcularPoderTotal } from "@/lib/gameLogic";
+import { HABILIDADES_POR_ELEMENTO } from "@/app/avatares/sistemas/abilitiesSystem";
+
+/**
+ * Atualiza os valores de balanceamento de uma habilidade do avatar
+ * com os valores mais recentes do sistema
+ */
+function atualizarBalanceamentoHabilidade(habilidadeAvatar, elemento) {
+  if (!habilidadeAvatar || !elemento) return habilidadeAvatar;
+
+  const habilidadesSistema = HABILIDADES_POR_ELEMENTO[elemento];
+  if (!habilidadesSistema) return habilidadeAvatar;
+
+  // Procurar a habilidade correspondente no sistema pelo nome
+  const habilidadeSistema = Object.values(habilidadesSistema).find(
+    h => h.nome === habilidadeAvatar.nome
+  );
+
+  if (!habilidadeSistema) return habilidadeAvatar;
+
+  // Mesclar: manter dados do avatar, mas sobrescrever valores de balanceamento do sistema
+  return {
+    ...habilidadeAvatar,
+    custo_energia: habilidadeSistema.custo_energia,
+    chance_efeito: habilidadeSistema.chance_efeito,
+    duracao_efeito: habilidadeSistema.duracao_efeito,
+    dano_base: habilidadeSistema.dano_base,
+    multiplicador_stat: habilidadeSistema.multiplicador_stat,
+    cooldown: habilidadeSistema.cooldown
+  };
+}
 
 function DuelContent() {
   const router = useRouter();
@@ -688,9 +718,11 @@ function DuelContent() {
   const usarHabilidade = async (index) => {
     if (!roomId || !visitorId || !isYourTurn || actionInProgress) return;
 
-    const hab = meuAvatar?.habilidades?.[index];
-    if (!hab) return;
+    const habAvatar = meuAvatar?.habilidades?.[index];
+    if (!habAvatar) return;
 
+    // Atualizar valores de balanceamento com os do sistema
+    const hab = atualizarBalanceamentoHabilidade(habAvatar, meuAvatar?.elemento);
     const custoEnergia = hab.custo_energia || 20;
     if (myEnergy < custoEnergia) {
       addLog(`❌ Energia insuficiente! (${custoEnergia} necessária)`);
@@ -1640,21 +1672,26 @@ function DuelContent() {
                     ✨ HABILIDADES
                   </div>
                   <div className="grid grid-cols-2 gap-1.5">
-                    {meuAvatar.habilidades.slice(0, 5).map((hab, index) => (
-                      <button
-                        key={index}
-                        onClick={() => usarHabilidade(index)}
-                        disabled={!isYourTurn || myEnergy < (hab.custo_energia || 20) || actionInProgress}
-                        className={`py-1.5 px-2 rounded text-left transition-all ${
-                          isYourTurn && myEnergy >= (hab.custo_energia || 20) && !actionInProgress
-                            ? 'bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500 hover:to-pink-500 hover:scale-[1.02] active:scale-95 border border-purple-400/30'
-                            : 'bg-slate-700/50 cursor-not-allowed opacity-40 border border-slate-600/30'
-                        }`}
-                      >
-                        <div className="truncate text-[10px] font-bold">{hab.nome}</div>
-                        <div className="text-[9px] opacity-75">-{hab.custo_energia || 20} ⚡</div>
-                      </button>
-                    ))}
+                    {meuAvatar.habilidades.slice(0, 5).map((habAvatar, index) => {
+                      // Atualizar valores de balanceamento com os do sistema
+                      const hab = atualizarBalanceamentoHabilidade(habAvatar, meuAvatar?.elemento);
+                      const custoEnergia = hab.custo_energia || 20;
+                      return (
+                        <button
+                          key={index}
+                          onClick={() => usarHabilidade(index)}
+                          disabled={!isYourTurn || myEnergy < custoEnergia || actionInProgress}
+                          className={`py-1.5 px-2 rounded text-left transition-all ${
+                            isYourTurn && myEnergy >= custoEnergia && !actionInProgress
+                              ? 'bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500 hover:to-pink-500 hover:scale-[1.02] active:scale-95 border border-purple-400/30'
+                              : 'bg-slate-700/50 cursor-not-allowed opacity-40 border border-slate-600/30'
+                          }`}
+                        >
+                          <div className="truncate text-[10px] font-bold">{hab.nome}</div>
+                          <div className="text-[9px] opacity-75">-{custoEnergia} ⚡</div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </>
               )}

@@ -1,7 +1,37 @@
 import { NextResponse } from 'next/server';
 import { getDocument, updateDocument } from '@/lib/firebase/firestore';
+import { HABILIDADES_POR_ELEMENTO } from '@/app/avatares/sistemas/abilitiesSystem';
 
 export const dynamic = 'force-dynamic';
+
+/**
+ * Atualiza os valores de balanceamento de uma habilidade do avatar
+ * com os valores mais recentes do sistema
+ */
+function atualizarBalanceamentoHabilidade(habilidadeAvatar, elemento) {
+  if (!habilidadeAvatar || !elemento) return habilidadeAvatar;
+
+  const habilidadesSistema = HABILIDADES_POR_ELEMENTO[elemento];
+  if (!habilidadesSistema) return habilidadeAvatar;
+
+  // Procurar a habilidade correspondente no sistema pelo nome
+  const habilidadeSistema = Object.values(habilidadesSistema).find(
+    h => h.nome === habilidadeAvatar.nome
+  );
+
+  if (!habilidadeSistema) return habilidadeAvatar;
+
+  // Mesclar: manter dados do avatar, mas sobrescrever valores de balanceamento do sistema
+  return {
+    ...habilidadeAvatar,
+    custo_energia: habilidadeSistema.custo_energia,
+    chance_efeito: habilidadeSistema.chance_efeito,
+    duracao_efeito: habilidadeSistema.duracao_efeito,
+    dano_base: habilidadeSistema.dano_base,
+    multiplicador_stat: habilidadeSistema.multiplicador_stat,
+    cooldown: habilidadeSistema.cooldown
+  };
+}
 
 /**
  * Helper: Adicionar log de ação ao histórico da batalha
@@ -538,7 +568,9 @@ export async function POST(request) {
         );
       }
 
-      const habilidade = myAvatar.habilidades[abilityIndex];
+      // Atualizar valores de balanceamento com os do sistema
+      const habilidadeAvatar = myAvatar.habilidades[abilityIndex];
+      const habilidade = atualizarBalanceamentoHabilidade(habilidadeAvatar, myAvatar.elemento);
       const custoEnergia = habilidade.custo_energia || 20;
 
       // Verificar energia
