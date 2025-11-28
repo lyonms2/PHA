@@ -22,6 +22,9 @@ export default function AvatarsPage() {
   const [precoVendaFragmentos, setPrecoVendaFragmentos] = useState('');
   const [vendendo, setVendendo] = useState(false);
 
+  // Estado para modal de Level Up
+  const [modalLevelUp, setModalLevelUp] = useState(null);
+
   // Estados de filtros
   const [filtroRaridade, setFiltroRaridade] = useState('Todos');
   const [filtroElemento, setFiltroElemento] = useState('Todos');
@@ -58,6 +61,29 @@ export default function AvatarsPage() {
       const data = await response.json();
 
       if (response.ok) {
+        // Verificar level ups
+        const niveisAnteriores = JSON.parse(localStorage.getItem('avatares_niveis') || '{}');
+        const avatarAtivo = data.avatares.find(av => av.ativo && av.vivo);
+
+        if (avatarAtivo && niveisAnteriores[avatarAtivo.id]) {
+          const nivelAnterior = niveisAnteriores[avatarAtivo.id];
+          const nivelAtual = avatarAtivo.nivel || 1;
+
+          // Se subiu de nível, mostrar modal
+          if (nivelAtual > nivelAnterior) {
+            setTimeout(() => {
+              setModalLevelUp(avatarAtivo);
+            }, 500);
+          }
+        }
+
+        // Atualizar níveis no localStorage
+        const novosNiveis = {};
+        data.avatares.forEach(av => {
+          novosNiveis[av.id] = av.nivel || 1;
+        });
+        localStorage.setItem('avatares_niveis', JSON.stringify(novosNiveis));
+
         setAvatares(data.avatares);
       } else {
         console.error("Erro ao carregar avatares:", data.message);
@@ -316,6 +342,17 @@ export default function AvatarsPage() {
     return { label: 'Colapsado', cor: 'text-red-600' };
   };
 
+  // Calcular XP necessário para próximo nível
+  const calcularXPNecessario = (nivel) => {
+    return nivel * 100; // 100 XP por nível
+  };
+
+  // Calcular progresso de XP
+  const calcularProgressoXP = (xpAtual, nivel) => {
+    const xpNecessario = calcularXPNecessario(nivel);
+    return Math.min((xpAtual / xpNecessario) * 100, 100);
+  };
+
   const avatarAtivo = avatares.find(av => av.ativo && av.vivo);
 
   // Filtrar avatares (EXCLUINDO mortos com marca_morte que estão no memorial)
@@ -472,7 +509,19 @@ export default function AvatarsPage() {
                   <div>
                     <div className="text-xs text-slate-500 mb-1">AVATAR ATIVO</div>
                     <div className="font-bold text-cyan-300 text-lg">{avatarAtivo.nome}</div>
-                    <div className="text-xs text-slate-400">{avatarAtivo.elemento} • Nv.{avatarAtivo.nivel}</div>
+                    <div className="text-xs text-slate-400 mb-1">{avatarAtivo.elemento} • Nv.{avatarAtivo.nivel}</div>
+                    {/* Barra de XP */}
+                    <div className="mt-1">
+                      <div className="flex items-center gap-2 text-[10px] text-slate-400 mb-1">
+                        <span>XP: {avatarAtivo.xp || 0}/{calcularXPNecessario(avatarAtivo.nivel)}</span>
+                      </div>
+                      <div className="h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-500"
+                          style={{ width: `${calcularProgressoXP(avatarAtivo.xp || 0, avatarAtivo.nivel)}%` }}
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   <div>
@@ -1031,6 +1080,90 @@ export default function AvatarsPage() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Level Up */}
+      {modalLevelUp && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="relative max-w-md w-full">
+            {/* Efeitos de fundo */}
+            <div className="absolute -inset-4">
+              <div className="w-full h-full bg-gradient-to-r from-yellow-500/20 via-orange-500/20 to-yellow-500/20 rounded-full blur-3xl animate-pulse"></div>
+            </div>
+
+            {/* Conteúdo do modal */}
+            <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl border-2 border-yellow-500/50 p-8 shadow-2xl">
+              {/* Título com animação */}
+              <div className="text-center mb-6">
+                <div className="text-6xl mb-4 animate-bounce">🎉</div>
+                <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-400 mb-2">
+                  LEVEL UP!
+                </h2>
+                <div className="h-1 w-32 mx-auto bg-gradient-to-r from-transparent via-yellow-500 to-transparent rounded-full"></div>
+              </div>
+
+              {/* Info do Avatar */}
+              <div className="bg-slate-950/50 rounded-xl p-6 mb-6 border border-yellow-500/30">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="relative">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-yellow-500/50 to-orange-500/50 rounded-full blur"></div>
+                    <div className="relative bg-slate-900 rounded-full p-2 border-2 border-yellow-500">
+                      <AvatarSVG avatar={modalLevelUp} tamanho={64} />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-xl font-bold text-yellow-300">{modalLevelUp.nome}</div>
+                    <div className="text-sm text-slate-400">{modalLevelUp.elemento}</div>
+                  </div>
+                </div>
+
+                {/* Nível anterior -> Novo */}
+                <div className="flex items-center justify-center gap-4 py-4">
+                  <div className="text-center">
+                    <div className="text-sm text-slate-500 mb-1">Nível Anterior</div>
+                    <div className="text-3xl font-black text-slate-400">{(modalLevelUp.nivel || 1) - 1}</div>
+                  </div>
+                  <div className="text-4xl text-yellow-500">→</div>
+                  <div className="text-center">
+                    <div className="text-sm text-yellow-400 mb-1">Novo Nível</div>
+                    <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400">
+                      {modalLevelUp.nivel || 1}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stats aumentados */}
+                <div className="mt-4 pt-4 border-t border-slate-700">
+                  <div className="text-xs text-slate-500 uppercase tracking-wider mb-3 text-center">
+                    ✨ Atributos Melhorados
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="bg-slate-900/50 rounded px-3 py-2 text-center">
+                      <div className="text-slate-400">HP Máximo</div>
+                      <div className="text-green-400 font-bold">
+                        +{(modalLevelUp.nivel || 1) * 5}
+                      </div>
+                    </div>
+                    <div className="bg-slate-900/50 rounded px-3 py-2 text-center">
+                      <div className="text-slate-400">Poder</div>
+                      <div className="text-cyan-400 font-bold">
+                        Aumentado
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Botão fechar */}
+              <button
+                onClick={() => setModalLevelUp(null)}
+                className="w-full py-4 bg-gradient-to-r from-yellow-600 via-orange-600 to-yellow-600 hover:from-yellow-500 hover:via-orange-500 hover:to-yellow-500 text-white font-bold text-lg rounded-xl transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg"
+              >
+                🎊 Continuar
+              </button>
             </div>
           </div>
         </div>
