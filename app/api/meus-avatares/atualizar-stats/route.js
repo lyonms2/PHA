@@ -4,7 +4,7 @@
 // Atualiza XP, Vínculo, Exaustão do avatar e XP do caçador após treino
 
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebaseAdmin';
+import { getDocument, updateDocument } from '@/lib/firebase/firestore';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,25 +19,18 @@ export async function POST(request) {
       );
     }
 
-    // Referências Firestore
-    const avatarRef = db.collection('usuarios').doc(userId).collection('avatares').doc(avatarId);
-    const userRef = db.collection('usuarios').doc(userId);
-
     // Buscar dados atuais
-    const [avatarDoc, userDoc] = await Promise.all([
-      avatarRef.get(),
-      userRef.get()
+    const [avatarData, userData] = await Promise.all([
+      getDocument('avatares', avatarId),
+      getDocument('usuarios', userId)
     ]);
 
-    if (!avatarDoc.exists) {
+    if (!avatarData) {
       return NextResponse.json(
         { error: 'Avatar não encontrado' },
         { status: 404 }
       );
     }
-
-    const avatarData = avatarDoc.data();
-    const userData = userDoc.exists ? userDoc.data() : {};
 
     // Calcular novos valores do AVATAR
     const xpAtual = avatarData.xp || 0;
@@ -85,16 +78,18 @@ export async function POST(request) {
 
     // HP só atualiza se fornecido (para treino, permanece o mesmo)
     if (hp !== undefined && hp !== null) {
-      avatarUpdate.hp = hp;
+      avatarUpdate.hp_atual = hp;
     }
 
-    await avatarRef.update(avatarUpdate);
+    await updateDocument('avatares', avatarId, avatarUpdate);
 
-    // Atualizar CAÇADOR no Firestore
-    await userRef.update({
-      xp: novoXPCacador,
-      nivel: novoNivelCacador
-    });
+    // Atualizar CAÇADOR no Firestore (se userData existe)
+    if (userData) {
+      await updateDocument('usuarios', userId, {
+        xp: novoXPCacador,
+        nivel: novoNivelCacador
+      });
+    }
 
     console.log('✅ Stats atualizados:', {
       avatar: avatarData.nome,

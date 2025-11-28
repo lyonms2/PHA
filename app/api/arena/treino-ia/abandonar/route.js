@@ -4,7 +4,7 @@
 // Aplica penalidades quando jogador abandona batalha (refresh/sair)
 
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebaseAdmin';
+import { getDocument, updateDocument } from '@/lib/firebase/firestore';
 import { calcularPenalidadesAbandono } from '@/lib/arena/rewardsSystem';
 
 export const dynamic = 'force-dynamic';
@@ -26,21 +26,16 @@ export async function POST(request) {
     // Calcular penalidades
     const penalidades = calcularPenalidadesAbandono(dificuldade);
 
-    // Referências Firestore
-    const avatarRef = db.collection('usuarios').doc(userId).collection('avatares').doc(avatarId);
-
     // Buscar dados atuais
-    const avatarDoc = await avatarRef.get();
+    const avatarData = await getDocument('avatares', avatarId);
 
-    if (!avatarDoc.exists) {
+    if (!avatarData) {
       console.error('Avatar não encontrado para abandono');
       return NextResponse.json(
         { error: 'Avatar não encontrado' },
         { status: 404 }
       );
     }
-
-    const avatarData = avatarDoc.data();
 
     // Aplicar penalidades
     const vinculoAtual = avatarData.vinculo || 0;
@@ -50,7 +45,7 @@ export async function POST(request) {
     const novaExaustao = Math.min(100, Math.max(0, exaustaoAtual + penalidades.exaustao)); // positivo
 
     // Atualizar avatar
-    await avatarRef.update({
+    await updateDocument('avatares', avatarId, {
       vinculo: novoVinculo,
       exaustao: novaExaustao
     });
