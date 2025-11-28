@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDocuments, updateDocument, getDocument } from '@/lib/firebase/firestore';
+import { calcularHPMaximoCompleto } from '@/lib/combat/statsCalculator';
+import { aplicarPenalidadesExaustao } from '@/lib/combat/exaustao';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,10 +48,58 @@ export async function POST(request) {
     // Buscar dados do jogador
     const playerStats = await getDocument('player_stats', visitorId);
 
+    // Buscar avatar ativo do jogador
+    const avatares = await getDocuments('avatares', [
+      { field: 'user_id', operator: '==', value: visitorId },
+      { field: 'ativo', operator: '==', value: true }
+    ]);
+
+    if (!avatares || avatares.length === 0) {
+      return NextResponse.json(
+        { error: 'Você precisa ter um avatar ativo para entrar em uma sala PVP' },
+        { status: 400 }
+      );
+    }
+
+    const avatar = avatares[0];
+
+    // Validar estado do avatar
+    if ((avatar.hp_atual || 0) <= 0) {
+      return NextResponse.json(
+        { error: 'Seu avatar está morto. Descanse antes de batalhar!' },
+        { status: 400 }
+      );
+    }
+
+    if ((avatar.exaustao || 0) >= 100) {
+      return NextResponse.json(
+        { error: 'Seu avatar está completamente exausto. Descanse antes de batalhar!' },
+        { status: 400 }
+      );
+    }
+
+    // Calcular HP máximo do avatar
+    const hpMaximo = calcularHPMaximoCompleto(avatar);
+    const hpAtual = Math.min(avatar.hp_atual || hpMaximo, hpMaximo);
+
+    // Aplicar penalidades de exaustão nos stats
+    const statsComPenalidades = aplicarPenalidadesExaustao(avatar);
+
     // Atualizar sala com o convidado
     await updateDocument('pvp_duel_rooms', room.id, {
       guest_user_id: visitorId,
       guest_nome: playerStats?.nome_operacao || 'Jogador 2',
+      guest_avatar: {
+        id: avatar.id,
+        nome: avatar.nome,
+        hp_maximo: hpMaximo,
+        hp_atual: hpAtual,
+        exaustao: avatar.exaustao || 0,
+        nivel: avatar.nivel || 1,
+        raridade: avatar.raridade || 'comum',
+        ...statsComPenalidades // Stats com penalidades de exaustão aplicadas
+      },
+      guest_hp: hpAtual,
       status: 'ready'
     });
 

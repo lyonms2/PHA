@@ -1,0 +1,176 @@
+import { NextResponse } from 'next/server';
+import { getDocument, updateDocument } from '@/lib/firebase/firestore';
+import { calcularRecompensasPVP } from '@/lib/pvp/pvpRewardsSystem';
+
+export const dynamic = 'force-dynamic';
+
+/**
+ * POST /api/pvp/room/finish
+ * Finaliza batalha PVP e aplica recompensas/penalidades
+ */
+export async function POST(request) {
+  try {
+    const { roomId, winner, rendeu = false } = await request.json();
+
+    if (!roomId || !winner) {
+      return NextResponse.json(
+        { error: 'roomId e winner são obrigatórios' },
+        { status: 400 }
+      );
+    }
+
+    if (!['host', 'guest'].includes(winner)) {
+      return NextResponse.json(
+        { error: 'winner deve ser "host" ou "guest"' },
+        { status: 400 }
+      );
+    }
+
+    // Buscar sala
+    const room = await getDocument('pvp_duel_rooms', roomId);
+
+    if (!room) {
+      return NextResponse.json(
+        { error: 'Sala não encontrada' },
+        { status: 404 }
+      );
+    }
+
+    if (room.status === 'finished') {
+      return NextResponse.json(
+        { error: 'Batalha já foi finalizada' },
+        { status: 400 }
+      );
+    }
+
+    // Determinar vencedor e perdedor
+    const hostWon = winner === 'host';
+    const hostAvatar = room.host_avatar;
+    const guestAvatar = room.guest_avatar;
+    const hostBet = room.host_bet || 0;
+    const guestBet = room.guest_bet || 0;
+
+    // Calcular recompensas para host
+    const hostRecompensas = calcularRecompensasPVP(
+      hostAvatar,
+      guestAvatar,
+      hostWon,
+      hostBet,
+      !hostWon && rendeu // Host se rendeu se perdeu e rendeu = true
+    );
+
+    // Calcular recompensas para guest
+    const guestRecompensas = calcularRecompensasPVP(
+      guestAvatar,
+      hostAvatar,
+      !hostWon,
+      guestBet,
+      hostWon && rendeu // Guest se rendeu se perdeu e rendeu = true
+    );
+
+    // Buscar dados atuais dos jogadores
+    const [hostPlayerStats, guestPlayerStats] = await Promise.all([
+      getDocument('player_stats', room.host_user_id),
+      getDocument('player_stats', room.guest_user_id)
+    ]);
+
+    // Atualizar stats do host avatar
+    const novoHostXP = (hostAvatar.xp || 0) + hostRecompensas.xp;
+    const novoHostVinculo = Math.min(100, Math.max(0, (hostAvatar.vinculo || 0) + hostRecompensas.vinculo));
+    const novoHostExaustao = Math.min(100, Math.max(0, (hostAvatar.exaustao || 0) + hostRecompensas.exaustao));
+
+    await updateDocument('avatares', hostAvatar.id, {
+      xp: novoHostXP,
+      vinculo: novoHostVinculo,
+      exaustao: novoHostExaustao,
+      hp_atual: hostWon ? room.host_hp : 0 // Se perdeu, HP = 0
+    });
+
+    // Atualizar stats do guest avatar
+    const novoGuestXP = (guestAvatar.xp || 0) + guestRecompensas.xp;
+    const novoGuestVinculo = Math.min(100, Math.max(0, (guestAvatar.vinculo || 0) + guestRecompensas.vinculo));
+    const novoGuestExaustao = Math.min(100, Math.max(0, (guestAvatar.exaustao || 0) + guestRecompensas.exaustao));
+
+    await updateDocument('avatares', guestAvatar.id, {
+      xp: novoGuestXP,
+      vinculo: novoGuestVinculo,
+      exaustao: novoGuestExaustao,
+      hp_atual: !hostWon ? room.guest_hp : 0 // Se perdeu, HP = 0
+    });
+
+    // Atualizar stats do host player
+    const novoHostFama = Math.max(0, (hostPlayerStats.fama || 0) + hostRecompensas.fama);
+    const novoHostHunterXP = Math.max(0, (hostPlayerStats.hunterRankXp || 0) + hostRecompensas.xpCacador);
+    const novoHostMoedas = Math.max(0, (hostPlayerStats.moedas || 0) + hostRecompensas.moedas);
+
+    await updateDocument('player_stats', room.host_user_id, {
+      fama: novoHostFama,
+      hunterRankXp: novoHostHunterXP,
+      moedas: novoHostMoedas
+    });
+
+    // Atualizar stats do guest player
+    const novoGuestFama = Math.max(0, (guestPlayerStats.fama || 0) + guestRecompensas.fama);
+    const novoGuestHunterXP = Math.max(0, (guestPlayerStats.hunterRankXp || 0) + guestRecompensas.xpCacador);
+    const novoGuestMoedas = Math.max(0, (guestPlayerStats.moedas || 0) + guestRecompensas.moedas);
+
+    await updateDocument('player_stats', room.guest_user_id, {
+      fama: novoGuestFama,
+      hunterRankXp: novoGuestHunterXP,
+      moedas: novoGuestMoedas
+    });
+
+    // Marcar sala como finalizada
+    await updateDocument('pvp_duel_rooms', roomId, {
+      status: 'finished',
+      winner,
+      rendeu,
+      finished_at: new Date().toISOString()
+    });
+
+    return NextResponse.json({
+      success: true,
+      winner,
+      rendeu,
+      host: {
+        recompensas: hostRecompensas,
+        stats: {
+          avatar: {
+            xp: novoHostXP,
+            vinculo: novoHostVinculo,
+            exaustao: novoHostExaustao,
+            hp_atual: hostWon ? room.host_hp : 0
+          },
+          player: {
+            fama: novoHostFama,
+            hunterRankXp: novoHostHunterXP,
+            moedas: novoHostMoedas
+          }
+        }
+      },
+      guest: {
+        recompensas: guestRecompensas,
+        stats: {
+          avatar: {
+            xp: novoGuestXP,
+            vinculo: novoGuestVinculo,
+            exaustao: novoGuestExaustao,
+            hp_atual: !hostWon ? room.guest_hp : 0
+          },
+          player: {
+            fama: novoGuestFama,
+            hunterRankXp: novoGuestHunterXP,
+            moedas: novoGuestMoedas
+          }
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Erro em POST /api/pvp/room/finish:', error);
+    return NextResponse.json(
+      { error: 'Erro interno do servidor' },
+      { status: 500 }
+    );
+  }
+}
