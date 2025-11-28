@@ -922,7 +922,7 @@ export default function AvatarsPage() {
                               {modalSacrificar.forca + modalSacrificar.agilidade + modalSacrificar.resistencia + modalSacrificar.foco}
                             </div>
                             <div className="text-[10px] text-red-500 mt-1">
-                              XP: {modalSacrificar.experiencia || 0} | Vínculo: {modalSacrificar.vinculo}%
+                              XP: {modalSacrificar.xp || 0} | Vínculo: {modalSacrificar.vinculo}%
                             </div>
                           </div>
                         </div>
