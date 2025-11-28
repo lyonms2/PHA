@@ -20,9 +20,9 @@ export async function POST(request) {
     }
 
     // Buscar dados atuais
-    const [avatarData, userData] = await Promise.all([
+    const [avatarData, playerStats] = await Promise.all([
       getDocument('avatares', avatarId),
-      getDocument('usuarios', userId)
+      getDocument('player_stats', userId)
     ]);
 
     if (!avatarData) {
@@ -30,6 +30,10 @@ export async function POST(request) {
         { error: 'Avatar não encontrado' },
         { status: 404 }
       );
+    }
+
+    if (!playerStats) {
+      console.warn(`⚠️ Player Stats ${userId} não encontrado no Firestore. Atualizando apenas o avatar.`);
     }
 
     // Calcular novos valores do AVATAR
@@ -53,20 +57,9 @@ export async function POST(request) {
     }
 
     // Calcular novos valores do CAÇADOR (Hunter/Player)
-    const xpCacadorAtual = userData.xp || 0;
-    const nivelCacadorAtual = userData.nivel || 1;
-
-    const novoXPCacador = Math.max(0, xpCacadorAtual + (xpCacador || 0));
-
-    // Verificar subida de nível do caçador (100 XP por nível)
-    const xpNecessarioCacador = nivelCacadorAtual * 100;
-    let novoNivelCacador = nivelCacadorAtual;
-    let subiuNivelCacador = false;
-
-    if (novoXPCacador >= xpNecessarioCacador && xpCacadorAtual < xpNecessarioCacador) {
-      novoNivelCacador = nivelCacadorAtual + 1;
-      subiuNivelCacador = true;
-    }
+    // Sistema de Hunter Rank usa hunterRankXp
+    const hunterRankXpAtual = (playerStats?.hunterRankXp) || 0;
+    const novoHunterRankXp = Math.max(0, hunterRankXpAtual + (xpCacador || 0));
 
     // Atualizar AVATAR no Firestore
     const avatarUpdate = {
@@ -83,11 +76,10 @@ export async function POST(request) {
 
     await updateDocument('avatares', avatarId, avatarUpdate);
 
-    // Atualizar CAÇADOR no Firestore (se userData existe)
-    if (userData) {
-      await updateDocument('usuarios', userId, {
-        xp: novoXPCacador,
-        nivel: novoNivelCacador
+    // Atualizar CAÇADOR no Firestore (se playerStats existe)
+    if (playerStats) {
+      await updateDocument('player_stats', userId, {
+        hunterRankXp: novoHunterRankXp
       });
     }
 
@@ -99,9 +91,7 @@ export async function POST(request) {
       nivel: novoNivel,
       subiuNivel,
       cacador: {
-        xp: `${xpCacadorAtual} → ${novoXPCacador}`,
-        nivel: novoNivelCacador,
-        subiuNivel: subiuNivelCacador
+        hunterRankXp: `${hunterRankXpAtual} → ${novoHunterRankXp}`
       }
     });
 
@@ -113,12 +103,11 @@ export async function POST(request) {
         exaustao: novaExaustao,
         nivel: novoNivel,
         subiuNivel,
-        hp: hp !== undefined ? hp : avatarData.hp
+        hp: hp !== undefined ? hp : avatarData.hp_atual
       },
       cacador: {
-        xp: novoXPCacador,
-        nivel: novoNivelCacador,
-        subiuNivel: subiuNivelCacador
+        hunterRankXp: novoHunterRankXp,
+        ganhouXp: xpCacador || 0
       }
     });
 
