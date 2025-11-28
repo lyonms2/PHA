@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDocuments, updateDocument, getDocument } from '@/lib/firebase/firestore';
 import { calcularHPMaximoCompleto } from '@/lib/combat/statsCalculator';
-import { aplicarPenalidadesExaustao } from '@/lib/combat/exaustao';
+import { aplicarPenalidadesExaustao } from '@/app/avatares/sistemas/exhaustionSystem';
 
 export const dynamic = 'force-dynamic';
 
@@ -83,7 +83,13 @@ export async function POST(request) {
     const hpAtual = Math.min(avatar.hp_atual || hpMaximo, hpMaximo);
 
     // Aplicar penalidades de exaustão nos stats
-    const statsComPenalidades = aplicarPenalidadesExaustao(avatar);
+    const statsBase = {
+      forca: avatar.forca || 10,
+      agilidade: avatar.agilidade || 10,
+      resistencia: avatar.resistencia || 10,
+      foco: avatar.foco || 10
+    };
+    const statsComPenalidades = aplicarPenalidadesExaustao(statsBase, avatar.exaustao || 0);
 
     // Atualizar sala com o convidado
     await updateDocument('pvp_duel_rooms', room.id, {
