@@ -169,17 +169,80 @@ function BatalhaTreinoIAContent() {
       if (result.success) {
         if (result.iaAction === 'attack') {
           if (result.errou) {
-            addLog(`❌ Oponente atacou mas ERROU!`);
+            if (result.invisivel) {
+              addLog(`👻 ${iaAvatar.nome} ERROU! Você está INVISÍVEL!`);
+            } else {
+              addLog(`💨 ${iaAvatar.nome} ERROU! Você esquivou!`);
+            }
+            mostrarDanoVisual('meu', '', 'dodge');
           } else {
-            addLog(`⚔️ Oponente atacou! ${result.dano} de dano${result.critico ? ' CRÍTICO' : ''}`);
-            mostrarDanoVisual('meu', result.dano);
+            let emoji = '⚔️';
+            let tipo = 'ATAQUE';
+            if (result.critico) { emoji = '💥'; tipo = 'CRÍTICO'; }
+            if (result.bloqueado) { emoji = '🛡️'; tipo = 'BLOQUEADO'; }
+
+            addLog(`${emoji} ${iaAvatar.nome} → Você: ${tipo}! Dano: ${result.dano}`);
+
+            if (result.elemental === 'vantagem') {
+              addLog('🔥 Super efetivo!');
+            } else if (result.elemental === 'desvantagem') {
+              addLog('💨 Pouco efetivo...');
+            }
+
+            if (result.contraAtaque) {
+              addLog(`🔥🛡️ CONTRA-ATAQUE! ${iaAvatar.nome} foi queimado!`);
+            }
+
+            mostrarDanoVisual('meu', result.dano, result.critico ? 'critical' : 'damage');
           }
         } else if (result.iaAction === 'defend') {
-          addLog(`🛡️ Oponente defendeu`);
+          addLog(`🛡️ ${iaAvatar.nome} defendeu (+${result.energyGained || 20} energia)`);
         } else if (result.iaAction === 'ability') {
-          addLog(`✨ Oponente usou ${result.nomeHabilidade}!`);
-          if (result.dano > 0) {
-            mostrarDanoVisual('meu', result.dano);
+          if (result.errou) {
+            if (result.invisivel) {
+              addLog(`👻 ${iaAvatar.nome} usou ${result.nomeHabilidade} mas ERROU! Você está INVISÍVEL!`);
+            } else {
+              addLog(`💨 ${iaAvatar.nome} usou ${result.nomeHabilidade} mas ERROU!`);
+            }
+            mostrarDanoVisual('meu', '', 'dodge');
+          } else {
+            let emoji = '✨';
+            let msg = `${emoji} ${iaAvatar.nome} usou ${result.nomeHabilidade}!`;
+
+            if (result.dano > 0) {
+              msg += ` Dano: ${result.dano}`;
+              if (result.numGolpes && result.numGolpes > 1) {
+                msg += ` (${result.numGolpes}× golpes)`;
+              }
+            }
+
+            if (result.cura > 0) {
+              msg += ` ❤️ Curou: ${result.cura}`;
+            }
+
+            addLog(msg);
+
+            if (result.elemental === 'vantagem') {
+              addLog('🔥 Super efetivo!');
+            } else if (result.elemental === 'desvantagem') {
+              addLog('💨 Pouco efetivo...');
+            }
+
+            if (result.contraAtaque) {
+              addLog(`🔥🛡️ CONTRA-ATAQUE! ${iaAvatar.nome} foi queimado!`);
+            }
+
+            if (result.efeitos && result.efeitos.length > 0) {
+              addLog(`✨ Efeitos: ${result.efeitos.join(', ')}`);
+            }
+
+            if (result.dano > 0) {
+              if (result.numGolpes && result.numGolpes > 1) {
+                mostrarDanoVisual('meu', `${result.dano} ×${result.numGolpes}`, 'multihit');
+              } else {
+                mostrarDanoVisual('meu', result.dano, result.critico ? 'critical' : 'damage');
+              }
+            }
           }
         }
         await atualizarEstado(id || battleId);
@@ -218,11 +281,36 @@ function BatalhaTreinoIAContent() {
       const result = await response.json();
       if (result.success) {
         if (result.errou) {
-          addLog(`❌ Você atacou mas ERROU!`);
+          if (result.invisivel) {
+            addLog(`👻 Você ERROU! ${iaAvatar.nome} está INVISÍVEL!`);
+          } else {
+            addLog(`💨 Você ERROU! ${iaAvatar.nome} esquivou!`);
+          }
+          mostrarDanoVisual('oponente', '', 'dodge');
         } else {
-          addLog(`⚔️ Você atacou! ${result.dano} de dano${result.critico ? ' CRÍTICO' : ''}`);
-          mostrarDanoVisual('oponente', result.dano);
+          let emoji = '⚔️';
+          let tipo = 'ATAQUE';
+          if (result.critico) { emoji = '💥'; tipo = 'CRÍTICO'; }
+          if (result.bloqueado) { emoji = '🛡️'; tipo = 'BLOQUEADO'; }
+
+          addLog(`${emoji} Você → ${iaAvatar.nome}: ${tipo}! Dano: ${result.dano}`);
+
+          if (result.elemental === 'vantagem') {
+            addLog('🔥 Super efetivo!');
+          } else if (result.elemental === 'desvantagem') {
+            addLog('💨 Pouco efetivo...');
+          }
+
+          if (result.contraAtaque) {
+            addLog(`🔥🛡️ CONTRA-ATAQUE! Você foi queimado!`);
+          }
+
+          mostrarDanoVisual('oponente', result.dano, result.critico ? 'critical' : 'damage');
         }
+
+        // Log de energia
+        addLog(`⚡ Energia: -10 → ${result.newEnergy}`);
+
         await atualizarEstado();
       } else {
         addLog(`❌ ${result.error}`);
@@ -249,6 +337,7 @@ function BatalhaTreinoIAContent() {
       const result = await response.json();
       if (result.success) {
         addLog(`🛡️ Você defendeu (+${result.energyGained} energia)`);
+        addLog(`⚡ Energia: +${result.energyGained} → ${result.newEnergy}`);
         await atualizarEstado();
       }
     } catch (error) {
@@ -276,13 +365,57 @@ function BatalhaTreinoIAContent() {
       const result = await response.json();
       if (result.success) {
         if (result.errou) {
-          addLog(`❌ ${hab.nome} ERROU!`);
+          if (result.invisivel) {
+            addLog(`👻 Você usou ${hab.nome} mas ERROU! ${iaAvatar.nome} está INVISÍVEL!`);
+          } else {
+            addLog(`💨 Você usou ${hab.nome} mas ERROU!`);
+          }
+          mostrarDanoVisual('oponente', '', 'dodge');
         } else {
-          addLog(`✨ Você usou ${hab.nome}!`);
+          let emoji = '✨';
+          let msg = `${emoji} Você usou ${hab.nome}!`;
+
           if (result.dano > 0) {
-            mostrarDanoVisual('oponente', result.dano);
+            msg += ` Dano: ${result.dano}`;
+            if (result.numGolpes && result.numGolpes > 1) {
+              msg += ` (${result.numGolpes}× golpes)`;
+            }
+          }
+
+          if (result.cura > 0) {
+            msg += ` ❤️ Curou: ${result.cura}`;
+          }
+
+          addLog(msg);
+
+          if (result.elemental === 'vantagem') {
+            addLog('🔥 Super efetivo!');
+          } else if (result.elemental === 'desvantagem') {
+            addLog('💨 Pouco efetivo...');
+          }
+
+          if (result.contraAtaque) {
+            addLog(`🔥🛡️ CONTRA-ATAQUE! Você foi queimado!`);
+          }
+
+          if (result.efeitosAplicados && result.efeitosAplicados.length > 0) {
+            addLog(`✨ Efeitos: ${result.efeitosAplicados.join(', ')}`);
+          }
+
+          // Efeitos visuais
+          if (result.dano > 0) {
+            if (result.numGolpes && result.numGolpes > 1) {
+              mostrarDanoVisual('oponente', `${result.dano} ×${result.numGolpes}`, 'multihit');
+            } else {
+              mostrarDanoVisual('oponente', result.dano, result.critico ? 'critical' : 'damage');
+            }
           }
         }
+
+        // Log de energia
+        const custoEnergia = hab.custo_energia || 20;
+        addLog(`⚡ Energia: -${custoEnergia} → ${result.newEnergy}`);
+
         await atualizarEstado();
       } else {
         addLog(`❌ ${result.error}`);
