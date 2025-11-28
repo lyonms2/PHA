@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import BackgroundEffects from "@/components/BackgroundEffects";
 import GameNav, { COMMON_ACTIONS } from '../components/GameNav';
 import AvatarSVG from '../components/AvatarSVG';
+import { calcularHPMaximoCompleto } from '@/lib/combat/statsCalculator';
 
 export default function InventarioPage() {
   const router = useRouter();
@@ -264,8 +265,8 @@ export default function InventarioPage() {
                   <div className="text-lg font-bold text-green-400">
                     {avatarAtivo.hp_atual !== null && avatarAtivo.hp_atual !== undefined
                       ? avatarAtivo.hp_atual
-                      : avatarAtivo.resistencia * 10 + avatarAtivo.nivel * 5
-                    } / {avatarAtivo.resistencia * 10 + avatarAtivo.nivel * 5}
+                      : calcularHPMaximoCompleto(avatarAtivo)
+                    } / {calcularHPMaximoCompleto(avatarAtivo)}
                   </div>
                 </div>
                 <div className="text-right">
@@ -551,8 +552,8 @@ export default function InventarioPage() {
                         <div className="text-sm text-green-400 mt-1">
                           HP: {avatarAtivo.hp_atual !== null && avatarAtivo.hp_atual !== undefined
                             ? avatarAtivo.hp_atual
-                            : avatarAtivo.resistencia * 10 + avatarAtivo.nivel * 5
-                          } / {avatarAtivo.resistencia * 10 + avatarAtivo.nivel * 5}
+                            : calcularHPMaximoCompleto(avatarAtivo)
+                          } / {calcularHPMaximoCompleto(avatarAtivo)}
                         </div>
                         <div className={`text-sm mt-1 ${
                           (avatarAtivo.exaustao || 0) >= 60 ? 'text-red-400' :

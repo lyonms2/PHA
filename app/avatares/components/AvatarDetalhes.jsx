@@ -359,13 +359,13 @@ export default function AvatarDetalhes({
                             <span className="text-lg font-bold text-cyan-400">{avatar.nivel}</span>
                           </div>
                           <div className="w-full bg-slate-700 rounded-full h-1.5 mb-1">
-                            <div 
-                              className="bg-cyan-400 h-1.5 rounded-full transition-all" 
-                              style={{width: `${((avatar.experiencia || 0) / calcularXPNecessario(avatar.nivel)) * 100}%`}}
+                            <div
+                              className="bg-cyan-400 h-1.5 rounded-full transition-all"
+                              style={{width: `${((avatar.xp || 0) / calcularXPNecessario(avatar.nivel)) * 100}%`}}
                             ></div>
                           </div>
                           <div className="flex justify-between text-[9px] text-slate-500">
-                            <span>{avatar.experiencia || 0} XP</span>
+                            <span>{avatar.xp || 0} XP</span>
                             <span>{calcularXPNecessario(avatar.nivel)} XP</span>
                           </div>
                         </div>

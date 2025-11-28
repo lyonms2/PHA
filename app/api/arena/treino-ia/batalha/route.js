@@ -136,7 +136,7 @@ export async function GET(request) {
  */
 export async function POST(request) {
   try {
-    const { battleId, action, playerAvatar, iaAvatar, personalidadeIA, abilityIndex, dificuldade } = await request.json();
+    const { battleId, action, playerAvatar, iaAvatar, personalidadeIA, abilityIndex, dificuldade, target } = await request.json();
 
     // ===== INICIAR NOVA BATALHA =====
     if (action === 'init') {
@@ -779,24 +779,24 @@ export async function POST(request) {
 
     // ===== PROCESSAR EFEITOS =====
     if (action === 'process_effects') {
-      const isPlayer = request.json.then(body => body.target === 'player');
-      const target = (await isPlayer) ? battle.player : battle.ia;
-      const targetHpMax = target.hp_max;
+      const isPlayer = target === 'player';
+      const targetObj = isPlayer ? battle.player : battle.ia;
+      const targetHpMax = targetObj.hp_max;
 
-      const resultado = processarEfeitos(target, targetHpMax);
+      const resultado = processarEfeitos(targetObj, targetHpMax);
 
-      target.hp = resultado.newHp;
-      target.efeitos = resultado.efeitosRestantes;
+      targetObj.hp = resultado.newHp;
+      targetObj.efeitos = resultado.efeitosRestantes;
 
       // Se paralisado, passar turno
       if (resultado.paralisado) {
-        battle.current_turn = (await isPlayer) ? 'ia' : 'player';
+        battle.current_turn = isPlayer ? 'ia' : 'player';
       }
 
       // Verificar morte
       if (resultado.morreu) {
         battle.status = 'finished';
-        battle.winner = (await isPlayer) ? 'ia' : 'player';
+        battle.winner = isPlayer ? 'ia' : 'player';
       }
 
       return NextResponse.json({
