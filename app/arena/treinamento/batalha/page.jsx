@@ -248,15 +248,99 @@ function BatalhaTreinoIAContent() {
         if (battle.currentTurn === 'ia' && battle.status === 'active') {
           setTimeout(() => executarTurnoIA(id || battleId), 1500);
         }
+
+        // Processar efeitos quando é meu turno
+        if (battle.currentTurn === 'player' && battle.status === 'active') {
+          if (myEffects.length > 0) {
+            setTimeout(() => processarMeusEfeitos(id || battleId), 500);
+          }
+        }
       }
     } catch (error) {
       console.error('Erro ao atualizar:', error);
     }
   };
 
+  // Processar efeitos do jogador no início do turno
+  const processarMeusEfeitos = async (id) => {
+    try {
+      const response = await fetch('/api/arena/treino-ia/batalha', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          battleId: id || battleId,
+          action: 'process_effects',
+          target: 'player'
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        // Mostrar logs dos efeitos
+        if (result.logsEfeitos && result.logsEfeitos.length > 0) {
+          for (const log of result.logsEfeitos) {
+            addLog(log);
+          }
+        }
+
+        setMyHp(result.newHp);
+        setMyEffects(result.efeitosRestantes || []);
+
+        if (result.finished) {
+          addLog('☠️ Você morreu por efeitos!');
+          setStatus('finished');
+          setWinner('ia');
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao processar efeitos:', error);
+    }
+  };
+
+  // Processar efeitos da IA no início do turno dela
+  const processarEfeitosIA = async (id) => {
+    try {
+      const response = await fetch('/api/arena/treino-ia/batalha', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          battleId: id || battleId,
+          action: 'process_effects',
+          target: 'ia'
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        // Mostrar logs dos efeitos
+        if (result.logsEfeitos && result.logsEfeitos.length > 0) {
+          for (const log of result.logsEfeitos) {
+            addLog(log);
+          }
+        }
+
+        setOpponentHp(result.newHp);
+        setOpponentEffects(result.efeitosRestantes || []);
+
+        if (result.finished) {
+          addLog(`☠️ ${iaAvatar.nome} morreu por efeitos!`);
+          setStatus('finished');
+          setWinner('player');
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao processar efeitos da IA:', error);
+    }
+  };
+
   // Turno da IA
   const executarTurnoIA = async (id) => {
     try {
+      // Primeiro processar efeitos da IA se houver
+      if (opponentEffects.length > 0) {
+        await processarEfeitosIA(id || battleId);
+      }
+
       const response = await fetch('/api/arena/treino-ia/batalha', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -354,7 +438,7 @@ function BatalhaTreinoIAContent() {
   };
 
   const addLog = (msg) => {
-    setLog(prev => [...prev.slice(-15), msg]);
+    setLog(prev => [msg, ...prev].slice(0, 20)); // Mais recente no topo, máximo 20 logs
   };
 
   const mostrarDanoVisual = (alvo, dano) => {
