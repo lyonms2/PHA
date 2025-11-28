@@ -38,7 +38,10 @@ const styles = `
 function BatalhaContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const modoPvP = searchParams.get('modo') === 'pvp';
+  const modo = searchParams.get('modo');
+  const modoPvP = modo === 'pvp';
+  const modoTreinoIA = modo === 'treino-ia';
+  const modoDesafioBoss = modo === 'desafio-boss';
 
   const [estado, setEstado] = useState(null);
   const [log, setLog] = useState([]);
@@ -140,7 +143,103 @@ function BatalhaContent() {
           inicializarPvPAoVivo(dados);
         }
       }
+    } else if (modoTreinoIA) {
+      // === MODO TREINO COM IA ===
+      batalhaJSON = sessionStorage.getItem('batalha_treino_dados');
+      if (batalhaJSON) {
+        const dados = JSON.parse(batalhaJSON);
+
+        // Inicializar batalha com os dados do treino IA
+        const batalha = inicializarBatalhaD20(
+          {
+            ...dados.avatarJogador,
+            habilidades: Array.isArray(dados.avatarJogador.habilidades) ? dados.avatarJogador.habilidades : [],
+          },
+          {
+            ...dados.avatarOponente,
+            nome: dados.nomeOponente || dados.avatarOponente.nome,
+            habilidades: Array.isArray(dados.avatarOponente.habilidades) ? dados.avatarOponente.habilidades : [],
+          },
+          dados.dificuldade || 'normal'
+        );
+
+        // Armazenar dados da personalidade IA para uso posterior
+        batalha.personalidadeIA = dados.personalidadeIA;
+        batalha.tipoTreino = 'ia';
+
+        setEstado(batalha);
+
+        adicionarLog('🤖 TREINO COM IA INICIADO!');
+        adicionarLog(`Voce: ${batalha.jogador.nome} (${batalha.jogador.elemento})`);
+        adicionarLog(`VS`);
+        adicionarLog(`${dados.nomeOponente}: ${batalha.inimigo.elemento}`);
+        if (dados.personalidadeIA) {
+          adicionarLog(`IA: ${dados.personalidadeIA.tipo} (${dados.personalidadeIA.config.nome})`);
+        }
+        adicionarLog(`Dificuldade: ${(dados.dificuldade || 'normal').toUpperCase()}`);
+        adicionarLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        adicionarLog('💡 Batalha de treino - Sem risco de morte permanente!');
+        adicionarLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      }
+
+      setTimerAtivo(true);
+      setTempoRestante(30);
+    } else if (modoDesafioBoss) {
+      // === MODO DESAFIO DE BOSS ===
+      batalhaJSON = sessionStorage.getItem('batalha_desafio_dados');
+      if (batalhaJSON) {
+        const dados = JSON.parse(batalhaJSON);
+
+        // Inicializar batalha com o Boss
+        const batalha = inicializarBatalhaD20(
+          {
+            ...dados.avatarJogador,
+            habilidades: Array.isArray(dados.avatarJogador.habilidades) ? dados.avatarJogador.habilidades : [],
+          },
+          {
+            ...dados.avatarOponente,
+            nome: dados.nomeBoss || dados.avatarOponente.nome,
+            habilidades: Array.isArray(dados.avatarOponente.habilidades) ? dados.avatarOponente.habilidades : [],
+          },
+          'boss'
+        );
+
+        // Armazenar dados do boss
+        batalha.isBoss = true;
+        batalha.bossData = dados.bossData;
+        batalha.mecanicasEspeciais = dados.avatarOponente.mecanicasEspeciais || [];
+
+        setEstado(batalha);
+
+        adicionarLog('═══════════════════════════════');
+        adicionarLog('🏆 DESAFIO DE BOSS INICIADO! 🏆');
+        adicionarLog('═══════════════════════════════');
+        adicionarLog(`Herói: ${batalha.jogador.nome} (${batalha.jogador.elemento})`);
+        adicionarLog(`⚔️ VERSUS ⚔️`);
+        adicionarLog(`👹 ${dados.nomeBoss || dados.avatarOponente.nome}`);
+        adicionarLog(`Elemento: ${batalha.inimigo.elemento}`);
+        adicionarLog(`HP do Boss: ${batalha.inimigo.hp_maximo} (${dados.avatarOponente.multiplicadorHP}x)`);
+        if (dados.bossData && dados.bossData.dificuldade) {
+          adicionarLog(`Dificuldade: ${dados.bossData.dificuldade.toUpperCase()}`);
+        }
+        adicionarLog('═══════════════════════════════');
+        adicionarLog('⚠️ ATENÇÃO: Morte permanente! ⚠️');
+        adicionarLog('═══════════════════════════════');
+
+        // Listar mecânicas especiais do boss
+        if (batalha.mecanicasEspeciais && batalha.mecanicasEspeciais.length > 0) {
+          adicionarLog('💀 MECÂNICAS ESPECIAIS DO BOSS:');
+          batalha.mecanicasEspeciais.forEach(mec => {
+            adicionarLog(`  • ${mec.nome}: ${mec.descricao}`);
+          });
+          adicionarLog('═══════════════════════════════');
+        }
+      }
+
+      setTimerAtivo(true);
+      setTempoRestante(30);
     } else {
+      // === MODO TREINO CLÁSSICO ===
       batalhaJSON = localStorage.getItem('batalha_atual');
       if (batalhaJSON) {
         const batalha = JSON.parse(batalhaJSON);
@@ -160,7 +259,7 @@ function BatalhaContent() {
 
     setTimerAtivo(true);
     setTempoRestante(30);
-  }, [router, modoPvP]);
+  }, [router, modoPvP, modoTreinoIA, modoDesafioBoss]);
 
   // Timer para turnos
   useEffect(() => {
