@@ -845,7 +845,7 @@ export async function POST(request) {
         recompensas: {
           ...recompensas,
           vitoria,
-          hpOriginal: battle.playerAvatarOriginal.hp // HP não muda (é treino)
+          hpOriginal: battle.playerAvatarOriginal.hp_atual || battle.playerAvatarOriginal.hp // HP não muda (é treino)
         }
       });
     }
@@ -868,7 +868,7 @@ export async function POST(request) {
         success: true,
         penalidades: {
           ...penalidades,
-          hpOriginal: battle.playerAvatarOriginal.hp // HP não muda (é treino)
+          hpOriginal: battle.playerAvatarOriginal.hp_atual || battle.playerAvatarOriginal.hp // HP não muda (é treino)
         }
       });
     }
