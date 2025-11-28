@@ -1,94 +1,159 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { updateDocument, getDocument } from "@/lib/firebase/firestore";
+import { useRouter } from "next/navigation";
+import AvatarSVG from "@/app/components/AvatarSVG";
+import { calcularPoderTotal } from "@/lib/gameLogic";
+import { HABILIDADES_POR_ELEMENTO } from "@/app/avatares/sistemas/abilitiesSystem";
+
+/**
+ * Atualiza os valores de balanceamento de uma habilidade
+ */
+function atualizarBalanceamentoHabilidade(habilidadeAvatar, elemento) {
+  if (!habilidadeAvatar || !elemento) return habilidadeAvatar;
+
+  const habilidadesSistema = HABILIDADES_POR_ELEMENTO[elemento];
+  if (!habilidadesSistema) return habilidadeAvatar;
+
+  const habilidadeSistema = Object.values(habilidadesSistema).find(
+    h => h.nome === habilidadeAvatar.nome
+  );
+
+  if (!habilidadeSistema) return habilidadeAvatar;
+
+  return {
+    ...habilidadeAvatar,
+    custo_energia: habilidadeSistema.custo_energia,
+    chance_efeito: habilidadeSistema.chance_efeito,
+    duracao_efeito: habilidadeSistema.duracao_efeito,
+    dano_base: habilidadeSistema.dano_base,
+    multiplicador_stat: habilidadeSistema.multiplicador_stat,
+    cooldown: habilidadeSistema.cooldown
+  };
+}
+
+function getElementoEmoji(elemento) {
+  const emojis = {
+    'Fogo': '🔥',
+    'Água': '💧',
+    'Terra': '🌍',
+    'Vento': '💨',
+    'Eletricidade': '⚡',
+    'Luz': '✨',
+    'Sombra': '🌑'
+  };
+  return emojis[elemento] || '⚪';
+}
 
 function BatalhaTreinoIAContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
+  const [visitorId, setVisitorId] = useState(null);
+  const [meuNome, setMeuNome] = useState('');
   const [battleId, setBattleId] = useState(null);
-  const [battle, setBattle] = useState(null);
+  const [meuAvatar, setMeuAvatar] = useState(null);
+  const [iaAvatar, setIaAvatar] = useState(null);
+  const [myHp, setMyHp] = useState(100);
+  const [myHpMax, setMyHpMax] = useState(100);
+  const [opponentHp, setOpponentHp] = useState(100);
+  const [opponentHpMax, setOpponentHpMax] = useState(100);
+  const [myEnergy, setMyEnergy] = useState(100);
+  const [opponentEnergy, setOpponentEnergy] = useState(100);
+  const [myEffects, setMyEffects] = useState([]);
+  const [opponentEffects, setOpponentEffects] = useState([]);
+  const [isYourTurn, setIsYourTurn] = useState(true);
+  const [status, setStatus] = useState('active');
+  const [winner, setWinner] = useState(null);
   const [log, setLog] = useState([]);
-  const [processando, setProcessando] = useState(false);
-  const [resultado, setResultado] = useState(null);
-  const [erro, setErro] = useState(null);
+  const [actionInProgress, setActionInProgress] = useState(false);
+
+  // Efeitos visuais de dano
+  const [myDamageEffect, setMyDamageEffect] = useState(null);
+  const [opponentDamageEffect, setOpponentDamageEffect] = useState(null);
+
+  // Carregar usuário
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (!userData) {
+      router.push("/login");
+      return;
+    }
+    const parsed = JSON.parse(userData);
+    setVisitorId(parsed.visitorId || parsed.id);
+    setMeuNome(parsed.nome_operacao || parsed.nome || 'Jogador');
+  }, [router]);
 
   // Inicializar batalha
   useEffect(() => {
-    const iniciarBatalha = async () => {
+    const iniciar = async () => {
       try {
-        // Pegar dados do sessionStorage
         const dadosJSON = sessionStorage.getItem('treino_ia_dados');
         if (!dadosJSON) {
-          setErro('Dados de treino não encontrados');
+          router.push('/arena/treinamento');
           return;
         }
 
         const dados = JSON.parse(dadosJSON);
-        const { playerAvatar, oponente, personalidadeIA, dificuldade } = dados;
+        setMeuAvatar(dados.playerAvatar);
+        setIaAvatar(dados.oponente);
 
-        // Inicializar batalha via API
+        // Inicializar batalha
         const response = await fetch('/api/arena/treino-ia/batalha', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'init',
-            playerAvatar,
-            iaAvatar: oponente,
-            personalidadeIA
+            playerAvatar: dados.playerAvatar,
+            iaAvatar: dados.oponente,
+            personalidadeIA: dados.personalidadeIA
           })
         });
 
         const result = await response.json();
-
-        if (!result.success) {
-          setErro(result.error || 'Erro ao iniciar batalha');
-          return;
+        if (result.success) {
+          setBattleId(result.battleId);
+          addLog(`⚔️ Batalha iniciada!`);
+          atualizarEstado(result.battleId);
         }
-
-        setBattleId(result.battleId);
-        adicionarLog(`⚔️ Batalha iniciada contra ${oponente.nome}!`);
-        adicionarLog(`💪 Dificuldade: ${dificuldade}`);
-
-        // Buscar estado inicial
-        await atualizarEstado(result.battleId);
-
       } catch (error) {
-        console.error('Erro ao iniciar batalha:', error);
-        setErro('Erro ao conectar com servidor');
+        console.error('Erro ao iniciar:', error);
       }
     };
 
-    iniciarBatalha();
-  }, []);
+    iniciar();
+  }, [router]);
 
-  // Atualizar estado da batalha
+  // Atualizar estado
   const atualizarEstado = async (id) => {
     try {
       const response = await fetch(`/api/arena/treino-ia/batalha?battleId=${id || battleId}`);
       const result = await response.json();
 
       if (result.success) {
-        setBattle(result.battle);
+        const battle = result.battle;
+        setMyHp(battle.playerHp);
+        setMyHpMax(battle.playerHpMax);
+        setOpponentHp(battle.iaHp);
+        setOpponentHpMax(battle.iaHpMax);
+        setMyEnergy(battle.playerEnergy);
+        setOpponentEnergy(battle.iaEnergy);
+        setMyEffects(battle.playerEffects || []);
+        setOpponentEffects(battle.iaEffects || []);
+        setIsYourTurn(battle.currentTurn === 'player');
+        setStatus(battle.status);
+        setWinner(battle.winner);
 
-        // Se for turno da IA, executar automaticamente
-        if (result.battle.currentTurn === 'ia' && result.battle.status === 'active') {
+        // Turno da IA
+        if (battle.currentTurn === 'ia' && battle.status === 'active') {
           setTimeout(() => executarTurnoIA(id || battleId), 1500);
-        }
-
-        // Verificar fim de batalha
-        if (result.battle.status === 'finished') {
-          finalizarBatalha(result.battle.winner);
         }
       }
     } catch (error) {
-      console.error('Erro ao atualizar estado:', error);
+      console.error('Erro ao atualizar:', error);
     }
   };
 
-  // Executar turno da IA
+  // Turno da IA
   const executarTurnoIA = async (id) => {
     try {
       const response = await fetch('/api/arena/treino-ia/batalha', {
@@ -101,427 +166,492 @@ function BatalhaTreinoIAContent() {
       });
 
       const result = await response.json();
-
       if (result.success) {
-        // Adicionar log da ação da IA
         if (result.iaAction === 'attack') {
           if (result.errou) {
-            adicionarLog(`❌ ${battle.iaNoome} atacou mas ERROU!`);
+            addLog(`❌ Oponente atacou mas ERROU!`);
           } else {
-            const critico = result.critico ? ' CRÍTICO!' : '';
-            adicionarLog(`🗡️ ${battle.iaNoome} atacou e causou ${result.dano} de dano${critico}`);
+            addLog(`⚔️ Oponente atacou! ${result.dano} de dano${result.critico ? ' CRÍTICO' : ''}`);
+            mostrarDanoVisual('meu', result.dano);
           }
         } else if (result.iaAction === 'defend') {
-          adicionarLog(`🛡️ ${battle.iaNoome} defendeu e recuperou energia`);
+          addLog(`🛡️ Oponente defendeu`);
         } else if (result.iaAction === 'ability') {
-          if (result.errou) {
-            adicionarLog(`❌ ${battle.iaNoome} usou ${result.nomeHabilidade} mas ERROU!`);
-          } else {
-            adicionarLog(`✨ ${battle.iaNoome} usou ${result.nomeHabilidade}!`);
-            if (result.dano > 0) {
-              adicionarLog(`   💥 ${result.dano} de dano`);
-            }
-            if (result.efeitos && result.efeitos.length > 0) {
-              adicionarLog(`   ${result.efeitos.join(', ')}`);
-            }
+          addLog(`✨ Oponente usou ${result.nomeHabilidade}!`);
+          if (result.dano > 0) {
+            mostrarDanoVisual('meu', result.dano);
           }
         }
-
-        // Atualizar estado
         await atualizarEstado(id || battleId);
       }
     } catch (error) {
-      console.error('Erro no turno da IA:', error);
+      console.error('Erro turno IA:', error);
     }
   };
 
-  // Ações do jogador
+  const addLog = (msg) => {
+    setLog(prev => [...prev.slice(-15), msg]);
+  };
+
+  const mostrarDanoVisual = (alvo, dano) => {
+    if (alvo === 'meu') {
+      setMyDamageEffect(dano);
+      setTimeout(() => setMyDamageEffect(null), 1000);
+    } else {
+      setOpponentDamageEffect(dano);
+      setTimeout(() => setOpponentDamageEffect(null), 1000);
+    }
+  };
+
+  // Atacar
   const atacar = async () => {
-    if (processando || !battle || battle.currentTurn !== 'player') return;
+    if (actionInProgress || !isYourTurn || myEnergy < 10) return;
+    setActionInProgress(true);
 
-    setProcessando(true);
     try {
       const response = await fetch('/api/arena/treino-ia/batalha', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          battleId,
-          action: 'attack'
-        })
+        body: JSON.stringify({ battleId, action: 'attack' })
       });
 
       const result = await response.json();
-
       if (result.success) {
         if (result.errou) {
-          adicionarLog(`❌ Você atacou mas ERROU!`);
+          addLog(`❌ Você atacou mas ERROU!`);
         } else {
-          const critico = result.critico ? ' CRÍTICO!' : '';
-          adicionarLog(`⚔️ Você atacou e causou ${result.dano} de dano${critico}`);
-          if (result.contraAtaque) {
-            adicionarLog(`   🔥 Contra-ataque! Você foi queimado!`);
-          }
+          addLog(`⚔️ Você atacou! ${result.dano} de dano${result.critico ? ' CRÍTICO' : ''}`);
+          mostrarDanoVisual('oponente', result.dano);
         }
-
         await atualizarEstado();
       } else {
-        adicionarLog(`❌ ${result.error}`);
+        addLog(`❌ ${result.error}`);
       }
     } catch (error) {
-      console.error('Erro ao atacar:', error);
-      adicionarLog('❌ Erro ao atacar');
+      console.error('Erro:', error);
     } finally {
-      setProcessando(false);
+      setActionInProgress(false);
     }
   };
 
+  // Defender
   const defender = async () => {
-    if (processando || !battle || battle.currentTurn !== 'player') return;
+    if (actionInProgress || !isYourTurn) return;
+    setActionInProgress(true);
 
-    setProcessando(true);
     try {
       const response = await fetch('/api/arena/treino-ia/batalha', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          battleId,
-          action: 'defend'
-        })
+        body: JSON.stringify({ battleId, action: 'defend' })
       });
 
       const result = await response.json();
-
       if (result.success) {
-        adicionarLog(`🛡️ Você defendeu e recuperou ${result.energyGained} de energia`);
+        addLog(`🛡️ Você defendeu (+${result.energyGained} energia)`);
         await atualizarEstado();
-      } else {
-        adicionarLog(`❌ ${result.error}`);
       }
     } catch (error) {
-      console.error('Erro ao defender:', error);
-      adicionarLog('❌ Erro ao defender');
+      console.error('Erro:', error);
     } finally {
-      setProcessando(false);
+      setActionInProgress(false);
     }
   };
 
+  // Usar habilidade
   const usarHabilidade = async (index) => {
-    if (processando || !battle || battle.currentTurn !== 'player') return;
+    if (actionInProgress || !isYourTurn) return;
+    setActionInProgress(true);
 
-    setProcessando(true);
     try {
+      const habAvatar = meuAvatar.habilidades[index];
+      const hab = atualizarBalanceamentoHabilidade(habAvatar, meuAvatar.elemento);
+
       const response = await fetch('/api/arena/treino-ia/batalha', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          battleId,
-          action: 'ability',
-          abilityIndex: index
-        })
+        body: JSON.stringify({ battleId, action: 'ability', abilityIndex: index })
       });
 
       const result = await response.json();
-
       if (result.success) {
         if (result.errou) {
-          adicionarLog(`❌ ${result.nomeHabilidade} ERROU!`);
+          addLog(`❌ ${hab.nome} ERROU!`);
         } else {
-          adicionarLog(`✨ Você usou ${result.nomeHabilidade}!`);
+          addLog(`✨ Você usou ${hab.nome}!`);
           if (result.dano > 0) {
-            const critico = result.critico ? ' CRÍTICO' : '';
-            adicionarLog(`   💥 ${result.dano} de dano${critico}`);
-          }
-          if (result.cura > 0) {
-            adicionarLog(`   💚 Recuperou ${result.cura} HP`);
-          }
-          if (result.efeitosAplicados && result.efeitosAplicados.length > 0) {
-            adicionarLog(`   ${result.efeitosAplicados.join(', ')}`);
+            mostrarDanoVisual('oponente', result.dano);
           }
         }
-
         await atualizarEstado();
       } else {
-        adicionarLog(`❌ ${result.error}`);
+        addLog(`❌ ${result.error}`);
       }
     } catch (error) {
-      console.error('Erro ao usar habilidade:', error);
-      adicionarLog('❌ Erro ao usar habilidade');
+      console.error('Erro:', error);
     } finally {
-      setProcessando(false);
+      setActionInProgress(false);
     }
   };
 
-  const finalizarBatalha = async (vencedor) => {
-    const vitoria = vencedor === 'player';
-
-    setResultado({
-      vitoria,
-      mensagem: vitoria ? '🎉 Vitória!' : '💀 Derrota...',
-      recompensas: vitoria ? { xp: 50, moedas: 25 } : { xp: 10, moedas: 5 }
-    });
-
-    // Atualizar avatar (exaustão, recompensas)
-    if (battle && battle.playerAvatar) {
-      try {
-        const avatarId = sessionStorage.getItem('avatar_ativo_id');
-        if (avatarId) {
-          const avatar = await getDocument('avatares', avatarId);
-          if (avatar) {
-            await updateDocument('avatares', avatarId, {
-              exaustao: Math.min(100, (avatar.exaustao || 0) + 10),
-              xp: (avatar.xp || 0) + (vitoria ? 50 : 10)
-            });
-          }
-        }
-      } catch (error) {
-        console.error('Erro ao atualizar avatar:', error);
-      }
-    }
-  };
-
-  const adicionarLog = (mensagem) => {
-    setLog(prev => [...prev, { id: Date.now(), texto: mensagem }]);
-  };
-
-  const voltar = () => {
-    sessionStorage.removeItem('treino_ia_dados');
-    router.push('/arena/treinamento');
-  };
-
-  if (erro) {
+  if (!meuAvatar || !iaAvatar || !battleId) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white flex items-center justify-center p-4">
-        <div className="bg-red-900/50 border border-red-500 rounded-lg p-6 max-w-md">
-          <h2 className="text-xl font-bold mb-4">❌ Erro</h2>
-          <p className="mb-4">{erro}</p>
-          <button
-            onClick={voltar}
-            className="w-full bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg transition"
-          >
-            Voltar
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!battle) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950 text-gray-100 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-xl">Preparando batalha...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-500 mx-auto mb-4"></div>
+          <p className="text-lg">Preparando batalha...</p>
         </div>
       </div>
     );
   }
 
-  if (resultado) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white flex items-center justify-center p-4">
-        <div className="bg-gray-800 rounded-lg border-2 border-yellow-500 p-8 max-w-md w-full">
-          <h2 className="text-3xl font-bold text-center mb-6">{resultado.mensagem}</h2>
-
-          <div className="bg-gray-700 rounded-lg p-4 mb-6">
-            <h3 className="text-xl font-semibold mb-3">Recompensas:</h3>
-            <div className="space-y-2">
-              <p>✨ XP: +{resultado.recompensas.xp}</p>
-              <p>💰 Moedas: +{resultado.recompensas.moedas}</p>
-            </div>
-          </div>
-
-          <button
-            onClick={voltar}
-            className="w-full bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-lg font-semibold transition"
-          >
-            Voltar ao Treinamento
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const isPlayerTurn = battle.currentTurn === 'player';
-  const playerHpPercent = (battle.playerHp / battle.playerHpMax) * 100;
-  const iaHpPercent = (battle.iaHp / battle.iaHpMax) * 100;
-  const playerEnergyPercent = (battle.playerEnergy / 100) * 100;
+  const poderMeu = calcularPoderTotal(meuAvatar);
+  const poderIA = calcularPoderTotal(iaAvatar);
+  const hpMeuPercent = (myHp / myHpMax) * 100;
+  const hpIAPercent = (opponentHp / opponentHpMax) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900 to-black text-white p-4">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950 text-gray-100 p-4">
+      <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold mb-2">⚔️ Treino contra IA</h1>
-          <p className="text-yellow-400">
-            {isPlayerTurn ? '🔥 SEU TURNO!' : '⏳ Turno do Oponente...'}
+        <div className="text-center mb-4">
+          <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400">
+            ⚔️ TREINO CONTRA IA
+          </h1>
+          <p className="text-xs text-slate-400 mt-1">
+            {isYourTurn ? '🔥 SEU TURNO!' : '⏳ Turno do Oponente...'}
           </p>
         </div>
 
-        {/* Battle Area */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          {/* Jogador */}
-          <div className="bg-gradient-to-br from-blue-900/50 to-blue-700/30 border-2 border-blue-500 rounded-lg p-4">
-            <h3 className="text-xl font-bold mb-3">👤 {battle.playerNome}</h3>
-
-            <div className="space-y-2 mb-4">
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>❤️ HP</span>
-                  <span>{battle.playerHp} / {battle.playerHpMax}</span>
+        {/* Arena - Cards lado a lado */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+          {/* SEU AVATAR */}
+          <div className="relative">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-xl blur"></div>
+            <div className="relative bg-slate-900/95 rounded-xl border border-cyan-500/40 overflow-hidden">
+              {/* Cabeçalho */}
+              <div className="bg-gradient-to-r from-cyan-900/50 to-blue-900/50 px-3 py-2 border-b border-cyan-500/30">
+                <div className="flex items-center justify-between">
+                  <div className="font-bold text-cyan-400 text-sm truncate">{meuAvatar.nome}</div>
+                  <div className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${
+                    meuAvatar.raridade === 'Mítico' ? 'bg-yellow-600 text-yellow-100' :
+                    meuAvatar.raridade === 'Lendário' ? 'bg-orange-600 text-orange-100' :
+                    meuAvatar.raridade === 'Épico' ? 'bg-purple-600 text-purple-100' :
+                    meuAvatar.raridade === 'Raro' ? 'bg-blue-600 text-blue-100' :
+                    'bg-slate-600 text-slate-100'
+                  }`}>
+                    {meuAvatar.raridade}
+                  </div>
                 </div>
-                <div className="w-full bg-gray-700 rounded-full h-4">
-                  <div
-                    className="bg-red-500 h-4 rounded-full transition-all duration-300"
-                    style={{ width: `${playerHpPercent}%` }}
-                  ></div>
+                <div className="text-xs text-slate-400 mt-1">🎯 {meuNome}</div>
+              </div>
+
+              {/* Avatar e Stats */}
+              <div className="p-3 flex gap-3">
+                <div className="flex-shrink-0 relative">
+                  <AvatarSVG avatar={meuAvatar} tamanho={100} />
+                  {myDamageEffect && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-2xl font-bold text-red-500 animate-bounce">
+                        -{myDamageEffect}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 space-y-1.5 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Nível</span>
+                    <span className="text-white font-bold">{meuAvatar.nivel}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Elemento</span>
+                    <span>{getElementoEmoji(meuAvatar.elemento)} {meuAvatar.elemento}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">⚔️ Poder</span>
+                    <span className="text-cyan-400 font-bold">{poderMeu}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">💪 Força</span>
+                    <span className="text-orange-400">{meuAvatar.forca}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">💨 Agilidade</span>
+                    <span className="text-green-400">{meuAvatar.agilidade}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">🛡️ Resistência</span>
+                    <span className="text-blue-400">{meuAvatar.resistencia}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">🎯 Foco</span>
+                    <span className="text-purple-400">{meuAvatar.foco}</span>
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>⚡ Energia</span>
-                  <span>{battle.playerEnergy} / 100</span>
+              {/* Barras de Status */}
+              <div className="px-3 pb-3 space-y-2">
+                {/* HP */}
+                <div>
+                  <div className="flex justify-between text-[10px] mb-0.5">
+                    <span className="text-red-400 font-bold">❤️ HP</span>
+                    <span className="font-mono">{myHp}/{myHpMax}</span>
+                  </div>
+                  <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                    <div
+                      className={`h-full transition-all ${
+                        hpMeuPercent > 50 ? 'bg-gradient-to-r from-green-500 to-emerald-400' :
+                        hpMeuPercent > 25 ? 'bg-gradient-to-r from-yellow-500 to-orange-400' :
+                        'bg-gradient-to-r from-red-600 to-red-400'
+                      }`}
+                      style={{ width: `${hpMeuPercent}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="w-full bg-gray-700 rounded-full h-3">
-                  <div
-                    className="bg-blue-400 h-3 rounded-full transition-all duration-300"
-                    style={{ width: `${playerEnergyPercent}%` }}
-                  ></div>
+
+                {/* Energia */}
+                <div>
+                  <div className="flex justify-between text-[10px] mb-0.5">
+                    <span className="text-blue-400 font-bold">⚡ Energia</span>
+                    <span className="font-mono">{myEnergy}/100</span>
+                  </div>
+                  <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all"
+                      style={{ width: `${myEnergy}%` }}
+                    />
+                  </div>
                 </div>
               </div>
+
+              {/* Efeitos Ativos */}
+              {myEffects.length > 0 && (
+                <div className="px-3 pb-3 border-t border-slate-800 pt-2">
+                  <div className="text-[10px] text-slate-400 font-bold uppercase mb-1">🔮 Efeitos Ativos</div>
+                  <div className="flex flex-wrap gap-1">
+                    {myEffects.map((ef, i) => (
+                      <span key={i} className="text-[9px] bg-purple-900/50 text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/30">
+                        {ef.tipo} ({ef.turnosRestantes})
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-
-            {/* Efeitos Ativos */}
-            {battle.playerEffects && battle.playerEffects.length > 0 && (
-              <div className="bg-gray-800/50 rounded p-2 text-sm">
-                <p className="font-semibold mb-1">Efeitos:</p>
-                <div className="flex flex-wrap gap-1">
-                  {battle.playerEffects.map((ef, i) => (
-                    <span key={i} className="bg-purple-600 px-2 py-1 rounded text-xs">
-                      {ef.tipo} ({ef.turnosRestantes})
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {battle.playerDefending && (
-              <div className="bg-yellow-600/30 border border-yellow-500 rounded p-2 mt-2 text-sm">
-                🛡️ Defendendo (-50% dano recebido)
-              </div>
-            )}
           </div>
 
-          {/* Oponente IA */}
-          <div className="bg-gradient-to-br from-red-900/50 to-red-700/30 border-2 border-red-500 rounded-lg p-4">
-            <h3 className="text-xl font-bold mb-3">🤖 {battle.iaNoome}</h3>
-
-            <div className="space-y-2 mb-4">
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>❤️ HP</span>
-                  <span>{battle.iaHp} / {battle.iaHpMax}</span>
+          {/* OPONENTE IA */}
+          <div className="relative">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-red-500/20 to-orange-500/20 rounded-xl blur"></div>
+            <div className="relative bg-slate-900/95 rounded-xl border border-red-500/40 overflow-hidden">
+              {/* Cabeçalho */}
+              <div className="bg-gradient-to-r from-red-900/50 to-orange-900/50 px-3 py-2 border-b border-red-500/30">
+                <div className="flex items-center justify-between">
+                  <div className="font-bold text-red-400 text-sm truncate">{iaAvatar.nome}</div>
+                  <div className="text-[9px] bg-red-600 text-red-100 px-1.5 py-0.5 rounded font-bold">
+                    OPONENTE IA
+                  </div>
                 </div>
-                <div className="w-full bg-gray-700 rounded-full h-4">
-                  <div
-                    className="bg-red-500 h-4 rounded-full transition-all duration-300"
-                    style={{ width: `${iaHpPercent}%` }}
-                  ></div>
+                <div className="text-xs text-slate-400 mt-1">🤖 Inteligência Artificial</div>
+              </div>
+
+              {/* Avatar e Stats */}
+              <div className="p-3 flex gap-3">
+                <div className="flex-shrink-0 relative">
+                  <AvatarSVG avatar={iaAvatar} tamanho={100} />
+                  {opponentDamageEffect && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-2xl font-bold text-red-500 animate-bounce">
+                        -{opponentDamageEffect}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 space-y-1.5 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Nível</span>
+                    <span className="text-white font-bold">{iaAvatar.nivel}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Elemento</span>
+                    <span>{getElementoEmoji(iaAvatar.elemento)} {iaAvatar.elemento}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">⚔️ Poder</span>
+                    <span className="text-red-400 font-bold">{poderIA}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">💪 Força</span>
+                    <span className="text-orange-400">{iaAvatar.forca}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">💨 Agilidade</span>
+                    <span className="text-green-400">{iaAvatar.agilidade}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">🛡️ Resistência</span>
+                    <span className="text-blue-400">{iaAvatar.resistencia}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">🎯 Foco</span>
+                    <span className="text-purple-400">{iaAvatar.foco}</span>
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>⚡ Energia</span>
-                  <span>{battle.iaEnergy} / 100</span>
+              {/* Barras de Status */}
+              <div className="px-3 pb-3 space-y-2">
+                {/* HP */}
+                <div>
+                  <div className="flex justify-between text-[10px] mb-0.5">
+                    <span className="text-red-400 font-bold">❤️ HP</span>
+                    <span className="font-mono">{opponentHp}/{opponentHpMax}</span>
+                  </div>
+                  <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                    <div
+                      className={`h-full transition-all ${
+                        hpIAPercent > 50 ? 'bg-gradient-to-r from-green-500 to-emerald-400' :
+                        hpIAPercent > 25 ? 'bg-gradient-to-r from-yellow-500 to-orange-400' :
+                        'bg-gradient-to-r from-red-600 to-red-400'
+                      }`}
+                      style={{ width: `${hpIAPercent}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="w-full bg-gray-700 rounded-full h-3">
-                  <div
-                    className="bg-orange-400 h-3 rounded-full transition-all duration-300"
-                    style={{ width: `${(battle.iaEnergy / 100) * 100}%` }}
-                  ></div>
+
+                {/* Energia */}
+                <div>
+                  <div className="flex justify-between text-[10px] mb-0.5">
+                    <span className="text-orange-400 font-bold">⚡ Energia</span>
+                    <span className="font-mono">{opponentEnergy}/100</span>
+                  </div>
+                  <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-orange-500 to-red-400 transition-all"
+                      style={{ width: `${opponentEnergy}%` }}
+                    />
+                  </div>
                 </div>
               </div>
+
+              {/* Efeitos Ativos */}
+              {opponentEffects.length > 0 && (
+                <div className="px-3 pb-3 border-t border-slate-800 pt-2">
+                  <div className="text-[10px] text-slate-400 font-bold uppercase mb-1">🔮 Efeitos Ativos</div>
+                  <div className="flex flex-wrap gap-1">
+                    {opponentEffects.map((ef, i) => (
+                      <span key={i} className="text-[9px] bg-red-900/50 text-red-300 px-1.5 py-0.5 rounded border border-red-500/30">
+                        {ef.tipo} ({ef.turnosRestantes})
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-
-            {/* Elemento */}
-            <div className="bg-gray-800/50 rounded p-2 text-sm mb-2">
-              <p>🔥 Elemento: {battle.iaAvatar?.elemento || 'Desconhecido'}</p>
-            </div>
-
-            {battle.iaDefending && (
-              <div className="bg-yellow-600/30 border border-yellow-500 rounded p-2 text-sm">
-                🛡️ Defendendo
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Ações */}
-        {isPlayerTurn && battle.status === 'active' && (
-          <div className="bg-gray-800 rounded-lg p-4 mb-6">
-            <h3 className="text-xl font-bold mb-4">⚔️ Ações</h3>
+        {/* Painel de Ações */}
+        {status === 'active' && (
+          <div className="bg-slate-900/80 rounded-xl border border-slate-700 p-3 mb-3">
+            <div className="text-[10px] font-bold text-cyan-300 uppercase tracking-wider mb-2 text-center">
+              ⚔️ AÇÕES DE BATALHA
+            </div>
 
-            <div className="grid grid-cols-2 gap-3 mb-4">
+            {/* Botões Atacar e Defender */}
+            <div className="grid grid-cols-2 gap-2 mb-2">
               <button
                 onClick={atacar}
-                disabled={processando || battle.playerEnergy < 10}
-                className="bg-red-600 hover:bg-red-500 disabled:bg-gray-600 disabled:cursor-not-allowed px-6 py-3 rounded-lg font-semibold transition"
+                disabled={!isYourTurn || myEnergy < 10 || actionInProgress}
+                className={`py-2 rounded-lg font-bold transition-all ${
+                  isYourTurn && myEnergy >= 10 && !actionInProgress
+                    ? 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 hover:scale-[1.02] active:scale-95'
+                    : 'bg-slate-700 cursor-not-allowed opacity-50'
+                }`}
               >
-                ⚔️ Atacar (-10 energia)
+                <div className="text-sm">⚔️ Atacar</div>
+                <div className="text-[10px] opacity-75">-10 ⚡</div>
               </button>
-
               <button
                 onClick={defender}
-                disabled={processando}
-                className="bg-blue-600 hover:bg-blue-500 disabled:bg-gray-600 disabled:cursor-not-allowed px-6 py-3 rounded-lg font-semibold transition"
+                disabled={!isYourTurn || actionInProgress}
+                className={`py-2 rounded-lg font-bold transition-all ${
+                  isYourTurn && !actionInProgress
+                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 hover:scale-[1.02] active:scale-95'
+                    : 'bg-slate-700 cursor-not-allowed opacity-50'
+                }`}
               >
-                🛡️ Defender (+20 energia)
+                <div className="text-sm">🛡️ Defender</div>
+                <div className="text-[10px] opacity-75">+20 ⚡ | -50%</div>
               </button>
             </div>
 
             {/* Habilidades */}
-            {battle.playerAvatar?.habilidades && battle.playerAvatar.habilidades.length > 0 && (
-              <div>
-                <h4 className="font-semibold mb-2">✨ Habilidades:</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {battle.playerAvatar.habilidades.map((hab, i) => (
-                    <button
-                      key={i}
-                      onClick={() => usarHabilidade(i)}
-                      disabled={processando || battle.playerEnergy < (hab.custo_energia || 20)}
-                      className="bg-purple-700 hover:bg-purple-600 disabled:bg-gray-600 disabled:cursor-not-allowed px-4 py-2 rounded text-left transition"
-                    >
-                      <div className="font-semibold">{hab.nome}</div>
-                      <div className="text-xs text-gray-300">
-                        -{hab.custo_energia || 20} energia • {hab.tipo}
-                      </div>
-                    </button>
-                  ))}
+            {meuAvatar?.habilidades && meuAvatar.habilidades.length > 0 && (
+              <>
+                <div className="text-[10px] font-bold text-pink-300 uppercase tracking-wider mb-1.5 text-center">
+                  ✨ HABILIDADES
                 </div>
-              </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {meuAvatar.habilidades.slice(0, 5).map((habAvatar, index) => {
+                    const hab = atualizarBalanceamentoHabilidade(habAvatar, meuAvatar?.elemento);
+                    const custoEnergia = hab.custo_energia || 20;
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => usarHabilidade(index)}
+                        disabled={!isYourTurn || myEnergy < custoEnergia || actionInProgress}
+                        className={`py-1.5 px-2 rounded text-left transition-all ${
+                          isYourTurn && myEnergy >= custoEnergia && !actionInProgress
+                            ? 'bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500 hover:to-pink-500 hover:scale-[1.02] active:scale-95 border border-purple-400/30'
+                            : 'bg-slate-700/50 cursor-not-allowed opacity-40 border border-slate-600/30'
+                        }`}
+                      >
+                        <div className="truncate text-[10px] font-bold">{hab.nome}</div>
+                        <div className="text-[9px] opacity-75">-{custoEnergia} ⚡</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
             )}
           </div>
         )}
 
-        {/* Log de Batalha */}
-        <div className="bg-gray-800 rounded-lg p-4">
-          <h3 className="text-xl font-bold mb-3">📜 Log de Batalha</h3>
-          <div className="bg-black/50 rounded p-3 h-48 overflow-y-auto space-y-1">
-            {log.map(item => (
-              <div key={item.id} className="text-sm">{item.texto}</div>
-            ))}
+        {/* Resultado Final */}
+        {status === 'finished' && (
+          <div className="bg-slate-900/90 rounded-xl border-2 border-yellow-500 p-6 mb-3 text-center">
+            <div className="text-3xl font-black mb-3">
+              {winner === 'player' ? '🎉 VITÓRIA!' : '💀 DERROTA'}
+            </div>
+            <button
+              onClick={() => router.push('/arena/treinamento')}
+              className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 px-6 py-3 rounded-lg font-bold transition-all hover:scale-105"
+            >
+              🏠 Voltar ao Treino
+            </button>
           </div>
-        </div>
+        )}
 
-        {/* Botão Voltar */}
-        <div className="mt-6 text-center">
-          <button
-            onClick={voltar}
-            className="bg-gray-700 hover:bg-gray-600 px-6 py-2 rounded-lg transition"
-          >
-            ← Voltar
-          </button>
+        {/* Log de Batalha */}
+        <div className="bg-slate-950/80 rounded-xl border border-slate-700 overflow-hidden">
+          <div className="bg-slate-800/50 px-3 py-1.5 border-b border-slate-700">
+            <h3 className="text-xs font-bold text-slate-300">📜 Log de Batalha</h3>
+          </div>
+          <div className="p-2 max-h-28 overflow-y-auto space-y-0.5">
+            {log.length === 0 ? (
+              <div className="text-[10px] text-slate-500 text-center py-2">Aguardando ações...</div>
+            ) : (
+              log.map((msg, i) => (
+                <div key={i} className="text-[10px] text-slate-300 py-0.5 px-1.5 bg-slate-800/30 rounded">
+                  {msg}
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -531,9 +661,9 @@ function BatalhaTreinoIAContent() {
 export default function BatalhaTreinoIA() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950 text-gray-100 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-500 mx-auto mb-4"></div>
           <p className="text-xl">Carregando batalha...</p>
         </div>
       </div>
