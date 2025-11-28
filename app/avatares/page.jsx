@@ -38,6 +38,17 @@ export default function AvatarsPage() {
     const parsedUser = JSON.parse(userData);
     setUser(parsedUser);
     carregarAvatares(parsedUser.id);
+
+    // Recarregar avatares quando a página volta a ficar visível
+    const handleVisibilityChange = () => {
+      if (!document.hidden && parsedUser?.id) {
+        console.log('🔄 Página visível novamente - recarregando avatares...');
+        carregarAvatares(parsedUser.id);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [router]);
 
   const carregarAvatares = async (userId) => {
