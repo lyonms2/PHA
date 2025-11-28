@@ -74,6 +74,18 @@ function DuelContent() {
   // Estado para prevenir cliques múltiplos
   const [actionInProgress, setActionInProgress] = useState(false);
 
+  // Estados para apostas
+  const [showBetUI, setShowBetUI] = useState(false);
+  const [betAmount, setBetAmount] = useState(0);
+  const [betLimits, setBetLimits] = useState({ minimo: 10, maximo: 100, sugerido: 50 });
+  const [myBet, setMyBet] = useState(0);
+  const [opponentBet, setOpponentBet] = useState(0);
+  const [bothBetsSet, setBothBetsSet] = useState(false);
+
+  // Estados para recompensas
+  const [showRewardsModal, setShowRewardsModal] = useState(false);
+  const [rewardsData, setRewardsData] = useState(null);
+
   const pollingRef = useRef(null);
   const lastTurnRef = useRef(null);
   const effectsProcessedRef = useRef(false);
@@ -176,6 +188,24 @@ function DuelContent() {
           setMyEffects(data.myEffects || []);
           setOpponentEffects(data.opponentEffects || []);
 
+          // Atualizar apostas
+          setMyBet(data.role === 'host' ? (data.room.host_bet || 0) : (data.room.guest_bet || 0));
+          setOpponentBet(data.role === 'host' ? (data.room.guest_bet || 0) : (data.room.host_bet || 0));
+
+          // Verificar se ambas apostas foram definidas
+          const host_bet_set = (data.room.host_bet || 0) > 0;
+          const guest_bet_set = (data.room.guest_bet || 0) > 0;
+          setBothBetsSet(host_bet_set && guest_bet_set);
+
+          // Mostrar UI de apostas quando status = 'ready' e aposta não foi definida
+          if (data.room.status === 'ready' && !showBetUI) {
+            const myBetSet = data.role === 'host' ? host_bet_set : guest_bet_set;
+            if (!myBetSet) {
+              setShowBetUI(true);
+              carregarLimitesAposta();
+            }
+          }
+
           // Processar novos logs de batalha
           if (data.battleLog && data.battleLog.length > 0) {
             processarNovosLogs(data.battleLog, data.opponentNome);
@@ -200,6 +230,9 @@ function DuelContent() {
               addLog('☠️ VOCÊ PERDEU!');
             }
             clearInterval(pollingRef.current);
+
+            // Buscar e exibir recompensas
+            buscarRecompensas(data.room);
           }
         }
       } catch (err) {
@@ -675,6 +708,84 @@ function DuelContent() {
       addLog('❌ Erro ao defender');
     } finally {
       setActionInProgress(false);
+    }
+  };
+
+  // Carregar limites de aposta
+  const carregarLimitesAposta = async () => {
+    try {
+      const response = await fetch(`/api/player-stats?userId=${visitorId}`);
+      if (response.ok) {
+        const data = await response.json();
+        const nivel = data.nivel || 1;
+        const moedas = data.moedas || 0;
+
+        const limites = {
+          minimo: Math.max(10, nivel * 5),
+          maximo: Math.min(moedas, nivel * 100),
+          sugerido: Math.min(nivel * 25, moedas)
+        };
+
+        setBetLimits(limites);
+        setBetAmount(limites.sugerido);
+      }
+    } catch (err) {
+      console.error('Erro ao carregar limites de aposta:', err);
+    }
+  };
+
+  // Definir aposta
+  const definirAposta = async () => {
+    if (!roomId || !visitorId || betAmount < betLimits.minimo || betAmount > betLimits.maximo) return;
+
+    try {
+      const res = await fetch('/api/pvp/room/set-bet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId, userId: visitorId, betAmount })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setMyBet(betAmount);
+        setShowBetUI(false);
+        addLog(`💰 Aposta definida: ${betAmount} moedas`);
+      } else {
+        addLog(`❌ ${data.error}`);
+      }
+    } catch (err) {
+      console.error('Erro ao definir aposta:', err);
+      addLog('❌ Erro ao definir aposta');
+    }
+  };
+
+  // Buscar recompensas ao fim da batalha
+  const buscarRecompensas = async (roomData) => {
+    if (!roomData || !visitorId) return;
+
+    try {
+      const res = await fetch('/api/pvp/room/finish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roomId: roomData.id || roomId,
+          winner: roomData.winner,
+          rendeu: roomData.rendeu || false
+        })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        const isWinner = roomData.winner === role;
+        setRewardsData({
+          ...data,
+          isWinner,
+          rendeu: roomData.rendeu || false
+        });
+        setShowRewardsModal(true);
+      }
+    } catch (err) {
+      console.error('Erro ao buscar recompensas:', err);
     }
   };
 
@@ -1738,6 +1849,186 @@ function DuelContent() {
             )}
           </div>
         </div>
+
+        {/* Modal de Apostas */}
+        {showBetUI && (
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl border-2 border-yellow-500 max-w-md w-full p-6 shadow-2xl">
+              <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400 mb-4 text-center">
+                💰 DEFINIR APOSTA
+              </h2>
+
+              <div className="bg-slate-950/50 rounded-lg p-4 mb-4">
+                <p className="text-sm text-slate-300 text-center mb-3">
+                  Defina quanto deseja apostar nesta batalha. O vencedor leva tudo!
+                </p>
+
+                <div className="space-y-2 text-xs text-slate-400">
+                  <div className="flex justify-between">
+                    <span>Mínimo:</span>
+                    <span className="text-yellow-400 font-bold">{betLimits.minimo} 💰</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Máximo:</span>
+                    <span className="text-yellow-400 font-bold">{betLimits.maximo} 💰</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Sugerido:</span>
+                    <span className="text-green-400 font-bold">{betLimits.sugerido} 💰</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-bold text-yellow-400 mb-2">Quantidade de Moedas</label>
+                <input
+                  type="number"
+                  value={betAmount}
+                  onChange={(e) => setBetAmount(parseInt(e.target.value) || 0)}
+                  min={betLimits.minimo}
+                  max={betLimits.maximo}
+                  className="w-full bg-slate-950 border-2 border-yellow-500/50 rounded-lg px-4 py-3 text-white font-bold text-xl text-center focus:border-yellow-400 focus:outline-none"
+                />
+                <input
+                  type="range"
+                  value={betAmount}
+                  onChange={(e) => setBetAmount(parseInt(e.target.value))}
+                  min={betLimits.minimo}
+                  max={betLimits.maximo}
+                  className="w-full mt-2"
+                />
+              </div>
+
+              {betAmount < betLimits.minimo || betAmount > betLimits.maximo ? (
+                <p className="text-red-400 text-xs text-center mb-3">
+                  Valor fora dos limites permitidos
+                </p>
+              ) : null}
+
+              <button
+                onClick={definirAposta}
+                disabled={betAmount < betLimits.minimo || betAmount > betLimits.maximo}
+                className={`w-full py-3 rounded-lg font-bold text-lg transition-all ${
+                  betAmount >= betLimits.minimo && betAmount <= betLimits.maximo
+                    ? 'bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 hover:scale-[1.02] active:scale-95'
+                    : 'bg-slate-700 cursor-not-allowed opacity-50'
+                }`}
+              >
+                💰 CONFIRMAR APOSTA
+              </button>
+
+              {opponentBet > 0 && (
+                <div className="mt-3 text-center text-xs text-slate-400">
+                  Oponente apostou: <span className="text-orange-400 font-bold">{opponentBet} 💰</span>
+                </div>
+              )}
+
+              {!bothBetsSet && (
+                <div className="mt-2 text-center text-xs text-yellow-400 animate-pulse">
+                  Aguardando ambos jogadores definirem apostas...
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Recompensas */}
+        {showRewardsModal && rewardsData && (
+          <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl border-2 border-purple-500 max-w-lg w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+              <h2 className={`text-3xl font-black text-center mb-4 ${
+                rewardsData.isWinner
+                  ? 'text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-400'
+                  : 'text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-slate-400'
+              }`}>
+                {rewardsData.isWinner ? '🏆 VITÓRIA!' : rewardsData.rendeu ? '🏳️ RENDIÇÃO' : '☠️ DERROTA'}
+              </h2>
+
+              {rewardsData.rendeu && (
+                <div className="bg-orange-900/30 border border-orange-500/50 rounded-lg p-3 mb-4 text-center">
+                  <p className="text-sm text-orange-300">
+                    Penalidades reduzidas por rendição (50%)
+                  </p>
+                </div>
+              )}
+
+              <div className="bg-slate-950/50 rounded-lg p-4 mb-4">
+                <h3 className="text-sm font-bold text-purple-300 mb-3 text-center">📊 RECOMPENSAS</h3>
+
+                <div className="space-y-2">
+                  {/* Fama */}
+                  <div className="flex items-center justify-between bg-slate-900/50 rounded p-2">
+                    <span className="text-sm text-slate-300">🌟 Fama</span>
+                    <span className={`font-bold ${
+                      (rewardsData.host?.recompensas?.fama || 0) >= 0 ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      {(rewardsData.host?.recompensas?.fama || rewardsData.guest?.recompensas?.fama || 0) >= 0 ? '+' : ''}
+                      {role === 'host' ? rewardsData.host?.recompensas?.fama : rewardsData.guest?.recompensas?.fama}
+                    </span>
+                  </div>
+
+                  {/* XP Avatar */}
+                  <div className="flex items-center justify-between bg-slate-900/50 rounded p-2">
+                    <span className="text-sm text-slate-300">✨ XP Avatar</span>
+                    <span className="font-bold text-cyan-400">
+                      +{role === 'host' ? rewardsData.host?.recompensas?.xp : rewardsData.guest?.recompensas?.xp}
+                    </span>
+                  </div>
+
+                  {/* XP Caçador */}
+                  <div className="flex items-center justify-between bg-slate-900/50 rounded p-2">
+                    <span className="text-sm text-slate-300">🎯 XP Caçador</span>
+                    <span className="font-bold text-blue-400">
+                      +{role === 'host' ? rewardsData.host?.recompensas?.xpCacador : rewardsData.guest?.recompensas?.xpCacador}
+                    </span>
+                  </div>
+
+                  {/* Vínculo */}
+                  <div className="flex items-center justify-between bg-slate-900/50 rounded p-2">
+                    <span className="text-sm text-slate-300">💕 Vínculo</span>
+                    <span className={`font-bold ${
+                      (role === 'host' ? rewardsData.host?.recompensas?.vinculo : rewardsData.guest?.recompensas?.vinculo) >= 0
+                        ? 'text-pink-400' : 'text-red-400'
+                    }`}>
+                      {(role === 'host' ? rewardsData.host?.recompensas?.vinculo : rewardsData.guest?.recompensas?.vinculo) >= 0 ? '+' : ''}
+                      {role === 'host' ? rewardsData.host?.recompensas?.vinculo : rewardsData.guest?.recompensas?.vinculo}
+                    </span>
+                  </div>
+
+                  {/* Exaustão */}
+                  <div className="flex items-center justify-between bg-slate-900/50 rounded p-2">
+                    <span className="text-sm text-slate-300">😰 Exaustão</span>
+                    <span className="font-bold text-orange-400">
+                      +{role === 'host' ? rewardsData.host?.recompensas?.exaustao : rewardsData.guest?.recompensas?.exaustao}
+                    </span>
+                  </div>
+
+                  {/* Moedas */}
+                  <div className="flex items-center justify-between bg-slate-900/50 rounded p-2">
+                    <span className="text-sm text-slate-300">💰 Moedas</span>
+                    <span className={`font-bold ${
+                      (role === 'host' ? rewardsData.host?.recompensas?.moedas : rewardsData.guest?.recompensas?.moedas) >= 0
+                        ? 'text-yellow-400' : 'text-red-400'
+                    }`}>
+                      {(role === 'host' ? rewardsData.host?.recompensas?.moedas : rewardsData.guest?.recompensas?.moedas) >= 0 ? '+' : ''}
+                      {role === 'host' ? rewardsData.host?.recompensas?.moedas : rewardsData.guest?.recompensas?.moedas}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  setShowRewardsModal(false);
+                  router.push('/arena/pvp');
+                }}
+                className="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-lg font-bold text-lg transition-all hover:scale-[1.02] active:scale-95"
+              >
+                🏠 Voltar ao Lobby
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
