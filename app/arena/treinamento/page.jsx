@@ -110,25 +110,21 @@ export default function TreinamentoAIPage() {
 
       // Preparar dados da batalha
       const dadosPartida = {
-        tipo: 'treino-ia',
-        pvpAoVivo: false,
-        avatarJogador: {
+        playerAvatar: {
           ...avatarAtivo,
           ...statsComPenalidades,
           habilidades: avatarAtivo.habilidades || []
         },
-        avatarOponente: data.oponente,
-        nomeOponente: data.oponente.nome,
+        oponente: data.oponente,
         personalidadeIA: data.personalidadeIA,
-        dificuldade: data.dificuldade,
-        morteReal: false // Treino não causa morte real
+        dificuldade: data.dificuldade
       };
 
-      sessionStorage.setItem('batalha_treino_dados', JSON.stringify(dadosPartida));
+      sessionStorage.setItem('treino_ia_dados', JSON.stringify(dadosPartida));
 
       // Redirecionar para batalha
       setTimeout(() => {
-        router.push('/arena/batalha?modo=treino-ia');
+        router.push('/arena/treinamento/batalha');
       }, 500);
 
     } catch (error) {
