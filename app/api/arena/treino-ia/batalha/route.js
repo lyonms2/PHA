@@ -13,6 +13,10 @@ import {
 } from '@/lib/combat/pvpCombatSystem';
 import { escolherAcaoIA } from '@/lib/pvp/ai-engine';
 import { HABILIDADES_POR_ELEMENTO } from '@/app/avatares/sistemas/abilitiesSystem';
+import {
+  calcularRecompensasTreino,
+  calcularPenalidadesAbandono
+} from '@/lib/arena/rewardsSystem';
 
 export const dynamic = 'force-dynamic';
 
@@ -131,7 +135,7 @@ export async function GET(request) {
  */
 export async function POST(request) {
   try {
-    const { battleId, action, playerAvatar, iaAvatar, personalidadeIA, abilityIndex } = await request.json();
+    const { battleId, action, playerAvatar, iaAvatar, personalidadeIA, abilityIndex, dificuldade } = await request.json();
 
     // ===== INICIAR NOVA BATALHA =====
     if (action === 'init') {
@@ -152,6 +156,10 @@ export async function POST(request) {
 
       const playerHpMax = calcularHP(playerAvatar);
       const iaHpMax = calcularHP(iaAvatar);
+
+      // Calcular poder do oponente para recompensas
+      const poderOponente = (iaAvatar.forca || 10) + (iaAvatar.agilidade || 10) +
+                           (iaAvatar.resistencia || 10) + (iaAvatar.foco || 10);
 
       const newBattle = {
         id: newBattleId,
@@ -175,7 +183,12 @@ export async function POST(request) {
           defending: false
         },
         personalidadeIA,
-        battle_log: []
+        battle_log: [],
+        // Dados para sistema de recompensas
+        dificuldade: dificuldade || 'normal',
+        poderOponente,
+        playerAvatarOriginal: { ...playerAvatar }, // Guardar dados originais
+        rewardsApplied: false
       };
 
       battleSessions.set(newBattleId, newBattle);
@@ -799,6 +812,64 @@ export async function POST(request) {
         efeitosRestantes: resultado.efeitosRestantes,
         paralisado: resultado.paralisado,
         finished: resultado.morreu
+      });
+    }
+
+    // ===== CALCULAR RECOMPENSAS =====
+    if (action === 'get_rewards') {
+      if (battle.status !== 'finished') {
+        return NextResponse.json(
+          { error: 'Batalha ainda não terminou' },
+          { status: 400 }
+        );
+      }
+
+      if (battle.rewardsApplied) {
+        return NextResponse.json(
+          { error: 'Recompensas já foram aplicadas' },
+          { status: 400 }
+        );
+      }
+
+      const vitoria = battle.winner === 'player';
+      const recompensas = calcularRecompensasTreino(
+        battle.poderOponente,
+        battle.dificuldade,
+        vitoria
+      );
+
+      battle.rewardsApplied = true;
+
+      return NextResponse.json({
+        success: true,
+        recompensas: {
+          ...recompensas,
+          vitoria,
+          hpOriginal: battle.playerAvatarOriginal.hp // HP não muda (é treino)
+        }
+      });
+    }
+
+    // ===== APLICAR PENALIDADES DE ABANDONO =====
+    if (action === 'apply_abandonment') {
+      if (battle.status === 'finished') {
+        return NextResponse.json(
+          { error: 'Batalha já terminou normalmente' },
+          { status: 400 }
+        );
+      }
+
+      const penalidades = calcularPenalidadesAbandono(battle.dificuldade);
+
+      battle.status = 'abandoned';
+      battle.rewardsApplied = true;
+
+      return NextResponse.json({
+        success: true,
+        penalidades: {
+          ...penalidades,
+          hpOriginal: battle.playerAvatarOriginal.hp // HP não muda (é treino)
+        }
       });
     }
 

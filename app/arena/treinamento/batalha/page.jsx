@@ -71,6 +71,12 @@ function BatalhaTreinoIAContent() {
   const [myDamageEffect, setMyDamageEffect] = useState(null);
   const [opponentDamageEffect, setOpponentDamageEffect] = useState(null);
 
+  // Sistema de recompensas
+  const [dificuldade, setDificuldade] = useState('normal');
+  const [recompensas, setRecompensas] = useState(null);
+  const [mostrarRecompensas, setMostrarRecompensas] = useState(false);
+  const [aplicandoRecompensas, setAplicandoRecompensas] = useState(false);
+
   // Carregar usuário
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -96,6 +102,7 @@ function BatalhaTreinoIAContent() {
         const dados = JSON.parse(dadosJSON);
         setMeuAvatar(dados.playerAvatar);
         setIaAvatar(dados.oponente);
+        setDificuldade(dados.dificuldade || 'normal');
 
         // Inicializar batalha
         const response = await fetch('/api/arena/treino-ia/batalha', {
@@ -105,7 +112,8 @@ function BatalhaTreinoIAContent() {
             action: 'init',
             playerAvatar: dados.playerAvatar,
             iaAvatar: dados.oponente,
-            personalidadeIA: dados.personalidadeIA
+            personalidadeIA: dados.personalidadeIA,
+            dificuldade: dados.dificuldade || 'normal'
           })
         });
 
@@ -122,6 +130,99 @@ function BatalhaTreinoIAContent() {
 
     iniciar();
   }, [router]);
+
+  // Detectar fim de batalha e buscar recompensas
+  useEffect(() => {
+    if (status === 'finished' && battleId && !recompensas) {
+      buscarRecompensas();
+    }
+  }, [status, battleId]);
+
+  // Detectar abandono (refresh ou saída)
+  useEffect(() => {
+    const handleBeforeUnload = async (e) => {
+      if (status === 'active' && battleId && !recompensas) {
+        // Batalha ainda ativa - aplicar penalidades de abandono
+        e.preventDefault();
+
+        try {
+          // Chamar API de abandono (usando fetch com keepalive)
+          navigator.sendBeacon('/api/arena/treino-ia/abandonar', JSON.stringify({
+            battleId,
+            userId: visitorId,
+            avatarId: meuAvatar?.id,
+            dificuldade
+          }));
+        } catch (error) {
+          console.error('Erro ao registrar abandono:', error);
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [status, battleId, recompensas, visitorId, meuAvatar, dificuldade]);
+
+  // Buscar recompensas do servidor
+  const buscarRecompensas = async () => {
+    try {
+      const response = await fetch('/api/arena/treino-ia/batalha', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          battleId,
+          action: 'get_rewards'
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setRecompensas(result.recompensas);
+        setMostrarRecompensas(true);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar recompensas:', error);
+    }
+  };
+
+  // Aplicar recompensas ao avatar e caçador
+  const aplicarRecompensas = async () => {
+    if (!recompensas || !meuAvatar || aplicandoRecompensas) return;
+    setAplicandoRecompensas(true);
+
+    try {
+      const response = await fetch('/api/meus-avatares/atualizar-stats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: visitorId,
+          avatarId: meuAvatar.id,
+          xp: recompensas.xp,
+          vinculo: recompensas.vinculo,
+          exaustao: recompensas.exaustao,
+          hp: recompensas.hpOriginal, // HP volta ao original (é treino)
+          xpCacador: recompensas.xpCacador
+        })
+      });
+
+      if (response.ok) {
+        addLog('✅ Recompensas aplicadas!');
+        // Limpar sessionStorage
+        sessionStorage.removeItem('treino_ia_dados');
+        // Voltar para tela de treino após 2s
+        setTimeout(() => {
+          router.push('/arena/treinamento');
+        }, 2000);
+      } else {
+        addLog('❌ Erro ao aplicar recompensas');
+      }
+    } catch (error) {
+      console.error('Erro ao aplicar recompensas:', error);
+      addLog('❌ Erro ao aplicar recompensas');
+    } finally {
+      setAplicandoRecompensas(false);
+    }
+  };
 
   // Atualizar estado
   const atualizarEstado = async (id) => {
@@ -754,18 +855,72 @@ function BatalhaTreinoIAContent() {
           </div>
         )}
 
-        {/* Resultado Final */}
-        {status === 'finished' && (
-          <div className="bg-slate-900/90 rounded-xl border-2 border-yellow-500 p-6 mb-3 text-center">
-            <div className="text-3xl font-black mb-3">
-              {winner === 'player' ? '🎉 VITÓRIA!' : '💀 DERROTA'}
+        {/* Modal de Recompensas */}
+        {mostrarRecompensas && recompensas && (
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+            <div className="bg-slate-900 border-2 border-yellow-500 rounded-xl p-6 max-w-md w-full">
+              <div className="text-center mb-4">
+                <div className="text-4xl font-black mb-2">
+                  {recompensas.vitoria ? '🎉 VITÓRIA!' : '💀 DERROTA'}
+                </div>
+                <p className="text-slate-400 text-sm">{recompensas.descricao}</p>
+              </div>
+
+              {/* Recompensas */}
+              <div className="space-y-3 mb-6">
+                <div className="bg-slate-800 rounded-lg p-4">
+                  <h3 className="text-purple-400 font-bold mb-3 text-center">📊 Recompensas do Avatar</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-cyan-400">✨ XP Ganho:</span>
+                      <span className="text-white font-bold">+{recompensas.xp}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-pink-400">❤️ Vínculo:</span>
+                      <span className={`font-bold ${recompensas.vinculo > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {recompensas.vinculo > 0 ? '+' : ''}{recompensas.vinculo}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-orange-400">😰 Exaustão:</span>
+                      <span className="text-orange-300 font-bold">+{recompensas.exaustao}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-800 rounded-lg p-4">
+                  <h3 className="text-cyan-400 font-bold mb-2 text-center">🎯 Recompensas do Caçador</h3>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-300">✨ XP Ganho:</span>
+                    <span className="text-white font-bold">+{recompensas.xpCacador}</span>
+                  </div>
+                </div>
+
+                <div className="bg-green-900/30 border border-green-500/50 rounded-lg p-3 text-center">
+                  <p className="text-green-400 text-sm">
+                    ❤️ HP permanece {recompensas.hpOriginal} (É treino, não real!)
+                  </p>
+                </div>
+              </div>
+
+              {/* Botões */}
+              <div className="space-y-2">
+                <button
+                  onClick={aplicarRecompensas}
+                  disabled={aplicandoRecompensas}
+                  className={`w-full py-3 rounded-lg font-bold transition-all ${
+                    aplicandoRecompensas
+                      ? 'bg-slate-700 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 hover:scale-105'
+                  }`}
+                >
+                  {aplicandoRecompensas ? '⏳ Aplicando...' : '✅ Coletar Recompensas'}
+                </button>
+                <p className="text-xs text-slate-500 text-center">
+                  Clique para aplicar as recompensas e voltar ao treino
+                </p>
+              </div>
             </div>
-            <button
-              onClick={() => router.push('/arena/treinamento')}
-              className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 px-6 py-3 rounded-lg font-bold transition-all hover:scale-105"
-            >
-              🏠 Voltar ao Treino
-            </button>
           </div>
         )}
 
