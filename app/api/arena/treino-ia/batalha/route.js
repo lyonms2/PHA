@@ -17,6 +17,7 @@ import {
   calcularRecompensasTreino,
   calcularPenalidadesAbandono
 } from '@/lib/arena/rewardsSystem';
+import { calcularHPMaximoCompleto } from '@/lib/combat/statsCalculator';
 
 export const dynamic = 'force-dynamic';
 
@@ -148,14 +149,9 @@ export async function POST(request) {
 
       const newBattleId = `treino_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-      // Calcular HP máximo
-      const calcularHP = (avatar) => {
-        const resistencia = avatar.resistencia || 10;
-        return 50 + (resistencia * 5);
-      };
-
-      const playerHpMax = calcularHP(playerAvatar);
-      const iaHpMax = calcularHP(iaAvatar);
+      // Calcular HP máximo usando função centralizada
+      const playerHpMax = calcularHPMaximoCompleto(playerAvatar);
+      const iaHpMax = calcularHPMaximoCompleto(iaAvatar);
 
       // Calcular poder do oponente para recompensas
       const poderOponente = (iaAvatar.forca || 10) + (iaAvatar.agilidade || 10) +
