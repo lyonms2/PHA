@@ -541,6 +541,58 @@ function DuelContent() {
     }
   };
 
+  // Carregar limites de aposta do jogador
+  const carregarLimitesAposta = async () => {
+    try {
+      const res = await fetch(`/api/player-stats?visitorId=${visitorId}`);
+      const data = await res.json();
+
+      if (data.success && data.stats) {
+        const nivel = data.stats.nivel || 1;
+        const moedas = data.stats.moedas || 0;
+
+        const minimo = Math.max(10, nivel * 5);
+        const maximo = Math.min(moedas, nivel * 100);
+        const sugerido = Math.min(nivel * 25, moedas);
+
+        setBetLimits({ minimo: Math.min(minimo, moedas), maximo, sugerido });
+        setBetAmount(sugerido);
+      }
+    } catch (err) {
+      console.error('Erro ao carregar limites de aposta:', err);
+    }
+  };
+
+  // Definir aposta
+  const definirAposta = async () => {
+    if (!roomId || !visitorId) return;
+
+    if (betAmount < betLimits.minimo || betAmount > betLimits.maximo) {
+      addLog(`❌ Aposta deve estar entre ${betLimits.minimo} e ${betLimits.maximo} moedas`);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/pvp/room/set-bet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId, userId: visitorId, betAmount })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setMyBet(betAmount);
+        setShowBetUI(false);
+        addLog(`💰 Aposta definida: ${betAmount} moedas`);
+      } else {
+        addLog(`❌ ${data.error}`);
+      }
+    } catch (err) {
+      console.error('Erro ao definir aposta:', err);
+      addLog('❌ Erro ao definir aposta');
+    }
+  };
+
   // Atacar
   const atacar = async () => {
     if (!roomId || !visitorId || !isYourTurn || actionInProgress) return;
@@ -1737,6 +1789,142 @@ function DuelContent() {
             </div>
           </div>
         </div>
+
+        {/* Modal de Apostas */}
+        {showBetUI && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="relative max-w-md w-full">
+              <div className="absolute -inset-1 bg-gradient-to-r from-yellow-500/30 via-orange-500/30 to-red-500/30 rounded-xl blur"></div>
+              <div className="relative bg-slate-950/95 rounded-xl border border-yellow-500/50 p-6">
+                <h2 className="text-xl font-black text-center mb-4 bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
+                  💰 DEFINIR APOSTA
+                </h2>
+
+                <div className="space-y-4">
+                  <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                    <p className="text-sm text-slate-300 text-center mb-3">
+                      Defina quanto deseja apostar nesta batalha. O vencedor leva tudo!
+                    </p>
+                    <div className="grid grid-cols-3 gap-2 text-xs">
+                      <div className="text-center">
+                        <div className="text-slate-500">Mínimo</div>
+                        <div className="font-bold text-yellow-400">{betLimits.minimo}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-slate-500">Sugerido</div>
+                        <div className="font-bold text-green-400">{betLimits.sugerido}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-slate-500">Máximo</div>
+                        <div className="font-bold text-red-400">{betLimits.maximo}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Input de Aposta */}
+                  <div>
+                    <label className="block text-sm font-bold text-slate-300 mb-2 text-center">
+                      Valor da Aposta
+                    </label>
+                    <input
+                      type="number"
+                      min={betLimits.minimo}
+                      max={betLimits.maximo}
+                      value={betAmount}
+                      onChange={(e) => setBetAmount(Math.max(betLimits.minimo, Math.min(betLimits.maximo, parseInt(e.target.value) || 0)))}
+                      className="w-full px-4 py-3 bg-slate-900 border-2 border-yellow-500/50 rounded-lg text-center text-2xl font-bold text-yellow-400 focus:border-yellow-400 focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Slider */}
+                  <div>
+                    <input
+                      type="range"
+                      min={betLimits.minimo}
+                      max={betLimits.maximo}
+                      value={betAmount}
+                      onChange={(e) => setBetAmount(parseInt(e.target.value))}
+                      className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-yellow-500"
+                    />
+                  </div>
+
+                  {/* Botões de Valores Rápidos */}
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      onClick={() => setBetAmount(betLimits.minimo)}
+                      className="py-2 px-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-xs font-bold transition-all"
+                    >
+                      Mín
+                    </button>
+                    <button
+                      onClick={() => setBetAmount(betLimits.sugerido)}
+                      className="py-2 px-3 bg-green-900/30 hover:bg-green-900/50 border border-green-600/50 rounded-lg text-xs font-bold text-green-400 transition-all"
+                    >
+                      Sugerido
+                    </button>
+                    <button
+                      onClick={() => setBetAmount(betLimits.maximo)}
+                      className="py-2 px-3 bg-red-900/30 hover:bg-red-900/50 border border-red-600/50 rounded-lg text-xs font-bold text-red-400 transition-all"
+                    >
+                      Máx
+                    </button>
+                  </div>
+
+                  {/* Botões de Ação */}
+                  <div className="flex gap-3 mt-6">
+                    <button
+                      onClick={() => {
+                        setShowBetUI(false);
+                        setBetAmount(betLimits.sugerido);
+                      }}
+                      className="flex-1 py-3 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg font-bold transition-all"
+                    >
+                      Apostar 0
+                    </button>
+                    <button
+                      onClick={definirAposta}
+                      className="flex-1 py-3 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 rounded-lg font-bold transition-all border-2 border-yellow-400/30"
+                    >
+                      💰 Confirmar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Info de Apostas (quando definidas) */}
+        {room?.status === 'ready' && bothBetsSet && (
+          <div className="bg-gradient-to-r from-yellow-900/30 to-orange-900/30 border border-yellow-500/50 rounded-xl p-3 mb-3">
+            <div className="text-center">
+              <div className="text-xs font-bold text-yellow-300 uppercase tracking-wider mb-2">💰 Apostas Definidas</div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-blue-900/30 border border-blue-500/30 rounded-lg p-2">
+                  <div className="text-[10px] text-blue-300 mb-1">Sua Aposta</div>
+                  <div className="text-lg font-black text-yellow-400">{myBet}</div>
+                </div>
+                <div className="bg-red-900/30 border border-red-500/30 rounded-lg p-2">
+                  <div className="text-[10px] text-red-300 mb-1">Oponente</div>
+                  <div className="text-lg font-black text-yellow-400">{opponentBet}</div>
+                </div>
+              </div>
+              <div className="mt-2 text-xs text-slate-400">
+                Prêmio total: <span className="font-bold text-green-400">{myBet + opponentBet}</span> moedas
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Aguardando Apostas */}
+        {room?.status === 'ready' && !bothBetsSet && (
+          <div className="bg-orange-900/30 border border-orange-500/50 rounded-xl p-3 mb-3 text-center">
+            <div className="text-sm font-bold text-orange-300 mb-1">⏳ Aguardando apostas...</div>
+            <div className="text-xs text-slate-400">
+              {myBet > 0 ? 'Aguardando oponente definir aposta' : 'Defina sua aposta para continuar'}
+            </div>
+          </div>
+        )}
 
         {/* Painel de Ações */}
         {room?.status === 'active' && (
