@@ -473,7 +473,7 @@ export default function PvPPage() {
                   {temDebuff && (
                     <div className="bg-orange-950/30 border border-orange-500/50 rounded p-2">
                       <div className="text-[10px] text-orange-400 font-bold text-center mb-1">
-                        ⚠️ {nivelExaustao.label.toUpperCase()} - STATS REDUZIDOS
+                        ⚠️ {nivelExaustao.nome.toUpperCase()} - STATS REDUZIDOS
                       </div>
                       <div className="grid grid-cols-2 gap-1 text-[9px]">
                         <div className="flex justify-between">
