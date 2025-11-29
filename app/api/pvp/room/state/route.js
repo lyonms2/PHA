@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDocument, updateDocument } from '@/lib/firebase/firestore';
 import { HABILIDADES_POR_ELEMENTO } from '@/app/avatares/sistemas/abilitiesSystem';
+import { aplicarPenalidadesExaustao } from '@/app/avatares/sistemas/exhaustionSystem';
 
 export const dynamic = 'force-dynamic';
 
@@ -227,13 +228,31 @@ export async function POST(request) {
       const myAvatar = isHost ? room.host_avatar : room.guest_avatar;
       const opponentAvatar = isHost ? room.guest_avatar : room.host_avatar;
       const myExaustao = isHost ? (room.host_exaustao ?? 0) : (room.guest_exaustao ?? 0);
+      const opponentExaustao = isHost ? (room.guest_exaustao ?? 0) : (room.host_exaustao ?? 0);
 
-      // Stats do atacante e defensor
-      const forca = myAvatar?.forca ?? 10;
-      const foco = myAvatar?.foco ?? 10;
-      const agilidade = myAvatar?.agilidade ?? 10;
-      const resistenciaOponente = opponentAvatar?.resistencia ?? 10;
-      const agilidadeOponente = opponentAvatar?.agilidade ?? 10;
+      // Aplicar penalidades de exaustão nos stats
+      const myStatsBase = {
+        forca: myAvatar?.forca ?? 10,
+        agilidade: myAvatar?.agilidade ?? 10,
+        resistencia: myAvatar?.resistencia ?? 10,
+        foco: myAvatar?.foco ?? 10
+      };
+      const myStats = aplicarPenalidadesExaustao(myStatsBase, myExaustao);
+
+      const opponentStatsBase = {
+        forca: opponentAvatar?.forca ?? 10,
+        agilidade: opponentAvatar?.agilidade ?? 10,
+        resistencia: opponentAvatar?.resistencia ?? 10,
+        foco: opponentAvatar?.foco ?? 10
+      };
+      const opponentStats = aplicarPenalidadesExaustao(opponentStatsBase, opponentExaustao);
+
+      // Stats do atacante e defensor (COM DEBUFFS DE EXAUSTÃO APLICADOS)
+      const forca = myStats.forca;
+      const foco = myStats.foco;
+      const agilidade = myStats.agilidade;
+      const resistenciaOponente = opponentStats.resistencia;
+      const agilidadeOponente = opponentStats.agilidade;
       const vinculo = myAvatar?.vinculo ?? 0;
       const meuElemento = myAvatar?.elemento || 'Neutro';
       const elementoOponente = opponentAvatar?.elemento || 'Neutro';
@@ -583,11 +602,32 @@ export async function POST(request) {
         );
       }
 
-      // Stats do atacante
-      const forca = myAvatar?.forca ?? 10;
-      const foco = myAvatar?.foco ?? 10;
-      const resistenciaOponente = opponentAvatar?.resistencia ?? 10;
+      // Aplicar penalidades de exaustão nos stats
       const myExaustao = isHost ? (room.host_exaustao ?? 0) : (room.guest_exaustao ?? 0);
+      const opponentExaustao = isHost ? (room.guest_exaustao ?? 0) : (room.host_exaustao ?? 0);
+
+      const myStatsBase = {
+        forca: myAvatar?.forca ?? 10,
+        agilidade: myAvatar?.agilidade ?? 10,
+        resistencia: myAvatar?.resistencia ?? 10,
+        foco: myAvatar?.foco ?? 10
+      };
+      const myStats = aplicarPenalidadesExaustao(myStatsBase, myExaustao);
+
+      const opponentStatsBase = {
+        forca: opponentAvatar?.forca ?? 10,
+        agilidade: opponentAvatar?.agilidade ?? 10,
+        resistencia: opponentAvatar?.resistencia ?? 10,
+        foco: opponentAvatar?.foco ?? 10
+      };
+      const opponentStats = aplicarPenalidadesExaustao(opponentStatsBase, opponentExaustao);
+
+      // Stats do atacante (COM DEBUFFS DE EXAUSTÃO APLICADOS)
+      const forca = myStats.forca;
+      const foco = myStats.foco;
+      const agilidade = myStats.agilidade;
+      const resistenciaOponente = opponentStats.resistencia;
+      const agilidadeOponente = opponentStats.agilidade;
       const meuElemento = myAvatar?.elemento || 'Neutro';
       const elementoOponente = opponentAvatar?.elemento || 'Neutro';
 
@@ -622,7 +662,7 @@ export async function POST(request) {
       // ===== TESTE DE ACERTO DA HABILIDADE =====
       // Habilidades têm chance de acerto configurada (padrão 100% se não especificado)
       const chanceAcertoBase = habilidade.chance_acerto ?? 100;
-      const agilidadeOponente = opponentAvatar?.agilidade ?? 10;
+      // agilidadeOponente já foi definido acima com debuffs de exaustão aplicados
 
       // Verificar buffs de evasão do oponente
       const opponentEffects = isHost ? (room.guest_effects || []) : (room.host_effects || []);

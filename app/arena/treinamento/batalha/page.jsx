@@ -45,6 +45,31 @@ function getElementoEmoji(elemento) {
   return emojis[elemento] || '⚪';
 }
 
+// Função para verificar se é buff ou debuff
+function ehBuff(tipoEfeito) {
+  const buffs = ['Regeneração', 'Escudo', 'Aumento de Força', 'Aumento de Agilidade', 'Invisível', 'Fortificado'];
+  return buffs.includes(tipoEfeito);
+}
+
+// Função para obter emoji do efeito
+function getEfeitoEmoji(tipoEfeito) {
+  const emojis = {
+    'Queimadura': '🔥',
+    'Sangramento': '🩸',
+    'Envenenado': '☠️',
+    'Atordoado': '💫',
+    'Congelado': '❄️',
+    'Paralisado': '⚡',
+    'Regeneração': '💚',
+    'Escudo': '🛡️',
+    'Aumento de Força': '💪',
+    'Aumento de Agilidade': '⚡',
+    'Invisível': '👻',
+    'Fortificado': '🗿'
+  };
+  return emojis[tipoEfeito] || '✨';
+}
+
 function BatalhaTreinoIAContent() {
   const router = useRouter();
 
@@ -744,16 +769,26 @@ function BatalhaTreinoIAContent() {
                 </div>
               </div>
 
-              {/* Efeitos Ativos */}
+              {/* Efeitos Ativos - Buffs e Debuffs Separados */}
               {myEffects.length > 0 && (
                 <div className="px-3 pb-3 border-t border-slate-800 pt-2">
-                  <div className="text-[10px] text-slate-400 font-bold uppercase mb-1">🔮 Efeitos Ativos</div>
-                  <div className="flex flex-wrap gap-1">
-                    {myEffects.map((ef, i) => (
-                      <span key={i} className="text-[9px] bg-purple-900/50 text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/30">
-                        {ef.tipo} ({ef.turnosRestantes})
-                      </span>
-                    ))}
+                  <div className="grid grid-cols-2 gap-1">
+                    {/* Buffs (Esquerda) */}
+                    <div className="flex flex-wrap gap-0.5">
+                      {myEffects.filter(ef => ehBuff(ef.tipo)).map((ef, i) => (
+                        <span key={i} className="text-[10px] bg-green-900/30 px-1 py-0.5 rounded border border-green-600/50" title={`${ef.tipo} (${ef.turnosRestantes})`}>
+                          {getEfeitoEmoji(ef.tipo)}{ef.turnosRestantes}
+                        </span>
+                      ))}
+                    </div>
+                    {/* Debuffs (Direita) */}
+                    <div className="flex flex-wrap gap-0.5 justify-end">
+                      {myEffects.filter(ef => !ehBuff(ef.tipo)).map((ef, i) => (
+                        <span key={i} className="text-[10px] bg-red-900/30 px-1 py-0.5 rounded border border-red-600/50" title={`${ef.tipo} (${ef.turnosRestantes})`}>
+                          {getEfeitoEmoji(ef.tipo)}{ef.turnosRestantes}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
@@ -855,16 +890,26 @@ function BatalhaTreinoIAContent() {
                 </div>
               </div>
 
-              {/* Efeitos Ativos */}
+              {/* Efeitos Ativos - Buffs e Debuffs Separados */}
               {opponentEffects.length > 0 && (
                 <div className="px-3 pb-3 border-t border-slate-800 pt-2">
-                  <div className="text-[10px] text-slate-400 font-bold uppercase mb-1">🔮 Efeitos Ativos</div>
-                  <div className="flex flex-wrap gap-1">
-                    {opponentEffects.map((ef, i) => (
-                      <span key={i} className="text-[9px] bg-red-900/50 text-red-300 px-1.5 py-0.5 rounded border border-red-500/30">
-                        {ef.tipo} ({ef.turnosRestantes})
-                      </span>
-                    ))}
+                  <div className="grid grid-cols-2 gap-1">
+                    {/* Buffs (Esquerda) */}
+                    <div className="flex flex-wrap gap-0.5">
+                      {opponentEffects.filter(ef => ehBuff(ef.tipo)).map((ef, i) => (
+                        <span key={i} className="text-[10px] bg-green-900/30 px-1 py-0.5 rounded border border-green-600/50" title={`${ef.tipo} (${ef.turnosRestantes})`}>
+                          {getEfeitoEmoji(ef.tipo)}{ef.turnosRestantes}
+                        </span>
+                      ))}
+                    </div>
+                    {/* Debuffs (Direita) */}
+                    <div className="flex flex-wrap gap-0.5 justify-end">
+                      {opponentEffects.filter(ef => !ehBuff(ef.tipo)).map((ef, i) => (
+                        <span key={i} className="text-[10px] bg-red-900/30 px-1 py-0.5 rounded border border-red-600/50" title={`${ef.tipo} (${ef.turnosRestantes})`}>
+                          {getEfeitoEmoji(ef.tipo)}{ef.turnosRestantes}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
