@@ -541,58 +541,6 @@ function DuelContent() {
     }
   };
 
-  // Carregar limites de aposta do jogador
-  const carregarLimitesAposta = async () => {
-    try {
-      const res = await fetch(`/api/player-stats?visitorId=${visitorId}`);
-      const data = await res.json();
-
-      if (data.success && data.stats) {
-        const nivel = data.stats.nivel || 1;
-        const moedas = data.stats.moedas || 0;
-
-        const minimo = Math.max(10, nivel * 5);
-        const maximo = Math.min(moedas, nivel * 100);
-        const sugerido = Math.min(nivel * 25, moedas);
-
-        setBetLimits({ minimo: Math.min(minimo, moedas), maximo, sugerido });
-        setBetAmount(sugerido);
-      }
-    } catch (err) {
-      console.error('Erro ao carregar limites de aposta:', err);
-    }
-  };
-
-  // Definir aposta
-  const definirAposta = async () => {
-    if (!roomId || !visitorId) return;
-
-    if (betAmount < betLimits.minimo || betAmount > betLimits.maximo) {
-      addLog(`❌ Aposta deve estar entre ${betLimits.minimo} e ${betLimits.maximo} moedas`);
-      return;
-    }
-
-    try {
-      const res = await fetch('/api/pvp/room/set-bet', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomId, userId: visitorId, betAmount })
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        setMyBet(betAmount);
-        setShowBetUI(false);
-        addLog(`💰 Aposta definida: ${betAmount} moedas`);
-      } else {
-        addLog(`❌ ${data.error}`);
-      }
-    } catch (err) {
-      console.error('Erro ao definir aposta:', err);
-      addLog('❌ Erro ao definir aposta');
-    }
-  };
-
   // Atacar
   const atacar = async () => {
     if (!roomId || !visitorId || !isYourTurn || actionInProgress) return;
