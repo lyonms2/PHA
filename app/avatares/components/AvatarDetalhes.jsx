@@ -3,9 +3,7 @@ import AvatarSVG from '../../components/AvatarSVG';
 import { aplicarPenalidadesExaustao, getNivelExaustao } from '../sistemas/exhaustionSystem';
 
 const calcularXPNecessario = (nivel) => {
-  const XP_BASE = 100;
-  const MULTIPLICADOR = 1.15;
-  return Math.floor(XP_BASE * Math.pow(MULTIPLICADOR, nivel - 1));
+  return nivel * 100; // Fórmula linear: 100 XP por nível
 };
 
 const getInfoExaustao = (exaustao) => {
