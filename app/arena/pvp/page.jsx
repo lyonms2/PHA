@@ -332,6 +332,17 @@ export default function PvPPage() {
   const poderTotal = calcularPoderTotal(avatarAtivo);
   const tierInfo = getTierInfo(rankingData?.fama || 0);
 
+  // Calcular stats com debuffs de exaustão
+  const exaustao = avatarAtivo.exaustao || 0;
+  const nivelExaustao = getNivelExaustao(exaustao);
+  const statsDebuffados = aplicarPenalidadesExaustao({
+    forca: avatarAtivo.forca,
+    agilidade: avatarAtivo.agilidade,
+    resistencia: avatarAtivo.resistencia,
+    foco: avatarAtivo.foco
+  }, exaustao);
+  const temDebuff = exaustao >= 40;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-gray-100 p-6">
       <div className="max-w-6xl mx-auto">
@@ -387,7 +398,11 @@ export default function PvPPage() {
             {/* Seu Avatar Resumido */}
             <div className="relative">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/30 to-cyan-500/30 rounded-xl blur"></div>
-              <div className="relative bg-slate-900/95 rounded-xl border-2 border-purple-500 overflow-hidden">
+              <div className={`relative bg-slate-900/95 rounded-xl overflow-hidden ${
+                temDebuff
+                  ? 'border-2 border-dashed border-orange-500'
+                  : 'border-2 border-purple-500'
+              }`}>
                 {/* Header */}
                 <div className="bg-gradient-to-r from-purple-900/50 to-cyan-900/50 px-3 py-2 border-b border-purple-500/50 flex justify-between items-center">
                   <div>
@@ -453,6 +468,45 @@ export default function PvPPage() {
                       />
                     </div>
                   </div>
+
+                  {/* Aviso de Debuff Ativo */}
+                  {temDebuff && (
+                    <div className="bg-orange-950/30 border border-orange-500/50 rounded p-2">
+                      <div className="text-[10px] text-orange-400 font-bold text-center mb-1">
+                        ⚠️ {nivelExaustao.label.toUpperCase()} - STATS REDUZIDOS
+                      </div>
+                      <div className="grid grid-cols-2 gap-1 text-[9px]">
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">💪 Força:</span>
+                          <span>
+                            <span className="line-through text-slate-600">{avatarAtivo.forca}</span>
+                            <span className="text-orange-400 ml-1 font-bold">{statsDebuffados.forca}</span>
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">💨 Agilidade:</span>
+                          <span>
+                            <span className="line-through text-slate-600">{avatarAtivo.agilidade}</span>
+                            <span className="text-green-400 ml-1 font-bold">{statsDebuffados.agilidade}</span>
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">🛡️ Resistência:</span>
+                          <span>
+                            <span className="line-through text-slate-600">{avatarAtivo.resistencia}</span>
+                            <span className="text-blue-400 ml-1 font-bold">{statsDebuffados.resistencia}</span>
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">🎯 Foco:</span>
+                          <span>
+                            <span className="line-through text-slate-600">{avatarAtivo.foco}</span>
+                            <span className="text-purple-400 ml-1 font-bold">{statsDebuffados.foco}</span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Poder Total */}
                   <div className="flex items-center justify-between pt-2 border-t border-slate-700">
