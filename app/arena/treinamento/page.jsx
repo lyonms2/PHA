@@ -64,10 +64,10 @@ export default function TreinamentoAIPage() {
       return;
     }
 
-    if (avatarAtivo.exaustao >= 100) {
+    if (avatarAtivo.exaustao >= 99) {
       setModalAlerta({
-        titulo: '💀 Avatar Colapsado',
-        mensagem: 'Seu avatar está completamente exausto e não pode lutar!'
+        titulo: '💀 Avatar em Colapso',
+        mensagem: 'Seu avatar está completamente exausto e não pode lutar! Deixe-o descansar.'
       });
       return;
     }
@@ -532,7 +532,12 @@ export default function TreinamentoAIPage() {
                 </div>
               </div>
 
-              {avatarAtivo.exaustao >= 80 && (
+              {avatarAtivo.exaustao >= 99 && (
+                <p className="text-red-600 text-sm mt-4 text-center font-bold">
+                  💀 Avatar em colapso - NÃO PODE TREINAR!
+                </p>
+              )}
+              {avatarAtivo.exaustao >= 80 && avatarAtivo.exaustao < 99 && (
                 <p className="text-red-400 text-sm mt-4 text-center">
                   ⚠️ Avatar com exaustão crítica - penalidades severas!
                 </p>

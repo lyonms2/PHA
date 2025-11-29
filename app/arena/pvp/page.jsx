@@ -99,6 +99,14 @@ export default function PvPPage() {
       return;
     }
 
+    if (avatarAtivo.exaustao >= 99) {
+      setModalAlerta({
+        titulo: '💀 Avatar em Colapso',
+        mensagem: 'Seu avatar está completamente exausto e não pode lutar! Deixe-o descansar.'
+      });
+      return;
+    }
+
     if (avatarAtivo.exaustao >= 60) {
       setModalAlerta({
         titulo: '😰 Avatar Muito Exausto',
@@ -473,7 +481,7 @@ export default function PvPPage() {
                   {temDebuff && (
                     <div className="bg-orange-950/30 border border-orange-500/50 rounded p-2">
                       <div className="text-[10px] text-orange-400 font-bold text-center mb-1">
-                        ⚠️ {nivelExaustao.label.toUpperCase()} - STATS REDUZIDOS
+                        ⚠️ {nivelExaustao.nome.toUpperCase()} - STATS REDUZIDOS
                       </div>
                       <div className="grid grid-cols-2 gap-1 text-[9px]">
                         <div className="flex justify-between">
@@ -628,7 +636,12 @@ export default function PvPPage() {
                 </div>
               </div>
 
-              {avatarAtivo.exaustao >= 60 && (
+              {avatarAtivo.exaustao >= 99 && (
+                <p className="text-red-600 text-sm mt-4 text-center font-bold">
+                  💀 Avatar em colapso - NÃO PODE LUTAR!
+                </p>
+              )}
+              {avatarAtivo.exaustao >= 60 && avatarAtivo.exaustao < 99 && (
                 <p className="text-red-400 text-sm mt-4 text-center">
                   ⚠️ Avatar muito exausto para batalhar
                 </p>
