@@ -662,7 +662,7 @@ export async function POST(request) {
       // ===== TESTE DE ACERTO DA HABILIDADE =====
       // Habilidades têm chance de acerto configurada (padrão 100% se não especificado)
       const chanceAcertoBase = habilidade.chance_acerto ?? 100;
-      const agilidadeOponente = opponentAvatar?.agilidade ?? 10;
+      // agilidadeOponente já foi definido acima com debuffs de exaustão aplicados
 
       // Verificar buffs de evasão do oponente
       const opponentEffects = isHost ? (room.guest_effects || []) : (room.host_effects || []);
