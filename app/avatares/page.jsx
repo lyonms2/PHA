@@ -20,30 +20,56 @@ import {
   contarAvataresCaidos,
   calcularSlots
 } from './utils';
+import {
+  useAvatarOperations,
+  useAvatarModals,
+  useAvatarFilters
+} from './hooks';
 
 export default function AvatarsPage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
-  const [avatares, setAvatares] = useState([]);
   const [avatarSelecionado, setAvatarSelecionado] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [modalConfirmacao, setModalConfirmacao] = useState(null);
-  const [ativando, setAtivando] = useState(false);
-  const [modalSacrificar, setModalSacrificar] = useState(null);
-  const [sacrificando, setSacrificando] = useState(false);
-  const [modalVender, setModalVender] = useState(null);
-  const [precoVendaMoedas, setPrecoVendaMoedas] = useState('');
-  const [precoVendaFragmentos, setPrecoVendaFragmentos] = useState('');
-  const [vendendo, setVendendo] = useState(false);
 
-  // Estado para modal de Level Up
-  const [modalLevelUp, setModalLevelUp] = useState(null);
+  // Hooks customizados
+  const {
+    modalConfirmacao,
+    modalLevelUp,
+    modalSacrificar,
+    modalVender,
+    precoVendaMoedas,
+    precoVendaFragmentos,
+    setModalConfirmacao,
+    setModalLevelUp,
+    setModalSacrificar,
+    setModalVender,
+    setPrecoVendaMoedas,
+    setPrecoVendaFragmentos
+  } = useAvatarModals();
 
-  // Estados de filtros
-  const [filtroRaridade, setFiltroRaridade] = useState('Todos');
-  const [filtroElemento, setFiltroElemento] = useState('Todos');
-  const [filtroStatus, setFiltroStatus] = useState('Todos');
-  const [ordenacao, setOrdenacao] = useState('nivel_desc'); // nivel_desc, nivel_asc, nome_asc
+  const {
+    filtroRaridade,
+    filtroElemento,
+    filtroStatus,
+    ordenacao,
+    setFiltroRaridade,
+    setFiltroElemento,
+    setFiltroStatus,
+    setOrdenacao
+  } = useAvatarFilters();
+
+  const {
+    avatares,
+    loading,
+    ativando,
+    sacrificando,
+    vendendo,
+    carregarAvatares,
+    ativarAvatar,
+    sacrificarAvatar,
+    venderAvatar,
+    cancelarVenda
+  } = useAvatarOperations(user, setModalConfirmacao, setModalLevelUp);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -66,244 +92,8 @@ export default function AvatarsPage() {
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
-
-  const carregarAvatares = async (userId) => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/meus-avatares?userId=${userId}&t=${Date.now()}`);
-      const data = await response.json();
-
-      if (response.ok) {
-        // Verificar level ups
-        const niveisAnteriores = JSON.parse(localStorage.getItem('avatares_niveis') || '{}');
-        const avatarAtivo = data.avatares.find(av => av.ativo && av.vivo);
-
-        if (avatarAtivo && niveisAnteriores[avatarAtivo.id]) {
-          const nivelAnterior = niveisAnteriores[avatarAtivo.id];
-          const nivelAtual = avatarAtivo.nivel || 1;
-
-          // Se subiu de nível, mostrar modal
-          if (nivelAtual > nivelAnterior) {
-            setTimeout(() => {
-              setModalLevelUp(avatarAtivo);
-            }, 500);
-          }
-        }
-
-        // Atualizar níveis no localStorage
-        const novosNiveis = {};
-        data.avatares.forEach(av => {
-          novosNiveis[av.id] = av.nivel || 1;
-        });
-        localStorage.setItem('avatares_niveis', JSON.stringify(novosNiveis));
-
-        setAvatares(data.avatares);
-      } else {
-        console.error("Erro ao carregar avatares:", data.message);
-      }
-    } catch (error) {
-      console.error("Erro ao carregar avatares:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const ativarAvatar = async (avatarId, avatarNome) => {
-    if (ativando) return;
-
-    setAtivando(true);
-
-    try {
-      const response = await fetch("/api/meus-avatares", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id, avatarId }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        await carregarAvatares(user.id);
-        setModalConfirmacao({
-          tipo: 'sucesso',
-          mensagem: `${avatarNome} foi ativado com sucesso!`
-        });
-        setTimeout(() => setModalConfirmacao(null), 3000);
-      } else {
-        setModalConfirmacao({
-          tipo: 'erro',
-          mensagem: data.message || 'Erro ao ativar avatar'
-        });
-        setTimeout(() => setModalConfirmacao(null), 3000);
-      }
-    } catch (error) {
-      console.error("Erro ao ativar avatar:", error);
-      setModalConfirmacao({
-        tipo: 'erro',
-        mensagem: 'Erro de conexão ao ativar avatar'
-      });
-      setTimeout(() => setModalConfirmacao(null), 3000);
-    } finally {
-      setAtivando(false);
-    }
-  };
-
-  const sacrificarAvatar = async (avatar) => {
-    setSacrificando(true);
-    try {
-      const response = await fetch("/api/sacrificar-avatar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: user.id,
-          avatarId: avatar.id
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setModalSacrificar(null);
-        setModalConfirmacao({
-          tipo: 'sucesso',
-          mensagem: `${avatar.nome} foi enviado ao Memorial...`
-        });
-        setTimeout(() => setModalConfirmacao(null), 3000);
-        await carregarAvatares(user.id);
-      } else {
-        setModalConfirmacao({
-          tipo: 'erro',
-          mensagem: data.message || 'Erro ao sacrificar avatar'
-        });
-        setTimeout(() => setModalConfirmacao(null), 3000);
-      }
-    } catch (error) {
-      console.error("Erro ao sacrificar avatar:", error);
-      setModalConfirmacao({
-        tipo: 'erro',
-        mensagem: 'Erro de conexão'
-      });
-      setTimeout(() => setModalConfirmacao(null), 3000);
-    } finally {
-      setSacrificando(false);
-    }
-  };
-
-  const venderAvatar = async () => {
-    const moedas = parseInt(precoVendaMoedas) || 0;
-    const fragmentos = parseInt(precoVendaFragmentos) || 0;
-
-    // Validar que pelo menos um preço foi definido
-    if (moedas === 0 && fragmentos === 0) {
-      setModalConfirmacao({
-        tipo: 'erro',
-        mensagem: 'Defina um preço em moedas e/ou fragmentos'
-      });
-      setTimeout(() => setModalConfirmacao(null), 3000);
-      return;
-    }
-
-    // Validar limites
-    if (moedas < 0 || moedas > 10000) {
-      setModalConfirmacao({
-        tipo: 'erro',
-        mensagem: 'Moedas devem estar entre 0 e 10.000'
-      });
-      setTimeout(() => setModalConfirmacao(null), 3000);
-      return;
-    }
-
-    if (fragmentos < 0 || fragmentos > 500) {
-      setModalConfirmacao({
-        tipo: 'erro',
-        mensagem: 'Fragmentos devem estar entre 0 e 500'
-      });
-      setTimeout(() => setModalConfirmacao(null), 3000);
-      return;
-    }
-
-    setVendendo(true);
-    try {
-      const response = await fetch("/api/mercado/vender", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: user.id,
-          avatarId: modalVender.id,
-          precoMoedas: moedas,
-          precoFragmentos: fragmentos
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setModalVender(null);
-        setPrecoVendaMoedas('');
-        setPrecoVendaFragmentos('');
-
-        const precoTexto = [];
-        if (moedas > 0) precoTexto.push(`${moedas} 💰`);
-        if (fragmentos > 0) precoTexto.push(`${fragmentos} 💎`);
-
-        setModalConfirmacao({
-          tipo: 'sucesso',
-          mensagem: `${modalVender.nome} colocado à venda por ${precoTexto.join(' + ')}!`
-        });
-        setTimeout(() => setModalConfirmacao(null), 3000);
-        await carregarAvatares(user.id);
-      } else {
-        setModalConfirmacao({
-          tipo: 'erro',
-          mensagem: data.message || 'Erro ao colocar avatar à venda'
-        });
-        setTimeout(() => setModalConfirmacao(null), 3000);
-      }
-    } catch (error) {
-      console.error("Erro ao vender avatar:", error);
-      setModalConfirmacao({
-        tipo: 'erro',
-        mensagem: 'Erro de conexão'
-      });
-      setTimeout(() => setModalConfirmacao(null), 3000);
-    } finally {
-      setVendendo(false);
-    }
-  };
-
-  const cancelarVenda = async (avatar) => {
-    try {
-      const response = await fetch("/api/mercado/vender", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: user.id,
-          avatarId: avatar.id
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setModalConfirmacao({
-          tipo: 'sucesso',
-          mensagem: `Venda cancelada!`
-        });
-        setTimeout(() => setModalConfirmacao(null), 3000);
-        await carregarAvatares(user.id);
-      } else {
-        setModalConfirmacao({
-          tipo: 'erro',
-          mensagem: data.message || 'Erro ao cancelar venda'
-        });
-        setTimeout(() => setModalConfirmacao(null), 3000);
-      }
-    } catch (error) {
-      console.error("Erro ao cancelar venda:", error);
-    }
-  };
-
 
   const avatarAtivo = avatares.find(av => av.ativo && av.vivo);
 
@@ -893,7 +683,7 @@ export default function AvatarsPage() {
                             Cancelar
                           </button>
                           <button
-                            onClick={() => sacrificarAvatar(modalSacrificar)}
+                            onClick={() => sacrificarAvatar(modalSacrificar, setModalSacrificar)}
                             disabled={sacrificando}
                             className="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold rounded-lg transition-all disabled:opacity-50 shadow-lg shadow-red-900/50"
                           >
@@ -990,7 +780,7 @@ export default function AvatarsPage() {
                       Cancelar
                     </button>
                     <button
-                      onClick={venderAvatar}
+                      onClick={() => venderAvatar(modalVender, precoVendaMoedas, precoVendaFragmentos, setModalVender, setPrecoVendaMoedas, setPrecoVendaFragmentos)}
                       disabled={vendendo}
                       className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white font-bold rounded-lg transition-all disabled:opacity-50"
                     >
