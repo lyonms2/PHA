@@ -12,8 +12,6 @@ import {
   getEfeitoEmoji
 } from './utils';
 
-}
-
 function BatalhaTreinoIAContent() {
   const router = useRouter();
 
