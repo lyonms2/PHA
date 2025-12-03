@@ -5,35 +5,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import AvatarSVG from "../../../components/AvatarSVG";
 import { calcularPoderTotal } from "@/lib/gameLogic";
 import { HABILIDADES_POR_ELEMENTO } from "@/app/avatares/sistemas/abilitiesSystem";
-
-/**
- * Atualiza os valores de balanceamento de uma habilidade do avatar
- * com os valores mais recentes do sistema
- */
-function atualizarBalanceamentoHabilidade(habilidadeAvatar, elemento) {
-  if (!habilidadeAvatar || !elemento) return habilidadeAvatar;
-
-  const habilidadesSistema = HABILIDADES_POR_ELEMENTO[elemento];
-  if (!habilidadesSistema) return habilidadeAvatar;
-
-  // Procurar a habilidade correspondente no sistema pelo nome
-  const habilidadeSistema = Object.values(habilidadesSistema).find(
-    h => h.nome === habilidadeAvatar.nome
-  );
-
-  if (!habilidadeSistema) return habilidadeAvatar;
-
-  // Mesclar: manter dados do avatar, mas sobrescrever valores de balanceamento do sistema
-  return {
-    ...habilidadeAvatar,
-    custo_energia: habilidadeSistema.custo_energia,
-    chance_efeito: habilidadeSistema.chance_efeito,
-    duracao_efeito: habilidadeSistema.duracao_efeito,
-    dano_base: habilidadeSistema.dano_base,
-    multiplicador_stat: habilidadeSistema.multiplicador_stat,
-    cooldown: habilidadeSistema.cooldown
-  };
-}
+import {
+  atualizarBalanceamentoHabilidade,
+  getElementoEmoji,
+  getEfeitoEmoji,
+  ehBuff,
+  getNomeSala,
+  processarNovosLogs
+} from "./utils";
 
 function DuelContent() {
   const router = useRouter();
@@ -208,7 +187,7 @@ function DuelContent() {
 
           // Processar novos logs de batalha
           if (data.battleLog && data.battleLog.length > 0) {
-            processarNovosLogs(data.battleLog, data.opponentNome);
+            processarNovosLogs(data.battleLog, data.opponentNome, lastProcessedLogIdRef, addLog, showDamageEffect);
           }
 
           // Detectar mudança de turno
@@ -263,161 +242,6 @@ function DuelContent() {
 
   const addLog = (msg) => {
     setLog(prev => [msg, ...prev]);
-  };
-
-  // Processar novos logs da batalha
-  const processarNovosLogs = (battleLog, opponentNomeAtual) => {
-    if (!battleLog || battleLog.length === 0) return;
-
-    // Encontrar logs novos
-    const novosLogs = [];
-    let encontrouUltimo = lastProcessedLogIdRef.current === null;
-
-    for (const logEntry of battleLog) {
-      if (!encontrouUltimo) {
-        if (logEntry.id === lastProcessedLogIdRef.current) {
-          encontrouUltimo = true;
-        }
-        continue;
-      }
-      // Pular o log que já foi processado
-      if (logEntry.id === lastProcessedLogIdRef.current) continue;
-      novosLogs.push(logEntry);
-    }
-
-    // Processar cada novo log
-    for (const logEntry of novosLogs) {
-      const { acao, jogador, alvo, dano, cura, critico, errou, esquivou, invisivel, bloqueado, habilidade, efeitos, numGolpes, contraAtaque, vencedor, energiaRecuperada, elemental } = logEntry;
-
-      // Comparação confiável usando opponentNome do servidor (não do state React)
-      // Se jogador === opponentNome, então é ação do oponente
-      // Caso contrário, é minha própria ação
-      const ehAcaoOponente = jogador === opponentNomeAtual;
-
-      // PULAR minhas próprias ações - já foram processadas quando executei
-      // Apenas processar ações do OPONENTE para ver o que ele fez
-      if (!ehAcaoOponente) continue;
-
-      // ATAQUE
-      if (acao === 'attack') {
-        if (errou) {
-          if (invisivel) {
-            addLog(`👻 ${jogador} ERROU! ${alvo} está INVISÍVEL!`);
-            showDamageEffect('me', '', 'dodge');
-          } else if (esquivou) {
-            addLog(`💨 ${jogador} ERROU! ${alvo} esquivou!`);
-            showDamageEffect('me', '', 'dodge');
-          } else {
-            addLog(`💨 ${jogador} ERROU! ${alvo} esquivou!`);
-            showDamageEffect('me', '', 'miss');
-          }
-        } else {
-          let emoji = '⚔️';
-          let tipo = 'ATAQUE';
-          if (critico) { emoji = '💥'; tipo = 'CRÍTICO'; }
-          if (bloqueado) { emoji = '🛡️'; tipo = 'BLOQUEADO'; }
-
-          addLog(`${emoji} ${jogador} → ${alvo}: ${tipo}! Dano: ${dano}`);
-
-          if (elemental === 'vantagem') {
-            addLog('🔥 Super efetivo!');
-          } else if (elemental === 'desvantagem') {
-            addLog('💨 Pouco efetivo...');
-          }
-
-          if (contraAtaque) {
-            addLog(`🔥🛡️ CONTRA-ATAQUE! ${jogador} foi queimado!`);
-          }
-
-          showDamageEffect('me', dano, critico ? 'critical' : 'damage');
-
-          if (contraAtaque) {
-            // Contra-ataque sempre aparece no atacante (oponente neste caso)
-            setTimeout(() => showDamageEffect('opponent', '🔥', 'burn'), 500);
-          }
-        }
-      }
-
-      // HABILIDADE
-      if (acao === 'ability') {
-        if (errou) {
-          if (invisivel) {
-            addLog(`👻 ${jogador} usou ${habilidade} mas ERROU! ${alvo} está INVISÍVEL!`);
-            showDamageEffect('me', '', 'dodge');
-          } else if (esquivou) {
-            addLog(`💨 ${jogador} usou ${habilidade} mas ERROU! ${alvo} esquivou!`);
-            showDamageEffect('me', '', 'dodge');
-          } else {
-            addLog(`💨 ${jogador} usou ${habilidade} mas ERROU!`);
-            showDamageEffect('me', '', 'miss');
-          }
-        } else {
-          let emoji = '✨';
-          let msg = `${emoji} ${jogador} usou ${habilidade}!`;
-
-          if (dano > 0) {
-            msg += ` Dano: ${dano}`;
-            if (numGolpes && numGolpes > 1) {
-              msg += ` (${numGolpes}× golpes)`;
-            }
-          }
-
-          if (cura > 0) {
-            msg += ` ❤️ Curou: ${cura}`;
-          }
-
-          addLog(msg);
-
-          if (elemental === 'vantagem') {
-            addLog('🔥 Super efetivo!');
-          } else if (elemental === 'desvantagem') {
-            addLog('💨 Pouco efetivo...');
-          }
-
-          if (contraAtaque) {
-            addLog(`🔥🛡️ CONTRA-ATAQUE! ${jogador} foi queimado!`);
-          }
-
-          if (efeitos && efeitos.length > 0) {
-            addLog(`✨ Efeitos: ${efeitos.join(', ')}`);
-          }
-
-          // Efeitos visuais
-          if (dano > 0) {
-            if (numGolpes && numGolpes > 1) {
-              showDamageEffect('me', `${dano} ×${numGolpes}`, 'multihit');
-            } else {
-              showDamageEffect('me', dano, critico ? 'critical' : 'damage');
-            }
-          }
-
-          if (cura > 0) {
-            // Cura sempre aparece no atacante (oponente neste caso)
-            showDamageEffect('opponent', cura, 'heal');
-          }
-
-          if (contraAtaque) {
-            // Contra-ataque sempre aparece no atacante (oponente neste caso)
-            setTimeout(() => showDamageEffect('opponent', '🔥', 'burn'), 500);
-          }
-        }
-      }
-
-      // DEFESA
-      if (acao === 'defend') {
-        addLog(`🛡️ ${jogador} defendeu! +${energiaRecuperada || 20} ⚡`);
-      }
-
-      // RENDIÇÃO
-      if (acao === 'surrender') {
-        addLog(`🏳️ ${jogador} se rendeu! ${vencedor} venceu!`);
-      }
-    }
-
-    // Atualizar último log processado
-    if (novosLogs.length > 0) {
-      lastProcessedLogIdRef.current = novosLogs[novosLogs.length - 1].id;
-    }
   };
 
   // Entrar no lobby
@@ -1007,69 +831,6 @@ function DuelContent() {
     }
   };
 
-  // Nome da sala baseado no poder
-  const getNomeSala = () => {
-    if (maxPower <= 39) return '🌱 Sala Iniciante';
-    if (maxPower <= 60) return '⚡ Sala Intermediário';
-    if (maxPower <= 90) return '🔥 Sala Avançado';
-    return '👑 Sala Elite';
-  };
-
-  // Emoji do elemento
-  const getElementoEmoji = (elemento) => {
-    const emojis = {
-      'Fogo': '🔥',
-      'Água': '💧',
-      'Terra': '🪨',
-      'Vento': '🌪️',
-      'Eletricidade': '⚡',
-      'Luz': '✨',
-      'Sombra': '🌑'
-    };
-    return emojis[elemento] || '⚪';
-  };
-
-  // Emoji do efeito
-  const getEfeitoEmoji = (tipo) => {
-    const emojis = {
-      // Dano contínuo
-      'queimadura': '🔥', 'queimadura_intensa': '🔥🔥', 'veneno': '💀', 'sangramento': '🩸',
-      'eletrocutado': '⚡', 'eletrocucao': '⚡', 'afogamento': '💧', 'erosão': '🌪️',
-      'maldito': '💀', 'maldição': '💀',
-      // Buffs
-      'defesa_aumentada': '🛡️', 'velocidade': '💨', 'velocidade_aumentada': '⚡💨',
-      'evasao_aumentada': '👻', 'foco_aumentado': '🎯',
-      'forca_aumentada': '💪', 'regeneração': '💚', 'regeneracao': '💚', 'escudo': '🛡️',
-      'bencao': '✨', 'benção': '✨', 'sobrecarga': '⚡🔴', 'precisao_aumentada': '🎯',
-      'invisivel': '👻', 'auto_cura': '💚',
-      // Debuffs
-      'lentidão': '🐌', 'lentidao': '🐌', 'fraqueza': '⬇️', 'confusão': '🌀',
-      'medo': '😱', 'cegueira': '🌑', 'silêncio': '🔇',
-      'enfraquecido': '⬇️', 'terror': '😱💀', 'desorientado': '🌀',
-      // Controle
-      'congelado': '❄️', 'atordoado': '💫', 'paralisado': '⚡⚡', 'paralisia': '⚡⚡',
-      'paralisia_intensa': '⚡⚡⚡', 'imobilizado': '🔒', 'sono': '😴',
-      // Especiais
-      'fantasma': '👻', 'drenar': '🗡️',
-      'queimadura_contra_ataque': '🔥🛡️', 'roubo_vida': '🩸', 'roubo_vida_intenso': '🩸🩸',
-      'roubo_vida_massivo': '🩸🩸🩸', 'perfuracao': '🗡️', 'execucao': '💀⚔️',
-      'fissuras_explosivas': '💥🌍', 'vendaval_cortante': '💨⚔️',
-      'limpar_debuffs': '✨🧹', 'dano_massivo_inimigos': '💥'
-    };
-    return emojis[tipo] || '✨';
-  };
-
-  // Verificar se efeito é buff (positivo) ou debuff (negativo)
-  const ehBuff = (tipo) => {
-    const buffsPositivos = [
-      'defesa_aumentada', 'velocidade', 'velocidade_aumentada', 'foco_aumentado', 'forca_aumentada',
-      'regeneração', 'regeneracao', 'escudo', 'evasao_aumentada',
-      'invisivel', 'sobrecarga', 'benção', 'bencao', 'queimadura_contra_ataque',
-      'precisao_aumentada', 'auto_cura', 'limpar_debuffs'
-    ];
-    return buffsPositivos.includes(tipo);
-  };
-
   // Tela inicial - entrar no lobby
   if (!inLobby && !roomId) {
     const poder = meuAvatar ? calcularPoderTotal(meuAvatar) : 0;
@@ -1089,7 +850,7 @@ function DuelContent() {
           {/* Header da Sala */}
           <div className="text-center mb-4">
             <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400">
-              {getNomeSala()}
+              {getNomeSala(maxPower)}
             </h1>
             <p className="text-slate-400 text-sm">Poder: {minPower} - {maxPower}</p>
           </div>
@@ -1282,7 +1043,7 @@ function DuelContent() {
           <div className="flex justify-between items-center mb-3">
             <div>
               <h1 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400">
-                {getNomeSala()}
+                {getNomeSala(maxPower)}
               </h1>
               <p className="text-[10px] text-slate-400">Poder: {minPower} - {maxPower}</p>
             </div>

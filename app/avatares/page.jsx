@@ -6,30 +6,70 @@ import AvatarSVG from '../components/AvatarSVG';
 import AvatarDetalhes from "./components/AvatarDetalhes";
 import GameNav, { COMMON_ACTIONS } from '../components/GameNav';
 import { calcularPoderTotal } from '@/lib/gameLogic';
+import {
+  getCorRaridade,
+  getCorBorda,
+  getCorElemento,
+  getEmojiElemento,
+  getNivelExaustao,
+  calcularXPNecessario,
+  calcularProgressoXP,
+  filtrarAvataresSemMemorial,
+  aplicarFiltros,
+  ordenarAvatares,
+  contarAvataresCaidos,
+  calcularSlots
+} from './utils';
+import {
+  useAvatarOperations,
+  useAvatarModals,
+  useAvatarFilters
+} from './hooks';
 
 export default function AvatarsPage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
-  const [avatares, setAvatares] = useState([]);
   const [avatarSelecionado, setAvatarSelecionado] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [modalConfirmacao, setModalConfirmacao] = useState(null);
-  const [ativando, setAtivando] = useState(false);
-  const [modalSacrificar, setModalSacrificar] = useState(null);
-  const [sacrificando, setSacrificando] = useState(false);
-  const [modalVender, setModalVender] = useState(null);
-  const [precoVendaMoedas, setPrecoVendaMoedas] = useState('');
-  const [precoVendaFragmentos, setPrecoVendaFragmentos] = useState('');
-  const [vendendo, setVendendo] = useState(false);
 
-  // Estado para modal de Level Up
-  const [modalLevelUp, setModalLevelUp] = useState(null);
+  // Hooks customizados
+  const {
+    modalConfirmacao,
+    modalLevelUp,
+    modalSacrificar,
+    modalVender,
+    precoVendaMoedas,
+    precoVendaFragmentos,
+    setModalConfirmacao,
+    setModalLevelUp,
+    setModalSacrificar,
+    setModalVender,
+    setPrecoVendaMoedas,
+    setPrecoVendaFragmentos
+  } = useAvatarModals();
 
-  // Estados de filtros
-  const [filtroRaridade, setFiltroRaridade] = useState('Todos');
-  const [filtroElemento, setFiltroElemento] = useState('Todos');
-  const [filtroStatus, setFiltroStatus] = useState('Todos');
-  const [ordenacao, setOrdenacao] = useState('nivel_desc'); // nivel_desc, nivel_asc, nome_asc
+  const {
+    filtroRaridade,
+    filtroElemento,
+    filtroStatus,
+    ordenacao,
+    setFiltroRaridade,
+    setFiltroElemento,
+    setFiltroStatus,
+    setOrdenacao
+  } = useAvatarFilters();
+
+  const {
+    avatares,
+    loading,
+    ativando,
+    sacrificando,
+    vendendo,
+    carregarAvatares,
+    ativarAvatar,
+    sacrificarAvatar,
+    venderAvatar,
+    cancelarVenda
+  } = useAvatarOperations(user, setModalConfirmacao, setModalLevelUp);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -52,364 +92,33 @@ export default function AvatarsPage() {
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
-
-  const carregarAvatares = async (userId) => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/meus-avatares?userId=${userId}&t=${Date.now()}`);
-      const data = await response.json();
-
-      if (response.ok) {
-        // Verificar level ups
-        const niveisAnteriores = JSON.parse(localStorage.getItem('avatares_niveis') || '{}');
-        const avatarAtivo = data.avatares.find(av => av.ativo && av.vivo);
-
-        if (avatarAtivo && niveisAnteriores[avatarAtivo.id]) {
-          const nivelAnterior = niveisAnteriores[avatarAtivo.id];
-          const nivelAtual = avatarAtivo.nivel || 1;
-
-          // Se subiu de nível, mostrar modal
-          if (nivelAtual > nivelAnterior) {
-            setTimeout(() => {
-              setModalLevelUp(avatarAtivo);
-            }, 500);
-          }
-        }
-
-        // Atualizar níveis no localStorage
-        const novosNiveis = {};
-        data.avatares.forEach(av => {
-          novosNiveis[av.id] = av.nivel || 1;
-        });
-        localStorage.setItem('avatares_niveis', JSON.stringify(novosNiveis));
-
-        setAvatares(data.avatares);
-      } else {
-        console.error("Erro ao carregar avatares:", data.message);
-      }
-    } catch (error) {
-      console.error("Erro ao carregar avatares:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const ativarAvatar = async (avatarId, avatarNome) => {
-    if (ativando) return;
-
-    setAtivando(true);
-
-    try {
-      const response = await fetch("/api/meus-avatares", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id, avatarId }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        await carregarAvatares(user.id);
-        setModalConfirmacao({
-          tipo: 'sucesso',
-          mensagem: `${avatarNome} foi ativado com sucesso!`
-        });
-        setTimeout(() => setModalConfirmacao(null), 3000);
-      } else {
-        setModalConfirmacao({
-          tipo: 'erro',
-          mensagem: data.message || 'Erro ao ativar avatar'
-        });
-        setTimeout(() => setModalConfirmacao(null), 3000);
-      }
-    } catch (error) {
-      console.error("Erro ao ativar avatar:", error);
-      setModalConfirmacao({
-        tipo: 'erro',
-        mensagem: 'Erro de conexão ao ativar avatar'
-      });
-      setTimeout(() => setModalConfirmacao(null), 3000);
-    } finally {
-      setAtivando(false);
-    }
-  };
-
-  const sacrificarAvatar = async (avatar) => {
-    setSacrificando(true);
-    try {
-      const response = await fetch("/api/sacrificar-avatar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: user.id,
-          avatarId: avatar.id
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setModalSacrificar(null);
-        setModalConfirmacao({
-          tipo: 'sucesso',
-          mensagem: `${avatar.nome} foi enviado ao Memorial...`
-        });
-        setTimeout(() => setModalConfirmacao(null), 3000);
-        await carregarAvatares(user.id);
-      } else {
-        setModalConfirmacao({
-          tipo: 'erro',
-          mensagem: data.message || 'Erro ao sacrificar avatar'
-        });
-        setTimeout(() => setModalConfirmacao(null), 3000);
-      }
-    } catch (error) {
-      console.error("Erro ao sacrificar avatar:", error);
-      setModalConfirmacao({
-        tipo: 'erro',
-        mensagem: 'Erro de conexão'
-      });
-      setTimeout(() => setModalConfirmacao(null), 3000);
-    } finally {
-      setSacrificando(false);
-    }
-  };
-
-  const venderAvatar = async () => {
-    const moedas = parseInt(precoVendaMoedas) || 0;
-    const fragmentos = parseInt(precoVendaFragmentos) || 0;
-
-    // Validar que pelo menos um preço foi definido
-    if (moedas === 0 && fragmentos === 0) {
-      setModalConfirmacao({
-        tipo: 'erro',
-        mensagem: 'Defina um preço em moedas e/ou fragmentos'
-      });
-      setTimeout(() => setModalConfirmacao(null), 3000);
-      return;
-    }
-
-    // Validar limites
-    if (moedas < 0 || moedas > 10000) {
-      setModalConfirmacao({
-        tipo: 'erro',
-        mensagem: 'Moedas devem estar entre 0 e 10.000'
-      });
-      setTimeout(() => setModalConfirmacao(null), 3000);
-      return;
-    }
-
-    if (fragmentos < 0 || fragmentos > 500) {
-      setModalConfirmacao({
-        tipo: 'erro',
-        mensagem: 'Fragmentos devem estar entre 0 e 500'
-      });
-      setTimeout(() => setModalConfirmacao(null), 3000);
-      return;
-    }
-
-    setVendendo(true);
-    try {
-      const response = await fetch("/api/mercado/vender", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: user.id,
-          avatarId: modalVender.id,
-          precoMoedas: moedas,
-          precoFragmentos: fragmentos
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setModalVender(null);
-        setPrecoVendaMoedas('');
-        setPrecoVendaFragmentos('');
-
-        const precoTexto = [];
-        if (moedas > 0) precoTexto.push(`${moedas} 💰`);
-        if (fragmentos > 0) precoTexto.push(`${fragmentos} 💎`);
-
-        setModalConfirmacao({
-          tipo: 'sucesso',
-          mensagem: `${modalVender.nome} colocado à venda por ${precoTexto.join(' + ')}!`
-        });
-        setTimeout(() => setModalConfirmacao(null), 3000);
-        await carregarAvatares(user.id);
-      } else {
-        setModalConfirmacao({
-          tipo: 'erro',
-          mensagem: data.message || 'Erro ao colocar avatar à venda'
-        });
-        setTimeout(() => setModalConfirmacao(null), 3000);
-      }
-    } catch (error) {
-      console.error("Erro ao vender avatar:", error);
-      setModalConfirmacao({
-        tipo: 'erro',
-        mensagem: 'Erro de conexão'
-      });
-      setTimeout(() => setModalConfirmacao(null), 3000);
-    } finally {
-      setVendendo(false);
-    }
-  };
-
-  const cancelarVenda = async (avatar) => {
-    try {
-      const response = await fetch("/api/mercado/vender", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: user.id,
-          avatarId: avatar.id
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setModalConfirmacao({
-          tipo: 'sucesso',
-          mensagem: `Venda cancelada!`
-        });
-        setTimeout(() => setModalConfirmacao(null), 3000);
-        await carregarAvatares(user.id);
-      } else {
-        setModalConfirmacao({
-          tipo: 'erro',
-          mensagem: data.message || 'Erro ao cancelar venda'
-        });
-        setTimeout(() => setModalConfirmacao(null), 3000);
-      }
-    } catch (error) {
-      console.error("Erro ao cancelar venda:", error);
-    }
-  };
-
-  // Funções auxiliares
-  const getCorRaridade = (raridade) => {
-    switch (raridade) {
-      case 'Lendário': return 'from-amber-500 to-yellow-500';
-      case 'Raro': return 'from-purple-500 to-pink-500';
-      default: return 'from-slate-600 to-slate-700';
-    }
-  };
-
-  const getCorBorda = (raridade) => {
-    switch (raridade) {
-      case 'Lendário': return 'border-amber-500/50';
-      case 'Raro': return 'border-purple-500/50';
-      default: return 'border-slate-700/50';
-    }
-  };
-
-  const getCorElemento = (elemento) => {
-    const cores = {
-      'Fogo': 'text-orange-400',
-      'Água': 'text-blue-400',
-      'Terra': 'text-amber-600',
-      'Vento': 'text-cyan-400',
-      'Eletricidade': 'text-yellow-400',
-      'Sombra': 'text-purple-400',
-      'Luz': 'text-yellow-200'
-    };
-    return cores[elemento] || 'text-gray-400';
-  };
-
-  const getEmojiElemento = (elemento) => {
-    const emojis = {
-      'Fogo': '🔥',
-      'Água': '💧',
-      'Terra': '🪨',
-      'Vento': '💨',
-      'Eletricidade': '⚡',
-      'Sombra': '🌑',
-      'Luz': '✨'
-    };
-    return emojis[elemento] || '⭐';
-  };
-
-  const getNivelExaustao = (exaustao) => {
-    if (exaustao === 0) return { label: 'Descansado', cor: 'text-green-400' };
-    if (exaustao < 20) return { label: 'Alerta', cor: 'text-cyan-400' };
-    if (exaustao < 40) return { label: 'Cansado', cor: 'text-yellow-400' };
-    if (exaustao < 60) return { label: 'Exausto', cor: 'text-orange-400' };
-    if (exaustao < 80) return { label: 'Colapso Iminente', cor: 'text-red-400' };
-    return { label: 'Colapsado', cor: 'text-red-600' };
-  };
-
-  // Calcular XP necessário para próximo nível
-  const calcularXPNecessario = (nivel) => {
-    return nivel * 100; // 100 XP por nível
-  };
-
-  // Calcular progresso de XP
-  const calcularProgressoXP = (xpAtual, nivel) => {
-    const xpNecessario = calcularXPNecessario(nivel);
-    return Math.min((xpAtual / xpNecessario) * 100, 100);
-  };
 
   const avatarAtivo = avatares.find(av => av.ativo && av.vivo);
 
   // Filtrar avatares (EXCLUINDO mortos com marca_morte que estão no memorial)
-  let avataresFiltrados = avatares.filter(av => {
-    // Não mostrar avatares que estão no memorial
-    if (!av.vivo && av.marca_morte) return false;
-    return true;
-  });
+  let avataresFiltrados = filtrarAvataresSemMemorial(avatares);
 
   // Aplicar filtros
-  if (filtroRaridade !== 'Todos') {
-    avataresFiltrados = avataresFiltrados.filter(av => av.raridade === filtroRaridade);
-  }
-
-  if (filtroElemento !== 'Todos') {
-    avataresFiltrados = avataresFiltrados.filter(av => av.elemento === filtroElemento);
-  }
-
-  if (filtroStatus !== 'Todos') {
-    if (filtroStatus === 'Vivos') {
-      avataresFiltrados = avataresFiltrados.filter(av => av.vivo);
-    } else if (filtroStatus === 'Mortos') {
-      avataresFiltrados = avataresFiltrados.filter(av => !av.vivo);
-    } else if (filtroStatus === 'Com Marca') {
-      avataresFiltrados = avataresFiltrados.filter(av => av.marca_morte);
-    }
-  }
+  avataresFiltrados = aplicarFiltros(avataresFiltrados, {
+    filtroRaridade,
+    filtroElemento,
+    filtroStatus
+  });
 
   // Aplicar ordenação
-  avataresFiltrados.sort((a, b) => {
-    switch (ordenacao) {
-      case 'nivel_desc':
-        return b.nivel - a.nivel;
-      case 'nivel_asc':
-        return a.nivel - b.nivel;
-      case 'nome_asc':
-        return a.nome.localeCompare(b.nome);
-      case 'raridade':
-        const raridadeOrder = { 'Lendário': 3, 'Raro': 2, 'Comum': 1 };
-        return (raridadeOrder[b.raridade] || 0) - (raridadeOrder[a.raridade] || 0);
-      default:
-        return 0;
-    }
-  });
+  avataresFiltrados = ordenarAvatares(avataresFiltrados, ordenacao);
 
   // Separar ativo dos inativos
   const avataresInativos = avataresFiltrados.filter(av => !av.ativo || !av.vivo);
 
   // Contar avatares caídos (para o botão memorial)
-  const avataresCaidos = avatares.filter(av => !av.vivo && av.marca_morte).length;
+  const avataresCaidos = contarAvataresCaidos(avatares);
 
-  // Sistema de limite de avatares (avatares mortos no memorial não contam)
+  // Sistema de limite de avatares
   const LIMITE_AVATARES = 15;
-  const avataresConta = avatares.filter(av => !(av.marca_morte && !av.vivo)).length;
-  const slotsUsados = avataresConta;
-  const slotsDisponiveis = LIMITE_AVATARES - slotsUsados;
-  const percentualOcupado = (slotsUsados / LIMITE_AVATARES) * 100;
+  const { usados: slotsUsados, disponiveis: slotsDisponiveis, percentual: percentualOcupado } = calcularSlots(avatares, LIMITE_AVATARES);
 
   if (loading) {
     return (
@@ -974,7 +683,7 @@ export default function AvatarsPage() {
                             Cancelar
                           </button>
                           <button
-                            onClick={() => sacrificarAvatar(modalSacrificar)}
+                            onClick={() => sacrificarAvatar(modalSacrificar, setModalSacrificar)}
                             disabled={sacrificando}
                             className="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold rounded-lg transition-all disabled:opacity-50 shadow-lg shadow-red-900/50"
                           >
@@ -1071,7 +780,7 @@ export default function AvatarsPage() {
                       Cancelar
                     </button>
                     <button
-                      onClick={venderAvatar}
+                      onClick={() => venderAvatar(modalVender, precoVendaMoedas, precoVendaFragmentos, setModalVender, setPrecoVendaMoedas, setPrecoVendaFragmentos)}
                       disabled={vendendo}
                       className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white font-bold rounded-lg transition-all disabled:opacity-50"
                     >
