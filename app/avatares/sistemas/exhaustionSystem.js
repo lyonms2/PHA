@@ -19,14 +19,14 @@ export const CONFIG_EXAUSTAO = {
   MAXIMO: 100,
   INICIAL: 0,
   
-  // Taxa de ganho de exaustão
-  POR_COMBATE_COMUM: 15,
-  POR_COMBATE_DIFICIL: 25,
-  POR_COMBATE_BOSS: 40,
-  POR_MISSAO_CURTA: 10,
-  POR_MISSAO_LONGA: 20,
-  POR_TREINO: 5,
-  POR_HABILIDADE_ULTIMATE: 10,
+  // Taxa de ganho de exaustão (REDUZIDAS EM 50%)
+  POR_COMBATE_COMUM: 7.5,
+  POR_COMBATE_DIFICIL: 12.5,
+  POR_COMBATE_BOSS: 20,
+  POR_MISSAO_CURTA: 5,
+  POR_MISSAO_LONGA: 10,
+  POR_TREINO: 2.5,
+  POR_HABILIDADE_ULTIMATE: 5,
   
   // Taxa de recuperação
   RECUPERACAO_POR_HORA_INATIVO: 8,
@@ -51,9 +51,7 @@ export const NIVEIS_EXAUSTAO = {
     cor: 'text-green-400',
     descricao: 'Avatar está em condições ideais de combate',
     penalidades: {},
-    bonus: {
-      critico: 0.05 // +5% chance de crítico quando descansado
-    },
+    bonus: {},
     mensagem_status: 'Seu avatar está revigorado e pronto para qualquer desafio!'
   },
   
@@ -75,20 +73,12 @@ export const NIVEIS_EXAUSTAO = {
     nome: 'Cansado',
     emoji: '🟠',
     cor: 'text-orange-400',
-    descricao: 'Avatar começa a sentir o peso das batalhas',
-    penalidades: {
-      stats: -0.10, // -10% em todos os stats
-      chance_acerto: -0.05, // -5% chance de acerto
-      energia_maxima: -0.10 // -10% energia máxima
-    },
+    descricao: 'Avatar começa a sentir cansaço, mas ainda pode lutar',
+    penalidades: {},
     bonus: {},
     efeitos_visuais: ['respiracao_pesada'],
-    mensagem_status: 'Seu avatar está começando a ficar cansado. Considere um descanso.',
-    avisos: [
-      'Reflexos ligeiramente mais lentos',
-      'Concentração reduzida',
-      'Movimentos menos precisos'
-    ]
+    mensagem_status: 'Seu avatar está começando a ficar cansado. Considere um descanso em breve.',
+    avisos: []
   },
   
   EXAUSTO: {
@@ -97,25 +87,12 @@ export const NIVEIS_EXAUSTAO = {
     nome: 'Exausto',
     emoji: '🔴',
     cor: 'text-red-400',
-    descricao: 'Avatar está claramente sobrecarregado e precisa descansar',
-    penalidades: {
-      stats: -0.25, // -25% em todos os stats
-      chance_acerto: -0.15, // -15% chance de acerto
-      chance_critico: -0.20, // -20% chance de crítico
-      evasao: -0.20, // -20% evasão
-      energia_maxima: -0.25, // -25% energia máxima
-      velocidade_recuperacao: -0.30 // -30% recuperação de energia
-    },
+    descricao: 'Avatar está visivelmente cansado, mas ainda pode lutar',
+    penalidades: {},
     bonus: {},
-    efeitos_visuais: ['tremendo', 'respiracao_pesada', 'movimentos_lentos'],
-    mensagem_status: '⚠️ ATENÇÃO: Seu avatar está exausto! Descanso urgente necessário!',
-    avisos: [
-      'Risco de lesões graves em combate',
-      'Habilidades podem falhar',
-      'Comandos podem ser ignorados',
-      'Vínculo pode ser danificado'
-    ],
-    chance_falha_critica: 0.10 // 10% chance de falha crítica em habilidades
+    efeitos_visuais: ['tremendo', 'respiracao_pesada'],
+    mensagem_status: '⚠️ ATENÇÃO: Seu avatar está exausto! Descanso recomendado!',
+    avisos: []
   },
   
   COLAPSO_IMINENTE: {
@@ -124,29 +101,15 @@ export const NIVEIS_EXAUSTAO = {
     nome: 'Colapso Iminente',
     emoji: '💀',
     cor: 'text-red-600',
-    descricao: 'Avatar está à beira do colapso total',
-    penalidades: {
-      stats: -0.50, // -50% em todos os stats
-      chance_acerto: -0.30, // -30% chance de acerto
-      chance_critico: -0.50, // -50% chance de crítico
-      evasao: -0.40, // -40% evasão
-      energia_maxima: -0.50, // -50% energia máxima
-      velocidade_recuperacao: -0.60, // -60% recuperação de energia
-      dano_recebido: +0.30 // +30% dano recebido
-    },
+    descricao: 'Avatar está muito cansado, próximo do limite',
+    penalidades: {},
     bonus: {},
-    efeitos_visuais: ['tremendo_intenso', 'dificuldade_respirar', 'movimentos_erraticos', 'aura_fraca'],
-    mensagem_status: '🚨 CRÍTICO: Seu avatar está entrando em colapso! DESATIVE IMEDIATAMENTE!',
+    efeitos_visuais: ['tremendo_intenso', 'respiracao_pesada'],
+    mensagem_status: '🚨 CRÍTICO: Seu avatar está muito exausto! Descanso urgente!',
     avisos: [
-      'RISCO EXTREMO: Avatar pode desmaiar em combate',
-      'Lesões permanentes possíveis',
-      'Vínculo severamente comprometido',
-      'Desobediência de comandos provável',
-      'Pode atacar aliados por confusão'
-    ],
-    chance_falha_critica: 0.30, // 30% chance de falha crítica
-    chance_desobediencia: 0.25, // 25% chance de ignorar comandos
-    penalidade_vinculo: -5 // Perde 5 pontos de vínculo por turno neste estado
+      'Próximo do limite de exaustão',
+      'Descanse logo para evitar bloqueio'
+    ]
   },
   
   COLAPSADO: {
@@ -155,24 +118,18 @@ export const NIVEIS_EXAUSTAO = {
     nome: 'Colapsado',
     emoji: '💀💀',
     cor: 'text-gray-400',
-    descricao: 'Avatar entrou em colapso total e não pode lutar',
+    descricao: 'Avatar atingiu exaustão máxima e não pode lutar',
     penalidades: {
-      stats: -0.90, // -90% em todos os stats
       pode_lutar: false
     },
     bonus: {},
-    efeitos_visuais: ['desmaiado', 'aura_apagada', 'inconsciente'],
-    mensagem_status: '💀 COLAPSO: Seu avatar entrou em colapso! Não pode lutar até descansar completamente!',
+    efeitos_visuais: ['exausto_completo'],
+    mensagem_status: '💀 EXAUSTÃO MÁXIMA: Seu avatar não pode lutar! Descanse antes de batalhar!',
     avisos: [
-      'Avatar completamente incapacitado',
+      'Avatar completamente exausto',
       'Não pode ser usado em combate',
-      'Requer descanso prolongado (mínimo 12 horas)',
-      'Vínculo gravemente danificado',
-      'Possível trauma permanente'
-    ],
-    requer_descanso_minimo: 12, // horas
-    penalidade_vinculo: -20, // Perde 20 pontos de vínculo ao colapsar
-    tempo_recuperacao_aumentado: 2.0 // Recuperação 2x mais lenta após colapso
+      'Descanse para poder batalhar novamente'
+    ]
   }
 };
 
@@ -182,62 +139,62 @@ export const NIVEIS_EXAUSTAO = {
 export const FONTES_EXAUSTAO = {
   COMBATE_FACIL: {
     nome: 'Combate Fácil',
-    ganho: 5,
+    ganho: 2.5,
     descricao: 'Inimigos fracos, vitória rápida'
   },
   COMBATE_NORMAL: {
     nome: 'Combate Normal',
-    ganho: 15,
+    ganho: 7.5,
     descricao: 'Batalha equilibrada'
   },
   COMBATE_DIFICIL: {
     nome: 'Combate Difícil',
-    ganho: 25,
+    ganho: 12.5,
     descricao: 'Batalha intensa e prolongada'
   },
   COMBATE_BOSS: {
     nome: 'Combate contra Boss',
-    ganho: 40,
+    ganho: 20,
     descricao: 'Luta épica contra inimigo poderoso'
   },
   MISSAO_CURTA: {
     nome: 'Missão Curta',
-    ganho: 10,
+    ganho: 5,
     descricao: 'Missão rápida com poucos combates'
   },
   MISSAO_MEDIA: {
     nome: 'Missão Média',
-    ganho: 20,
+    ganho: 10,
     descricao: 'Missão de duração média'
   },
   MISSAO_LONGA: {
     nome: 'Missão Longa',
-    ganho: 35,
+    ganho: 17.5,
     descricao: 'Missão extensa com múltiplos combates'
   },
   TREINO_LEVE: {
     nome: 'Treino Leve',
-    ganho: 5,
+    ganho: 2.5,
     descricao: 'Sessão de treinamento básico'
   },
   TREINO_INTENSO: {
     nome: 'Treino Intenso',
-    ganho: 15,
+    ganho: 7.5,
     descricao: 'Treinamento pesado e exigente'
   },
   HABILIDADE_ULTIMATE: {
     nome: 'Uso de Ultimate',
-    ganho: 10,
+    ganho: 5,
     descricao: 'Habilidades supremas drenam energia vital'
   },
   CRITICO_RECEBIDO: {
     nome: 'Acerto Crítico Recebido',
-    ganho: 8,
+    ganho: 4,
     descricao: 'Golpes devastadores causam exaustão'
   },
   QUASE_MORTE: {
     nome: 'Quase Morreu',
-    ganho: 30,
+    ganho: 15,
     descricao: 'Sobreviver com HP crítico é mentalmente desgastante'
   }
 };
@@ -535,45 +492,39 @@ export const TABELA_EXAUSTAO = `
 ║                    SISTEMA DE EXAUSTÃO                        ║
 ╠═══════════════════════════════════════════════════════════════╣
 ║ 💚 DESCANSADO (0-19)                                          ║
-║    +5% chance de crítico                                      ║
+║    Sem penalidades ou bônus                                   ║
 ║    Condições ideais de combate                                ║
 ╠═══════════════════════════════════════════════════════════════╣
 ║ 💛 ALERTA (20-39)                                             ║
 ║    Sem penalidades                                            ║
-║    Considere descansar em breve                               ║
+║    Avatar em boa forma                                        ║
 ╠═══════════════════════════════════════════════════════════════╣
 ║ 🟠 CANSADO (40-59)                                            ║
-║    -10% todos os stats                                        ║
-║    -5% chance de acerto                                       ║
-║    -10% energia máxima                                        ║
+║    Sem penalidades de combate                                 ║
+║    Avatar pode lutar normalmente                              ║
 ╠═══════════════════════════════════════════════════════════════╣
 ║ 🔴 EXAUSTO (60-79)                                            ║
-║    -25% todos os stats                                        ║
-║    -15% chance de acerto, -20% crítico                       ║
-║    -20% evasão, -25% energia máxima                          ║
-║    10% chance de falha crítica                                ║
-║    ⚠️ DESCANSO URGENTE NECESSÁRIO                            ║
+║    Sem penalidades de combate                                 ║
+║    Descanso recomendado                                       ║
 ╠═══════════════════════════════════════════════════════════════╣
 ║ 💀 COLAPSO IMINENTE (80-99)                                   ║
-║    -50% todos os stats                                        ║
-║    -30% acerto, -50% crítico, -40% evasão                    ║
-║    -50% energia, +30% dano recebido                          ║
-║    30% chance de falha crítica                                ║
-║    25% chance de desobedecer comandos                         ║
-║    Perde 5 vínculo por turno                                  ║
-║    🚨 RISCO DE COLAPSO TOTAL                                  ║
+║    Sem penalidades de combate                                 ║
+║    Próximo do limite - descanse urgente                       ║
 ╠═══════════════════════════════════════════════════════════════╣
 ║ 💀💀 COLAPSADO (100)                                          ║
-║    -90% todos os stats                                        ║
-║    NÃO PODE LUTAR                                             ║
-║    Perde 20 pontos de vínculo                                 ║
-║    Requer mínimo 12 horas de descanso                         ║
-║    Recuperação 2x mais lenta                                  ║
+║    ❌ NÃO PODE LUTAR                                          ║
+║    Descanse para poder batalhar novamente                     ║
 ╠═══════════════════════════════════════════════════════════════╣
 ║ RECUPERAÇÃO:                                                   ║
-║   Inativo: 8 pontos/hora                                      ║
-║   Desativado: 15 pontos/hora                                  ║
+║   Inativo: 8 pontos/hora (automático)                         ║
+║   Desativado: 15 pontos/hora (manual)                         ║
 ║   Item especial: 50 pontos instantâneo                        ║
+║                                                                ║
+║ GANHO DE EXAUSTÃO:                                            ║
+║   Combate Fácil: 2.5 pts                                      ║
+║   Combate Normal: 7.5 pts                                     ║
+║   Combate Difícil: 12.5 pts                                   ║
+║   Combate Boss: 20 pts                                        ║
 ╚═══════════════════════════════════════════════════════════════╝
 `;
 
