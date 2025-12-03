@@ -5,69 +5,13 @@ import { useRouter } from "next/navigation";
 import AvatarSVG from "@/app/components/AvatarSVG";
 import { calcularPoderTotal } from "@/lib/gameLogic";
 import { HABILIDADES_POR_ELEMENTO } from "@/app/avatares/sistemas/abilitiesSystem";
+import {
+  atualizarBalanceamentoHabilidade,
+  getElementoEmoji,
+  ehBuff,
+  getEfeitoEmoji
+} from './utils';
 
-/**
- * Atualiza os valores de balanceamento de uma habilidade
- */
-function atualizarBalanceamentoHabilidade(habilidadeAvatar, elemento) {
-  if (!habilidadeAvatar || !elemento) return habilidadeAvatar;
-
-  const habilidadesSistema = HABILIDADES_POR_ELEMENTO[elemento];
-  if (!habilidadesSistema) return habilidadeAvatar;
-
-  const habilidadeSistema = Object.values(habilidadesSistema).find(
-    h => h.nome === habilidadeAvatar.nome
-  );
-
-  if (!habilidadeSistema) return habilidadeAvatar;
-
-  return {
-    ...habilidadeAvatar,
-    custo_energia: habilidadeSistema.custo_energia,
-    chance_efeito: habilidadeSistema.chance_efeito,
-    duracao_efeito: habilidadeSistema.duracao_efeito,
-    dano_base: habilidadeSistema.dano_base,
-    multiplicador_stat: habilidadeSistema.multiplicador_stat,
-    cooldown: habilidadeSistema.cooldown
-  };
-}
-
-function getElementoEmoji(elemento) {
-  const emojis = {
-    'Fogo': '🔥',
-    'Água': '💧',
-    'Terra': '🌍',
-    'Vento': '💨',
-    'Eletricidade': '⚡',
-    'Luz': '✨',
-    'Sombra': '🌑'
-  };
-  return emojis[elemento] || '⚪';
-}
-
-// Função para verificar se é buff ou debuff
-function ehBuff(tipoEfeito) {
-  const buffs = ['Regeneração', 'Escudo', 'Aumento de Força', 'Aumento de Agilidade', 'Invisível', 'Fortificado'];
-  return buffs.includes(tipoEfeito);
-}
-
-// Função para obter emoji do efeito
-function getEfeitoEmoji(tipoEfeito) {
-  const emojis = {
-    'Queimadura': '🔥',
-    'Sangramento': '🩸',
-    'Envenenado': '☠️',
-    'Atordoado': '💫',
-    'Congelado': '❄️',
-    'Paralisado': '⚡',
-    'Regeneração': '💚',
-    'Escudo': '🛡️',
-    'Aumento de Força': '💪',
-    'Aumento de Agilidade': '⚡',
-    'Invisível': '👻',
-    'Fortificado': '🗿'
-  };
-  return emojis[tipoEfeito] || '✨';
 }
 
 function BatalhaTreinoIAContent() {
