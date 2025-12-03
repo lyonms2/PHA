@@ -6,6 +6,20 @@ import AvatarSVG from '../components/AvatarSVG';
 import AvatarDetalhes from "./components/AvatarDetalhes";
 import GameNav, { COMMON_ACTIONS } from '../components/GameNav';
 import { calcularPoderTotal } from '@/lib/gameLogic';
+import {
+  getCorRaridade,
+  getCorBorda,
+  getCorElemento,
+  getEmojiElemento,
+  getNivelExaustao,
+  calcularXPNecessario,
+  calcularProgressoXP,
+  filtrarAvataresSemMemorial,
+  aplicarFiltros,
+  ordenarAvatares,
+  contarAvataresCaidos,
+  calcularSlots
+} from './utils';
 
 export default function AvatarsPage() {
   const router = useRouter();
@@ -290,126 +304,31 @@ export default function AvatarsPage() {
     }
   };
 
-  // Funções auxiliares
-  const getCorRaridade = (raridade) => {
-    switch (raridade) {
-      case 'Lendário': return 'from-amber-500 to-yellow-500';
-      case 'Raro': return 'from-purple-500 to-pink-500';
-      default: return 'from-slate-600 to-slate-700';
-    }
-  };
-
-  const getCorBorda = (raridade) => {
-    switch (raridade) {
-      case 'Lendário': return 'border-amber-500/50';
-      case 'Raro': return 'border-purple-500/50';
-      default: return 'border-slate-700/50';
-    }
-  };
-
-  const getCorElemento = (elemento) => {
-    const cores = {
-      'Fogo': 'text-orange-400',
-      'Água': 'text-blue-400',
-      'Terra': 'text-amber-600',
-      'Vento': 'text-cyan-400',
-      'Eletricidade': 'text-yellow-400',
-      'Sombra': 'text-purple-400',
-      'Luz': 'text-yellow-200'
-    };
-    return cores[elemento] || 'text-gray-400';
-  };
-
-  const getEmojiElemento = (elemento) => {
-    const emojis = {
-      'Fogo': '🔥',
-      'Água': '💧',
-      'Terra': '🪨',
-      'Vento': '💨',
-      'Eletricidade': '⚡',
-      'Sombra': '🌑',
-      'Luz': '✨'
-    };
-    return emojis[elemento] || '⭐';
-  };
-
-  const getNivelExaustao = (exaustao) => {
-    if (exaustao === 0) return { label: 'Descansado', cor: 'text-green-400' };
-    if (exaustao < 20) return { label: 'Alerta', cor: 'text-cyan-400' };
-    if (exaustao < 40) return { label: 'Cansado', cor: 'text-yellow-400' };
-    if (exaustao < 60) return { label: 'Exausto', cor: 'text-orange-400' };
-    if (exaustao < 80) return { label: 'Colapso Iminente', cor: 'text-red-400' };
-    return { label: 'Colapsado', cor: 'text-red-600' };
-  };
-
-  // Calcular XP necessário para próximo nível
-  const calcularXPNecessario = (nivel) => {
-    return nivel * 100; // 100 XP por nível
-  };
-
-  // Calcular progresso de XP
-  const calcularProgressoXP = (xpAtual, nivel) => {
-    const xpNecessario = calcularXPNecessario(nivel);
-    return Math.min((xpAtual / xpNecessario) * 100, 100);
-  };
 
   const avatarAtivo = avatares.find(av => av.ativo && av.vivo);
 
   // Filtrar avatares (EXCLUINDO mortos com marca_morte que estão no memorial)
-  let avataresFiltrados = avatares.filter(av => {
-    // Não mostrar avatares que estão no memorial
-    if (!av.vivo && av.marca_morte) return false;
-    return true;
-  });
+  let avataresFiltrados = filtrarAvataresSemMemorial(avatares);
 
   // Aplicar filtros
-  if (filtroRaridade !== 'Todos') {
-    avataresFiltrados = avataresFiltrados.filter(av => av.raridade === filtroRaridade);
-  }
-
-  if (filtroElemento !== 'Todos') {
-    avataresFiltrados = avataresFiltrados.filter(av => av.elemento === filtroElemento);
-  }
-
-  if (filtroStatus !== 'Todos') {
-    if (filtroStatus === 'Vivos') {
-      avataresFiltrados = avataresFiltrados.filter(av => av.vivo);
-    } else if (filtroStatus === 'Mortos') {
-      avataresFiltrados = avataresFiltrados.filter(av => !av.vivo);
-    } else if (filtroStatus === 'Com Marca') {
-      avataresFiltrados = avataresFiltrados.filter(av => av.marca_morte);
-    }
-  }
+  avataresFiltrados = aplicarFiltros(avataresFiltrados, {
+    filtroRaridade,
+    filtroElemento,
+    filtroStatus
+  });
 
   // Aplicar ordenação
-  avataresFiltrados.sort((a, b) => {
-    switch (ordenacao) {
-      case 'nivel_desc':
-        return b.nivel - a.nivel;
-      case 'nivel_asc':
-        return a.nivel - b.nivel;
-      case 'nome_asc':
-        return a.nome.localeCompare(b.nome);
-      case 'raridade':
-        const raridadeOrder = { 'Lendário': 3, 'Raro': 2, 'Comum': 1 };
-        return (raridadeOrder[b.raridade] || 0) - (raridadeOrder[a.raridade] || 0);
-      default:
-        return 0;
-    }
-  });
+  avataresFiltrados = ordenarAvatares(avataresFiltrados, ordenacao);
 
   // Separar ativo dos inativos
   const avataresInativos = avataresFiltrados.filter(av => !av.ativo || !av.vivo);
 
   // Contar avatares caídos (para o botão memorial)
-  const avataresCaidos = avatares.filter(av => !av.vivo && av.marca_morte).length;
+  const avataresCaidos = contarAvataresCaidos(avatares);
 
-  // Sistema de limite de avatares (avatares mortos no memorial não contam)
+  // Sistema de limite de avatares
   const LIMITE_AVATARES = 15;
-  const avataresConta = avatares.filter(av => !(av.marca_morte && !av.vivo)).length;
-  const slotsUsados = avataresConta;
-  const slotsDisponiveis = LIMITE_AVATARES - slotsUsados;
-  const percentualOcupado = (slotsUsados / LIMITE_AVATARES) * 100;
+  const { usados: slotsUsados, disponiveis: slotsDisponiveis, percentual: percentualOcupado } = calcularSlots(avatares, LIMITE_AVATARES);
 
   if (loading) {
     return (
