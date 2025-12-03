@@ -13,3 +13,6 @@ export {
   ehBuff,
   getNomeSala
 } from './battleEffects';
+
+// Processador de logs de batalha
+export { processarNovosLogs } from './logProcessor';
