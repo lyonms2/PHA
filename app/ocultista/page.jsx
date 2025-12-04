@@ -139,12 +139,12 @@ export default function OcultistaPage() {
           {etapa === 'introducao' && (
             <div className="space-y-8 animate-fade-in">
               {/* Título */}
-              <div className="text-center mb-12">
-                <div className="text-7xl mb-4 animate-pulse">🔮</div>
-                <h1 className="text-5xl font-black bg-gradient-to-r from-purple-300 via-pink-300 to-cyan-300 bg-clip-text text-transparent mb-4">
+              <div className="text-center mb-8 md:mb-12">
+                <div className="text-5xl md:text-7xl mb-4 animate-pulse">🔮</div>
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-black bg-gradient-to-r from-purple-300 via-pink-300 to-cyan-300 bg-clip-text text-transparent mb-4">
                   O OCULTISTA
                 </h1>
-                <div className="h-px w-64 mx-auto bg-gradient-to-r from-transparent via-purple-500 to-transparent mb-4"></div>
+                <div className="h-px w-48 md:w-64 mx-auto bg-gradient-to-r from-transparent via-purple-500 to-transparent mb-4"></div>
                 <p className="text-slate-400 font-mono text-sm">Invocador de Entidades Dimensionais</p>
               </div>
 
@@ -295,13 +295,13 @@ export default function OcultistaPage() {
           {/* ETAPA 2: INVOCANDO */}
           {etapa === 'invocando' && (
             <div className="text-center space-y-8 animate-fade-in">
-              <div className="text-8xl animate-spin-slow mb-8">🔮</div>
-              
+              <div className="text-6xl md:text-8xl animate-spin-slow mb-8">🔮</div>
+
               <div className="relative group max-w-2xl mx-auto">
                 <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/30 via-pink-500/30 to-cyan-500/30 rounded-lg blur animate-pulse"></div>
-                
-                <div className="relative bg-slate-950/90 backdrop-blur-xl border border-purple-900/30 rounded-lg p-8">
-                  <h2 className="text-3xl font-black bg-gradient-to-r from-purple-300 to-cyan-300 bg-clip-text text-transparent mb-4">
+
+                <div className="relative bg-slate-950/90 backdrop-blur-xl border border-purple-900/30 rounded-lg p-4 md:p-8">
+                  <h2 className="text-2xl md:text-3xl font-black bg-gradient-to-r from-purple-300 to-cyan-300 bg-clip-text text-transparent mb-4">
                     INVOCANDO...
                   </h2>
                   
@@ -325,8 +325,8 @@ export default function OcultistaPage() {
             <div className="space-y-8 animate-fade-in">
               {/* Mensagem do Ocultista */}
               <div className="text-center mb-8">
-                <div className="text-6xl mb-4">✨</div>
-                <h2 className="text-4xl font-black bg-gradient-to-r from-purple-300 to-cyan-300 bg-clip-text text-transparent mb-2">
+                <div className="text-5xl md:text-6xl mb-4">✨</div>
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-black bg-gradient-to-r from-purple-300 to-cyan-300 bg-clip-text text-transparent mb-2">
                   INVOCAÇÃO COMPLETA
                 </h2>
                 <p className="text-slate-400 font-mono text-sm">Um novo guardião atende ao seu chamado</p>
@@ -350,9 +350,9 @@ export default function OcultistaPage() {
                     {avatarGerado.raridade.toUpperCase()}
                   </div>
 
-                  <div className="p-8">
+                  <div className="p-4 md:p-8">
                     {/* Nome */}
-                    <h3 className="text-3xl font-black text-center mb-2 bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent">
+                    <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-center mb-2 bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent">
                       {avatarGerado.nome}
                     </h3>
 
@@ -364,29 +364,29 @@ export default function OcultistaPage() {
                     </div>
 
                     {/* Descrição */}
-                    <p className="text-slate-300 text-center leading-relaxed mb-8 italic">
+                    <p className="text-slate-300 text-center leading-relaxed mb-6 md:mb-8 italic text-sm">
                       {avatarGerado.descricao}
                     </p>
 
-                    <div className="h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent mb-8"></div>
+                    <div className="h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent mb-6 md:mb-8"></div>
 
                     {/* Stats */}
-                    <div className="grid grid-cols-4 gap-4 mb-8">
-                      <div className="bg-slate-900/50 rounded p-4 text-center border border-red-500/20">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
+                      <div className="bg-slate-900/50 rounded p-3 md:p-4 text-center border border-red-500/20">
                         <div className="text-xs text-slate-500 uppercase mb-1">Força</div>
-                        <div className="text-3xl font-bold text-red-400">{avatarGerado.forca}</div>
+                        <div className="text-2xl md:text-3xl font-bold text-red-400">{avatarGerado.forca}</div>
                       </div>
-                      <div className="bg-slate-900/50 rounded p-4 text-center border border-green-500/20">
+                      <div className="bg-slate-900/50 rounded p-3 md:p-4 text-center border border-green-500/20">
                         <div className="text-xs text-slate-500 uppercase mb-1">Agilidade</div>
-                        <div className="text-3xl font-bold text-green-400">{avatarGerado.agilidade}</div>
+                        <div className="text-2xl md:text-3xl font-bold text-green-400">{avatarGerado.agilidade}</div>
                       </div>
-                      <div className="bg-slate-900/50 rounded p-4 text-center border border-blue-500/20">
+                      <div className="bg-slate-900/50 rounded p-3 md:p-4 text-center border border-blue-500/20">
                         <div className="text-xs text-slate-500 uppercase mb-1">Resistência</div>
-                        <div className="text-3xl font-bold text-blue-400">{avatarGerado.resistencia}</div>
+                        <div className="text-2xl md:text-3xl font-bold text-blue-400">{avatarGerado.resistencia}</div>
                       </div>
-                      <div className="bg-slate-900/50 rounded p-4 text-center border border-purple-500/20">
+                      <div className="bg-slate-900/50 rounded p-3 md:p-4 text-center border border-purple-500/20">
                         <div className="text-xs text-slate-500 uppercase mb-1">Foco</div>
-                        <div className="text-3xl font-bold text-purple-400">{avatarGerado.foco}</div>
+                        <div className="text-2xl md:text-3xl font-bold text-purple-400">{avatarGerado.foco}</div>
                       </div>
                     </div>
 
