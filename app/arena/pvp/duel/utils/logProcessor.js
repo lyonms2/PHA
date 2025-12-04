@@ -1,7 +1,10 @@
 /**
  * Processador de logs de batalha para duelo PvP
  * Extrai e formata logs de combate para exibição
+ * USA BIBLIOTECA CENTRALIZADA de formatação (lib/combat/battle/logs/battleLogger.js)
  */
+
+import { formatAttackLog, formatDefendLog, formatAbilityLog } from '@/lib/combat/battle/logs/battleLogger';
 
 /**
  * Processa novos logs da batalha e gera mensagens formatadas
@@ -33,7 +36,7 @@ export function processarNovosLogs(battleLog, opponentNomeAtual, lastProcessedLo
 
   // Processar cada novo log
   for (const logEntry of novosLogs) {
-    const { acao, jogador, alvo, dano, cura, critico, errou, esquivou, invisivel, bloqueado, habilidade, efeitos, numGolpes, contraAtaque, vencedor, energiaRecuperada, elemental } = logEntry;
+    const { acao, jogador, dano, cura, critico, errou, numGolpes, contraAtaque } = logEntry;
 
     // Comparação confiável usando opponentNome do servidor (não do state React)
     // Se jogador === opponentNome, então é ação do oponente
@@ -44,119 +47,34 @@ export function processarNovosLogs(battleLog, opponentNomeAtual, lastProcessedLo
     // Apenas processar ações do OPONENTE para ver o que ele fez
     if (!ehAcaoOponente) continue;
 
-    // ATAQUE
-    if (acao === 'attack') {
+    // USAR BIBLIOTECA CENTRALIZADA
+    // O backend já formata os logs usando battleLogger.js
+    // Basta usar o campo 'detalhes' que já vem formatado!
+    if (logEntry.detalhes) {
+      addLog(logEntry.detalhes);
+    }
+
+    // Efeitos visuais baseados na ação
+    if (acao === 'attack' || acao === 'ability') {
       if (errou) {
-        if (invisivel) {
-          addLog(`👻 ${jogador} ERROU! ${alvo} está INVISÍVEL!`);
-          showDamageEffect('me', '', 'dodge');
-        } else if (esquivou) {
-          addLog(`💨 ${jogador} ERROU! ${alvo} esquivou!`);
-          showDamageEffect('me', '', 'dodge');
+        showDamageEffect('me', '', 'dodge');
+      } else if (dano > 0) {
+        if (numGolpes && numGolpes > 1) {
+          showDamageEffect('me', `${dano} ×${numGolpes}`, 'multihit');
         } else {
-          addLog(`💨 ${jogador} ERROU! ${alvo} esquivou!`);
-          showDamageEffect('me', '', 'miss');
-        }
-      } else {
-        let emoji = '⚔️';
-        let tipo = 'ATAQUE';
-        if (critico) { emoji = '💥'; tipo = 'CRÍTICO'; }
-        if (bloqueado) { emoji = '🛡️'; tipo = 'BLOQUEADO'; }
-
-        addLog(`${emoji} ${jogador} → ${alvo}: ${tipo}! Dano: ${dano}`);
-
-        if (elemental === 'vantagem') {
-          addLog('🔥 Super efetivo!');
-        } else if (elemental === 'desvantagem') {
-          addLog('💨 Pouco efetivo...');
+          showDamageEffect('me', dano, critico ? 'critical' : 'damage');
         }
 
+        // Contra-ataque visual
         if (contraAtaque) {
-          addLog(`🔥🛡️ CONTRA-ATAQUE! ${jogador} foi queimado!`);
-        }
-
-        showDamageEffect('me', dano, critico ? 'critical' : 'damage');
-
-        if (contraAtaque) {
-          // Contra-ataque sempre aparece no atacante (oponente neste caso)
           setTimeout(() => showDamageEffect('opponent', '🔥', 'burn'), 500);
         }
       }
-    }
 
-    // HABILIDADE
-    if (acao === 'ability') {
-      if (errou) {
-        if (invisivel) {
-          addLog(`👻 ${jogador} usou ${habilidade} mas ERROU! ${alvo} está INVISÍVEL!`);
-          showDamageEffect('me', '', 'dodge');
-        } else if (esquivou) {
-          addLog(`💨 ${jogador} usou ${habilidade} mas ERROU! ${alvo} esquivou!`);
-          showDamageEffect('me', '', 'dodge');
-        } else {
-          addLog(`💨 ${jogador} usou ${habilidade} mas ERROU!`);
-          showDamageEffect('me', '', 'miss');
-        }
-      } else {
-        let emoji = '✨';
-        let msg = `${emoji} ${jogador} usou ${habilidade}!`;
-
-        if (dano > 0) {
-          msg += ` Dano: ${dano}`;
-          if (numGolpes && numGolpes > 1) {
-            msg += ` (${numGolpes}× golpes)`;
-          }
-        }
-
-        if (cura > 0) {
-          msg += ` ❤️ Curou: ${cura}`;
-        }
-
-        addLog(msg);
-
-        if (elemental === 'vantagem') {
-          addLog('🔥 Super efetivo!');
-        } else if (elemental === 'desvantagem') {
-          addLog('💨 Pouco efetivo...');
-        }
-
-        if (contraAtaque) {
-          addLog(`🔥🛡️ CONTRA-ATAQUE! ${jogador} foi queimado!`);
-        }
-
-        if (efeitos && efeitos.length > 0) {
-          addLog(`✨ Efeitos: ${efeitos.join(', ')}`);
-        }
-
-        // Efeitos visuais
-        if (dano > 0) {
-          if (numGolpes && numGolpes > 1) {
-            showDamageEffect('me', `${dano} ×${numGolpes}`, 'multihit');
-          } else {
-            showDamageEffect('me', dano, critico ? 'critical' : 'damage');
-          }
-        }
-
-        if (cura > 0) {
-          // Cura sempre aparece no atacante (oponente neste caso)
-          showDamageEffect('opponent', cura, 'heal');
-        }
-
-        if (contraAtaque) {
-          // Contra-ataque sempre aparece no atacante (oponente neste caso)
-          setTimeout(() => showDamageEffect('opponent', '🔥', 'burn'), 500);
-        }
+      // Cura visual (habilidades de suporte)
+      if (cura > 0) {
+        showDamageEffect('opponent', cura, 'heal');
       }
-    }
-
-    // DEFESA
-    if (acao === 'defend') {
-      addLog(`🛡️ ${jogador} defendeu! +${energiaRecuperada || 20} ⚡`);
-    }
-
-    // RENDIÇÃO
-    if (acao === 'surrender') {
-      addLog(`🏳️ ${jogador} se rendeu! ${vencedor} venceu!`);
     }
   }
 
