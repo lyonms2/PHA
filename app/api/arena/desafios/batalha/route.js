@@ -351,18 +351,7 @@ export async function POST(request) {
     }
 
     // Boss escolhe ação (IA agressiva para bosses)
-    const acaoBoss = escolherAcaoIA({
-      myHp: battle.boss.hp,
-      myHpMax: battle.boss.hp_max,
-      myEnergy: battle.boss.energy,
-      opponentHp: battle.player.hp,
-      opponentHpMax: battle.player.hp_max,
-      opponentEnergy: battle.player.energy,
-      myEffects: battle.boss.efeitos,
-      opponentEffects: battle.player.efeitos,
-      avatar: battle.boss,
-      personalidade: { tipo: 'agressivo', agressividade: 90 } // Bosses são sempre agressivos
-    });
+    const acaoBoss = escolherAcaoIA(battle.boss, battle.player, { tipo: 'agressivo', agressividade: 90 });
 
     // Processar ação do boss
     const bossAttacker = {

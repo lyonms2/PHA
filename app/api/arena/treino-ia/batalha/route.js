@@ -384,18 +384,7 @@ export async function POST(request) {
       playerHp: battle.player.hp
     });
 
-    const acaoIA = escolherAcaoIA({
-      myHp: battle.ia.hp,
-      myHpMax: battle.ia.hp_max,
-      myEnergy: battle.ia.energy,
-      opponentHp: battle.player.hp,
-      opponentHpMax: battle.player.hp_max,
-      opponentEnergy: battle.player.energy,
-      myEffects: battle.ia.efeitos,
-      opponentEffects: battle.player.efeitos,
-      avatar: battle.ia,
-      personalidade: battle.personalidadeIA
-    });
+    const acaoIA = escolherAcaoIA(battle.ia, battle.player, battle.personalidadeIA);
 
     console.log('🎯 [IA] Ação escolhida:', acaoIA.acao);
 
