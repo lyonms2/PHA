@@ -277,7 +277,8 @@ export async function POST(request) {
       action: result.action,
       attackerHp: result.attacker?.hp,
       defenderHp: result.defender?.hp,
-      errou: result.errou
+      errou: result.errou,
+      finished: result.finished
     });
 
     if (action === 'defend') {
@@ -316,16 +317,33 @@ export async function POST(request) {
     battle.battle_log = adicionarLogBatalha(battle.battle_log, result.log);
 
     // Verificar se acabou
+    console.log('🏁 [BATALHA] Verificando fim da batalha:', {
+      finished: result.finished,
+      iaHp: battle.ia.hp
+    });
+
     if (result.finished) {
+      console.log('🎉 [BATALHA] Batalha finalizada! Player venceu!');
       battle.status = 'finished';
       battle.winner = 'player';
+
+      // Calcular recompensas
+      const recompensas = calcularRecompensasTreino(
+        battle.poderOponente,
+        battle.dificuldade,
+        true // vitória
+      );
+
+      console.log('💰 [RECOMPENSAS] Calculadas:', recompensas);
+      battle.rewardsApplied = true;
       battleSessions.set(battleId, battle);
 
       return NextResponse.json({
         success: true,
         ...result,
         finished: true,
-        winner: 'player'
+        winner: 'player',
+        recompensas
       });
     }
 
@@ -368,13 +386,24 @@ export async function POST(request) {
     if (iaEffectsResult.finished) {
       battle.status = 'finished';
       battle.winner = 'player';
+
+      // Calcular recompensas (IA morreu por efeitos)
+      const recompensas = calcularRecompensasTreino(
+        battle.poderOponente,
+        battle.dificuldade,
+        true // vitória
+      );
+
+      console.log('💰 [RECOMPENSAS] IA morreu por efeitos - Calculadas:', recompensas);
+      battle.rewardsApplied = true;
       battleSessions.set(battleId, battle);
 
       return NextResponse.json({
         success: true,
         ...result,
         finished: true,
-        winner: 'player'
+        winner: 'player',
+        recompensas
       });
     }
 
@@ -480,6 +509,16 @@ export async function POST(request) {
       if (iaResult.finished) {
         battle.status = 'finished';
         battle.winner = 'ia';
+
+        // Calcular recompensas (derrota)
+        const recompensas = calcularRecompensasTreino(
+          battle.poderOponente,
+          battle.dificuldade,
+          false // derrota
+        );
+
+        console.log('💰 [RECOMPENSAS] Derrota - Calculadas:', recompensas);
+        battle.rewardsApplied = true;
         battleSessions.set(battleId, battle);
 
         return NextResponse.json({
@@ -487,7 +526,8 @@ export async function POST(request) {
           ...result,
           iaAction: iaResult,
           finished: true,
-          winner: 'ia'
+          winner: 'ia',
+          recompensas
         });
       }
     }

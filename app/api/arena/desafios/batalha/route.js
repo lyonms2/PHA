@@ -276,6 +276,12 @@ export async function POST(request) {
 
     battle.battle_log = adicionarLogBatalha(battle.battle_log, result.log);
 
+    // Verificar se acabou
+    console.log('🏁 [BOSS] Verificando fim da batalha:', {
+      finished: result.finished,
+      bossHp: battle.boss.hp
+    });
+
     // ===== PROCESSAR MECÂNICAS ESPECIAIS DO BOSS =====
     if (battle.bossData?.mecanicas) {
       const mecanicasResult = processarMecanicasEspeciaisBoss({
@@ -300,8 +306,21 @@ export async function POST(request) {
 
     // Verificar se acabou
     if (result.finished) {
+      console.log('🎉 [BOSS] Batalha finalizada! Player derrotou o boss!');
       battle.status = 'finished';
       battle.winner = 'player';
+
+      // Recompensas vêm do bossData
+      const recompensas = battle.bossData?.recompensas || {
+        xp: 100,
+        vinculo: 10,
+        exaustao: 15,
+        xpCacador: 30,
+        descricao: 'Boss derrotado!'
+      };
+
+      console.log('💰 [RECOMPENSAS BOSS] Calculadas:', recompensas);
+      battle.rewardsApplied = true;
       battleSessions.set(battleId, battle);
 
       return NextResponse.json({
@@ -309,7 +328,8 @@ export async function POST(request) {
         ...result,
         finished: true,
         winner: 'player',
-        mecanicasAtivas: battle.mecanicasAtivas
+        mecanicasAtivas: battle.mecanicasAtivas,
+        recompensas
       });
     }
 
@@ -337,8 +357,21 @@ export async function POST(request) {
     }
 
     if (bossEffectsResult.finished) {
+      console.log('🎉 [BOSS] Boss morreu por efeitos!');
       battle.status = 'finished';
       battle.winner = 'player';
+
+      // Recompensas vêm do bossData
+      const recompensas = battle.bossData?.recompensas || {
+        xp: 100,
+        vinculo: 10,
+        exaustao: 15,
+        xpCacador: 30,
+        descricao: 'Boss derrotado!'
+      };
+
+      console.log('💰 [RECOMPENSAS BOSS] Boss morreu por efeitos - Calculadas:', recompensas);
+      battle.rewardsApplied = true;
       battleSessions.set(battleId, battle);
 
       return NextResponse.json({
@@ -346,7 +379,8 @@ export async function POST(request) {
         ...result,
         finished: true,
         winner: 'player',
-        mecanicasAtivas: battle.mecanicasAtivas
+        mecanicasAtivas: battle.mecanicasAtivas,
+        recompensas
       });
     }
 
@@ -423,8 +457,21 @@ export async function POST(request) {
       battle.battle_log = adicionarLogBatalha(battle.battle_log, bossResult.log);
 
       if (bossResult.finished) {
+        console.log('☠️ [BOSS] Player foi derrotado pelo boss!');
         battle.status = 'finished';
         battle.winner = 'boss';
+
+        // Recompensas reduzidas (derrota)
+        const recompensasDerrota = battle.bossData?.recompensasDerrota || {
+          xp: 20,
+          vinculo: 1,
+          exaustao: 20,
+          xpCacador: 5,
+          descricao: 'Derrotado pelo boss...'
+        };
+
+        console.log('💰 [RECOMPENSAS BOSS] Derrota - Calculadas:', recompensasDerrota);
+        battle.rewardsApplied = true;
         battleSessions.set(battleId, battle);
 
         return NextResponse.json({
@@ -433,7 +480,8 @@ export async function POST(request) {
           bossAction: bossResult,
           finished: true,
           winner: 'boss',
-          mecanicasAtivas: battle.mecanicasAtivas
+          mecanicasAtivas: battle.mecanicasAtivas,
+          recompensas: recompensasDerrota
         });
       }
     }
