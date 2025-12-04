@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 /**
  * GameNav - Componente de navegação padronizado para todas as páginas do jogo
@@ -21,6 +22,7 @@ export default function GameNav({
   compact = false
 }) {
   const router = useRouter();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Cores padrão para cada tipo de ação
   const getActionStyle = (color) => {
@@ -69,17 +71,59 @@ export default function GameNav({
 
             {/* Lado direito - Ações */}
             {actions.length > 0 && (
-              <div className="flex gap-1.5 flex-wrap">
-                {actions.map((action, index) => (
+              <div className="relative">
+                {/* Menu Desktop - Horizontal */}
+                <div className="hidden md:flex gap-1.5 flex-wrap">
+                  {actions.map((action, index) => (
+                    <button
+                      key={index}
+                      onClick={() => router.push(action.href)}
+                      className={`${compact ? 'px-2 py-1.5 text-xs gap-1' : 'px-3 py-1.5 text-xs gap-1.5'} bg-gradient-to-r ${getActionStyle(action.color)} border rounded-lg transition-all flex items-center font-semibold`}
+                    >
+                      {action.icon && <span className={compact ? 'text-sm' : ''}>{action.icon}</span>}
+                      <span>{action.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Menu Mobile - Hamburger */}
+                <div className="md:hidden">
                   <button
-                    key={index}
-                    onClick={() => router.push(action.href)}
-                    className={`${compact ? 'px-2 py-1.5 text-xs gap-1' : 'px-3 py-1.5 text-xs gap-1.5'} bg-gradient-to-r ${getActionStyle(action.color)} border rounded-lg transition-all flex items-center font-semibold`}
+                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    className="px-3 py-2 bg-slate-900/50 hover:bg-slate-800/50 border border-slate-700/50 rounded-lg transition-all text-sm font-mono flex items-center gap-2"
                   >
-                    {action.icon && <span className={compact ? 'text-sm' : ''}>{action.icon}</span>}
-                    <span>{action.label}</span>
+                    <span className="text-cyan-400 text-lg">☰</span>
+                    <span className="text-slate-400">MENU</span>
                   </button>
-                ))}
+
+                  {/* Dropdown Mobile */}
+                  {mobileMenuOpen && (
+                    <div className="absolute right-0 top-12 bg-slate-950/95 backdrop-blur-xl border border-cyan-900/30 rounded-lg shadow-2xl min-w-[200px] z-50">
+                      {actions.map((action, index) => (
+                        <button
+                          key={index}
+                          onClick={() => {
+                            router.push(action.href);
+                            setMobileMenuOpen(false);
+                          }}
+                          className={`w-full px-4 py-3 flex items-center gap-3 text-sm font-semibold border-b border-slate-800/50 last:border-b-0 transition-all ${
+                            action.color === 'red' ? 'text-red-400 hover:bg-red-900/20' :
+                            action.color === 'amber' ? 'text-amber-400 hover:bg-amber-900/20' :
+                            action.color === 'cyan' ? 'text-cyan-400 hover:bg-cyan-900/20' :
+                            action.color === 'purple' ? 'text-purple-400 hover:bg-purple-900/20' :
+                            action.color === 'indigo' ? 'text-indigo-400 hover:bg-indigo-900/20' :
+                            action.color === 'green' ? 'text-green-400 hover:bg-green-900/20' :
+                            action.color === 'gray' ? 'text-gray-400 hover:bg-gray-900/20' :
+                            'text-slate-400 hover:bg-slate-800/50'
+                          }`}
+                        >
+                          {action.icon && <span className="text-lg">{action.icon}</span>}
+                          <span>{action.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
