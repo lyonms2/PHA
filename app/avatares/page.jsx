@@ -150,6 +150,7 @@ export default function AvatarsPage() {
         subtitle={`${avatares.length} Avatares | ${avatares.filter(a => a.vivo).length} Vivos`}
         compact={true}
         actions={[
+          COMMON_ACTIONS.arena,
           COMMON_ACTIONS.mercado,
           COMMON_ACTIONS.inventario,
           COMMON_ACTIONS.fusao,

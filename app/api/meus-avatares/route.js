@@ -63,9 +63,17 @@ export async function GET(request) {
       }
 
       // Calcular tempo decorrido desde última atualização
-      const ultimaAtualizacao = avatarAtualizado.updated_at
+      let ultimaAtualizacao = avatarAtualizado.updated_at
         ? new Date(avatarAtualizado.updated_at)
-        : new Date(avatarAtualizado.created_at || agora);
+        : avatarAtualizado.created_at
+          ? new Date(avatarAtualizado.created_at)
+          : agora;
+
+      // Validar se a data é válida
+      if (isNaN(ultimaAtualizacao.getTime())) {
+        console.warn(`⚠️ Data inválida para avatar ${avatarAtualizado.nome}, usando data atual`);
+        ultimaAtualizacao = agora;
+      }
 
       const minutosPassados = Math.floor((agora - ultimaAtualizacao) / (1000 * 60));
 

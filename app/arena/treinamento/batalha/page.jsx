@@ -98,12 +98,8 @@ function BatalhaTreinoIAContent() {
     iniciar();
   }, [router]);
 
-  // Detectar fim de batalha e buscar recompensas
-  useEffect(() => {
-    if (status === 'finished' && battleId && !recompensas) {
-      buscarRecompensas();
-    }
-  }, [status, battleId]);
+  // Detectar fim de batalha já será tratado nas ações (atacar/habilidade)
+  // useEffect removido - recompensas vêm diretamente do backend
 
   // Detectar abandono (refresh ou saída)
   useEffect(() => {
@@ -130,25 +126,27 @@ function BatalhaTreinoIAContent() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [status, battleId, recompensas, visitorId, meuAvatar, dificuldade]);
 
-  // Buscar recompensas do servidor
-  const buscarRecompensas = async () => {
-    try {
-      const response = await fetch('/api/arena/treino-ia/batalha', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          battleId,
-          action: 'get_rewards'
-        })
-      });
+  // Processar fim de batalha e recompensas
+  const processarFimDeBatalha = (result) => {
+    if (result.finished && result.recompensas) {
+      setStatus('finished');
+      setWinner(result.winner);
 
-      const result = await response.json();
-      if (result.success) {
-        setRecompensas(result.recompensas);
-        setMostrarRecompensas(true);
+      // Adicionar HP original (para não perder HP no treino)
+      const recompensasComHP = {
+        ...result.recompensas,
+        vitoria: result.winner === 'player',
+        hpOriginal: myHpMax // HP volta ao máximo
+      };
+
+      setRecompensas(recompensasComHP);
+      setMostrarRecompensas(true);
+
+      if (result.winner === 'player') {
+        addLog('🎉 VITÓRIA! Você venceu a batalha!');
+      } else {
+        addLog('☠️ DERROTA! Você foi derrotado...');
       }
-    } catch (error) {
-      console.error('Erro ao buscar recompensas:', error);
     }
   };
 
@@ -319,84 +317,36 @@ function BatalhaTreinoIAContent() {
 
       const result = await response.json();
       if (result.success) {
-        if (result.iaAction === 'attack') {
-          if (result.errou) {
-            if (result.invisivel) {
-              addLog(`👻 ${iaAvatar.nome} ERROU! Você está INVISÍVEL!`);
-            } else {
-              addLog(`💨 ${iaAvatar.nome} ERROU! Você esquivou!`);
-            }
-            mostrarDanoVisual('meu', '', 'dodge');
-          } else {
-            let emoji = '⚔️';
-            let tipo = 'ATAQUE';
-            if (result.critico) { emoji = '💥'; tipo = 'CRÍTICO'; }
-            if (result.bloqueado) { emoji = '🛡️'; tipo = 'BLOQUEADO'; }
+        // Adicionar logs explícitos do backend primeiro
+        if (result.logsParaJogador && Array.isArray(result.logsParaJogador)) {
+          console.log('📜 [LOGS] Adicionando logs da IA:', result.logsParaJogador);
+          result.logsParaJogador.forEach(log => addLog(log));
+        }
 
-            addLog(`${emoji} ${iaAvatar.nome} → Você: ${tipo}! Dano: ${result.dano}`);
+        // Verificar fim de batalha DEPOIS de processar logs
+        if (result.finished || (result.iaAction && result.iaAction.finished)) {
+          processarFimDeBatalha(result);
+          return; // Não processar mais nada se a batalha acabou
+        }
 
-            if (result.elemental === 'vantagem') {
-              addLog('🔥 Super efetivo!');
-            } else if (result.elemental === 'desvantagem') {
-              addLog('💨 Pouco efetivo...');
-            }
+        // Efeitos visuais para ações da IA
+        if (result.iaAction) {
+          const iaAction = result.iaAction;
 
-            if (result.contraAtaque) {
-              addLog(`🔥🛡️ CONTRA-ATAQUE! ${iaAvatar.nome} foi queimado!`);
-            }
-
-            mostrarDanoVisual('meu', result.dano, result.critico ? 'critical' : 'damage');
-          }
-        } else if (result.iaAction === 'defend') {
-          addLog(`🛡️ ${iaAvatar.nome} defendeu (+${result.energyGained || 20} energia)`);
-        } else if (result.iaAction === 'ability') {
-          if (result.errou) {
-            if (result.invisivel) {
-              addLog(`👻 ${iaAvatar.nome} usou ${result.nomeHabilidade} mas ERROU! Você está INVISÍVEL!`);
-            } else {
-              addLog(`💨 ${iaAvatar.nome} usou ${result.nomeHabilidade} mas ERROU!`);
-            }
-            mostrarDanoVisual('meu', '', 'dodge');
-          } else {
-            let emoji = '✨';
-            let msg = `${emoji} ${iaAvatar.nome} usou ${result.nomeHabilidade}!`;
-
-            if (result.dano > 0) {
-              msg += ` Dano: ${result.dano}`;
-              if (result.numGolpes && result.numGolpes > 1) {
-                msg += ` (${result.numGolpes}× golpes)`;
-              }
-            }
-
-            if (result.cura > 0) {
-              msg += ` ❤️ Curou: ${result.cura}`;
-            }
-
-            addLog(msg);
-
-            if (result.elemental === 'vantagem') {
-              addLog('🔥 Super efetivo!');
-            } else if (result.elemental === 'desvantagem') {
-              addLog('💨 Pouco efetivo...');
-            }
-
-            if (result.contraAtaque) {
-              addLog(`🔥🛡️ CONTRA-ATAQUE! ${iaAvatar.nome} foi queimado!`);
-            }
-
-            if (result.efeitos && result.efeitos.length > 0) {
-              addLog(`✨ Efeitos: ${result.efeitos.join(', ')}`);
-            }
-
-            if (result.dano > 0) {
-              if (result.numGolpes && result.numGolpes > 1) {
-                mostrarDanoVisual('meu', `${result.dano} ×${result.numGolpes}`, 'multihit');
+          // Efeitos visuais
+          if (iaAction.action === 'attack' || iaAction.action === 'ability') {
+            if (!iaAction.errou && iaAction.dano > 0) {
+              if (iaAction.numGolpes && iaAction.numGolpes > 1) {
+                mostrarDanoVisual('meu', `${iaAction.dano} ×${iaAction.numGolpes}`, 'multihit');
               } else {
-                mostrarDanoVisual('meu', result.dano, result.critico ? 'critical' : 'damage');
+                mostrarDanoVisual('meu', iaAction.dano, iaAction.critico ? 'critical' : 'damage');
               }
+            } else if (iaAction.errou) {
+              mostrarDanoVisual('meu', '', 'dodge');
             }
           }
         }
+
         await atualizarEstado(id || battleId);
       }
     } catch (error) {
@@ -432,38 +382,27 @@ function BatalhaTreinoIAContent() {
 
       const result = await response.json();
       if (result.success) {
-        if (result.errou) {
-          if (result.invisivel) {
-            addLog(`👻 Você ERROU! ${iaAvatar.nome} está INVISÍVEL!`);
-          } else {
-            addLog(`💨 Você ERROU! ${iaAvatar.nome} esquivou!`);
-          }
-          mostrarDanoVisual('oponente', '', 'dodge');
-        } else {
-          let emoji = '⚔️';
-          let tipo = 'ATAQUE';
-          if (result.critico) { emoji = '💥'; tipo = 'CRÍTICO'; }
-          if (result.bloqueado) { emoji = '🛡️'; tipo = 'BLOQUEADO'; }
+        // Log da ação do jogador
+        if (result.log && result.log.detalhes) {
+          addLog(result.log.detalhes);
+        }
 
-          addLog(`${emoji} Você → ${iaAvatar.nome}: ${tipo}! Dano: ${result.dano}`);
+        // Logs da IA (processados automaticamente pelo backend)
+        if (result.logsParaJogador && Array.isArray(result.logsParaJogador)) {
+          console.log('📜 [LOGS ATACAR] Logs da IA:', result.logsParaJogador);
+          result.logsParaJogador.forEach(log => addLog(log));
+        }
 
-          if (result.elemental === 'vantagem') {
-            addLog('🔥 Super efetivo!');
-          } else if (result.elemental === 'desvantagem') {
-            addLog('💨 Pouco efetivo...');
-          }
-
-          if (result.contraAtaque) {
-            addLog(`🔥🛡️ CONTRA-ATAQUE! Você foi queimado!`);
-          }
-
+        if (!result.errou) {
           mostrarDanoVisual('oponente', result.dano, result.critico ? 'critical' : 'damage');
         }
 
-        // Log de energia
-        addLog(`⚡ Energia: -10 → ${result.newEnergy}`);
+        // Verificar fim de batalha
+        processarFimDeBatalha(result);
 
-        await atualizarEstado();
+        if (!result.finished) {
+          await atualizarEstado();
+        }
       } else {
         addLog(`❌ ${result.error}`);
       }
@@ -488,8 +427,17 @@ function BatalhaTreinoIAContent() {
 
       const result = await response.json();
       if (result.success) {
-        addLog(`🛡️ Você defendeu (+${result.energyGained} energia)`);
-        addLog(`⚡ Energia: +${result.energyGained} → ${result.newEnergy}`);
+        // Log da ação do jogador
+        if (result.log && result.log.detalhes) {
+          addLog(result.log.detalhes);
+        }
+
+        // Logs da IA (processados automaticamente pelo backend)
+        if (result.logsParaJogador && Array.isArray(result.logsParaJogador)) {
+          console.log('📜 [LOGS DEFENDER] Logs da IA:', result.logsParaJogador);
+          result.logsParaJogador.forEach(log => addLog(log));
+        }
+
         await atualizarEstado();
       }
     } catch (error) {
@@ -516,59 +464,32 @@ function BatalhaTreinoIAContent() {
 
       const result = await response.json();
       if (result.success) {
-        if (result.errou) {
-          if (result.invisivel) {
-            addLog(`👻 Você usou ${hab.nome} mas ERROU! ${iaAvatar.nome} está INVISÍVEL!`);
+        // Log da ação do jogador
+        if (result.log && result.log.detalhes) {
+          addLog(result.log.detalhes);
+        }
+
+        // Logs da IA (processados automaticamente pelo backend)
+        if (result.logsParaJogador && Array.isArray(result.logsParaJogador)) {
+          console.log('📜 [LOGS HABILIDADE] Logs da IA:', result.logsParaJogador);
+          result.logsParaJogador.forEach(log => addLog(log));
+        }
+
+        // Efeitos visuais
+        if (!result.errou && result.dano > 0) {
+          if (result.numGolpes && result.numGolpes > 1) {
+            mostrarDanoVisual('oponente', `${result.dano} ×${result.numGolpes}`, 'multihit');
           } else {
-            addLog(`💨 Você usou ${hab.nome} mas ERROU!`);
-          }
-          mostrarDanoVisual('oponente', '', 'dodge');
-        } else {
-          let emoji = '✨';
-          let msg = `${emoji} Você usou ${hab.nome}!`;
-
-          if (result.dano > 0) {
-            msg += ` Dano: ${result.dano}`;
-            if (result.numGolpes && result.numGolpes > 1) {
-              msg += ` (${result.numGolpes}× golpes)`;
-            }
-          }
-
-          if (result.cura > 0) {
-            msg += ` ❤️ Curou: ${result.cura}`;
-          }
-
-          addLog(msg);
-
-          if (result.elemental === 'vantagem') {
-            addLog('🔥 Super efetivo!');
-          } else if (result.elemental === 'desvantagem') {
-            addLog('💨 Pouco efetivo...');
-          }
-
-          if (result.contraAtaque) {
-            addLog(`🔥🛡️ CONTRA-ATAQUE! Você foi queimado!`);
-          }
-
-          if (result.efeitosAplicados && result.efeitosAplicados.length > 0) {
-            addLog(`✨ Efeitos: ${result.efeitosAplicados.join(', ')}`);
-          }
-
-          // Efeitos visuais
-          if (result.dano > 0) {
-            if (result.numGolpes && result.numGolpes > 1) {
-              mostrarDanoVisual('oponente', `${result.dano} ×${result.numGolpes}`, 'multihit');
-            } else {
-              mostrarDanoVisual('oponente', result.dano, result.critico ? 'critical' : 'damage');
-            }
+            mostrarDanoVisual('oponente', result.dano, result.critico ? 'critical' : 'damage');
           }
         }
 
-        // Log de energia
-        const custoEnergia = hab.custo_energia || 20;
-        addLog(`⚡ Energia: -${custoEnergia} → ${result.newEnergy}`);
+        // Verificar fim de batalha
+        processarFimDeBatalha(result);
 
-        await atualizarEstado();
+        if (!result.finished) {
+          await atualizarEstado();
+        }
       } else {
         addLog(`❌ ${result.error}`);
       }
@@ -871,7 +792,7 @@ function BatalhaTreinoIAContent() {
               <button
                 onClick={atacar}
                 disabled={!isYourTurn || myEnergy < 10 || actionInProgress}
-                className={`py-2 rounded-lg font-bold transition-all ${
+                className={`py-3 rounded-lg font-bold transition-all ${
                   isYourTurn && myEnergy >= 10 && !actionInProgress
                     ? 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 hover:scale-[1.02] active:scale-95'
                     : 'bg-slate-700 cursor-not-allowed opacity-50'
@@ -883,7 +804,7 @@ function BatalhaTreinoIAContent() {
               <button
                 onClick={defender}
                 disabled={!isYourTurn || actionInProgress}
-                className={`py-2 rounded-lg font-bold transition-all ${
+                className={`py-3 rounded-lg font-bold transition-all ${
                   isYourTurn && !actionInProgress
                     ? 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 hover:scale-[1.02] active:scale-95'
                     : 'bg-slate-700 cursor-not-allowed opacity-50'
@@ -909,7 +830,7 @@ function BatalhaTreinoIAContent() {
                         key={index}
                         onClick={() => usarHabilidade(index)}
                         disabled={!isYourTurn || myEnergy < custoEnergia || actionInProgress}
-                        className={`py-1.5 px-2 rounded text-left transition-all ${
+                        className={`py-2.5 px-2 rounded text-left transition-all ${
                           isYourTurn && myEnergy >= custoEnergia && !actionInProgress
                             ? 'bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500 hover:to-pink-500 hover:scale-[1.02] active:scale-95 border border-purple-400/30'
                             : 'bg-slate-700/50 cursor-not-allowed opacity-40 border border-slate-600/30'
@@ -997,15 +918,15 @@ function BatalhaTreinoIAContent() {
 
         {/* Log de Batalha */}
         <div className="bg-slate-950/80 rounded-xl border border-slate-700 overflow-hidden">
-          <div className="bg-slate-800/50 px-3 py-1.5 border-b border-slate-700">
-            <h3 className="text-xs font-bold text-slate-300">📜 Log de Batalha</h3>
+          <div className="bg-slate-800/50 px-4 py-2 border-b border-slate-700">
+            <h3 className="text-sm font-bold text-slate-300">📜 Log de Batalha</h3>
           </div>
-          <div className="p-2 max-h-28 overflow-y-auto space-y-0.5">
+          <div className="p-3 max-h-48 md:max-h-64 overflow-y-auto space-y-1">
             {log.length === 0 ? (
-              <div className="text-[10px] text-slate-500 text-center py-2">Aguardando ações...</div>
+              <div className="text-xs text-slate-500 text-center py-4">Aguardando ações...</div>
             ) : (
               log.map((msg, i) => (
-                <div key={i} className="text-[10px] text-slate-300 py-0.5 px-1.5 bg-slate-800/30 rounded">
+                <div key={i} className="text-xs md:text-sm text-slate-200 py-1.5 px-2.5 bg-slate-800/40 rounded border-l-2 border-cyan-500/30">
                   {msg}
                 </div>
               ))

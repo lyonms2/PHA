@@ -186,6 +186,26 @@ export async function POST(request) {
 
     // ===== PROCESSAR AÇÃO DO PLAYER =====
     let result;
+
+    // Validar estado antes de processar
+    console.log('🎮 [BATALHA] Estado antes de processar ação do jogador:', {
+      playerHp: battle.player.hp,
+      iaHp: battle.ia.hp,
+      action,
+      abilityIndex
+    });
+
+    if (battle.player.hp === undefined || battle.ia.hp === undefined) {
+      console.error('❌ [BATALHA] HP está undefined!', {
+        player: battle.player,
+        ia: battle.ia
+      });
+      return NextResponse.json(
+        { error: 'Estado de batalha corrompido - HP undefined' },
+        { status: 500 }
+      );
+    }
+
     const attacker = {
       avatar: battle.player,
       exaustao: battle.player.exaustao,
@@ -252,12 +272,22 @@ export async function POST(request) {
     }
 
     // Atualizar estado da batalha com resultado
+    console.log('📝 [BATALHA] Resultado da ação:', {
+      success: result.success,
+      action: result.action,
+      attackerHp: result.attacker?.hp,
+      defenderHp: result.defender?.hp,
+      errou: result.errou,
+      finished: result.finished
+    });
+
     if (action === 'defend') {
       battle.player = {
         ...battle.player,
         energy: result.attacker.energy,
         defending: true
       };
+      // Defend não afeta o inimigo, então não atualizamos battle.ia
     } else {
       battle.player = {
         ...battle.player,
@@ -267,40 +297,78 @@ export async function POST(request) {
         defending: false
       };
 
-      battle.ia = {
-        ...battle.ia,
-        hp: result.defender.hp,
-        efeitos: result.defender.effects,
-        defending: result.defender.defending
-      };
+      // Só atualizar IA se result.defender existir (attack/ability)
+      if (result.defender) {
+        battle.ia = {
+          ...battle.ia,
+          hp: result.defender.hp,
+          efeitos: result.defender.effects,
+          defending: result.defender.defending
+        };
+      }
     }
+
+    console.log('✅ [BATALHA] Estado atualizado após jogador:', {
+      playerHp: battle.player.hp,
+      iaHp: battle.ia.hp
+    });
 
     // Adicionar log
     battle.battle_log = adicionarLogBatalha(battle.battle_log, result.log);
 
     // Verificar se acabou
+    console.log('🏁 [BATALHA] Verificando fim da batalha:', {
+      finished: result.finished,
+      iaHp: battle.ia.hp
+    });
+
     if (result.finished) {
+      console.log('🎉 [BATALHA] Batalha finalizada! Player venceu!');
       battle.status = 'finished';
       battle.winner = 'player';
+
+      // Calcular recompensas
+      const recompensas = calcularRecompensasTreino(
+        battle.poderOponente,
+        battle.dificuldade,
+        true // vitória
+      );
+
+      console.log('💰 [RECOMPENSAS] Calculadas:', recompensas);
+      battle.rewardsApplied = true;
       battleSessions.set(battleId, battle);
 
       return NextResponse.json({
         success: true,
         ...result,
         finished: true,
-        winner: 'player'
+        winner: 'player',
+        recompensas
       });
     }
 
     // ===== TURNO DA IA =====
     battle.current_turn = 'ia';
 
+    console.log('🤖 [TURNO IA] Iniciando turno da IA');
+
     // Processar efeitos da IA (início do turno)
+    console.log('🔥 [EFEITOS IA] Processando efeitos:', {
+      iaHp: battle.ia.hp,
+      iaEffects: battle.ia.efeitos
+    });
+
     const iaEffectsResult = processEffects({
       hp: battle.ia.hp,
       hpMax: battle.ia.hp_max,
       effects: battle.ia.efeitos,
       nome: battle.ia.nome
+    });
+
+    console.log('🔥 [EFEITOS IA] Resultado:', {
+      newHp: iaEffectsResult.newHp,
+      dano: iaEffectsResult.dano,
+      cura: iaEffectsResult.cura
     });
 
     battle.ia.hp = iaEffectsResult.newHp;
@@ -318,31 +386,43 @@ export async function POST(request) {
     if (iaEffectsResult.finished) {
       battle.status = 'finished';
       battle.winner = 'player';
+
+      // Calcular recompensas (IA morreu por efeitos)
+      const recompensas = calcularRecompensasTreino(
+        battle.poderOponente,
+        battle.dificuldade,
+        true // vitória
+      );
+
+      console.log('💰 [RECOMPENSAS] IA morreu por efeitos - Calculadas:', recompensas);
+      battle.rewardsApplied = true;
       battleSessions.set(battleId, battle);
 
       return NextResponse.json({
         success: true,
         ...result,
         finished: true,
-        winner: 'player'
+        winner: 'player',
+        recompensas
       });
     }
 
     // IA escolhe ação
-    const acaoIA = escolherAcaoIA({
-      myHp: battle.ia.hp,
-      myHpMax: battle.ia.hp_max,
-      myEnergy: battle.ia.energy,
-      opponentHp: battle.player.hp,
-      opponentHpMax: battle.player.hp_max,
-      opponentEnergy: battle.player.energy,
-      myEffects: battle.ia.efeitos,
-      opponentEffects: battle.player.efeitos,
-      avatar: battle.ia,
-      personalidade: battle.personalidadeIA
+    console.log('🎯 [IA] Escolhendo ação da IA:', {
+      iaHp: battle.ia.hp,
+      playerHp: battle.player.hp
     });
 
+    const acaoIA = escolherAcaoIA(battle.ia, battle.player, battle.personalidadeIA);
+
+    console.log('🎯 [IA] Ação escolhida:', acaoIA.acao);
+
     // Processar ação da IA
+    console.log('⚙️ [IA] Construindo iaAttacker e iaDefender:', {
+      'battle.ia.hp': battle.ia.hp,
+      'battle.player.hp': battle.player.hp
+    });
+
     const iaAttacker = {
       avatar: battle.ia,
       exaustao: battle.ia.exaustao,
@@ -365,7 +445,14 @@ export async function POST(request) {
       nome: battle.player.nome
     };
 
+    console.log('⚙️ [IA] Objetos construídos:', {
+      'iaAttacker.hp': iaAttacker.hp,
+      'iaDefender.hp': iaDefender.hp
+    });
+
     let iaResult;
+    console.log('🔨 [IA] Processando ação:', acaoIA.acao);
+
     if (acaoIA.acao === 'attack') {
       iaResult = processAttack(battle, iaAttacker, iaDefender);
     } else if (acaoIA.acao === 'defend') {
@@ -381,6 +468,13 @@ export async function POST(request) {
       }
     }
 
+    console.log('📝 [IA] Resultado da ação da IA:', {
+      success: iaResult?.success,
+      action: iaResult?.action,
+      attackerHp: iaResult?.attacker?.hp,
+      defenderHp: iaResult?.defender?.hp
+    });
+
     if (iaResult && iaResult.success) {
       // Atualizar estado
       if (acaoIA.acao === 'defend') {
@@ -389,6 +483,7 @@ export async function POST(request) {
           energy: iaResult.attacker.energy,
           defending: true
         };
+        // Defend não afeta o player, então não atualizamos battle.player
       } else {
         battle.ia = {
           ...battle.ia,
@@ -398,12 +493,15 @@ export async function POST(request) {
           defending: false
         };
 
-        battle.player = {
-          ...battle.player,
-          hp: iaResult.defender.hp,
-          efeitos: iaResult.defender.effects,
-          defending: iaResult.defender.defending
-        };
+        // Só atualizar player se iaResult.defender existir (attack/ability)
+        if (iaResult.defender) {
+          battle.player = {
+            ...battle.player,
+            hp: iaResult.defender.hp,
+            efeitos: iaResult.defender.effects,
+            defending: iaResult.defender.defending
+          };
+        }
       }
 
       battle.battle_log = adicionarLogBatalha(battle.battle_log, iaResult.log);
@@ -411,14 +509,33 @@ export async function POST(request) {
       if (iaResult.finished) {
         battle.status = 'finished';
         battle.winner = 'ia';
+
+        // Calcular recompensas (derrota)
+        const recompensas = calcularRecompensasTreino(
+          battle.poderOponente,
+          battle.dificuldade,
+          false // derrota
+        );
+
+        console.log('💰 [RECOMPENSAS] Derrota - Calculadas:', recompensas);
+        battle.rewardsApplied = true;
         battleSessions.set(battleId, battle);
+
+        // Preparar logs para o jogador ver
+        const logsParaJogador = [];
+        if (iaResult && iaResult.log && iaResult.log.detalhes) {
+          logsParaJogador.push(iaResult.log.detalhes);
+        }
+        logsParaJogador.push('☠️ Você foi derrotado!');
 
         return NextResponse.json({
           success: true,
           ...result,
           iaAction: iaResult,
           finished: true,
-          winner: 'ia'
+          winner: 'ia',
+          recompensas,
+          logsParaJogador
         });
       }
     }
@@ -427,10 +544,17 @@ export async function POST(request) {
     battle.current_turn = 'player';
     battleSessions.set(battleId, battle);
 
+    // Preparar logs para o jogador ver
+    const logsParaJogador = [];
+    if (iaResult && iaResult.log && iaResult.log.detalhes) {
+      logsParaJogador.push(iaResult.log.detalhes);
+    }
+
     return NextResponse.json({
       success: true,
       ...result,
-      iaAction: iaResult
+      iaAction: iaResult,
+      logsParaJogador // Logs explícitos para adicionar no frontend
     });
 
   } catch (error) {

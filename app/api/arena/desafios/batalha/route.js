@@ -253,6 +253,7 @@ export async function POST(request) {
         energy: result.attacker.energy,
         defending: true
       };
+      // Defend não afeta o boss, então não atualizamos battle.boss
     } else {
       battle.player = {
         ...battle.player,
@@ -262,15 +263,24 @@ export async function POST(request) {
         defending: false
       };
 
-      battle.boss = {
-        ...battle.boss,
-        hp: result.defender.hp,
-        efeitos: result.defender.effects,
-        defending: result.defender.defending
-      };
+      // Só atualizar boss se result.defender existir (attack/ability)
+      if (result.defender) {
+        battle.boss = {
+          ...battle.boss,
+          hp: result.defender.hp,
+          efeitos: result.defender.effects,
+          defending: result.defender.defending
+        };
+      }
     }
 
     battle.battle_log = adicionarLogBatalha(battle.battle_log, result.log);
+
+    // Verificar se acabou
+    console.log('🏁 [BOSS] Verificando fim da batalha:', {
+      finished: result.finished,
+      bossHp: battle.boss.hp
+    });
 
     // ===== PROCESSAR MECÂNICAS ESPECIAIS DO BOSS =====
     if (battle.bossData?.mecanicas) {
@@ -296,8 +306,21 @@ export async function POST(request) {
 
     // Verificar se acabou
     if (result.finished) {
+      console.log('🎉 [BOSS] Batalha finalizada! Player derrotou o boss!');
       battle.status = 'finished';
       battle.winner = 'player';
+
+      // Recompensas vêm do bossData
+      const recompensas = battle.bossData?.recompensas || {
+        xp: 100,
+        vinculo: 10,
+        exaustao: 15,
+        xpCacador: 30,
+        descricao: 'Boss derrotado!'
+      };
+
+      console.log('💰 [RECOMPENSAS BOSS] Calculadas:', recompensas);
+      battle.rewardsApplied = true;
       battleSessions.set(battleId, battle);
 
       return NextResponse.json({
@@ -305,7 +328,8 @@ export async function POST(request) {
         ...result,
         finished: true,
         winner: 'player',
-        mecanicasAtivas: battle.mecanicasAtivas
+        mecanicasAtivas: battle.mecanicasAtivas,
+        recompensas
       });
     }
 
@@ -333,8 +357,21 @@ export async function POST(request) {
     }
 
     if (bossEffectsResult.finished) {
+      console.log('🎉 [BOSS] Boss morreu por efeitos!');
       battle.status = 'finished';
       battle.winner = 'player';
+
+      // Recompensas vêm do bossData
+      const recompensas = battle.bossData?.recompensas || {
+        xp: 100,
+        vinculo: 10,
+        exaustao: 15,
+        xpCacador: 30,
+        descricao: 'Boss derrotado!'
+      };
+
+      console.log('💰 [RECOMPENSAS BOSS] Boss morreu por efeitos - Calculadas:', recompensas);
+      battle.rewardsApplied = true;
       battleSessions.set(battleId, battle);
 
       return NextResponse.json({
@@ -342,23 +379,13 @@ export async function POST(request) {
         ...result,
         finished: true,
         winner: 'player',
-        mecanicasAtivas: battle.mecanicasAtivas
+        mecanicasAtivas: battle.mecanicasAtivas,
+        recompensas
       });
     }
 
     // Boss escolhe ação (IA agressiva para bosses)
-    const acaoBoss = escolherAcaoIA({
-      myHp: battle.boss.hp,
-      myHpMax: battle.boss.hp_max,
-      myEnergy: battle.boss.energy,
-      opponentHp: battle.player.hp,
-      opponentHpMax: battle.player.hp_max,
-      opponentEnergy: battle.player.energy,
-      myEffects: battle.boss.efeitos,
-      opponentEffects: battle.player.efeitos,
-      avatar: battle.boss,
-      personalidade: { tipo: 'agressivo', agressividade: 90 } // Bosses são sempre agressivos
-    });
+    const acaoBoss = escolherAcaoIA(battle.boss, battle.player, { tipo: 'agressivo', agressividade: 90 });
 
     // Processar ação do boss
     const bossAttacker = {
@@ -406,6 +433,7 @@ export async function POST(request) {
           energy: bossResult.attacker.energy,
           defending: true
         };
+        // Defend não afeta o player, então não atualizamos battle.player
       } else {
         battle.boss = {
           ...battle.boss,
@@ -415,19 +443,35 @@ export async function POST(request) {
           defending: false
         };
 
-        battle.player = {
-          ...battle.player,
-          hp: bossResult.defender.hp,
-          efeitos: bossResult.defender.effects,
-          defending: bossResult.defender.defending
-        };
+        // Só atualizar player se bossResult.defender existir (attack/ability)
+        if (bossResult.defender) {
+          battle.player = {
+            ...battle.player,
+            hp: bossResult.defender.hp,
+            efeitos: bossResult.defender.effects,
+            defending: bossResult.defender.defending
+          };
+        }
       }
 
       battle.battle_log = adicionarLogBatalha(battle.battle_log, bossResult.log);
 
       if (bossResult.finished) {
+        console.log('☠️ [BOSS] Player foi derrotado pelo boss!');
         battle.status = 'finished';
         battle.winner = 'boss';
+
+        // Recompensas reduzidas (derrota)
+        const recompensasDerrota = battle.bossData?.recompensasDerrota || {
+          xp: 20,
+          vinculo: 1,
+          exaustao: 20,
+          xpCacador: 5,
+          descricao: 'Derrotado pelo boss...'
+        };
+
+        console.log('💰 [RECOMPENSAS BOSS] Derrota - Calculadas:', recompensasDerrota);
+        battle.rewardsApplied = true;
         battleSessions.set(battleId, battle);
 
         return NextResponse.json({
@@ -436,7 +480,8 @@ export async function POST(request) {
           bossAction: bossResult,
           finished: true,
           winner: 'boss',
-          mecanicasAtivas: battle.mecanicasAtivas
+          mecanicasAtivas: battle.mecanicasAtivas,
+          recompensas: recompensasDerrota
         });
       }
     }

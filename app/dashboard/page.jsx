@@ -282,9 +282,9 @@ export default function DashboardPage() {
 
       <div className="relative z-10 container mx-auto px-3 py-4">
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-4 md:mb-6">
           <div>
-            <h1 className="text-3xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent mb-1">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent mb-1">
               CENTRAL DE COMANDO
             </h1>
             <p className="text-slate-400 font-mono text-xs">Bem-vindo de volta, Caçador!</p>
@@ -292,10 +292,10 @@ export default function DashboardPage() {
 
           <button
             onClick={handleLogout}
-            className="group relative px-4 py-2"
+            className="group relative flex-shrink-0"
           >
             <div className="absolute -inset-0.5 bg-gradient-to-r from-red-500/30 to-red-600/30 rounded blur opacity-50 group-hover:opacity-75 transition-opacity"></div>
-            <div className="relative px-4 py-2 bg-slate-950 rounded border border-red-500/50 group-hover:border-red-400 transition-all">
+            <div className="relative px-3 py-2 md:px-4 md:py-2 bg-slate-950 rounded border border-red-500/50 group-hover:border-red-400 transition-all">
               <span className="text-xs font-bold tracking-wider uppercase text-red-400">
                 Sair
               </span>
