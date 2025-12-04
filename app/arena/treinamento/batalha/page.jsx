@@ -323,84 +323,64 @@ function BatalhaTreinoIAContent() {
           return; // Não processar mais nada se a batalha acabou
         }
 
-        if (result.iaAction === 'attack') {
-          if (result.errou) {
-            if (result.invisivel) {
-              addLog(`👻 ${iaAvatar.nome} ERROU! Você está INVISÍVEL!`);
-            } else {
-              addLog(`💨 ${iaAvatar.nome} ERROU! Você esquivou!`);
-            }
-            mostrarDanoVisual('meu', '', 'dodge');
+        // Usar logs detalhados do backend para ações da IA
+        if (result.iaAction) {
+          const iaAction = result.iaAction;
+
+          // Usar log detalhado se disponível
+          if (iaAction.log && iaAction.log.detalhes) {
+            addLog(iaAction.log.detalhes);
           } else {
-            let emoji = '⚔️';
-            let tipo = 'ATAQUE';
-            if (result.critico) { emoji = '💥'; tipo = 'CRÍTICO'; }
-            if (result.bloqueado) { emoji = '🛡️'; tipo = 'BLOQUEADO'; }
-
-            addLog(`${emoji} ${iaAvatar.nome} → Você: ${tipo}! Dano: ${result.dano}`);
-
-            if (result.elemental === 'vantagem') {
-              addLog('🔥 Super efetivo!');
-            } else if (result.elemental === 'desvantagem') {
-              addLog('💨 Pouco efetivo...');
-            }
-
-            if (result.contraAtaque) {
-              addLog(`🔥🛡️ CONTRA-ATAQUE! ${iaAvatar.nome} foi queimado!`);
-            }
-
-            mostrarDanoVisual('meu', result.dano, result.critico ? 'critical' : 'damage');
-          }
-        } else if (result.iaAction === 'defend') {
-          addLog(`🛡️ ${iaAvatar.nome} defendeu (+${result.energyGained || 20} energia)`);
-        } else if (result.iaAction === 'ability') {
-          if (result.errou) {
-            if (result.invisivel) {
-              addLog(`👻 ${iaAvatar.nome} usou ${result.nomeHabilidade} mas ERROU! Você está INVISÍVEL!`);
-            } else {
-              addLog(`💨 ${iaAvatar.nome} usou ${result.nomeHabilidade} mas ERROU!`);
-            }
-            mostrarDanoVisual('meu', '', 'dodge');
-          } else {
-            let emoji = '✨';
-            let msg = `${emoji} ${iaAvatar.nome} usou ${result.nomeHabilidade}!`;
-
-            if (result.dano > 0) {
-              msg += ` Dano: ${result.dano}`;
-              if (result.numGolpes && result.numGolpes > 1) {
-                msg += ` (${result.numGolpes}× golpes)`;
-              }
-            }
-
-            if (result.cura > 0) {
-              msg += ` ❤️ Curou: ${result.cura}`;
-            }
-
-            addLog(msg);
-
-            if (result.elemental === 'vantagem') {
-              addLog('🔥 Super efetivo!');
-            } else if (result.elemental === 'desvantagem') {
-              addLog('💨 Pouco efetivo...');
-            }
-
-            if (result.contraAtaque) {
-              addLog(`🔥🛡️ CONTRA-ATAQUE! ${iaAvatar.nome} foi queimado!`);
-            }
-
-            if (result.efeitos && result.efeitos.length > 0) {
-              addLog(`✨ Efeitos: ${result.efeitos.join(', ')}`);
-            }
-
-            if (result.dano > 0) {
-              if (result.numGolpes && result.numGolpes > 1) {
-                mostrarDanoVisual('meu', `${result.dano} ×${result.numGolpes}`, 'multihit');
+            // Fallback para logs antigos
+            if (iaAction.action === 'attack') {
+              if (iaAction.errou) {
+                if (iaAction.invisivel) {
+                  addLog(`👻 ${iaAvatar.nome} ERROU! Você está INVISÍVEL!`);
+                } else {
+                  addLog(`💨 ${iaAvatar.nome} ERROU! Você esquivou!`);
+                }
               } else {
-                mostrarDanoVisual('meu', result.dano, result.critico ? 'critical' : 'damage');
+                let emoji = '⚔️';
+                let tipo = 'ATAQUE';
+                if (iaAction.critico) { emoji = '💥'; tipo = 'CRÍTICO'; }
+                if (iaAction.bloqueado) { emoji = '🛡️'; tipo = 'BLOQUEADO'; }
+                addLog(`${emoji} ${iaAvatar.nome} → Você: ${tipo}! Dano: ${iaAction.dano}`);
               }
+            } else if (iaAction.action === 'defend') {
+              addLog(`🛡️ ${iaAvatar.nome} defendeu (+${iaAction.energiaRecuperada || 20} energia)`);
+            } else if (iaAction.action === 'ability') {
+              if (iaAction.errou) {
+                addLog(`💨 ${iaAvatar.nome} usou ${iaAction.habilidade} mas ERROU!`);
+              } else {
+                let msg = `✨ ${iaAvatar.nome} usou ${iaAction.habilidade}!`;
+                if (iaAction.dano > 0) {
+                  msg += ` Dano: ${iaAction.dano}`;
+                  if (iaAction.numGolpes && iaAction.numGolpes > 1) {
+                    msg += ` (${iaAction.numGolpes}× golpes)`;
+                  }
+                }
+                if (iaAction.cura > 0) {
+                  msg += ` ❤️ Curou: ${iaAction.cura}`;
+                }
+                addLog(msg);
+              }
+            }
+          }
+
+          // Efeitos visuais
+          if (iaAction.action === 'attack' || iaAction.action === 'ability') {
+            if (!iaAction.errou && iaAction.dano > 0) {
+              if (iaAction.numGolpes && iaAction.numGolpes > 1) {
+                mostrarDanoVisual('meu', `${iaAction.dano} ×${iaAction.numGolpes}`, 'multihit');
+              } else {
+                mostrarDanoVisual('meu', iaAction.dano, iaAction.critico ? 'critical' : 'damage');
+              }
+            } else if (iaAction.errou) {
+              mostrarDanoVisual('meu', '', 'dodge');
             }
           }
         }
+
         await atualizarEstado(id || battleId);
       }
     } catch (error) {
