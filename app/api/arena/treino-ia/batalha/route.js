@@ -186,6 +186,26 @@ export async function POST(request) {
 
     // ===== PROCESSAR AÇÃO DO PLAYER =====
     let result;
+
+    // Validar estado antes de processar
+    console.log('🎮 [BATALHA] Estado antes de processar ação do jogador:', {
+      playerHp: battle.player.hp,
+      iaHp: battle.ia.hp,
+      action,
+      abilityIndex
+    });
+
+    if (battle.player.hp === undefined || battle.ia.hp === undefined) {
+      console.error('❌ [BATALHA] HP está undefined!', {
+        player: battle.player,
+        ia: battle.ia
+      });
+      return NextResponse.json(
+        { error: 'Estado de batalha corrompido - HP undefined' },
+        { status: 500 }
+      );
+    }
+
     const attacker = {
       avatar: battle.player,
       exaustao: battle.player.exaustao,
@@ -252,6 +272,14 @@ export async function POST(request) {
     }
 
     // Atualizar estado da batalha com resultado
+    console.log('📝 [BATALHA] Resultado da ação:', {
+      success: result.success,
+      action: result.action,
+      attackerHp: result.attacker?.hp,
+      defenderHp: result.defender?.hp,
+      errou: result.errou
+    });
+
     if (action === 'defend') {
       battle.player = {
         ...battle.player,
@@ -278,6 +306,11 @@ export async function POST(request) {
         };
       }
     }
+
+    console.log('✅ [BATALHA] Estado atualizado após jogador:', {
+      playerHp: battle.player.hp,
+      iaHp: battle.ia.hp
+    });
 
     // Adicionar log
     battle.battle_log = adicionarLogBatalha(battle.battle_log, result.log);
