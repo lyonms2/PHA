@@ -253,6 +253,7 @@ export async function POST(request) {
         energy: result.attacker.energy,
         defending: true
       };
+      // Defend não afeta o boss, então não atualizamos battle.boss
     } else {
       battle.player = {
         ...battle.player,
@@ -262,12 +263,15 @@ export async function POST(request) {
         defending: false
       };
 
-      battle.boss = {
-        ...battle.boss,
-        hp: result.defender.hp,
-        efeitos: result.defender.effects,
-        defending: result.defender.defending
-      };
+      // Só atualizar boss se result.defender existir (attack/ability)
+      if (result.defender) {
+        battle.boss = {
+          ...battle.boss,
+          hp: result.defender.hp,
+          efeitos: result.defender.effects,
+          defending: result.defender.defending
+        };
+      }
     }
 
     battle.battle_log = adicionarLogBatalha(battle.battle_log, result.log);

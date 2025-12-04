@@ -258,6 +258,7 @@ export async function POST(request) {
         energy: result.attacker.energy,
         defending: true
       };
+      // Defend não afeta o inimigo, então não atualizamos battle.ia
     } else {
       battle.player = {
         ...battle.player,
@@ -267,12 +268,15 @@ export async function POST(request) {
         defending: false
       };
 
-      battle.ia = {
-        ...battle.ia,
-        hp: result.defender.hp,
-        efeitos: result.defender.effects,
-        defending: result.defender.defending
-      };
+      // Só atualizar IA se result.defender existir (attack/ability)
+      if (result.defender) {
+        battle.ia = {
+          ...battle.ia,
+          hp: result.defender.hp,
+          efeitos: result.defender.effects,
+          defending: result.defender.defending
+        };
+      }
     }
 
     // Adicionar log
