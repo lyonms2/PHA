@@ -846,7 +846,7 @@ function BatalhaTreinoIAContent() {
               <button
                 onClick={atacar}
                 disabled={!isYourTurn || myEnergy < 10 || actionInProgress}
-                className={`py-2 rounded-lg font-bold transition-all ${
+                className={`py-3 rounded-lg font-bold transition-all ${
                   isYourTurn && myEnergy >= 10 && !actionInProgress
                     ? 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 hover:scale-[1.02] active:scale-95'
                     : 'bg-slate-700 cursor-not-allowed opacity-50'
@@ -858,7 +858,7 @@ function BatalhaTreinoIAContent() {
               <button
                 onClick={defender}
                 disabled={!isYourTurn || actionInProgress}
-                className={`py-2 rounded-lg font-bold transition-all ${
+                className={`py-3 rounded-lg font-bold transition-all ${
                   isYourTurn && !actionInProgress
                     ? 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 hover:scale-[1.02] active:scale-95'
                     : 'bg-slate-700 cursor-not-allowed opacity-50'
@@ -884,7 +884,7 @@ function BatalhaTreinoIAContent() {
                         key={index}
                         onClick={() => usarHabilidade(index)}
                         disabled={!isYourTurn || myEnergy < custoEnergia || actionInProgress}
-                        className={`py-1.5 px-2 rounded text-left transition-all ${
+                        className={`py-2.5 px-2 rounded text-left transition-all ${
                           isYourTurn && myEnergy >= custoEnergia && !actionInProgress
                             ? 'bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500 hover:to-pink-500 hover:scale-[1.02] active:scale-95 border border-purple-400/30'
                             : 'bg-slate-700/50 cursor-not-allowed opacity-40 border border-slate-600/30'
