@@ -521,13 +521,21 @@ export async function POST(request) {
         battle.rewardsApplied = true;
         battleSessions.set(battleId, battle);
 
+        // Preparar logs para o jogador ver
+        const logsParaJogador = [];
+        if (iaResult && iaResult.log && iaResult.log.detalhes) {
+          logsParaJogador.push(iaResult.log.detalhes);
+        }
+        logsParaJogador.push('☠️ Você foi derrotado!');
+
         return NextResponse.json({
           success: true,
           ...result,
           iaAction: iaResult,
           finished: true,
           winner: 'ia',
-          recompensas
+          recompensas,
+          logsParaJogador
         });
       }
     }
@@ -536,10 +544,17 @@ export async function POST(request) {
     battle.current_turn = 'player';
     battleSessions.set(battleId, battle);
 
+    // Preparar logs para o jogador ver
+    const logsParaJogador = [];
+    if (iaResult && iaResult.log && iaResult.log.detalhes) {
+      logsParaJogador.push(iaResult.log.detalhes);
+    }
+
     return NextResponse.json({
       success: true,
       ...result,
-      iaAction: iaResult
+      iaAction: iaResult,
+      logsParaJogador // Logs explícitos para adicionar no frontend
     });
 
   } catch (error) {

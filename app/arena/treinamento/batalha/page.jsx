@@ -317,55 +317,21 @@ function BatalhaTreinoIAContent() {
 
       const result = await response.json();
       if (result.success) {
-        // Verificar fim de batalha ANTES de processar logs
+        // Adicionar logs explícitos do backend primeiro
+        if (result.logsParaJogador && Array.isArray(result.logsParaJogador)) {
+          console.log('📜 [LOGS] Adicionando logs da IA:', result.logsParaJogador);
+          result.logsParaJogador.forEach(log => addLog(log));
+        }
+
+        // Verificar fim de batalha DEPOIS de processar logs
         if (result.finished || (result.iaAction && result.iaAction.finished)) {
           processarFimDeBatalha(result);
           return; // Não processar mais nada se a batalha acabou
         }
 
-        // Usar logs detalhados do backend para ações da IA
+        // Efeitos visuais para ações da IA
         if (result.iaAction) {
           const iaAction = result.iaAction;
-
-          // Usar log detalhado se disponível
-          if (iaAction.log && iaAction.log.detalhes) {
-            addLog(iaAction.log.detalhes);
-          } else {
-            // Fallback para logs antigos
-            if (iaAction.action === 'attack') {
-              if (iaAction.errou) {
-                if (iaAction.invisivel) {
-                  addLog(`👻 ${iaAvatar.nome} ERROU! Você está INVISÍVEL!`);
-                } else {
-                  addLog(`💨 ${iaAvatar.nome} ERROU! Você esquivou!`);
-                }
-              } else {
-                let emoji = '⚔️';
-                let tipo = 'ATAQUE';
-                if (iaAction.critico) { emoji = '💥'; tipo = 'CRÍTICO'; }
-                if (iaAction.bloqueado) { emoji = '🛡️'; tipo = 'BLOQUEADO'; }
-                addLog(`${emoji} ${iaAvatar.nome} → Você: ${tipo}! Dano: ${iaAction.dano}`);
-              }
-            } else if (iaAction.action === 'defend') {
-              addLog(`🛡️ ${iaAvatar.nome} defendeu (+${iaAction.energiaRecuperada || 20} energia)`);
-            } else if (iaAction.action === 'ability') {
-              if (iaAction.errou) {
-                addLog(`💨 ${iaAvatar.nome} usou ${iaAction.habilidade} mas ERROU!`);
-              } else {
-                let msg = `✨ ${iaAvatar.nome} usou ${iaAction.habilidade}!`;
-                if (iaAction.dano > 0) {
-                  msg += ` Dano: ${iaAction.dano}`;
-                  if (iaAction.numGolpes && iaAction.numGolpes > 1) {
-                    msg += ` (${iaAction.numGolpes}× golpes)`;
-                  }
-                }
-                if (iaAction.cura > 0) {
-                  msg += ` ❤️ Curou: ${iaAction.cura}`;
-                }
-                addLog(msg);
-              }
-            }
-          }
 
           // Efeitos visuais
           if (iaAction.action === 'attack' || iaAction.action === 'ability') {
