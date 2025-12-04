@@ -382,24 +382,15 @@ function BatalhaTreinoIAContent() {
 
       const result = await response.json();
       if (result.success) {
-        // Usar log detalhado do backend se disponível
+        // Log da ação do jogador
         if (result.log && result.log.detalhes) {
           addLog(result.log.detalhes);
-        } else {
-          // Fallback para logs antigos
-          if (result.errou) {
-            if (result.invisivel) {
-              addLog(`👻 Você ERROU! ${iaAvatar.nome} está INVISÍVEL!`);
-            } else {
-              addLog(`💨 Você ERROU! ${iaAvatar.nome} esquivou!`);
-            }
-          } else {
-            let emoji = '⚔️';
-            let tipo = 'ATAQUE';
-            if (result.critico) { emoji = '💥'; tipo = 'CRÍTICO'; }
-            if (result.bloqueado) { emoji = '🛡️'; tipo = 'BLOQUEADO'; }
-            addLog(`${emoji} Você → ${iaAvatar.nome}: ${tipo}! Dano: ${result.dano}`);
-          }
+        }
+
+        // Logs da IA (processados automaticamente pelo backend)
+        if (result.logsParaJogador && Array.isArray(result.logsParaJogador)) {
+          console.log('📜 [LOGS ATACAR] Logs da IA:', result.logsParaJogador);
+          result.logsParaJogador.forEach(log => addLog(log));
         }
 
         if (!result.errou) {
@@ -436,12 +427,17 @@ function BatalhaTreinoIAContent() {
 
       const result = await response.json();
       if (result.success) {
-        // Usar log detalhado do backend
+        // Log da ação do jogador
         if (result.log && result.log.detalhes) {
           addLog(result.log.detalhes);
-        } else {
-          addLog(`🛡️ Você defendeu (+${result.energiaRecuperada} energia)`);
         }
+
+        // Logs da IA (processados automaticamente pelo backend)
+        if (result.logsParaJogador && Array.isArray(result.logsParaJogador)) {
+          console.log('📜 [LOGS DEFENDER] Logs da IA:', result.logsParaJogador);
+          result.logsParaJogador.forEach(log => addLog(log));
+        }
+
         await atualizarEstado();
       }
     } catch (error) {
@@ -468,31 +464,15 @@ function BatalhaTreinoIAContent() {
 
       const result = await response.json();
       if (result.success) {
-        // Usar log detalhado do backend se disponível
+        // Log da ação do jogador
         if (result.log && result.log.detalhes) {
           addLog(result.log.detalhes);
-        } else {
-          // Fallback para logs antigos
-          if (result.errou) {
-            if (result.invisivel) {
-              addLog(`👻 Você usou ${hab.nome} mas ERROU! ${iaAvatar.nome} está INVISÍVEL!`);
-            } else {
-              addLog(`💨 Você usou ${hab.nome} mas ERROU!`);
-            }
-          } else {
-            let emoji = '✨';
-            let msg = `${emoji} Você usou ${hab.nome}!`;
-            if (result.dano > 0) {
-              msg += ` Dano: ${result.dano}`;
-              if (result.numGolpes && result.numGolpes > 1) {
-                msg += ` (${result.numGolpes}× golpes)`;
-              }
-            }
-            if (result.cura > 0) {
-              msg += ` ❤️ Curou: ${result.cura}`;
-            }
-            addLog(msg);
-          }
+        }
+
+        // Logs da IA (processados automaticamente pelo backend)
+        if (result.logsParaJogador && Array.isArray(result.logsParaJogador)) {
+          console.log('📜 [LOGS HABILIDADE] Logs da IA:', result.logsParaJogador);
+          result.logsParaJogador.forEach(log => addLog(log));
         }
 
         // Efeitos visuais
