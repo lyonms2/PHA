@@ -96,9 +96,17 @@ export default function GameNav({
                     <span className="text-slate-400">MENU</span>
                   </button>
 
+                  {/* Overlay para fechar menu */}
+                  {mobileMenuOpen && (
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setMobileMenuOpen(false)}
+                    />
+                  )}
+
                   {/* Dropdown Mobile */}
                   {mobileMenuOpen && (
-                    <div className="absolute right-0 top-12 bg-slate-950/95 backdrop-blur-xl border border-cyan-900/30 rounded-lg shadow-2xl min-w-[200px] z-50">
+                    <div className="absolute right-0 top-12 bg-slate-950/95 backdrop-blur-xl border border-cyan-900/30 rounded-lg shadow-2xl w-[200px] max-w-[90vw] z-50 max-h-[70vh] overflow-y-auto">
                       {actions.map((action, index) => (
                         <button
                           key={index}
