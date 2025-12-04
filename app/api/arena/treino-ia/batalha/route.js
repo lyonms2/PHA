@@ -393,6 +393,7 @@ export async function POST(request) {
           energy: iaResult.attacker.energy,
           defending: true
         };
+        // Defend não afeta o player, então não atualizamos battle.player
       } else {
         battle.ia = {
           ...battle.ia,
@@ -402,12 +403,15 @@ export async function POST(request) {
           defending: false
         };
 
-        battle.player = {
-          ...battle.player,
-          hp: iaResult.defender.hp,
-          efeitos: iaResult.defender.effects,
-          defending: iaResult.defender.defending
-        };
+        // Só atualizar player se iaResult.defender existir (attack/ability)
+        if (iaResult.defender) {
+          battle.player = {
+            ...battle.player,
+            hp: iaResult.defender.hp,
+            efeitos: iaResult.defender.effects,
+            defending: iaResult.defender.defending
+          };
+        }
       }
 
       battle.battle_log = adicionarLogBatalha(battle.battle_log, iaResult.log);
