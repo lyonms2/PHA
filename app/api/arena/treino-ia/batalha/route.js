@@ -332,12 +332,25 @@ export async function POST(request) {
     // ===== TURNO DA IA =====
     battle.current_turn = 'ia';
 
+    console.log('🤖 [TURNO IA] Iniciando turno da IA');
+
     // Processar efeitos da IA (início do turno)
+    console.log('🔥 [EFEITOS IA] Processando efeitos:', {
+      iaHp: battle.ia.hp,
+      iaEffects: battle.ia.efeitos
+    });
+
     const iaEffectsResult = processEffects({
       hp: battle.ia.hp,
       hpMax: battle.ia.hp_max,
       effects: battle.ia.efeitos,
       nome: battle.ia.nome
+    });
+
+    console.log('🔥 [EFEITOS IA] Resultado:', {
+      newHp: iaEffectsResult.newHp,
+      dano: iaEffectsResult.dano,
+      cura: iaEffectsResult.cura
     });
 
     battle.ia.hp = iaEffectsResult.newHp;
@@ -366,6 +379,11 @@ export async function POST(request) {
     }
 
     // IA escolhe ação
+    console.log('🎯 [IA] Escolhendo ação da IA:', {
+      iaHp: battle.ia.hp,
+      playerHp: battle.player.hp
+    });
+
     const acaoIA = escolherAcaoIA({
       myHp: battle.ia.hp,
       myHpMax: battle.ia.hp_max,
@@ -379,7 +397,14 @@ export async function POST(request) {
       personalidade: battle.personalidadeIA
     });
 
+    console.log('🎯 [IA] Ação escolhida:', acaoIA.acao);
+
     // Processar ação da IA
+    console.log('⚙️ [IA] Construindo iaAttacker e iaDefender:', {
+      'battle.ia.hp': battle.ia.hp,
+      'battle.player.hp': battle.player.hp
+    });
+
     const iaAttacker = {
       avatar: battle.ia,
       exaustao: battle.ia.exaustao,
@@ -402,7 +427,14 @@ export async function POST(request) {
       nome: battle.player.nome
     };
 
+    console.log('⚙️ [IA] Objetos construídos:', {
+      'iaAttacker.hp': iaAttacker.hp,
+      'iaDefender.hp': iaDefender.hp
+    });
+
     let iaResult;
+    console.log('🔨 [IA] Processando ação:', acaoIA.acao);
+
     if (acaoIA.acao === 'attack') {
       iaResult = processAttack(battle, iaAttacker, iaDefender);
     } else if (acaoIA.acao === 'defend') {
@@ -417,6 +449,13 @@ export async function POST(request) {
         iaResult = processAttack(battle, iaAttacker, iaDefender);
       }
     }
+
+    console.log('📝 [IA] Resultado da ação da IA:', {
+      success: iaResult?.success,
+      action: iaResult?.action,
+      attackerHp: iaResult?.attacker?.hp,
+      defenderHp: iaResult?.defender?.hp
+    });
 
     if (iaResult && iaResult.success) {
       // Atualizar estado
