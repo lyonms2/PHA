@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { updateDocument } from '@/lib/firebase/firestore';
 import { aplicarPenalidadesExaustao } from '@/app/avatares/sistemas/exhaustionSystem';
-import { testarAcertoHabilidade } from '../combat/hitChecker';
-import { calcularDanoHabilidade, calcularCuraHabilidade } from '../combat/damageCalculator';
+import { testarAcertoHabilidade } from '@/lib/combat/core/hitChecker';
+import { calcularDanoHabilidade, calcularCuraHabilidade } from '@/lib/combat/core/damageCalculator';
 import { atualizarBalanceamentoHabilidade, adicionarLogBatalha } from '../utils';
 
 /**
