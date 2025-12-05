@@ -516,9 +516,8 @@ export const TABELA_EXAUSTAO = `
 ║    Descanse para poder batalhar novamente                     ║
 ╠═══════════════════════════════════════════════════════════════╣
 ║ RECUPERAÇÃO:                                                   ║
-║   Inativo: 8 pontos/hora (automático)                         ║
-║   Desativado: 15 pontos/hora (manual)                         ║
-║   Item especial: 50 pontos instantâneo                        ║
+║   Passiva: 10 pontos/hora (offline)                           ║
+║   Botão Descansar: 50 pontos instantâneo                      ║
 ║                                                                ║
 ║ GANHO DE EXAUSTÃO:                                            ║
 ║   Combate Fácil: 2.5 pts                                      ║

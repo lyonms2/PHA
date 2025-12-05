@@ -390,15 +390,10 @@ export default function AvatarDetalhes({
                         {/* Info de Recuperação Passiva */}
                         {avatar.vivo && (
                           <div className="mt-3 p-2 bg-slate-800/50 rounded border border-slate-700/50">
-                            {!avatar.ativo && (avatar.exaustao || 0) > 0 ? (
+                            {(avatar.exaustao || 0) > 0 ? (
                               <div className="text-xs text-cyan-300 font-mono flex items-center gap-2">
                                 <span className="animate-pulse">🌙</span>
-                                <span>Recuperando passivamente (8 pts/hora)</span>
-                              </div>
-                            ) : avatar.ativo ? (
-                              <div className="text-xs text-orange-300 font-mono flex items-center gap-2">
-                                <span>⚡</span>
-                                <span>Avatar ativo não recupera exaustão</span>
+                                <span>Recupera 10 pts/hora (offline)</span>
                               </div>
                             ) : (
                               <div className="text-xs text-green-300 font-mono flex items-center gap-2">
