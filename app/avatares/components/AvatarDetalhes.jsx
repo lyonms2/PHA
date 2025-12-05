@@ -1,10 +1,7 @@
 import { useState } from 'react';
 import AvatarSVG from '../../components/AvatarSVG';
 import { aplicarPenalidadesExaustao, getNivelExaustao } from '../sistemas/exhaustionSystem';
-
-const calcularXPNecessario = (nivel) => {
-  return nivel * 100; // Fórmula linear: 100 XP por nível
-};
+import { calcularXPNecessario } from '../sistemas/progressionSystem';
 
 const getInfoExaustao = (exaustao) => {
   if (exaustao >= 100) {
