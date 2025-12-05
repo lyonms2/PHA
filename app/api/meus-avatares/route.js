@@ -31,144 +31,72 @@ export async function GET(request) {
     }
 
     // ==================== RECUPERAÇÃO PASSIVA DE EXAUSTÃO ====================
-    // Para cada avatar vivo e inativo, calcular recuperação baseada em tempo real
+    // SISTEMA SIMPLES: Recupera 10 pontos por hora automaticamente
     const avataresAtualizados = [];
     const agora = new Date();
 
-    console.log(`\n🔄 [RECUPERAÇÃO PASSIVA] Processando ${avatares?.length || 0} avatares...`);
-
     for (const avatar of (avatares || [])) {
-      // ===== INICIALIZAR HP SE NÃO EXISTIR =====
-      // Avatares antigos podem não ter hp_atual inicializado
       let avatarAtualizado = { ...avatar };
+
+      // Inicializar HP se não existir
       if (avatarAtualizado.hp_atual === undefined || avatarAtualizado.hp_atual === null) {
         const hpMaximo = (avatarAtualizado.resistencia * 10) + (avatarAtualizado.nivel * 5);
-        avatarAtualizado.hp_atual = hpMaximo; // Inicializar com HP máximo
+        avatarAtualizado.hp_atual = hpMaximo;
 
-        // Atualizar no banco de dados
         try {
           await updateDocument('avatares', avatar.id, {
             hp_atual: hpMaximo,
             updated_at: agora.toISOString()
           });
-          console.log(`✅ HP inicializado para avatar ${avatar.nome}: ${hpMaximo}`);
         } catch (err) {
-          console.error(`Erro ao inicializar HP do avatar ${avatar.nome}:`, err);
+          console.error(`Erro ao inicializar HP:`, err);
         }
       }
 
       // ===== RECUPERAÇÃO AUTOMÁTICA DE EXAUSTÃO =====
-      // Só processar para avatares vivos com exaustão > 0
       const exaustaoAtual = avatarAtualizado.exaustao || 0;
 
-      // DEBUG: Log detalhado de CADA avatar
-      console.log(`\n📋 [DEBUG] Avatar: ${avatarAtualizado.nome}`, {
-        id: avatarAtualizado.id?.substring(0, 8),
-        vivo: avatarAtualizado.vivo,
-        ativo: avatarAtualizado.ativo,
-        exaustao: exaustaoAtual,
-        updated_at: avatarAtualizado.updated_at,
-        created_at: avatarAtualizado.created_at
-      });
-
-      if (!avatarAtualizado.vivo) {
-        console.log(`❌ [SKIP] Avatar ${avatarAtualizado.nome}: Morto`);
+      // Só recupera se: vivo, exaustão > 0
+      if (!avatarAtualizado.vivo || exaustaoAtual === 0) {
         avataresAtualizados.push(avatarAtualizado);
         continue;
       }
 
-      if (exaustaoAtual === 0) {
-        console.log(`✅ [SKIP] Avatar ${avatarAtualizado.nome}: Exaustão = 0`);
-        avataresAtualizados.push(avatarAtualizado);
-        continue;
-      }
-
-      // Calcular tempo decorrido desde última atualização
-      let ultimaAtualizacao = avatarAtualizado.updated_at
+      // Calcular tempo desde última atualização
+      const ultimaAtualizacao = avatarAtualizado.updated_at
         ? new Date(avatarAtualizado.updated_at)
-        : avatarAtualizado.created_at
-          ? new Date(avatarAtualizado.created_at)
-          : agora;
+        : new Date(avatarAtualizado.created_at || agora);
 
-      // Validar se a data é válida
-      if (isNaN(ultimaAtualizacao.getTime())) {
-        console.warn(`⚠️ Data inválida para avatar ${avatarAtualizado.nome}, usando data atual`);
-        ultimaAtualizacao = agora;
-      }
+      const horasPassadas = (agora - ultimaAtualizacao) / (1000 * 60 * 60);
 
-      const minutosPassados = Math.floor((agora - ultimaAtualizacao) / (1000 * 60));
-
-      // Debug: log para ver tempo calculado
-      console.log(`⏰ [TEMPO] Avatar ${avatarAtualizado.nome}:`, {
-        agora: agora.toISOString(),
-        ultima_atualizacao: ultimaAtualizacao.toISOString(),
-        diff_ms: agora - ultimaAtualizacao,
-        minutos_passados: minutosPassados,
-        horas_passadas: (minutosPassados / 60).toFixed(2)
-      });
-
-      // Processar recuperação se passou pelo menos 1 minuto
-      if (minutosPassados < 1) {
-        if (exaustaoAtual > 0) {
-          console.log(`⏱️ [SKIP] Avatar ${avatarAtualizado.nome}: Menos de 1 min desde última atualização (${minutosPassados} min)`);
-        }
+      // Precisa ter passado pelo menos 5 minutos (0.083 horas)
+      if (horasPassadas < 0.083) {
         avataresAtualizados.push(avatarAtualizado);
         continue;
       }
 
-      const horasPassadas = minutosPassados / 60;
-
-      // Avatar INATIVO recupera automaticamente
-      // Avatar ATIVO não recupera (está sendo usado)
-      const estaAtivo = avatarAtualizado.ativo === true;
-
-      // Avatares ativos não recuperam exaustão
-      if (estaAtivo) {
-        console.log(`⏸️ [ATIVO] Avatar ${avatarAtualizado.nome}: Não recupera exaustão (está ativo)`);
-        avataresAtualizados.push(avatarAtualizado);
-        continue;
-      }
-
-      // Usar função do sistema de exaustão
-      const totalmenteInativo = true; // Avatar está desativado
-      const resultado = processarRecuperacao(exaustaoAtual, horasPassadas, totalmenteInativo, false);
-
-      const recuperacao = resultado.recuperacao;
+      // RECUPERAÇÃO SIMPLES: 10 pontos por hora
+      const recuperacao = Math.floor(horasPassadas * 10);
 
       if (recuperacao > 0) {
-        const novaExaustao = resultado.exaustao_nova;
+        const novaExaustao = Math.max(0, exaustaoAtual - recuperacao);
 
-        console.log(`✅ [RECUPERAÇÃO AUTOMÁTICA] Avatar ${avatarAtualizado.nome}:`, {
-          exaustao_antes: exaustaoAtual,
-          exaustao_depois: novaExaustao,
-          minutos_passados: minutosPassados,
-          horas_passadas: horasPassadas.toFixed(2),
-          recuperacao_aplicada: recuperacao.toFixed(2),
-          ativo: estaAtivo,
-          taxa_usada: totalmenteInativo ? '15 pts/h (descansando)' : '8 pts/h (inativo)',
-          nivel_antes: resultado.nivel_anterior.nome,
-          nivel_depois: resultado.nivel_novo.nome
-        });
+        console.log(`✅ Recuperação: ${avatarAtualizado.nome} | ${exaustaoAtual} → ${novaExaustao} (-${recuperacao} pts em ${horasPassadas.toFixed(2)}h)`);
 
-        // Atualizar no Firestore
         try {
           await updateDocument('avatares', avatarAtualizado.id, {
             exaustao: novaExaustao,
             updated_at: agora.toISOString()
           });
 
-          avataresAtualizados.push({
-            ...avatarAtualizado,
-            exaustao: novaExaustao,
-            updated_at: agora.toISOString()
-          });
-        } catch (updateError) {
-          console.error("❌ Erro ao atualizar exaustão:", updateError);
-          avataresAtualizados.push(avatarAtualizado);
+          avatarAtualizado.exaustao = novaExaustao;
+          avatarAtualizado.updated_at = agora.toISOString();
+        } catch (err) {
+          console.error(`Erro ao atualizar exaustão:`, err);
         }
-      } else {
-        avataresAtualizados.push(avatarAtualizado);
       }
+
+      avataresAtualizados.push(avatarAtualizado);
     }
 
     return NextResponse.json({
