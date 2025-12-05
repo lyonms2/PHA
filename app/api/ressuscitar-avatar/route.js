@@ -1,5 +1,12 @@
+import { NextResponse } from 'next/server';
 import { getDocument, updateDocument } from '@/lib/firebase/firestore';
 import { validarStats } from '../../avatares/sistemas/statsSystem';
+import {
+  validateRequest,
+  validateAvatarOwnership,
+  validateNoDeathMark,
+  validateResources
+} from '@/lib/api/middleware';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,35 +26,35 @@ export async function POST(request) {
   console.log("=== INICIANDO RITUAL DE RESSURREIÇÃO ===");
 
   try {
-    const { userId, avatarId } = await request.json();
+    // Validar campos obrigatórios
+    const validation = await validateRequest(request, ['userId', 'avatarId']);
+    if (!validation.valid) return validation.response;
+
+    const { userId, avatarId } = validation.body;
     console.log("Dados recebidos:", { userId, avatarId });
 
-    if (!userId || !avatarId) {
-      console.log("❌ Dados incompletos");
-      return Response.json(
-        { message: "Dados incompletos" },
+    // Validar propriedade do avatar
+    const avatarCheck = await validateAvatarOwnership(avatarId, userId);
+    if (!avatarCheck.valid) return avatarCheck.response;
+
+    const avatar = avatarCheck.avatar;
+
+    // Verificar se avatar está morto (lógica customizada)
+    if (avatar.vivo) {
+      console.error("❌ Avatar não está morto");
+      return NextResponse.json(
+        { message: "Avatar não está morto" },
         { status: 400 }
-      );
-    }
-
-    // 1. Buscar avatar morto no Firestore
-    console.log("Buscando avatar morto...");
-    const avatar = await getDocument('avatares', avatarId);
-
-    if (!avatar || avatar.user_id !== userId || avatar.vivo) {
-      console.error("❌ Avatar inválido");
-      return Response.json(
-        { message: "Avatar não encontrado ou não está morto" },
-        { status: 404 }
       );
     }
 
     console.log("✅ Avatar encontrado:", avatar.nome);
 
-    // Verificar se já tem marca da morte
-    if (avatar.marca_morte) {
+    // Validar que não tem marca da morte
+    const markCheck = validateNoDeathMark(avatar);
+    if (!markCheck.valid) {
       console.log("⚠️ Avatar já possui Marca da Morte");
-      return Response.json(
+      return NextResponse.json(
         {
           message: "Este avatar já foi ressuscitado uma vez e carrega a Marca da Morte. Não pode ser ressuscitado novamente.",
           aviso: "A morte é permanente para aqueles marcados pelo Necromante."
@@ -66,13 +73,13 @@ export async function POST(request) {
     const custo = custos[avatar.raridade] || custos['Comum'];
     console.log("Custo do ritual:", custo);
 
-    // 3. Verificar se jogador tem recursos no Firestore
+    // 3. Verificar recursos do jogador
     console.log("Buscando recursos do jogador...");
     const stats = await getDocument('player_stats', userId);
 
     if (!stats) {
       console.log("❌ Stats não encontrados");
-      return Response.json(
+      return NextResponse.json(
         { message: "Jogador não encontrado" },
         { status: 404 }
       );
@@ -80,16 +87,11 @@ export async function POST(request) {
 
     console.log("✅ Recursos do jogador:", stats);
 
-    if (stats.moedas < custo.moedas || stats.fragmentos < custo.fragmentos) {
+    // Validar recursos suficientes
+    const resourceCheck = validateResources(stats, custo);
+    if (!resourceCheck.valid) {
       console.log("❌ Recursos insuficientes");
-      return Response.json(
-        {
-          message: "Recursos insuficientes para o ritual de ressurreição",
-          necessario: custo,
-          atual: { moedas: stats.moedas, fragmentos: stats.fragmentos }
-        },
-        { status: 400 }
-      );
+      return resourceCheck.response;
     }
 
     // 4. CALCULAR PENALIDADES BALANCEADAS

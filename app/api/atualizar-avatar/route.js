@@ -5,17 +5,15 @@ import { NextResponse } from 'next/server';
 import { getDocument, updateDocument } from '@/lib/firebase/firestore';
 import { processarGanhoXP } from '@/app/avatares/sistemas/progressionSystem';
 import { getNivelVinculo } from '@/app/avatares/sistemas/bondSystem';
+import { validateRequest } from '@/lib/api/middleware';
 
 export async function POST(request) {
   try {
-    const { avatarId, experiencia, exaustao, vinculo, hp_atual, nivel, forca, agilidade, resistencia, foco } = await request.json();
+    // Validar que avatarId está presente
+    const validation = await validateRequest(request, ['avatarId']);
+    if (!validation.valid) return validation.response;
 
-    if (!avatarId) {
-      return NextResponse.json(
-        { message: 'avatarId é obrigatório' },
-        { status: 400 }
-      );
-    }
+    const { avatarId, experiencia, exaustao, vinculo, hp_atual, nivel, forca, agilidade, resistencia, foco } = validation.body;
 
     // Buscar avatar atual do Firestore
     const avatarAtual = await getDocument('avatares', avatarId);

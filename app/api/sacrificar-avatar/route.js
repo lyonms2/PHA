@@ -1,4 +1,9 @@
-import { getDocument, updateDocument } from '@/lib/firebase/firestore';
+import { NextResponse } from 'next/server';
+import { updateDocument } from '@/lib/firebase/firestore';
+import {
+  validateRequest,
+  validateAvatarOwnership
+} from '@/lib/api/middleware';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,28 +19,21 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request) {
   try {
-    const { userId, avatarId } = await request.json();
+    // Validar campos obrigatórios
+    const validation = await validateRequest(request, ['userId', 'avatarId']);
+    if (!validation.valid) return validation.response;
 
-    if (!userId || !avatarId) {
-      return Response.json(
-        { message: "userId e avatarId são obrigatórios" },
-        { status: 400 }
-      );
-    }
+    const { userId, avatarId } = validation.body;
 
-    // Verificar se o avatar pertence ao usuário no Firestore
-    const avatar = await getDocument('avatares', avatarId);
+    // Validar propriedade do avatar
+    const avatarCheck = await validateAvatarOwnership(avatarId, userId);
+    if (!avatarCheck.valid) return avatarCheck.response;
 
-    if (!avatar || avatar.user_id !== userId) {
-      return Response.json(
-        { message: "Avatar não encontrado ou não pertence a você" },
-        { status: 404 }
-      );
-    }
+    const avatar = avatarCheck.avatar;
 
     // Não pode sacrificar avatar ativo
     if (avatar.ativo) {
-      return Response.json(
+      return NextResponse.json(
         { message: "Não é possível sacrificar o avatar ativo" },
         { status: 400 }
       );

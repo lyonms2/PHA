@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getDocument, updateDocument } from '@/lib/firebase/firestore';
+import {
+  validateRequest,
+  validateAvatarOwnership,
+  validateAvatarName
+} from '@/lib/api/middleware';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,66 +21,25 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request) {
   try {
-    const body = await request.json();
-    const { userId, avatarId, novoNome } = body;
+    // Validar campos obrigatórios
+    const validation = await validateRequest(request, ['userId', 'avatarId', 'novoNome']);
+    if (!validation.valid) return validation.response;
 
+    const { userId, avatarId, novoNome } = validation.body;
     console.log('[RENOMEAR AVATAR]', { userId, avatarId, novoNome });
 
-    // Validações básicas
-    if (!userId || !avatarId || !novoNome) {
-      return NextResponse.json(
-        { error: 'userId, avatarId e novoNome são obrigatórios' },
-        { status: 400 }
-      );
-    }
-
     // Validar nome
-    const nomeValidado = novoNome.trim();
-
-    if (nomeValidado.length < 3) {
-      return NextResponse.json(
-        { error: 'O nome deve ter no mínimo 3 caracteres' },
-        { status: 400 }
-      );
+    const nameCheck = validateAvatarName(novoNome);
+    if (!nameCheck.valid) {
+      return NextResponse.json({ error: nameCheck.error }, { status: 400 });
     }
+    const nomeValidado = nameCheck.nome;
 
-    if (nomeValidado.length > 30) {
-      return NextResponse.json(
-        { error: 'O nome deve ter no máximo 30 caracteres' },
-        { status: 400 }
-      );
-    }
+    // Validar propriedade do avatar
+    const avatarCheck = await validateAvatarOwnership(avatarId, userId);
+    if (!avatarCheck.valid) return avatarCheck.response;
 
-    // Validar caracteres (permitir letras, números, espaços, hífens, apóstrofos)
-    const regexNomeValido = /^[a-zA-ZÀ-ÿ0-9\s'\-]+$/;
-    if (!regexNomeValido.test(nomeValidado)) {
-      return NextResponse.json(
-        { error: 'O nome contém caracteres inválidos. Use apenas letras, números, espaços, hífens e apóstrofos' },
-        { status: 400 }
-      );
-    }
-
-    // Buscar avatar no Firestore
-    const avatar = await getDocument('avatares', avatarId);
-
-    if (!avatar) {
-      console.error('[RENOMEAR AVATAR] Avatar não encontrado:', avatarId);
-      return NextResponse.json(
-        { error: 'Avatar não encontrado' },
-        { status: 404 }
-      );
-    }
-
-    // Verificar se o avatar pertence ao usuário
-    if (avatar.user_id !== userId) {
-      console.error('[RENOMEAR AVATAR] Avatar não pertence ao usuário:', { userId, avatarUserId: avatar.user_id });
-      return NextResponse.json(
-        { error: 'Este avatar não pertence a você' },
-        { status: 403 }
-      );
-    }
-
-    // Guardar nome antigo para log
+    const avatar = avatarCheck.avatar;
     const nomeAntigo = avatar.nome;
 
     // Atualizar nome no Firestore

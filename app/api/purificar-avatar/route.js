@@ -1,5 +1,12 @@
+import { NextResponse } from 'next/server';
 import { getDocument, updateDocument } from '@/lib/firebase/firestore';
 import { validarStats } from '../../avatares/sistemas/statsSystem';
+import {
+  validateRequest,
+  validateAvatarOwnership,
+  validateAvatarIsAlive,
+  validateResources
+} from '@/lib/api/middleware';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,26 +27,29 @@ export async function POST(request) {
   console.log("=== INICIANDO RITUAL DE PURIFICAÇÃO ===");
 
   try {
-    const { userId, avatarId } = await request.json();
+    // Validar campos obrigatórios
+    const validation = await validateRequest(request, ['userId', 'avatarId']);
+    if (!validation.valid) return validation.response;
+
+    const { userId, avatarId } = validation.body;
     console.log("Dados recebidos:", { userId, avatarId });
 
-    if (!userId || !avatarId) {
-      console.log("❌ Dados incompletos");
-      return Response.json(
-        { message: "Dados incompletos" },
+    // Validar propriedade do avatar
+    const avatarCheck = await validateAvatarOwnership(avatarId, userId);
+    if (!avatarCheck.valid) return avatarCheck.response;
+
+    const avatar = avatarCheck.avatar;
+
+    // Validar que avatar está vivo
+    const aliveCheck = validateAvatarIsAlive(avatar);
+    if (!aliveCheck.valid) return aliveCheck.response;
+
+    // Verificar se tem marca da morte (lógica customizada)
+    if (!avatar.marca_morte) {
+      console.error("❌ Avatar não possui Marca da Morte");
+      return NextResponse.json(
+        { message: "Avatar não possui Marca da Morte" },
         { status: 400 }
-      );
-    }
-
-    // 1. Buscar avatar vivo com marca da morte no Firestore
-    console.log("Buscando avatar marcado...");
-    const avatar = await getDocument('avatares', avatarId);
-
-    if (!avatar || avatar.user_id !== userId || !avatar.vivo || !avatar.marca_morte) {
-      console.error("❌ Avatar inválido");
-      return Response.json(
-        { message: "Avatar não encontrado ou não possui Marca da Morte" },
-        { status: 404 }
       );
     }
 
@@ -55,13 +65,13 @@ export async function POST(request) {
     const custo = custos[avatar.raridade] || custos['Comum'];
     console.log("Custo do ritual:", custo);
 
-    // 3. Verificar se jogador tem recursos no Firestore
+    // 3. Verificar recursos do jogador
     console.log("Buscando recursos do jogador...");
     const stats = await getDocument('player_stats', userId);
 
     if (!stats) {
       console.error("❌ Stats não encontrados");
-      return Response.json(
+      return NextResponse.json(
         { message: "Jogador não encontrado" },
         { status: 404 }
       );
@@ -69,16 +79,11 @@ export async function POST(request) {
 
     console.log("✅ Recursos do jogador:", stats);
 
-    if (stats.moedas < custo.moedas || stats.fragmentos < custo.fragmentos) {
+    // Validar recursos suficientes
+    const resourceCheck = validateResources(stats, custo);
+    if (!resourceCheck.valid) {
       console.log("❌ Recursos insuficientes");
-      return Response.json(
-        {
-          message: "Recursos insuficientes para o ritual de purificação",
-          necessario: custo,
-          atual: { moedas: stats.moedas, fragmentos: stats.fragmentos }
-        },
-        { status: 400 }
-      );
+      return resourceCheck.response;
     }
 
     // 4. CALCULAR MELHORIAS (Restaura 50% do que foi perdido)
