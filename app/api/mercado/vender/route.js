@@ -1,4 +1,5 @@
 import { getDocument, updateDocument } from "@/lib/firebase/firestore";
+import { trackMissionProgress } from '@/lib/missions/missionTracker';
 
 export async function POST(request) {
   try {
@@ -99,6 +100,9 @@ export async function POST(request) {
       preco_venda: moedasValor > 0 ? moedasValor : null,
       preco_fragmentos: fragmentosValor > 0 ? fragmentosValor : null
     });
+
+    // Rastrear progresso de missões (não bloqueia se falhar)
+    trackMissionProgress(userId, 'VENDER_AVATAR', 1);
 
     return Response.json({
       message: "Avatar colocado à venda com sucesso!",

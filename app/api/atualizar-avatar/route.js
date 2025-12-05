@@ -6,6 +6,7 @@ import { getDocument, updateDocument } from '@/lib/firebase/firestore';
 import { processarGanhoXP } from '@/app/avatares/sistemas/progressionSystem';
 import { getNivelVinculo } from '@/app/avatares/sistemas/bondSystem';
 import { validateRequest } from '@/lib/api/middleware';
+import { trackMissionProgress } from '@/lib/missions/missionTracker';
 
 export async function POST(request) {
   try {
@@ -57,6 +58,12 @@ export async function POST(request) {
           resistencia,
           foco
         });
+
+        // Rastrear progresso de missões (não bloqueia se falhar)
+        // Rastrear cada nível ganho
+        if (avatarAtual.user_id) {
+          trackMissionProgress(avatarAtual.user_id, 'GANHAR_NIVEL', resultadoXP.levelUps);
+        }
       }
     }
 
@@ -84,6 +91,11 @@ export async function POST(request) {
         nivel: nivelVinculo.nome,
         mudouNivel: mudouNivelVinculo
       });
+
+      // Rastrear progresso de missões se nível de vínculo aumentou
+      if (mudouNivelVinculo && avatarAtual.user_id) {
+        trackMissionProgress(avatarAtual.user_id, 'AUMENTAR_VINCULO', 1);
+      }
     }
 
     // === ATUALIZAR AVATAR NO BANCO ===

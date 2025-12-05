@@ -84,11 +84,9 @@ export async function POST(request) {
         raridade: avatar.raridade || 'comum',
         ...statsComPenalidades // Stats com penalidades de exaustão aplicadas
       },
-      host_bet: 0, // Aposta do host (será definida antes de iniciar)
       guest_user_id: null,
       guest_nome: null,
       guest_avatar: null,
-      guest_bet: 0,
       status: 'waiting', // waiting, ready, active, finished
       host_ready: false,
       guest_ready: false,

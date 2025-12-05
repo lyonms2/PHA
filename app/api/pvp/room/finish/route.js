@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDocument, updateDocument } from '@/lib/firebase/firestore';
 import { calcularRecompensasPVP } from '@/lib/pvp/pvpRewardsSystem';
+import { trackMissionProgress } from '@/lib/missions/missionTracker';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,24 +48,20 @@ export async function POST(request) {
     const hostWon = winner === 'host';
     const hostAvatar = room.host_avatar;
     const guestAvatar = room.guest_avatar;
-    const hostBet = room.host_bet || 0;
-    const guestBet = room.guest_bet || 0;
 
-    // Calcular recompensas para host
+    // Calcular recompensas para host (sem apostas)
     const hostRecompensas = calcularRecompensasPVP(
       hostAvatar,
       guestAvatar,
       hostWon,
-      hostBet,
       !hostWon && rendeu // Host se rendeu se perdeu e rendeu = true
     );
 
-    // Calcular recompensas para guest
+    // Calcular recompensas para guest (sem apostas)
     const guestRecompensas = calcularRecompensasPVP(
       guestAvatar,
       hostAvatar,
       !hostWon,
-      guestBet,
       hostWon && rendeu // Guest se rendeu se perdeu e rendeu = true
     );
 
@@ -101,23 +98,19 @@ export async function POST(request) {
     // Atualizar stats do host player
     const novoHostFama = Math.max(0, (hostPlayerStats.fama || 0) + hostRecompensas.fama);
     const novoHostHunterXP = Math.max(0, (hostPlayerStats.hunterRankXp || 0) + hostRecompensas.xpCacador);
-    const novoHostMoedas = Math.max(0, (hostPlayerStats.moedas || 0) + hostRecompensas.moedas);
 
     await updateDocument('player_stats', room.host_user_id, {
       fama: novoHostFama,
-      hunterRankXp: novoHostHunterXP,
-      moedas: novoHostMoedas
+      hunterRankXp: novoHostHunterXP
     });
 
     // Atualizar stats do guest player
     const novoGuestFama = Math.max(0, (guestPlayerStats.fama || 0) + guestRecompensas.fama);
     const novoGuestHunterXP = Math.max(0, (guestPlayerStats.hunterRankXp || 0) + guestRecompensas.xpCacador);
-    const novoGuestMoedas = Math.max(0, (guestPlayerStats.moedas || 0) + guestRecompensas.moedas);
 
     await updateDocument('player_stats', room.guest_user_id, {
       fama: novoGuestFama,
-      hunterRankXp: novoGuestHunterXP,
-      moedas: novoGuestMoedas
+      hunterRankXp: novoGuestHunterXP
     });
 
     // Marcar sala como finalizada
@@ -127,6 +120,18 @@ export async function POST(request) {
       rendeu,
       finished_at: new Date().toISOString()
     });
+
+    // Rastrear progresso de missões (não bloqueia se falhar)
+    // Ambos os jogadores participaram do PVP
+    trackMissionProgress(room.host_user_id, 'PARTICIPAR_PVP', 1);
+    trackMissionProgress(room.guest_user_id, 'PARTICIPAR_PVP', 1);
+
+    // Apenas o vencedor ganha crédito por vitória
+    if (hostWon) {
+      trackMissionProgress(room.host_user_id, 'VITORIA_PVP', 1);
+    } else {
+      trackMissionProgress(room.guest_user_id, 'VITORIA_PVP', 1);
+    }
 
     return NextResponse.json({
       success: true,
@@ -143,8 +148,7 @@ export async function POST(request) {
           },
           player: {
             fama: novoHostFama,
-            hunterRankXp: novoHostHunterXP,
-            moedas: novoHostMoedas
+            hunterRankXp: novoHostHunterXP
           }
         }
       },
@@ -159,8 +163,7 @@ export async function POST(request) {
           },
           player: {
             fama: novoGuestFama,
-            hunterRankXp: novoGuestHunterXP,
-            moedas: novoGuestMoedas
+            hunterRankXp: novoGuestHunterXP
           }
         }
       }

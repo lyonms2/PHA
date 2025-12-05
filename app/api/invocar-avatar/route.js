@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDocument, getDocuments, createDocument, updateDocument } from "@/lib/firebase/firestore";
 import { validateRequest } from '@/lib/api/middleware';
+import { trackMissionProgress } from '@/lib/missions/missionTracker';
 
 // Importar sistemas
 import { ELEMENTOS, aplicarBonusElemental } from '../../avatares/sistemas/elementalSystem';
@@ -312,6 +313,16 @@ export async function POST(request) {
     }
 
     console.log("✅ Invocação concluída com sucesso!");
+
+    // Rastrear progresso de missões (não bloqueia se falhar)
+    trackMissionProgress(userId, 'INVOCAR_AVATAR', 1);
+
+    // Rastrear raridade específica
+    if (avatar.raridade === 'Lendário') {
+      trackMissionProgress(userId, 'INVOCAR_LENDARIO', 1);
+    } else if (avatar.raridade === 'Raro') {
+      trackMissionProgress(userId, 'INVOCAR_RARO', 1);
+    }
 
     return Response.json({
       message: mensagemEspecial,

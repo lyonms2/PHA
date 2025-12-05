@@ -1,6 +1,7 @@
 import { getDocRef, executeTransaction, getDocuments, getDocument } from "@/lib/firebase/firestore";
 import { getDoc, updateDoc, increment } from 'firebase/firestore';
 import { getHunterRank, aplicarDescontoMercado } from '@/lib/hunter/hunterRankSystem';
+import { trackMissionProgress } from '@/lib/missions/missionTracker';
 
 export async function POST(request) {
   try {
@@ -139,6 +140,9 @@ export async function POST(request) {
         saldo_fragmentos_restante: saldoFragmentos - precoFragmentos
       };
     });
+
+    // Rastrear progresso de missões (não bloqueia se falhar)
+    trackMissionProgress(compradorId, 'COMPRAR_AVATAR', 1);
 
     return Response.json({
       message: "Avatar comprado com sucesso!",
