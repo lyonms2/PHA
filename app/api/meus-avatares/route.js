@@ -61,7 +61,24 @@ export async function GET(request) {
       // Só processar para avatares vivos com exaustão > 0
       const exaustaoAtual = avatarAtualizado.exaustao || 0;
 
-      if (!avatarAtualizado.vivo || exaustaoAtual === 0) {
+      // DEBUG: Log detalhado de CADA avatar
+      console.log(`\n📋 [DEBUG] Avatar: ${avatarAtualizado.nome}`, {
+        id: avatarAtualizado.id?.substring(0, 8),
+        vivo: avatarAtualizado.vivo,
+        ativo: avatarAtualizado.ativo,
+        exaustao: exaustaoAtual,
+        updated_at: avatarAtualizado.updated_at,
+        created_at: avatarAtualizado.created_at
+      });
+
+      if (!avatarAtualizado.vivo) {
+        console.log(`❌ [SKIP] Avatar ${avatarAtualizado.nome}: Morto`);
+        avataresAtualizados.push(avatarAtualizado);
+        continue;
+      }
+
+      if (exaustaoAtual === 0) {
+        console.log(`✅ [SKIP] Avatar ${avatarAtualizado.nome}: Exaustão = 0`);
         avataresAtualizados.push(avatarAtualizado);
         continue;
       }
@@ -81,15 +98,14 @@ export async function GET(request) {
 
       const minutosPassados = Math.floor((agora - ultimaAtualizacao) / (1000 * 60));
 
-      // Debug: log para ver se está processando
-      if (exaustaoAtual > 0) {
-        console.log(`[EXAUSTÃO] Avatar ${avatarAtualizado.nome}:`, {
-          exaustao: exaustaoAtual,
-          ativo: avatarAtualizado.ativo,
-          minutos_passados: minutosPassados,
-          ultima_atualizacao: ultimaAtualizacao.toISOString()
-        });
-      }
+      // Debug: log para ver tempo calculado
+      console.log(`⏰ [TEMPO] Avatar ${avatarAtualizado.nome}:`, {
+        agora: agora.toISOString(),
+        ultima_atualizacao: ultimaAtualizacao.toISOString(),
+        diff_ms: agora - ultimaAtualizacao,
+        minutos_passados: minutosPassados,
+        horas_passadas: (minutosPassados / 60).toFixed(2)
+      });
 
       // Processar recuperação se passou pelo menos 1 minuto
       if (minutosPassados < 1) {
