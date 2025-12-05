@@ -23,10 +23,13 @@ export function useAvatarOperations(user, setModalConfirmacao, setModalLevelUp) 
   const carregarAvatares = async (userId) => {
     try {
       setLoading(true);
+      console.log('🔵 [FRONTEND] Chamando API /api/meus-avatares com userId:', userId);
       const response = await fetch(`/api/meus-avatares?userId=${userId}&t=${Date.now()}`);
+      console.log('🔵 [FRONTEND] Resposta recebida, status:', response.status);
       const data = await response.json();
 
       if (response.ok) {
+        console.log('🔵 [FRONTEND] Avatares recebidos:', data.avatares?.length || 0);
         // Verificar level ups
         const niveisAnteriores = JSON.parse(localStorage.getItem('avatares_niveis') || '{}');
         const avatarAtivo = data.avatares.find(av => av.ativo && av.vivo);
