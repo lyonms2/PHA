@@ -1,5 +1,7 @@
+import { NextResponse } from 'next/server';
 import { getDocuments, getDocument, updateDocument, deleteDocument } from "@/lib/firebase/firestore";
 import { processarRecuperacao } from "@/app/avatares/sistemas/exhaustionSystem";
+import { validateRequest, validateAvatarOwnership, validateAvatarIsAlive } from '@/lib/api/middleware';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +11,7 @@ export async function GET(request) {
     const userId = url.searchParams.get('userId');
 
     if (!userId) {
-      return Response.json(
+      return NextResponse.json(
         { message: "ID do usuário é obrigatório" },
         { status: 400 }
       );
@@ -22,7 +24,7 @@ export async function GET(request) {
 
     if (!avatares) {
       console.error("Erro ao buscar avatares");
-      return Response.json(
+      return NextResponse.json(
         { message: "Erro ao buscar avatares" },
         { status: 500 }
       );
@@ -32,6 +34,8 @@ export async function GET(request) {
     // Para cada avatar vivo e inativo, calcular recuperação baseada em tempo real
     const avataresAtualizados = [];
     const agora = new Date();
+
+    console.log(`\n🔄 [RECUPERAÇÃO PASSIVA] Processando ${avatares?.length || 0} avatares...`);
 
     for (const avatar of (avatares || [])) {
       // ===== INICIALIZAR HP SE NÃO EXISTIR =====
@@ -57,7 +61,24 @@ export async function GET(request) {
       // Só processar para avatares vivos com exaustão > 0
       const exaustaoAtual = avatarAtualizado.exaustao || 0;
 
-      if (!avatarAtualizado.vivo || exaustaoAtual === 0) {
+      // DEBUG: Log detalhado de CADA avatar
+      console.log(`\n📋 [DEBUG] Avatar: ${avatarAtualizado.nome}`, {
+        id: avatarAtualizado.id?.substring(0, 8),
+        vivo: avatarAtualizado.vivo,
+        ativo: avatarAtualizado.ativo,
+        exaustao: exaustaoAtual,
+        updated_at: avatarAtualizado.updated_at,
+        created_at: avatarAtualizado.created_at
+      });
+
+      if (!avatarAtualizado.vivo) {
+        console.log(`❌ [SKIP] Avatar ${avatarAtualizado.nome}: Morto`);
+        avataresAtualizados.push(avatarAtualizado);
+        continue;
+      }
+
+      if (exaustaoAtual === 0) {
+        console.log(`✅ [SKIP] Avatar ${avatarAtualizado.nome}: Exaustão = 0`);
         avataresAtualizados.push(avatarAtualizado);
         continue;
       }
@@ -77,39 +98,56 @@ export async function GET(request) {
 
       const minutosPassados = Math.floor((agora - ultimaAtualizacao) / (1000 * 60));
 
-      // Debug: log para ver se está processando
-      if (exaustaoAtual > 0) {
-        console.log(`[EXAUSTÃO] Avatar ${avatarAtualizado.nome}:`, {
-          exaustao: exaustaoAtual,
-          ativo: avatarAtualizado.ativo,
-          minutos_passados: minutosPassados,
-          ultima_atualizacao: ultimaAtualizacao.toISOString()
-        });
-      }
+      // Debug: log para ver tempo calculado
+      console.log(`⏰ [TEMPO] Avatar ${avatarAtualizado.nome}:`, {
+        agora: agora.toISOString(),
+        ultima_atualizacao: ultimaAtualizacao.toISOString(),
+        diff_ms: agora - ultimaAtualizacao,
+        minutos_passados: minutosPassados,
+        horas_passadas: (minutosPassados / 60).toFixed(2)
+      });
 
       // Processar recuperação se passou pelo menos 1 minuto
       if (minutosPassados < 1) {
+        if (exaustaoAtual > 0) {
+          console.log(`⏱️ [SKIP] Avatar ${avatarAtualizado.nome}: Menos de 1 min desde última atualização (${minutosPassados} min)`);
+        }
         avataresAtualizados.push(avatarAtualizado);
         continue;
       }
 
       const horasPassadas = minutosPassados / 60;
 
-      // Avatar ATIVO não recupera (está em uso)
-      // Avatar INATIVO recupera automaticamente (8 pontos/hora)
+      // Avatar INATIVO recupera automaticamente
+      // Avatar ATIVO não recupera (está sendo usado)
       const estaAtivo = avatarAtualizado.ativo === true;
-      const taxaRecuperacao = estaAtivo ? 0 : 8; // pontos por hora
-      const recuperacao = taxaRecuperacao * horasPassadas;
+
+      // Avatares ativos não recuperam exaustão
+      if (estaAtivo) {
+        console.log(`⏸️ [ATIVO] Avatar ${avatarAtualizado.nome}: Não recupera exaustão (está ativo)`);
+        avataresAtualizados.push(avatarAtualizado);
+        continue;
+      }
+
+      // Usar função do sistema de exaustão
+      const totalmenteInativo = true; // Avatar está desativado
+      const resultado = processarRecuperacao(exaustaoAtual, horasPassadas, totalmenteInativo, false);
+
+      const recuperacao = resultado.recuperacao;
 
       if (recuperacao > 0) {
-        const novaExaustao = Math.max(0, exaustaoAtual - recuperacao);
+        const novaExaustao = resultado.exaustao_nova;
 
         console.log(`✅ [RECUPERAÇÃO AUTOMÁTICA] Avatar ${avatarAtualizado.nome}:`, {
           exaustao_antes: exaustaoAtual,
           exaustao_depois: novaExaustao,
           minutos_passados: minutosPassados,
-          recuperacao_aplicada: recuperacao,
-          ativo: estaAtivo
+          horas_passadas: horasPassadas.toFixed(2),
+          recuperacao_aplicada: recuperacao.toFixed(2),
+          ativo: estaAtivo,
+          taxa_usada: totalmenteInativo ? '15 pts/h (descansando)' : '8 pts/h (inativo)',
+          nivel_antes: resultado.nivel_anterior.nome,
+          nivel_depois: resultado.nivel_novo.nome
         });
 
         // Atualizar no Firestore
@@ -133,13 +171,13 @@ export async function GET(request) {
       }
     }
 
-    return Response.json({
+    return NextResponse.json({
       avatares: avataresAtualizados,
       total: avataresAtualizados.length
     });
   } catch (error) {
     console.error("Erro no servidor:", error);
-    return Response.json(
+    return NextResponse.json(
       { message: "Erro ao processar: " + error.message },
       { status: 500 }
     );
@@ -151,37 +189,30 @@ export async function PUT(request) {
   console.log(`\n[ATIVAR AVATAR] ====== REQUISIÇÃO em ${requestTime} ======`);
 
   try {
-    const body = await request.json();
-    const { userId, avatarId } = body;
+    // Validar campos obrigatórios
+    const validation = await validateRequest(request, ['userId', 'avatarId']);
+    if (!validation.valid) return validation.response;
+
+    const { userId, avatarId } = validation.body;
 
     console.log(`[ATIVAR AVATAR] userId=${userId?.substring(0, 8)}, avatarId=${avatarId?.substring(0, 8)}`);
 
-    if (!userId || !avatarId) {
-      return Response.json(
-        { message: "userId e avatarId são obrigatórios" },
-        { status: 400 }
-      );
-    }
-
-    // Verificar se o avatar existe, pertence ao usuário e está vivo
-    const avatarToActivate = await getDocument('avatares', avatarId);
-
-    if (!avatarToActivate || avatarToActivate.user_id !== userId) {
+    // Validar propriedade do avatar
+    const avatarCheck = await validateAvatarOwnership(avatarId, userId);
+    if (!avatarCheck.valid) {
       console.log(`[ATIVAR AVATAR] ❌ Avatar não encontrado`);
-      return Response.json(
-        { message: "Avatar não encontrado ou não pertence ao usuário" },
-        { status: 404 }
-      );
+      return avatarCheck.response;
     }
+
+    const avatarToActivate = avatarCheck.avatar;
 
     console.log(`[ATIVAR AVATAR] Avatar encontrado: ${avatarToActivate.nome} (vivo=${avatarToActivate.vivo}, ativo atual=${avatarToActivate.ativo})`);
 
-    if (!avatarToActivate.vivo) {
+    // Validar que avatar está vivo
+    const aliveCheck = validateAvatarIsAlive(avatarToActivate);
+    if (!aliveCheck.valid) {
       console.log(`[ATIVAR AVATAR] ❌ Avatar morto, não pode ativar`);
-      return Response.json(
-        { message: "Não é possível ativar um avatar destruído" },
-        { status: 400 }
-      );
+      return aliveCheck.response;
     }
 
     // Desativar todos os avatares do usuário
@@ -224,7 +255,7 @@ export async function PUT(request) {
       });
     } catch (activateError) {
       console.error("[ATIVAR AVATAR] ❌ Erro ao ativar avatar:", activateError);
-      return Response.json(
+      return NextResponse.json(
         { message: "Erro ao ativar avatar" },
         { status: 500 }
       );
@@ -248,7 +279,7 @@ export async function PUT(request) {
 
     console.log(`[ATIVAR AVATAR] ====== FIM REQUISIÇÃO ======\n`);
 
-    return Response.json({
+    return NextResponse.json({
       success: true,
       message: "Avatar ativado com sucesso!",
       avatar: avatarAtivado,
@@ -257,7 +288,7 @@ export async function PUT(request) {
 
   } catch (error) {
     console.error("[ATIVAR AVATAR] Erro crítico:", error);
-    return Response.json(
+    return NextResponse.json(
       { message: "Erro ao processar requisição" },
       { status: 500 }
     );
@@ -266,45 +297,35 @@ export async function PUT(request) {
 
 export async function DELETE(request) {
   try {
-    const body = await request.json();
-    const { userId, avatarId } = body;
+    // Validar campos obrigatórios
+    const validation = await validateRequest(request, ['userId', 'avatarId']);
+    if (!validation.valid) return validation.response;
 
-    if (!userId || !avatarId) {
-      return Response.json(
-        { message: "userId e avatarId são obrigatórios" },
-        { status: 400 }
-      );
-    }
+    const { userId, avatarId } = validation.body;
 
-    // Verificar se o avatar pertence ao usuário
-    const avatar = await getDocument('avatares', avatarId);
-
-    if (!avatar || avatar.user_id !== userId) {
-      return Response.json(
-        { message: "Avatar não encontrado" },
-        { status: 404 }
-      );
-    }
+    // Validar propriedade do avatar
+    const avatarCheck = await validateAvatarOwnership(avatarId, userId);
+    if (!avatarCheck.valid) return avatarCheck.response;
 
     // Deletar o avatar do Firestore
     try {
       await deleteDocument('avatares', avatarId);
     } catch (deleteError) {
       console.error("Erro ao deletar avatar:", deleteError);
-      return Response.json(
+      return NextResponse.json(
         { message: "Erro ao deletar avatar" },
         { status: 500 }
       );
     }
 
-    return Response.json({
+    return NextResponse.json({
       success: true,
       message: "Avatar removido com sucesso"
     });
 
   } catch (error) {
     console.error("Erro ao deletar:", error);
-    return Response.json(
+    return NextResponse.json(
       { message: "Erro ao processar requisição" },
       { status: 500 }
     );

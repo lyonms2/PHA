@@ -3,5 +3,6 @@
  */
 
 export * from './avatarColors';
-export * from './avatarCalculations';
 export * from './avatarFilters';
+
+// NOTA: Cálculos de XP agora estão em ../sistemas/progressionSystem.js

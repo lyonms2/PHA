@@ -3,6 +3,7 @@
 
 import { NextResponse } from 'next/server';
 import { getDocument, updateDocument } from '@/lib/firebase/firestore';
+import { validateRequest } from '@/lib/api/middleware';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,14 +19,11 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request) {
   try {
-    const { userId, moedas, fragmentos } = await request.json();
+    // Validar campo obrigatório
+    const validation = await validateRequest(request, ['userId']);
+    if (!validation.valid) return validation.response;
 
-    if (!userId) {
-      return NextResponse.json(
-        { message: 'userId é obrigatório' },
-        { status: 400 }
-      );
-    }
+    const { userId, moedas, fragmentos } = validation.body;
 
     // Buscar stats atuais no Firestore
     const statsAtuais = await getDocument('player_stats', userId);

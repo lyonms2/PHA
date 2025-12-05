@@ -12,14 +12,13 @@ import {
   getCorElemento,
   getEmojiElemento,
   getNivelExaustao,
-  calcularXPNecessario,
-  calcularProgressoXP,
   filtrarAvataresSemMemorial,
   aplicarFiltros,
   ordenarAvatares,
   contarAvataresCaidos,
   calcularSlots
 } from './utils';
+import { calcularXPNecessario } from './sistemas/progressionSystem';
 import {
   useAvatarOperations,
   useAvatarModals,
@@ -228,7 +227,7 @@ export default function AvatarsPage() {
                       <div className="h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-500"
-                          style={{ width: `${calcularProgressoXP(avatarAtivo.xp || 0, avatarAtivo.nivel)}%` }}
+                          style={{ width: `${Math.min(((avatarAtivo.xp || 0) / calcularXPNecessario(avatarAtivo.nivel)) * 100, 100)}%` }}
                         />
                       </div>
                     </div>

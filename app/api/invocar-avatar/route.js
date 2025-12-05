@@ -1,4 +1,6 @@
+import { NextResponse } from 'next/server';
 import { getDocument, getDocuments, createDocument, updateDocument } from "@/lib/firebase/firestore";
+import { validateRequest } from '@/lib/api/middleware';
 
 // Importar sistemas
 import { ELEMENTOS, aplicarBonusElemental } from '../../avatares/sistemas/elementalSystem';
@@ -141,15 +143,11 @@ export async function POST(request) {
   console.log("=== INICIANDO INVOCAÇÃO COM SISTEMAS INTEGRADOS ===");
 
   try {
-    const { userId } = await request.json();
+    // Validar campo obrigatório
+    const validation = await validateRequest(request, ['userId']);
+    if (!validation.valid) return validation.response;
 
-    if (!userId) {
-      return Response.json(
-        { message: "ID do usuário é obrigatório" },
-        { status: 400 }
-      );
-    }
-
+    const { userId } = validation.body;
     console.log("Buscando stats do jogador:", userId);
 
     // Buscar stats do jogador do Firestore
@@ -157,7 +155,7 @@ export async function POST(request) {
 
     if (!stats) {
       console.error("Jogador não encontrado");
-      return Response.json(
+      return NextResponse.json(
         { message: "Jogador não encontrado. Inicialize o jogador primeiro." },
         { status: 404 }
       );
@@ -173,9 +171,9 @@ export async function POST(request) {
     console.log("Primeira invocação?", ehPrimeiraInvocacao);
     console.log("Custo:", custoMoedas, "moedas");
 
-    // Verificar recursos
+    // Verificar recursos (lógica customizada porque é condicional)
     if (!ehPrimeiraInvocacao && (stats.moedas < custoMoedas || stats.fragmentos < custoFragmentos)) {
-      return Response.json(
+      return NextResponse.json(
         {
           message: stats.moedas < custoMoedas
             ? "Moedas insuficientes para invocação"

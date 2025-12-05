@@ -1,4 +1,6 @@
+import { NextResponse } from 'next/server';
 import { getDocument, updateDocument } from '@/lib/firebase/firestore';
+import { validateRequest, validateAvatarName } from '@/lib/api/middleware';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,46 +17,26 @@ export async function PUT(request) {
   console.log("=== ATUALIZAR NOME DE OPERAÇÃO ===");
 
   try {
-    const { userId, nomeOperacao } = await request.json();
+    // Validar campos obrigatórios
+    const validation = await validateRequest(request, ['userId', 'nomeOperacao']);
+    if (!validation.valid) return validation.response;
 
-    if (!userId) {
-      return Response.json(
-        { message: "userId é obrigatório" },
-        { status: 400 }
-      );
+    const { userId, nomeOperacao } = validation.body;
+
+    // Validar nome usando validateAvatarName (funciona para nomes de operação também)
+    const nameCheck = validateAvatarName(nomeOperacao, 1, 30);
+    if (!nameCheck.valid) {
+      return NextResponse.json({ message: nameCheck.error }, { status: 400 });
     }
+    const nomeValidado = nameCheck.nome;
 
-    if (!nomeOperacao || nomeOperacao.trim().length === 0) {
-      return Response.json(
-        { message: "Nome de operação não pode estar vazio" },
-        { status: 400 }
-      );
-    }
-
-    // Validar tamanho (máximo 30 caracteres)
-    if (nomeOperacao.length > 30) {
-      return Response.json(
-        { message: "Nome de operação deve ter no máximo 30 caracteres" },
-        { status: 400 }
-      );
-    }
-
-    // Validar caracteres (apenas letras, números, espaços e alguns especiais)
-    const regex = /^[a-zA-Z0-9À-ÿ\s\-_]+$/;
-    if (!regex.test(nomeOperacao)) {
-      return Response.json(
-        { message: "Nome contém caracteres inválidos" },
-        { status: 400 }
-      );
-    }
-
-    console.log(`Atualizando nome para usuário ${userId}: "${nomeOperacao}"`);
+    console.log(`Atualizando nome para usuário ${userId}: "${nomeValidado}"`);
 
     // Verificar se jogador existe no Firestore
     const playerStats = await getDocument('player_stats', userId);
 
     if (!playerStats) {
-      return Response.json(
+      return NextResponse.json(
         { message: "Jogador não encontrado" },
         { status: 404 }
       );
@@ -62,7 +44,7 @@ export async function PUT(request) {
 
     // Atualizar nome no Firestore
     await updateDocument('player_stats', userId, {
-      nome_operacao: nomeOperacao.trim(),
+      nome_operacao: nomeValidado,
       updated_at: new Date().toISOString()
     });
 
@@ -71,7 +53,7 @@ export async function PUT(request) {
 
     console.log("✅ Nome atualizado com sucesso:", statsAtualizados.nome_operacao);
 
-    return Response.json({
+    return NextResponse.json({
       success: true,
       message: "Nome de operação atualizado com sucesso!",
       stats: statsAtualizados
@@ -79,7 +61,7 @@ export async function PUT(request) {
 
   } catch (error) {
     console.error("❌ ERRO:", error);
-    return Response.json(
+    return NextResponse.json(
       { message: "Erro ao processar: " + error.message },
       { status: 500 }
     );
