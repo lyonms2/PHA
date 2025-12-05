@@ -11,8 +11,7 @@ export default function MissoesDiariasPage() {
   const [loading, setLoading] = useState(true);
   const [missoes, setMissoes] = useState([]);
   const [playerStats, setPlayerStats] = useState(null);
-  const [streak, setStreak] = useState(0);
-  const [recompensaStreak, setRecompensaStreak] = useState(null);
+  const [streakInfo, setStreakInfo] = useState({ atual: 0, proximo_marco: 3, progresso: 0 });
   const [coletando, setColetando] = useState(false);
   const [todasConcluidas, setTodasConcluidas] = useState(false);
 
@@ -43,8 +42,7 @@ export default function MissoesDiariasPage() {
 
       if (response.ok) {
         setMissoes(data.missoes || []);
-        setStreak(data.streak || 0);
-        setRecompensaStreak(data.recompensa_streak);
+        setStreakInfo(data.streak || { atual: 0, proximo_marco: 3, progresso: 0 });
         setTodasConcluidas(data.todas_concluidas || false);
       } else {
         console.error('Erro ao carregar missões:', data.error);
@@ -167,10 +165,10 @@ export default function MissoesDiariasPage() {
             <div className="relative bg-slate-900/80 backdrop-blur-xl border border-orange-900/30 rounded-lg p-4">
               <div className="text-xs text-slate-400 mb-1">Sequência</div>
               <div className="text-2xl font-bold text-orange-400 flex items-center gap-2">
-                🔥 {streak} {streak === 1 ? 'dia' : 'dias'}
+                🔥 {streakInfo.atual} {streakInfo.atual === 1 ? 'dia' : 'dias'}
               </div>
-              {recompensaStreak && (
-                <div className="text-xs text-green-400 mt-1">Próximo marco: {recompensaStreak.proximo_marco} dias</div>
+              {streakInfo.proximo_marco && (
+                <div className="text-xs text-green-400 mt-1">Próximo marco: {streakInfo.proximo_marco} dias</div>
               )}
             </div>
           </div>
@@ -308,9 +306,9 @@ export default function MissoesDiariasPage() {
               >
                 {coletando ? 'Coletando...' : 'Coletar Todas as Recompensas'}
               </button>
-              {streak >= 3 && recompensaStreak && (
+              {streakInfo.atual >= 3 && (
                 <div className="mt-4 text-sm text-amber-400">
-                  + Bônus de Streak: {recompensaStreak.moedas} moedas, {recompensaStreak.fragmentos} fragmentos
+                  💫 Bônus de Streak será aplicado ao coletar!
                 </div>
               )}
             </div>
