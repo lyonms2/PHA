@@ -1,14 +1,18 @@
 import { NextResponse } from 'next/server';
 import { getDocuments, getDocument, updateDocument, deleteDocument } from "@/lib/firebase/firestore";
-import { processarRecuperacao } from "@/app/avatares/sistemas/exhaustionSystem";
 import { validateRequest, validateAvatarOwnership, validateAvatarIsAlive } from '@/lib/api/middleware';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
+  console.log('\n🔔 ========== GET /meus-avatares CHAMADO ==========');
+  console.log('⏰ Hora:', new Date().toISOString());
+
   try {
     const url = new URL(request.url);
     const userId = url.searchParams.get('userId');
+
+    console.log('👤 userId:', userId);
 
     if (!userId) {
       return NextResponse.json(
@@ -22,6 +26,8 @@ export async function GET(request) {
       orderBy: ['created_at', 'desc']
     });
 
+    console.log(`📦 Avatares encontrados: ${avatares?.length || 0}`);
+
     if (!avatares) {
       console.error("Erro ao buscar avatares");
       return NextResponse.json(
@@ -34,6 +40,8 @@ export async function GET(request) {
     // SISTEMA SIMPLES: Recupera 10 pontos por hora automaticamente
     const avataresAtualizados = [];
     const agora = new Date();
+
+    console.log('🔄 Iniciando processamento de recuperação...');
 
     for (const avatar of (avatares || [])) {
       let avatarAtualizado = { ...avatar };
@@ -56,8 +64,20 @@ export async function GET(request) {
       // ===== RECUPERAÇÃO AUTOMÁTICA DE EXAUSTÃO =====
       const exaustaoAtual = avatarAtualizado.exaustao || 0;
 
+      console.log(`\n🔍 Avatar: ${avatarAtualizado.nome}`);
+      console.log(`   Vivo: ${avatarAtualizado.vivo}`);
+      console.log(`   Exaustão: ${exaustaoAtual}`);
+      console.log(`   updated_at: ${avatarAtualizado.updated_at}`);
+
       // Só recupera se: vivo, exaustão > 0
-      if (!avatarAtualizado.vivo || exaustaoAtual === 0) {
+      if (!avatarAtualizado.vivo) {
+        console.log(`   ❌ SKIP: Avatar morto`);
+        avataresAtualizados.push(avatarAtualizado);
+        continue;
+      }
+
+      if (exaustaoAtual === 0) {
+        console.log(`   ✅ SKIP: Exaustão já é 0`);
         avataresAtualizados.push(avatarAtualizado);
         continue;
       }
@@ -68,9 +88,14 @@ export async function GET(request) {
         : new Date(avatarAtualizado.created_at || agora);
 
       const horasPassadas = (agora - ultimaAtualizacao) / (1000 * 60 * 60);
+      const minutosPassados = horasPassadas * 60;
+
+      console.log(`   ⏰ Última atualização: ${ultimaAtualizacao.toISOString()}`);
+      console.log(`   ⌚ Tempo passado: ${horasPassadas.toFixed(2)}h (${minutosPassados.toFixed(1)} minutos)`);
 
       // Precisa ter passado pelo menos 5 minutos (0.083 horas)
       if (horasPassadas < 0.083) {
+        console.log(`   ⏱️ SKIP: Menos de 5 minutos desde última atualização`);
         avataresAtualizados.push(avatarAtualizado);
         continue;
       }
@@ -99,12 +124,14 @@ export async function GET(request) {
       avataresAtualizados.push(avatarAtualizado);
     }
 
+    console.log('\n✅ ========== GET /meus-avatares CONCLUÍDO ==========\n');
+
     return NextResponse.json({
       avatares: avataresAtualizados,
       total: avataresAtualizados.length
     });
   } catch (error) {
-    console.error("Erro no servidor:", error);
+    console.error("❌ Erro no servidor:", error);
     return NextResponse.json(
       { message: "Erro ao processar: " + error.message },
       { status: 500 }

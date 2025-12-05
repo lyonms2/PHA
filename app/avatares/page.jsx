@@ -90,7 +90,20 @@ export default function AvatarsPage() {
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+
+    // Auto-refresh a cada 5 minutos para recuperação de exaustão
+    console.log('⏰ Auto-refresh configurado: recarregando a cada 5 minutos');
+    const intervalId = setInterval(() => {
+      if (parsedUser?.id) {
+        console.log('🔄 Auto-refresh: recarregando avatares...');
+        carregarAvatares(parsedUser.id);
+      }
+    }, 5 * 60 * 1000); // 5 minutos
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearInterval(intervalId);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
