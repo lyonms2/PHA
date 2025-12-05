@@ -4,6 +4,7 @@
 import { NextResponse } from 'next/server';
 import { getDocument, updateDocument } from '@/lib/firebase/firestore';
 import { processarRecuperacao, getNivelExaustao } from '@/app/avatares/sistemas/exhaustionSystem';
+import { validateRequest } from '@/lib/api/middleware';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,14 +12,11 @@ export async function POST(request) {
   console.log("=== AVATAR DESCANSANDO ===");
 
   try {
-    const { avatarId, horasDescanso } = await request.json();
+    // Validar campo obrigatório
+    const validation = await validateRequest(request, ['avatarId']);
+    if (!validation.valid) return validation.response;
 
-    if (!avatarId) {
-      return NextResponse.json(
-        { message: 'avatarId é obrigatório' },
-        { status: 400 }
-      );
-    }
+    const { avatarId, horasDescanso } = validation.body;
 
     // Buscar avatar atual no Firestore
     const avatar = await getDocument('avatares', avatarId);

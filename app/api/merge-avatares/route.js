@@ -1,5 +1,12 @@
+import { NextResponse } from 'next/server';
 import { getDocument, updateDocument } from '@/lib/firebase/firestore';
 import { getHunterRank, aplicarDescontoMerge, calcularXpFeito, verificarPromocao } from '@/lib/hunter/hunterRankSystem';
+import {
+  validateRequest,
+  validateAvatarOwnership,
+  validateAvatarIsAlive,
+  combineValidations
+} from '@/lib/api/middleware';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,54 +26,49 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request) {
   try {
-    const { userId, avatarBaseId, avatarSacrificioId } = await request.json();
+    // Validar campos obrigatórios
+    const validation = await validateRequest(request, ['userId', 'avatarBaseId', 'avatarSacrificioId']);
+    if (!validation.valid) return validation.response;
 
-    // Validações básicas
-    if (!userId || !avatarBaseId || !avatarSacrificioId) {
-      return Response.json(
-        { message: "userId, avatarBaseId e avatarSacrificioId são obrigatórios" },
-        { status: 400 }
-      );
-    }
+    const { userId, avatarBaseId, avatarSacrificioId } = validation.body;
 
+    // Validar que não são o mesmo avatar
     if (avatarBaseId === avatarSacrificioId) {
-      return Response.json(
+      return NextResponse.json(
         { message: "Não é possível fundir um avatar com ele mesmo" },
         { status: 400 }
       );
     }
 
-    // 1. Buscar avatar base no Firestore
-    const avatarBase = await getDocument('avatares', avatarBaseId);
+    // Validar propriedade do avatar base
+    const avatarBaseCheck = await validateAvatarOwnership(avatarBaseId, userId);
+    if (!avatarBaseCheck.valid) return avatarBaseCheck.response;
+    const avatarBase = avatarBaseCheck.avatar;
 
-    if (!avatarBase || avatarBase.user_id !== userId) {
-      return Response.json(
-        { message: "Avatar base não encontrado ou não pertence a você" },
-        { status: 404 }
-      );
-    }
+    // Validar propriedade do avatar sacrifício
+    const avatarSacrificioCheck = await validateAvatarOwnership(avatarSacrificioId, userId);
+    if (!avatarSacrificioCheck.valid) return avatarSacrificioCheck.response;
+    const avatarSacrificio = avatarSacrificioCheck.avatar;
 
-    // 2. Buscar avatar sacrifício no Firestore
-    const avatarSacrificio = await getDocument('avatares', avatarSacrificioId);
+    // Validar que avatar base está vivo
+    const baseAliveCheck = validateAvatarIsAlive(avatarBase);
+    if (!baseAliveCheck.valid) return baseAliveCheck.response;
 
-    if (!avatarSacrificio || avatarSacrificio.user_id !== userId) {
-      return Response.json(
-        { message: "Avatar de sacrifício não encontrado ou não pertence a você" },
-        { status: 404 }
-      );
-    }
+    // Validar que avatar sacrifício está vivo
+    const sacrificioAliveCheck = validateAvatarIsAlive(avatarSacrificio);
+    if (!sacrificioAliveCheck.valid) return sacrificioAliveCheck.response;
 
-    // 3. Validar que ambos estão vivos e inativos
-    if (!avatarBase.vivo || avatarBase.ativo) {
-      return Response.json(
-        { message: "Avatar base deve estar vivo e inativo" },
+    // Validar que avatares estão inativos (lógica customizada)
+    if (avatarBase.ativo) {
+      return NextResponse.json(
+        { message: "Avatar base deve estar inativo" },
         { status: 400 }
       );
     }
 
-    if (!avatarSacrificio.vivo || avatarSacrificio.ativo) {
-      return Response.json(
-        { message: "Avatar de sacrifício deve estar vivo e inativo" },
+    if (avatarSacrificio.ativo) {
+      return NextResponse.json(
+        { message: "Avatar de sacrifício deve estar inativo" },
         { status: 400 }
       );
     }
@@ -95,7 +97,7 @@ export async function POST(request) {
     const playerStats = await getDocument('player_stats', userId);
 
     if (!playerStats) {
-      return Response.json(
+      return NextResponse.json(
         { message: "Erro ao carregar estatísticas do jogador" },
         { status: 500 }
       );
@@ -118,16 +120,16 @@ export async function POST(request) {
 
     const descontoAplicado = custoMoedasBase - custoMoedas;
 
-    // 5. Verificar se tem saldo
+    // 5. Verificar se tem saldo (lógica customizada com mensagens específicas)
     if (playerStats.moedas < custoMoedas) {
-      return Response.json(
+      return NextResponse.json(
         { message: `Moedas insuficientes. Você tem ${playerStats.moedas}, precisa de ${custoMoedas}` },
         { status: 400 }
       );
     }
 
     if (playerStats.fragmentos < custoFragmentos) {
-      return Response.json(
+      return NextResponse.json(
         { message: `Fragmentos insuficientes. Você tem ${playerStats.fragmentos}, precisa de ${custoFragmentos}` },
         { status: 400 }
       );
