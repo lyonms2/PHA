@@ -1,15 +1,14 @@
+import { NextResponse } from 'next/server';
 import { getDocument, createDocument } from "@/lib/firebase/firestore";
+import { validateRequest } from '@/lib/api/middleware';
 
 export async function POST(request) {
   try {
-    const { userId } = await request.json();
+    // Validar campo obrigatório
+    const validation = await validateRequest(request, ['userId']);
+    if (!validation.valid) return validation.response;
 
-    if (!userId) {
-      return Response.json(
-        { message: "ID do usuário é obrigatório" },
-        { status: 400 }
-      );
-    }
+    const { userId } = validation.body;
 
     console.log("Inicializando jogador:", userId);
 
@@ -18,7 +17,7 @@ export async function POST(request) {
 
     if (existing) {
       console.log("Jogador já existe:", existing);
-      return Response.json({
+      return NextResponse.json({
         message: "Jogador já inicializado",
         stats: existing
       });
@@ -44,14 +43,14 @@ export async function POST(request) {
 
     console.log("Jogador criado com sucesso:", stats);
 
-    return Response.json({
+    return NextResponse.json({
       message: "Jogador inicializado com sucesso!",
       stats
     });
 
   } catch (error) {
     console.error("Erro no servidor:", error);
-    return Response.json(
+    return NextResponse.json(
       { message: "Erro ao processar: " + error.message },
       { status: 500 }
     );

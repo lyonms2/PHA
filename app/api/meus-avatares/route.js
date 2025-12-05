@@ -1,5 +1,7 @@
+import { NextResponse } from 'next/server';
 import { getDocuments, getDocument, updateDocument, deleteDocument } from "@/lib/firebase/firestore";
 import { processarRecuperacao } from "@/app/avatares/sistemas/exhaustionSystem";
+import { validateRequest, validateAvatarOwnership, validateAvatarIsAlive } from '@/lib/api/middleware';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +11,7 @@ export async function GET(request) {
     const userId = url.searchParams.get('userId');
 
     if (!userId) {
-      return Response.json(
+      return NextResponse.json(
         { message: "ID do usuário é obrigatório" },
         { status: 400 }
       );
@@ -22,7 +24,7 @@ export async function GET(request) {
 
     if (!avatares) {
       console.error("Erro ao buscar avatares");
-      return Response.json(
+      return NextResponse.json(
         { message: "Erro ao buscar avatares" },
         { status: 500 }
       );
@@ -133,13 +135,13 @@ export async function GET(request) {
       }
     }
 
-    return Response.json({
+    return NextResponse.json({
       avatares: avataresAtualizados,
       total: avataresAtualizados.length
     });
   } catch (error) {
     console.error("Erro no servidor:", error);
-    return Response.json(
+    return NextResponse.json(
       { message: "Erro ao processar: " + error.message },
       { status: 500 }
     );
@@ -151,37 +153,30 @@ export async function PUT(request) {
   console.log(`\n[ATIVAR AVATAR] ====== REQUISIÇÃO em ${requestTime} ======`);
 
   try {
-    const body = await request.json();
-    const { userId, avatarId } = body;
+    // Validar campos obrigatórios
+    const validation = await validateRequest(request, ['userId', 'avatarId']);
+    if (!validation.valid) return validation.response;
+
+    const { userId, avatarId } = validation.body;
 
     console.log(`[ATIVAR AVATAR] userId=${userId?.substring(0, 8)}, avatarId=${avatarId?.substring(0, 8)}`);
 
-    if (!userId || !avatarId) {
-      return Response.json(
-        { message: "userId e avatarId são obrigatórios" },
-        { status: 400 }
-      );
-    }
-
-    // Verificar se o avatar existe, pertence ao usuário e está vivo
-    const avatarToActivate = await getDocument('avatares', avatarId);
-
-    if (!avatarToActivate || avatarToActivate.user_id !== userId) {
+    // Validar propriedade do avatar
+    const avatarCheck = await validateAvatarOwnership(avatarId, userId);
+    if (!avatarCheck.valid) {
       console.log(`[ATIVAR AVATAR] ❌ Avatar não encontrado`);
-      return Response.json(
-        { message: "Avatar não encontrado ou não pertence ao usuário" },
-        { status: 404 }
-      );
+      return avatarCheck.response;
     }
+
+    const avatarToActivate = avatarCheck.avatar;
 
     console.log(`[ATIVAR AVATAR] Avatar encontrado: ${avatarToActivate.nome} (vivo=${avatarToActivate.vivo}, ativo atual=${avatarToActivate.ativo})`);
 
-    if (!avatarToActivate.vivo) {
+    // Validar que avatar está vivo
+    const aliveCheck = validateAvatarIsAlive(avatarToActivate);
+    if (!aliveCheck.valid) {
       console.log(`[ATIVAR AVATAR] ❌ Avatar morto, não pode ativar`);
-      return Response.json(
-        { message: "Não é possível ativar um avatar destruído" },
-        { status: 400 }
-      );
+      return aliveCheck.response;
     }
 
     // Desativar todos os avatares do usuário
@@ -224,7 +219,7 @@ export async function PUT(request) {
       });
     } catch (activateError) {
       console.error("[ATIVAR AVATAR] ❌ Erro ao ativar avatar:", activateError);
-      return Response.json(
+      return NextResponse.json(
         { message: "Erro ao ativar avatar" },
         { status: 500 }
       );
@@ -248,7 +243,7 @@ export async function PUT(request) {
 
     console.log(`[ATIVAR AVATAR] ====== FIM REQUISIÇÃO ======\n`);
 
-    return Response.json({
+    return NextResponse.json({
       success: true,
       message: "Avatar ativado com sucesso!",
       avatar: avatarAtivado,
@@ -257,7 +252,7 @@ export async function PUT(request) {
 
   } catch (error) {
     console.error("[ATIVAR AVATAR] Erro crítico:", error);
-    return Response.json(
+    return NextResponse.json(
       { message: "Erro ao processar requisição" },
       { status: 500 }
     );
@@ -266,45 +261,35 @@ export async function PUT(request) {
 
 export async function DELETE(request) {
   try {
-    const body = await request.json();
-    const { userId, avatarId } = body;
+    // Validar campos obrigatórios
+    const validation = await validateRequest(request, ['userId', 'avatarId']);
+    if (!validation.valid) return validation.response;
 
-    if (!userId || !avatarId) {
-      return Response.json(
-        { message: "userId e avatarId são obrigatórios" },
-        { status: 400 }
-      );
-    }
+    const { userId, avatarId } = validation.body;
 
-    // Verificar se o avatar pertence ao usuário
-    const avatar = await getDocument('avatares', avatarId);
-
-    if (!avatar || avatar.user_id !== userId) {
-      return Response.json(
-        { message: "Avatar não encontrado" },
-        { status: 404 }
-      );
-    }
+    // Validar propriedade do avatar
+    const avatarCheck = await validateAvatarOwnership(avatarId, userId);
+    if (!avatarCheck.valid) return avatarCheck.response;
 
     // Deletar o avatar do Firestore
     try {
       await deleteDocument('avatares', avatarId);
     } catch (deleteError) {
       console.error("Erro ao deletar avatar:", deleteError);
-      return Response.json(
+      return NextResponse.json(
         { message: "Erro ao deletar avatar" },
         { status: 500 }
       );
     }
 
-    return Response.json({
+    return NextResponse.json({
       success: true,
       message: "Avatar removido com sucesso"
     });
 
   } catch (error) {
     console.error("Erro ao deletar:", error);
-    return Response.json(
+    return NextResponse.json(
       { message: "Erro ao processar requisição" },
       { status: 500 }
     );
