@@ -35,6 +35,8 @@ export async function GET(request) {
     const avataresAtualizados = [];
     const agora = new Date();
 
+    console.log(`\n🔄 [RECUPERAÇÃO PASSIVA] Processando ${avatares?.length || 0} avatares...`);
+
     for (const avatar of (avatares || [])) {
       // ===== INICIALIZAR HP SE NÃO EXISTIR =====
       // Avatares antigos podem não ter hp_atual inicializado
@@ -91,27 +93,45 @@ export async function GET(request) {
 
       // Processar recuperação se passou pelo menos 1 minuto
       if (minutosPassados < 1) {
+        if (exaustaoAtual > 0) {
+          console.log(`⏱️ [SKIP] Avatar ${avatarAtualizado.nome}: Menos de 1 min desde última atualização (${minutosPassados} min)`);
+        }
         avataresAtualizados.push(avatarAtualizado);
         continue;
       }
 
       const horasPassadas = minutosPassados / 60;
 
-      // Avatar ATIVO não recupera (está em uso)
-      // Avatar INATIVO recupera automaticamente (8 pontos/hora)
+      // Avatar INATIVO recupera automaticamente
+      // Avatar ATIVO não recupera (está sendo usado)
       const estaAtivo = avatarAtualizado.ativo === true;
-      const taxaRecuperacao = estaAtivo ? 0 : 8; // pontos por hora
-      const recuperacao = taxaRecuperacao * horasPassadas;
+
+      // Avatares ativos não recuperam exaustão
+      if (estaAtivo) {
+        console.log(`⏸️ [ATIVO] Avatar ${avatarAtualizado.nome}: Não recupera exaustão (está ativo)`);
+        avataresAtualizados.push(avatarAtualizado);
+        continue;
+      }
+
+      // Usar função do sistema de exaustão
+      const totalmenteInativo = true; // Avatar está desativado
+      const resultado = processarRecuperacao(exaustaoAtual, horasPassadas, totalmenteInativo, false);
+
+      const recuperacao = resultado.recuperacao;
 
       if (recuperacao > 0) {
-        const novaExaustao = Math.max(0, exaustaoAtual - recuperacao);
+        const novaExaustao = resultado.exaustao_nova;
 
         console.log(`✅ [RECUPERAÇÃO AUTOMÁTICA] Avatar ${avatarAtualizado.nome}:`, {
           exaustao_antes: exaustaoAtual,
           exaustao_depois: novaExaustao,
           minutos_passados: minutosPassados,
-          recuperacao_aplicada: recuperacao,
-          ativo: estaAtivo
+          horas_passadas: horasPassadas.toFixed(2),
+          recuperacao_aplicada: recuperacao.toFixed(2),
+          ativo: estaAtivo,
+          taxa_usada: totalmenteInativo ? '15 pts/h (descansando)' : '8 pts/h (inativo)',
+          nivel_antes: resultado.nivel_anterior.nome,
+          nivel_depois: resultado.nivel_novo.nome
         });
 
         // Atualizar no Firestore
