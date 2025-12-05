@@ -83,9 +83,32 @@ export async function GET(request) {
       }
 
       // Calcular tempo desde última atualização
-      const ultimaAtualizacao = avatarAtualizado.updated_at
-        ? new Date(avatarAtualizado.updated_at)
-        : new Date(avatarAtualizado.created_at || agora);
+      // Firestore retorna Timestamps, preciso converter corretamente
+      let ultimaAtualizacao;
+      if (avatarAtualizado.updated_at) {
+        // Se é Timestamp do Firestore, usar .toDate() ou .seconds
+        if (avatarAtualizado.updated_at.toDate) {
+          ultimaAtualizacao = avatarAtualizado.updated_at.toDate();
+        } else if (avatarAtualizado.updated_at.seconds) {
+          ultimaAtualizacao = new Date(avatarAtualizado.updated_at.seconds * 1000);
+        } else if (typeof avatarAtualizado.updated_at === 'string') {
+          ultimaAtualizacao = new Date(avatarAtualizado.updated_at);
+        } else {
+          ultimaAtualizacao = agora;
+        }
+      } else if (avatarAtualizado.created_at) {
+        if (avatarAtualizado.created_at.toDate) {
+          ultimaAtualizacao = avatarAtualizado.created_at.toDate();
+        } else if (avatarAtualizado.created_at.seconds) {
+          ultimaAtualizacao = new Date(avatarAtualizado.created_at.seconds * 1000);
+        } else if (typeof avatarAtualizado.created_at === 'string') {
+          ultimaAtualizacao = new Date(avatarAtualizado.created_at);
+        } else {
+          ultimaAtualizacao = agora;
+        }
+      } else {
+        ultimaAtualizacao = agora;
+      }
 
       const horasPassadas = (agora - ultimaAtualizacao) / (1000 * 60 * 60);
       const minutosPassados = horasPassadas * 60;
