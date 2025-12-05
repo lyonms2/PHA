@@ -517,7 +517,7 @@ export const TABELA_EXAUSTAO = `
 ╠═══════════════════════════════════════════════════════════════╣
 ║ RECUPERAÇÃO:                                                   ║
 ║   Passiva: 10 pontos/hora (offline)                           ║
-║   Botão Descansar: 50 pontos instantâneo                      ║
+║   Poção da Loja: Variável por item                            ║
 ║                                                                ║
 ║ GANHO DE EXAUSTÃO:                                            ║
 ║   Combate Fácil: 2.5 pts                                      ║
