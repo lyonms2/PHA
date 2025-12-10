@@ -290,48 +290,65 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="p-4">
-                  {/* Nome de Operação */}
-                  <div className="mb-4">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="text-[10px] text-slate-500 uppercase font-mono tracking-wider">Nome de Operação</div>
-                      <button
-                        onClick={abrirModalEditarNome}
-                        className="text-cyan-400 hover:text-cyan-300 transition-colors text-sm"
-                        title="Editar nome"
-                      >
-                        ✏️
-                      </button>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="text-2xl font-black text-cyan-400">{getNomeOperacao()}</div>
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
-                        <span className="text-[10px] text-green-400 font-bold uppercase tracking-wider">Operacional</span>
+                  <div className="flex gap-4 mb-4">
+                    {/* Logo da Organização */}
+                    <div className="flex-shrink-0">
+                      <div className="w-24 h-24 bg-gradient-to-br from-cyan-900/40 via-blue-900/40 to-purple-900/40 rounded-lg flex items-center justify-center border-2 border-cyan-500/50 relative overflow-hidden backdrop-blur-sm">
+                        {/* Efeito de brilho rotativo */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 via-transparent to-purple-500/20 animate-pulse"></div>
+
+                        {/* Portal Dimensional - Logo */}
+                        <div className="relative z-10 text-center">
+                          {/* Anel externo */}
+                          <div className="absolute inset-2 border-2 border-cyan-400/60 rounded-full animate-spin" style={{animationDuration: '8s'}}></div>
+                          {/* Anel médio */}
+                          <div className="absolute inset-3 border-2 border-blue-400/40 rounded-full animate-spin" style={{animationDuration: '6s', animationDirection: 'reverse'}}></div>
+                          {/* Centro do portal */}
+                          <div className="relative w-16 h-16 flex items-center justify-center">
+                            <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/30 to-purple-500/30 rounded-full blur-sm"></div>
+                            <div className="relative text-3xl filter drop-shadow-lg">🌀</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="mt-2 text-center">
+                        <div className="text-[8px] text-cyan-400/70 font-mono font-bold tracking-widest">OCD</div>
+                        <div className="text-[7px] text-slate-500 font-mono">Est. 2025</div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent mb-4"></div>
-
-                  {/* Hunter Rank e Estatísticas */}
-                  <div className="mb-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="text-[10px] text-slate-500 uppercase font-mono tracking-wider">Rank de Caçador</div>
-                      <HunterRankBadge xpTotal={stats?.hunterRankXp || 0} compact={true} />
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="bg-slate-900/50 rounded-lg p-2.5 border border-slate-700/50">
-                        <div className="text-[10px] text-slate-500 uppercase font-mono mb-1 tracking-wider">Dias Ativos</div>
-                        <div className="text-lg font-bold text-cyan-400">{calcularDiasRegistro()}</div>
+                    {/* Informações do Caçador */}
+                    <div className="flex-1">
+                      {/* Nome de Operação */}
+                      <div className="mb-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="text-[10px] text-slate-500 uppercase font-mono tracking-wider">Nome de Operação</div>
+                          <button
+                            onClick={abrirModalEditarNome}
+                            className="text-cyan-400 hover:text-cyan-300 transition-colors text-sm"
+                            title="Editar nome"
+                          >
+                            ✏️
+                          </button>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="text-2xl font-black text-cyan-400">{getNomeOperacao()}</div>
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+                            <span className="text-[10px] text-green-400 font-bold uppercase tracking-wider">Operacional</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="bg-slate-900/50 rounded-lg p-2.5 border border-slate-700/50">
-                        <div className="text-[10px] text-slate-500 uppercase font-mono mb-1 tracking-wider">Missões</div>
-                        <div className="text-lg font-bold text-blue-400">{stats?.missoes_completadas || 0}</div>
-                      </div>
-                      <div className="bg-slate-900/50 rounded-lg p-2.5 border border-slate-700/50">
-                        <div className="text-[10px] text-slate-500 uppercase font-mono mb-1 tracking-wider">Avatares</div>
-                        <div className="text-lg font-bold text-purple-400">{avatares.filter(av => av.vivo).length}/{avatares.length}</div>
+
+                      {/* Hunter Rank e Tempo de Serviço */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <div className="text-[10px] text-slate-500 uppercase font-mono mb-1 tracking-wider">Rank de Caçador</div>
+                          <HunterRankBadge xpTotal={stats?.hunterRankXp || 0} compact={true} />
+                        </div>
+                        <div>
+                          <div className="text-[10px] text-slate-500 uppercase font-mono mb-1 tracking-wider">Tempo de Serviço</div>
+                          <div className="text-base font-bold text-slate-300">{calcularDiasRegistro()} dias</div>
+                        </div>
                       </div>
                     </div>
                   </div>
