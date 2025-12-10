@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDocument, updateDocument } from '@/lib/firebase/firestore';
-import { aplicarBonusHunterRank, calcularRecompensasStreak } from '@/lib/missions/missionProgress';
-import { getHunterRank } from '@/lib/hunter/hunterRankSystem';
+import { calcularRecompensasStreak } from '@/lib/missions/missionProgress';
+import { getHunterRank, aplicarMultiplicadorRecompensas } from '@/lib/hunter/hunterRankSystem';
 
 export const dynamic = 'force-dynamic';
 
@@ -72,7 +72,7 @@ export async function POST(request) {
 
     const recompensasDetalhadas = missoesParaColetar.map(missao => {
       const recompensasBase = missao.recompensas;
-      const recompensasComBonus = aplicarBonusHunterRank(recompensasBase, hunterRank.nome);
+      const recompensasComBonus = aplicarMultiplicadorRecompensas(recompensasBase, hunterRank);
 
       totalMoedas += recompensasComBonus.moedas;
       totalFragmentos += recompensasComBonus.fragmentos;
@@ -161,7 +161,7 @@ export async function POST(request) {
       },
       bonus_hunter_rank: {
         rank: hunterRank.nome,
-        percentual: Math.floor((aplicarBonusHunterRank({ moedas: 100, fragmentos: 10, xpCacador: 10 }, hunterRank.nome).moedas / 100 - 1) * 100)
+        percentual: Math.floor((hunterRank.multiplicadorRecompensas - 1.0) * 100)
       },
       streak: todasColetadas ? {
         dias_consecutivos: novoStreak,
