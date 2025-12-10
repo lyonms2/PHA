@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import AvatarSVG from "@/app/components/AvatarSVG";
 import { calcularPoderTotal } from "@/lib/gameLogic";
@@ -43,6 +43,7 @@ function BatalhaTreinoIAContent() {
   const [recompensas, setRecompensas] = useState(null);
   const [mostrarRecompensas, setMostrarRecompensas] = useState(false);
   const [aplicandoRecompensas, setAplicandoRecompensas] = useState(false);
+  const recompensasAplicadasRef = useRef(false); // Proteção contra cliques duplicados
 
   // Carregar usuário
   useEffect(() => {
@@ -152,7 +153,16 @@ function BatalhaTreinoIAContent() {
 
   // Aplicar recompensas ao avatar e caçador
   const aplicarRecompensas = async () => {
+    // PROTEÇÃO ANTI-DUPLICAÇÃO: verificar ref antes do estado
+    if (recompensasAplicadasRef.current) {
+      console.warn('⚠️ Tentativa de aplicar recompensas duplicadas bloqueada!');
+      return;
+    }
+
     if (!recompensas || !meuAvatar || aplicandoRecompensas) return;
+
+    // BLOQUEAR imediatamente usando ref (mais rápido que setState)
+    recompensasAplicadasRef.current = true;
     setAplicandoRecompensas(true);
 
     try {
@@ -180,10 +190,14 @@ function BatalhaTreinoIAContent() {
         }, 2000);
       } else {
         addLog('❌ Erro ao aplicar recompensas');
+        // Permitir tentar novamente em caso de erro do servidor
+        recompensasAplicadasRef.current = false;
       }
     } catch (error) {
       console.error('Erro ao aplicar recompensas:', error);
       addLog('❌ Erro ao aplicar recompensas');
+      // Permitir tentar novamente em caso de erro de rede
+      recompensasAplicadasRef.current = false;
     } finally {
       setAplicandoRecompensas(false);
     }
