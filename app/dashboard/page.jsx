@@ -122,46 +122,6 @@ export default function DashboardPage() {
     }
   };
 
-  // Função para determinar classificação
-  const getClassificacao = () => {
-    const totalMissoes = stats?.missoes_completadas || 0;
-    
-    if (totalMissoes >= 1000) return { 
-      nome: "ELITE", 
-      cor: "text-amber-400",
-      icone: "👑",
-      borda: "border-amber-400/50",
-      bg: "bg-amber-500/10"
-    };
-    if (totalMissoes >= 500) return { 
-      nome: "VETERANO", 
-      cor: "text-purple-400",
-      icone: "⭐",
-      borda: "border-purple-400/50",
-      bg: "bg-purple-500/10"
-    };
-    if (totalMissoes >= 100) return { 
-      nome: "EXPERIENTE", 
-      cor: "text-blue-400",
-      icone: "🎖️",
-      borda: "border-blue-400/50",
-      bg: "bg-blue-500/10"
-    };
-    if (totalMissoes >= 10) return { 
-      nome: "ATIVO", 
-      cor: "text-green-400",
-      icone: "✓",
-      borda: "border-green-400/50",
-      bg: "bg-green-500/10"
-    };
-    return { 
-      nome: "RECRUTA", 
-      cor: "text-slate-400",
-      icone: "🆕",
-      borda: "border-slate-600/50",
-      bg: "bg-slate-500/10"
-    };
-  };
 
   // Função para abrir modal de edição
   const abrirModalEditarNome = () => {
@@ -273,7 +233,6 @@ export default function DashboardPage() {
     );
   }
 
-  const classificacao = getClassificacao();
   const avatarAtivo = avatares.find(av => av.ativo && av.vivo);
 
   return (
@@ -343,14 +302,6 @@ export default function DashboardPage() {
                           <div className="text-3xl mb-1 opacity-50">🕶️</div>
                           <div className="text-[10px] font-bold text-red-400 tracking-wider bg-red-950/50 px-1.5 py-0.5 border border-red-500/30">
                             CLASSIFIED
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-1.5">
-                        <div className={`text-center px-2 py-1 rounded border ${classificacao.borda} ${classificacao.bg}`}>
-                          <div className={`text-[10px] font-bold ${classificacao.cor} font-mono flex items-center justify-center gap-1`}>
-                            <span>{classificacao.icone}</span>
-                            <span>{classificacao.nome}</span>
                           </div>
                         </div>
                       </div>
