@@ -122,46 +122,6 @@ export default function DashboardPage() {
     }
   };
 
-  // Função para determinar classificação
-  const getClassificacao = () => {
-    const totalMissoes = stats?.missoes_completadas || 0;
-    
-    if (totalMissoes >= 1000) return { 
-      nome: "ELITE", 
-      cor: "text-amber-400",
-      icone: "👑",
-      borda: "border-amber-400/50",
-      bg: "bg-amber-500/10"
-    };
-    if (totalMissoes >= 500) return { 
-      nome: "VETERANO", 
-      cor: "text-purple-400",
-      icone: "⭐",
-      borda: "border-purple-400/50",
-      bg: "bg-purple-500/10"
-    };
-    if (totalMissoes >= 100) return { 
-      nome: "EXPERIENTE", 
-      cor: "text-blue-400",
-      icone: "🎖️",
-      borda: "border-blue-400/50",
-      bg: "bg-blue-500/10"
-    };
-    if (totalMissoes >= 10) return { 
-      nome: "ATIVO", 
-      cor: "text-green-400",
-      icone: "✓",
-      borda: "border-green-400/50",
-      bg: "bg-green-500/10"
-    };
-    return { 
-      nome: "RECRUTA", 
-      cor: "text-slate-400",
-      icone: "🆕",
-      borda: "border-slate-600/50",
-      bg: "bg-slate-500/10"
-    };
-  };
 
   // Função para abrir modal de edição
   const abrirModalEditarNome = () => {
@@ -273,7 +233,6 @@ export default function DashboardPage() {
     );
   }
 
-  const classificacao = getClassificacao();
   const avatarAtivo = avatares.find(av => av.ativo && av.vivo);
 
   return (
@@ -332,35 +291,32 @@ export default function DashboardPage() {
 
                 <div className="p-4">
                   <div className="flex gap-4 mb-4">
-                    {/* Foto/Avatar - CLASSIFIED */}
+                    {/* Logo da Organização */}
                     <div className="flex-shrink-0">
-                      <div className="w-24 h-24 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg flex items-center justify-center border-2 border-red-500/50 relative overflow-hidden">
+                      <div className="w-24 h-24 bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg flex items-center justify-center border-2 border-red-500/50 relative overflow-hidden">
                         {/* Efeito de barras diagonais */}
                         <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(239,68,68,0.1)_10px,rgba(239,68,68,0.1)_20px)]"></div>
-                        
-                        {/* Texto CLASSIFIED */}
+
+                        {/* Silhueta e TOP SECRET */}
                         <div className="relative z-10 text-center">
-                          <div className="text-3xl mb-1 opacity-50">🕶️</div>
-                          <div className="text-[10px] font-bold text-red-400 tracking-wider bg-red-950/50 px-1.5 py-0.5 border border-red-500/30">
-                            CLASSIFIED
+                          <div className="text-4xl mb-1 opacity-80 filter grayscale">👤</div>
+                          <div className="text-[9px] font-black text-red-400 tracking-widest bg-red-950/70 px-2 py-0.5 border border-red-500/50 rotate-[-2deg]">
+                            TOP SECRET
                           </div>
                         </div>
                       </div>
-                      <div className="mt-1.5">
-                        <div className={`text-center px-2 py-1 rounded border ${classificacao.borda} ${classificacao.bg}`}>
-                          <div className={`text-[10px] font-bold ${classificacao.cor} font-mono flex items-center justify-center gap-1`}>
-                            <span>{classificacao.icone}</span>
-                            <span>{classificacao.nome}</span>
-                          </div>
-                        </div>
+                      <div className="mt-2 text-center">
+                        <div className="text-[8px] text-cyan-400/70 font-mono font-bold tracking-widest">OCD</div>
+                        <div className="text-[7px] text-slate-500 font-mono">Est. 2025</div>
                       </div>
                     </div>
 
                     {/* Informações do Caçador */}
-                    <div className="flex-1 space-y-2">
-                      <div>
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <div className="text-[10px] text-slate-500 uppercase font-mono">Nome de Operação</div>
+                    <div className="flex-1">
+                      {/* Nome de Operação */}
+                      <div className="mb-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="text-[10px] text-slate-500 uppercase font-mono tracking-wider">Nome de Operação</div>
                           <button
                             onClick={abrirModalEditarNome}
                             className="text-cyan-400 hover:text-cyan-300 transition-colors text-sm"
@@ -369,53 +325,61 @@ export default function DashboardPage() {
                             ✏️
                           </button>
                         </div>
-                        <div className="text-xl font-bold text-cyan-400">{getNomeOperacao()}</div>
+                        <div className="flex items-center justify-between">
+                          <div className="text-2xl font-black text-cyan-400">{getNomeOperacao()}</div>
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+                            <span className="text-[10px] text-green-400 font-bold uppercase tracking-wider">Operacional</span>
+                          </div>
+                        </div>
                       </div>
 
+                      {/* Hunter Rank e Tempo de Serviço */}
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <div className="text-[10px] text-slate-500 uppercase font-mono mb-0.5">Rank de Cacador</div>
+                          <div className="text-[10px] text-slate-500 uppercase font-mono mb-1 tracking-wider">Rank de Caçador</div>
                           <HunterRankBadge xpTotal={stats?.hunterRankXp || 0} compact={true} />
                         </div>
                         <div>
-                          <div className="text-[10px] text-slate-500 uppercase font-mono mb-0.5">Dias Ativos</div>
+                          <div className="text-[10px] text-slate-500 uppercase font-mono mb-1 tracking-wider">Tempo de Serviço</div>
                           <div className="text-base font-bold text-slate-300">{calcularDiasRegistro()} dias</div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="text-[10px] text-slate-500 uppercase font-mono mb-0.5">Status Operacional</div>
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
-                          <span className="text-xs text-green-400 font-bold">ATIVO E OPERACIONAL</span>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent mb-3"></div>
+                  <div className="h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent mb-4"></div>
 
                   {/* Recursos */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-slate-900/50 rounded p-2 border border-amber-500/20">
-                      <div className="text-[10px] text-slate-500 uppercase font-mono mb-0.5">💰 Moedas</div>
-                      <div className="text-lg font-bold text-amber-400">{stats?.moedas || 0}</div>
-                    </div>
-                    <div className="bg-slate-900/50 rounded p-2 border border-purple-500/20">
-                      <div className="text-[10px] text-slate-500 uppercase font-mono mb-0.5">💎 Fragmentos</div>
-                      <div className="text-lg font-bold text-purple-400">{stats?.fragmentos || 0}</div>
+                  <div className="mb-4">
+                    <div className="text-[10px] text-slate-500 uppercase font-mono mb-2 tracking-wider">Recursos Disponíveis</div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-gradient-to-br from-amber-950/20 to-amber-900/10 rounded-lg p-3 border border-amber-500/30">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-2xl">💰</span>
+                          <div className="text-[10px] text-amber-500/70 uppercase font-mono tracking-wider">Moedas</div>
+                        </div>
+                        <div className="text-xl font-black text-amber-400">{stats?.moedas || 0}</div>
+                      </div>
+                      <div className="bg-gradient-to-br from-purple-950/20 to-purple-900/10 rounded-lg p-3 border border-purple-500/30">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-2xl">💎</span>
+                          <div className="text-[10px] text-purple-500/70 uppercase font-mono tracking-wider">Fragmentos</div>
+                        </div>
+                        <div className="text-xl font-black text-purple-400">{stats?.fragmentos || 0}</div>
+                      </div>
                     </div>
                   </div>
 
                   {/* Selo de Autenticidade */}
-                  <div className="mt-4 flex items-center justify-between pt-4 border-t border-slate-800/50">
+                  <div className="flex items-center justify-between pt-3 border-t border-slate-800/50">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 bg-cyan-500/20 rounded-full border border-cyan-500/50 flex items-center justify-center">
                         <span className="text-cyan-400 text-xs">✓</span>
                       </div>
-                      <span className="text-xs text-slate-500 font-mono">Membro desde: {formatarDataRegistro()}</span>
+                      <span className="text-[10px] text-slate-500 font-mono">Membro desde: {formatarDataRegistro()}</span>
                     </div>
-                    <div className="text-xs text-slate-600 font-mono">OCD-2025 // v2.1.4</div>
+                    <div className="text-[10px] text-slate-600 font-mono">OCD-2025</div>
                   </div>
                 </div>
               </div>

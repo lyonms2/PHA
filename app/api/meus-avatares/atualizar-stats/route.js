@@ -36,6 +36,19 @@ export async function POST(request) {
       console.warn(`⚠️ Player Stats ${userId} não encontrado no Firestore. Atualizando apenas o avatar.`);
     }
 
+    // PROTEÇÃO ANTI-DUPLICAÇÃO: verificar timestamp da última atualização
+    const agora = Date.now();
+    const ultimaAtualizacao = avatarData.ultima_atualizacao_stats || 0;
+    const intervaloMinimo = 1000; // 1 segundo entre updates
+
+    if (agora - ultimaAtualizacao < intervaloMinimo) {
+      console.warn(`⚠️ [ANTI-DUPLICAÇÃO] Tentativa de update muito rápida bloqueada! Avatar: ${avatarData.nome}`);
+      return NextResponse.json(
+        { error: 'Aguarde antes de aplicar recompensas novamente', bloqueado: true },
+        { status: 429 } // Too Many Requests
+      );
+    }
+
     // Calcular novos valores do AVATAR
     const xpAtual = avatarData.xp || 0;
     const vinculoAtual = avatarData.vinculo || 0;
@@ -66,7 +79,8 @@ export async function POST(request) {
       xp: novoXP,
       vinculo: novoVinculo,
       exaustao: novaExaustao,
-      nivel: novoNivel
+      nivel: novoNivel,
+      ultima_atualizacao_stats: agora // Timestamp para proteção anti-duplicação
     };
 
     // HP só atualiza se fornecido (para treino, permanece o mesmo)
