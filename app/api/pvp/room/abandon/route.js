@@ -48,10 +48,9 @@ export async function POST(request) {
     }
 
     const abandonedAvatar = isHost ? room.host_avatar : room.guest_avatar;
-    const bet = isHost ? (room.host_bet || 0) : (room.guest_bet || 0);
 
-    // Calcular penalidades de abandono
-    const penalidades = calcularPenalidadesAbandonoPVP(bet);
+    // Calcular penalidades de abandono (sem apostas)
+    const penalidades = calcularPenalidadesAbandonoPVP();
 
     // Buscar dados atuais do jogador
     const playerStats = await getDocument('player_stats', userId);
@@ -75,11 +74,9 @@ export async function POST(request) {
 
     // Aplicar penalidades no jogador
     const novoFama = Math.max(0, (playerStats.fama || 0) + penalidades.fama);
-    const novoMoedas = Math.max(0, (playerStats.moedas || 0) + penalidades.moedas);
 
     await updateDocument('player_stats', userId, {
-      fama: novoFama,
-      moedas: novoMoedas
+      fama: novoFama
     });
 
     // Marcar sala como finalizada por abandono

@@ -13,12 +13,14 @@ import {
 
 /**
  * Configurações do sistema de exaustão
+ * NOTA: Valores de recuperação estão documentados aqui mas a lógica real
+ * está implementada em /app/api/meus-avatares/route.js
  */
 export const CONFIG_EXAUSTAO = {
   MINIMO: 0,
   MAXIMO: 100,
   INICIAL: 0,
-  
+
   // Taxa de ganho de exaustão (REDUZIDAS EM 50%)
   POR_COMBATE_COMUM: 7.5,
   POR_COMBATE_DIFICIL: 12.5,
@@ -27,12 +29,12 @@ export const CONFIG_EXAUSTAO = {
   POR_MISSAO_LONGA: 10,
   POR_TREINO: 2.5,
   POR_HABILIDADE_ULTIMATE: 5,
-  
-  // Taxa de recuperação
-  RECUPERACAO_POR_HORA_INATIVO: 8,
-  RECUPERACAO_POR_HORA_DESCANSANDO: 15, // Totalmente desativado
-  RECUPERACAO_INSTANTANEA_ITEM: 50, // Usando item especial
-  
+
+  // Taxa de recuperação (DOCUMENTAÇÃO)
+  // Sistema real: 10 pontos/hora (calculado em /app/api/meus-avatares/route.js)
+  // Poções: valor_efeito do item (geralmente 50 pontos)
+  RECUPERACAO_POR_HORA: 10, // Valor REAL usado
+
   // Limites críticos
   NIVEL_ALERTA: 60, // Começa a sentir cansaço
   NIVEL_CRITICO: 80, // Penalidades severas
@@ -54,7 +56,7 @@ export const NIVEIS_EXAUSTAO = {
     bonus: {},
     mensagem_status: 'Seu avatar está revigorado e pronto para qualquer desafio!'
   },
-  
+
   ALERTA: {
     min: 20,
     max: 39,
@@ -66,7 +68,7 @@ export const NIVEIS_EXAUSTAO = {
     bonus: {},
     mensagem_status: 'Seu avatar está em boa forma, mas não ignore os sinais de cansaço.'
   },
-  
+
   CANSADO: {
     min: 40,
     max: 59,
@@ -80,7 +82,7 @@ export const NIVEIS_EXAUSTAO = {
     mensagem_status: 'Seu avatar está começando a ficar cansado. Considere um descanso em breve.',
     avisos: []
   },
-  
+
   EXAUSTO: {
     min: 60,
     max: 79,
@@ -94,7 +96,7 @@ export const NIVEIS_EXAUSTAO = {
     mensagem_status: '⚠️ ATENÇÃO: Seu avatar está exausto! Descanso recomendado!',
     avisos: []
   },
-  
+
   COLAPSO_IMINENTE: {
     min: 80,
     max: 99,
@@ -111,7 +113,7 @@ export const NIVEIS_EXAUSTAO = {
       'Descanse logo para evitar bloqueio'
     ]
   },
-  
+
   COLAPSADO: {
     min: 100,
     max: 100,
@@ -206,7 +208,7 @@ export const FONTES_EXAUSTAO = {
  */
 export function getNivelExaustao(exaustao) {
   const valor = Math.max(CONFIG_EXAUSTAO.MINIMO, Math.min(CONFIG_EXAUSTAO.MAXIMO, exaustao));
-  
+
   for (const nivel of Object.values(NIVEIS_EXAUSTAO)) {
     if (valor >= nivel.min && valor <= nivel.max) {
       return {
@@ -217,7 +219,7 @@ export function getNivelExaustao(exaustao) {
       };
     }
   }
-  
+
   return null;
 }
 
@@ -236,121 +238,6 @@ function getProximoNivel(exaustao) {
 }
 
 /**
- * Processa ganho de exaustão
- * @param {Object} avatar - Avatar atual
- * @param {string} fonte - Fonte de exaustão
- * @param {Object} modificadores - Modificadores opcionais
- * @returns {Object} Resultado
- */
-export function processarGanhoExaustao(avatar, fonte, modificadores = {}) {
-  const fonteInfo = FONTES_EXAUSTAO[fonte];
-  
-  if (!fonteInfo) {
-    return {
-      sucesso: false,
-      erro: 'Fonte de exaustão inválida'
-    };
-  }
-  
-  const exaustaoAtual = avatar.exaustao || 0;
-  const nivelAnterior = getNivelExaustao(exaustaoAtual);
-  
-  // Calcular ganho base
-  let ganho = fonteInfo.ganho;
-  
-  // Modificadores
-  if (modificadores.raridade === 'Lendário') {
-    ganho *= 0.7; // Lendários cansam 30% menos
-  } else if (modificadores.raridade === 'Comum') {
-    ganho *= 1.3; // Comuns cansam 30% mais
-  }
-  
-  if (modificadores.vinculo >= 80) {
-    ganho *= 0.8; // Vínculo alto reduz exaustão em 20%
-  }
-  
-  if (modificadores.vitoria === false) {
-    ganho *= 1.5; // Derrotas cansam 50% mais (frustração)
-  }
-  
-  // Aplicar ganho
-  let novaExaustao = Math.min(CONFIG_EXAUSTAO.MAXIMO, exaustaoAtual + ganho);
-  const nivelNovo = getNivelExaustao(novaExaustao);
-  const mudouNivel = nivelAnterior.nome !== nivelNovo.nome;
-  
-  // Penalidade de vínculo se atingir níveis críticos
-  let penalidade_vinculo = 0;
-  if (nivelNovo.nome === 'COLAPSO_IMINENTE' && nivelAnterior.nome !== 'COLAPSO_IMINENTE') {
-    penalidade_vinculo = -10;
-  } else if (nivelNovo.nome === 'COLAPSADO') {
-    penalidade_vinculo = nivelNovo.penalidade_vinculo;
-  }
-  
-  return {
-    sucesso: true,
-    fonte: fonteInfo.nome,
-    ganho: Math.floor(ganho),
-    exaustao_anterior: exaustaoAtual,
-    exaustao_nova: novaExaustao,
-    nivel_anterior: nivelAnterior,
-    nivel_novo: nivelNovo,
-    mudou_nivel: mudouNivel,
-    penalidade_vinculo: penalidade_vinculo,
-    aviso: mudouNivel ? nivelNovo.mensagem_status : null,
-    pode_continuar: nivelNovo.nome !== 'COLAPSADO'
-  };
-}
-
-/**
- * Processa recuperação de exaustão
- * @param {number} exaustaoAtual - Exaustão atual
- * @param {number} horasPassadas - Horas de descanso
- * @param {boolean} totalmenteInativo - Se está completamente desativado
- * @param {boolean} usouItem - Se usou item de recuperação
- * @returns {Object} Resultado
- */
-export function processarRecuperacao(exaustaoAtual, horasPassadas, totalmenteInativo = false, usouItem = false) {
-  const nivelAnterior = getNivelExaustao(exaustaoAtual);
-  
-  let recuperacao = 0;
-  
-  // Recuperação por item
-  if (usouItem) {
-    recuperacao += CONFIG_EXAUSTAO.RECUPERACAO_INSTANTANEA_ITEM;
-  }
-  
-  // Recuperação por tempo
-  const taxaPorHora = totalmenteInativo 
-    ? CONFIG_EXAUSTAO.RECUPERACAO_POR_HORA_DESCANSANDO 
-    : CONFIG_EXAUSTAO.RECUPERACAO_POR_HORA_INATIVO;
-  
-  recuperacao += taxaPorHora * horasPassadas;
-  
-  // Penalidade se estava colapsado
-  if (nivelAnterior.tempo_recuperacao_aumentado) {
-    recuperacao /= nivelAnterior.tempo_recuperacao_aumentado;
-  }
-  
-  const novaExaustao = Math.max(CONFIG_EXAUSTAO.MINIMO, exaustaoAtual - recuperacao);
-  const nivelNovo = getNivelExaustao(novaExaustao);
-  const mudouNivel = nivelAnterior.nome !== nivelNovo.nome;
-  
-  return {
-    exaustao_anterior: exaustaoAtual,
-    exaustao_nova: novaExaustao,
-    recuperacao: recuperacao,
-    nivel_anterior: nivelAnterior,
-    nivel_novo: nivelNovo,
-    mudou_nivel: mudouNivel,
-    horas_passadas: horasPassadas,
-    totalmente_inativo: totalmenteInativo,
-    mensagem: mudouNivel 
-      ? `✅ Seu avatar se recuperou! Agora está ${nivelNovo.nome}` 
-      : `Recuperando... ${Math.floor(recuperacao)} pontos de exaustão removidos`
-  };
-}
-
-/**
  * Aplica penalidades de exaustão aos stats
  * @param {Object} stats - Stats base
  * @param {number} exaustao - Nível de exaustão
@@ -358,13 +245,13 @@ export function processarRecuperacao(exaustaoAtual, horasPassadas, totalmenteIna
  */
 export function aplicarPenalidadesExaustao(stats, exaustao) {
   const nivel = getNivelExaustao(exaustao);
-  
+
   if (!nivel.penalidades.stats) {
     return stats; // Sem penalidades
   }
-  
+
   const multiplicador = 1 + nivel.penalidades.stats;
-  
+
   return {
     forca: Math.floor(stats.forca * multiplicador),
     agilidade: Math.floor(stats.agilidade * multiplicador),
@@ -373,139 +260,27 @@ export function aplicarPenalidadesExaustao(stats, exaustao) {
   };
 }
 
-/**
- * Verifica se avatar pode entrar em combate
- * @param {number} exaustao - Nível de exaustão
- * @returns {Object} { pode_lutar: boolean, motivo: string }
- */
-export function podeEntrarEmCombate(exaustao) {
-  const nivel = getNivelExaustao(exaustao);
-  
-  if (nivel.penalidades.pode_lutar === false) {
-    return {
-      pode_lutar: false,
-      motivo: 'Avatar colapsado - requer descanso completo',
-      horas_minimas: nivel.requer_descanso_minimo || 12
-    };
-  }
-  
-  if (nivel.nome === 'COLAPSO_IMINENTE') {
-    return {
-      pode_lutar: true,
-      aviso_critico: true,
-      motivo: '⚠️ RISCO EXTREMO: Avatar pode colapsar durante o combate!'
-    };
-  }
-  
-  if (nivel.nome === 'EXAUSTO') {
-    return {
-      pode_lutar: true,
-      aviso: true,
-      motivo: '⚠️ Avatar exausto - desempenho severamente reduzido'
-    };
-  }
-  
-  return { pode_lutar: true };
-}
-
-/**
- * Calcula tempo necessário para recuperação completa
- * @param {number} exaustaoAtual - Exaustão atual
- * @param {boolean} totalmenteInativo - Se ficará totalmente inativo
- * @returns {Object} Informações de tempo
- */
-export function calcularTempoRecuperacao(exaustaoAtual, totalmenteInativo = true) {
-  if (exaustaoAtual === 0) {
-    return {
-      horas: 0,
-      minutos: 0,
-      ja_descansado: true
-    };
-  }
-  
-  const nivel = getNivelExaustao(exaustaoAtual);
-  const taxaPorHora = totalmenteInativo 
-    ? CONFIG_EXAUSTAO.RECUPERACAO_POR_HORA_DESCANSANDO 
-    : CONFIG_EXAUSTAO.RECUPERACAO_POR_HORA_INATIVO;
-  
-  let horasNecessarias = exaustaoAtual / taxaPorHora;
-  
-  // Penalidade de colapso
-  if (nivel.tempo_recuperacao_aumentado) {
-    horasNecessarias *= nivel.tempo_recuperacao_aumentado;
-  }
-  
-  // Mínimo de descanso se colapsado
-  if (nivel.requer_descanso_minimo) {
-    horasNecessarias = Math.max(horasNecessarias, nivel.requer_descanso_minimo);
-  }
-  
-  const horas = Math.floor(horasNecessarias);
-  const minutos = Math.floor((horasNecessarias - horas) * 60);
-  
-  return {
-    horas,
-    minutos,
-    total_horas: horasNecessarias,
-    nivel_atual: nivel.nome,
-    recomendacao: nivel.nome === 'COLAPSADO' 
-      ? 'Descanso imediato obrigatório' 
-      : nivel.nome === 'COLAPSO_IMINENTE'
-        ? 'Descanso urgente recomendado'
-        : 'Descanso recomendado quando possível'
-  };
-}
-
-/**
- * Gera relatório completo de exaustão
- * @param {Object} avatar - Avatar completo
- * @returns {Object} Relatório detalhado
- */
-export function gerarRelatorioExaustao(avatar) {
-  const exaustao = avatar.exaustao || 0;
-  const nivel = getNivelExaustao(exaustao);
-  const combate = podeEntrarEmCombate(exaustao);
-  const recuperacao = calcularTempoRecuperacao(exaustao, true);
-  
-  return {
-    exaustao_atual: exaustao,
-    nivel: nivel.nome,
-    emoji: nivel.emoji,
-    cor: nivel.cor,
-    descricao: nivel.descricao,
-    pode_lutar: combate.pode_lutar,
-    aviso: combate.aviso_critico || combate.aviso,
-    penalidades_ativas: nivel.penalidades,
-    efeitos_visuais: nivel.efeitos_visuais || [],
-    avisos_importantes: nivel.avisos || [],
-    tempo_recuperacao: recuperacao,
-    recomendacao: nivel.mensagem_status,
-    stats_afetados: nivel.penalidades.stats ? 
-      `${Math.abs(nivel.penalidades.stats * 100)}% de redução` : 'Nenhum'
-  };
-}
-
 // ==================== TABELA DE REFERÊNCIA ====================
 
 export const TABELA_EXAUSTAO = `
 ╔═══════════════════════════════════════════════════════════════╗
-║                    SISTEMA DE EXAUSTÃO                        ║
+║              🌟 SISTEMA DE EXAUSTÃO - PHA 🌟                 ║
 ╠═══════════════════════════════════════════════════════════════╣
-║ 💚 DESCANSADO (0-19)                                          ║
-║    Sem penalidades ou bônus                                   ║
-║    Condições ideais de combate                                ║
-╠═══════════════════════════════════════════════════════════════╣
-║ 💛 ALERTA (20-39)                                             ║
+║ 💚 DESCANSADO (0-19)                                         ║
 ║    Sem penalidades                                            ║
-║    Avatar em boa forma                                        ║
+║    Avatar em condições ideais                                 ║
 ╠═══════════════════════════════════════════════════════════════╣
-║ 🟠 CANSADO (40-59)                                            ║
-║    Sem penalidades de combate                                 ║
-║    Avatar pode lutar normalmente                              ║
+║ 💛 ALERTA (20-39)                                            ║
+║    Sem penalidades                                            ║
+║    Começa a sentir leve cansaço                               ║
 ╠═══════════════════════════════════════════════════════════════╣
-║ 🔴 EXAUSTO (60-79)                                            ║
+║ 🟠 CANSADO (40-59)                                           ║
 ║    Sem penalidades de combate                                 ║
-║    Descanso recomendado                                       ║
+║    Cansaço visível mas controlado                             ║
+╠═══════════════════════════════════════════════════════════════╣
+║ 🔴 EXAUSTO (60-79)                                           ║
+║    Sem penalidades de combate                                 ║
+║    Muito cansado - descanse logo                              ║
 ╠═══════════════════════════════════════════════════════════════╣
 ║ 💀 COLAPSO IMINENTE (80-99)                                   ║
 ║    Sem penalidades de combate                                 ║
@@ -517,7 +292,7 @@ export const TABELA_EXAUSTAO = `
 ╠═══════════════════════════════════════════════════════════════╣
 ║ RECUPERAÇÃO:                                                   ║
 ║   Passiva: 10 pontos/hora (offline)                           ║
-║   Botão Descansar: 50 pontos instantâneo                      ║
+║   Poção da Loja: Variável por item                            ║
 ║                                                                ║
 ║ GANHO DE EXAUSTÃO:                                            ║
 ║   Combate Fácil: 2.5 pts                                      ║
@@ -533,11 +308,6 @@ export default {
   NIVEIS_EXAUSTAO,
   FONTES_EXAUSTAO,
   getNivelExaustao,
-  processarGanhoExaustao,
-  processarRecuperacao,
   aplicarPenalidadesExaustao,
-  podeEntrarEmCombate,
-  calcularTempoRecuperacao,
-  gerarRelatorioExaustao,
   TABELA_EXAUSTAO
 };

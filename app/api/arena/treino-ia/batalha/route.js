@@ -19,6 +19,7 @@ import {
   calcularPenalidadesAbandono
 } from '@/lib/arena/rewardsSystem';
 import { calcularHPMaximoCompleto } from '@/lib/combat/statsCalculator';
+import { trackMissionProgress } from '@/lib/missions/missionTracker';
 
 export const dynamic = 'force-dynamic';
 
@@ -338,6 +339,18 @@ export async function POST(request) {
       battle.rewardsApplied = true;
       battleSessions.set(battleId, battle);
 
+      // Rastrear progresso de missões (não bloqueia se falhar)
+      const userId = battle.playerAvatarOriginal?.user_id;
+      if (userId) {
+        trackMissionProgress(userId, 'VITORIA_TREINO', 1);
+        // Rastrear dificuldade específica
+        if (battle.dificuldade === 'normal') {
+          trackMissionProgress(userId, 'VITORIA_TREINO_NORMAL', 1);
+        } else if (battle.dificuldade === 'dificil') {
+          trackMissionProgress(userId, 'VITORIA_TREINO_DIFICIL', 1);
+        }
+      }
+
       return NextResponse.json({
         success: true,
         ...result,
@@ -397,6 +410,18 @@ export async function POST(request) {
       console.log('💰 [RECOMPENSAS] IA morreu por efeitos - Calculadas:', recompensas);
       battle.rewardsApplied = true;
       battleSessions.set(battleId, battle);
+
+      // Rastrear progresso de missões (não bloqueia se falhar)
+      const userId = battle.playerAvatarOriginal?.user_id;
+      if (userId) {
+        trackMissionProgress(userId, 'VITORIA_TREINO', 1);
+        // Rastrear dificuldade específica
+        if (battle.dificuldade === 'normal') {
+          trackMissionProgress(userId, 'VITORIA_TREINO_NORMAL', 1);
+        } else if (battle.dificuldade === 'dificil') {
+          trackMissionProgress(userId, 'VITORIA_TREINO_DIFICIL', 1);
+        }
+      }
 
       return NextResponse.json({
         success: true,
