@@ -293,20 +293,15 @@ export default function DashboardPage() {
                   <div className="flex gap-4 mb-4">
                     {/* Logo da Organização */}
                     <div className="flex-shrink-0">
-                      <div className="w-24 h-24 bg-gradient-to-br from-cyan-900/40 via-blue-900/40 to-purple-900/40 rounded-lg flex items-center justify-center border-2 border-cyan-500/50 relative overflow-hidden backdrop-blur-sm">
-                        {/* Efeito de brilho rotativo */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 via-transparent to-purple-500/20 animate-pulse"></div>
+                      <div className="w-24 h-24 bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg flex items-center justify-center border-2 border-red-500/50 relative overflow-hidden">
+                        {/* Efeito de barras diagonais */}
+                        <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(239,68,68,0.1)_10px,rgba(239,68,68,0.1)_20px)]"></div>
 
-                        {/* Portal Dimensional - Logo */}
+                        {/* Silhueta e TOP SECRET */}
                         <div className="relative z-10 text-center">
-                          {/* Anel externo */}
-                          <div className="absolute inset-2 border-2 border-cyan-400/60 rounded-full animate-spin" style={{animationDuration: '8s'}}></div>
-                          {/* Anel médio */}
-                          <div className="absolute inset-3 border-2 border-blue-400/40 rounded-full animate-spin" style={{animationDuration: '6s', animationDirection: 'reverse'}}></div>
-                          {/* Centro do portal */}
-                          <div className="relative w-16 h-16 flex items-center justify-center">
-                            <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/30 to-purple-500/30 rounded-full blur-sm"></div>
-                            <div className="relative text-3xl filter drop-shadow-lg">🌀</div>
+                          <div className="text-4xl mb-1 opacity-80 filter grayscale">👤</div>
+                          <div className="text-[9px] font-black text-red-400 tracking-widest bg-red-950/70 px-2 py-0.5 border border-red-500/50 rotate-[-2deg]">
+                            TOP SECRET
                           </div>
                         </div>
                       </div>
