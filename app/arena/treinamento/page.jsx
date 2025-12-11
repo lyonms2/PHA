@@ -76,6 +76,14 @@ export default function TreinamentoAIPage() {
       return;
     }
 
+    if (!avatarSuporte) {
+      setModalAlerta({
+        titulo: '⚠️ Avatar Suporte Obrigatório',
+        mensagem: 'Você precisa selecionar um avatar suporte para criar uma sinergia!'
+      });
+      return;
+    }
+
     if (!avatarAtivo.vivo) {
       setModalAlerta({
         titulo: '💀 Avatar Morto',
@@ -139,7 +147,8 @@ export default function TreinamentoAIPage() {
         oponente: data.oponente,
         personalidadeIA: data.personalidadeIA,
         dificuldade: data.dificuldade,
-        sinergia: data.sinergia || null // Informações da sinergia (se houver)
+        sinergia: data.sinergia || null, // Sinergia do jogador
+        sinergiaIA: data.sinergiaIA || null // Sinergia da IA
       };
 
       sessionStorage.setItem('treino_ia_dados', JSON.stringify(dadosPartida));
@@ -330,12 +339,13 @@ export default function TreinamentoAIPage() {
 
             {/* Seleção de Avatar Suporte */}
             <div className="bg-slate-900/50 border border-cyan-700 rounded-lg p-4">
-              <h3 className="text-sm font-bold text-cyan-400 mb-3">✨ Avatar Suporte (Opcional)</h3>
+              <h3 className="text-sm font-bold text-cyan-400 mb-3">✨ Avatar Suporte <span className="text-red-400">(Obrigatório)</span></h3>
 
               {todosAvatares.length === 0 ? (
-                <p className="text-slate-500 text-xs text-center py-2">
-                  Nenhum avatar disponível para suporte
-                </p>
+                <div className="text-center py-2">
+                  <p className="text-red-500 text-xs font-bold mb-1">⚠️ Sem avatares disponíveis</p>
+                  <p className="text-slate-500 text-[10px]">Você precisa de pelo menos 2 avatares vivos para treinar</p>
+                </div>
               ) : (
                 <select
                   value={avatarSuporte?.id || ''}
@@ -345,7 +355,7 @@ export default function TreinamentoAIPage() {
                   }}
                   className="w-full bg-slate-800 border border-cyan-500/30 rounded px-3 py-2 text-sm text-white focus:border-cyan-400 focus:outline-none"
                 >
-                  <option value="">Nenhum (Sem sinergia)</option>
+                  <option value="">Selecione um avatar suporte...</option>
                   {todosAvatares.map(avatar => (
                     <option key={avatar.id} value={avatar.id}>
                       {avatar.nome} - {avatar.elemento} Nv.{avatar.nivel}
@@ -409,7 +419,8 @@ export default function TreinamentoAIPage() {
                 <li>• Sem risco de morte permanente</li>
                 <li>• Ganhe XP e fortaleça vínculo</li>
                 <li>• Dificuldade adaptativa por sala</li>
-                <li className="text-cyan-400">• ✨ Novo: Use avatar suporte para sinergias!</li>
+                <li className="text-cyan-400 font-bold">• ✨ Sistema de sinergias obrigatório!</li>
+                <li className="text-slate-500 text-xs pl-4">Você e a IA terão avatares suporte</li>
               </ul>
             </div>
           </div>

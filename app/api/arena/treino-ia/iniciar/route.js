@@ -250,33 +250,61 @@ export async function POST(request) {
       dificuldade
     });
 
-    // Gerar oponente IA balanceado
-    const oponente = gerarAvatarIABalanceado(poderJogador, minPower, maxPower, dificuldade);
+    // Gerar oponente IA balanceado (Principal)
+    const oponentePrincipal = gerarAvatarIABalanceado(poderJogador, minPower, maxPower, dificuldade);
+
+    // Gerar avatar suporte da IA (menor poder, elemento diferente)
+    const elementosSuporte = ['Fogo', 'Água', 'Terra', 'Vento', 'Eletricidade', 'Sombra', 'Luz', 'Void', 'Aether']
+      .filter(el => el !== oponentePrincipal.elemento);
+    const elementoSuporte = elementosSuporte[Math.floor(Math.random() * elementosSuporte.length)];
+
+    // Suporte tem poder menor (70-85% do principal)
+    const poderSuporte = Math.floor(oponentePrincipal._poderTotal * (0.7 + Math.random() * 0.15));
+    const oponenteSuporte = gerarAvatarIABalanceado(poderJogador, Math.max(0, poderSuporte - 5), poderSuporte + 5, dificuldade);
+    oponenteSuporte.elemento = elementoSuporte;
+    oponenteSuporte.nome = `${oponenteSuporte.nome} (Suporte)`;
+
+    // Aplicar sinergia da IA
+    const resultadoSinergiaIA = aplicarSinergia(oponentePrincipal, oponenteSuporte);
+    Object.assign(oponentePrincipal, resultadoSinergiaIA.stats);
+
+    const sinergiaIA = {
+      ...resultadoSinergiaIA.synergy,
+      modificadores: resultadoSinergiaIA.modificadores,
+      avatarSuporte: {
+        id: oponenteSuporte.id,
+        nome: oponenteSuporte.nome,
+        elemento: oponenteSuporte.elemento,
+        nivel: oponenteSuporte.nivel
+      }
+    };
 
     // Escolher personalidade da IA
     const personalidadeIA = escolherPersonalidade();
 
     console.log('🤖 Oponente IA gerado:', {
-      nome: oponente.nome,
-      elemento: oponente.elemento,
-      poder: oponente._poderTotal,
-      stats: {
-        forca: oponente.forca,
-        agilidade: oponente.agilidade,
-        resistencia: oponente.resistencia,
-        foco: oponente.foco
+      principal: {
+        nome: oponentePrincipal.nome,
+        elemento: oponentePrincipal.elemento,
+        poder: oponentePrincipal._poderTotal
       },
-      personalidade: personalidadeIA.tipo,
-      habilidades: oponente.habilidades.map(h => h.nome)
+      suporte: {
+        nome: oponenteSuporte.nome,
+        elemento: oponenteSuporte.elemento,
+        poder: oponenteSuporte._poderTotal
+      },
+      sinergia: sinergiaIA.nome,
+      personalidade: personalidadeIA.tipo
     });
 
     // Retornar dados para o frontend
     return NextResponse.json({
       sucesso: true,
-      oponente,
+      oponente: oponentePrincipal,
       personalidadeIA,
       dificuldade,
-      sinergia: sinergiaInfo // Informações da sinergia (ou null se não houver)
+      sinergia: sinergiaInfo, // Sinergia do jogador
+      sinergiaIA: sinergiaIA // Sinergia da IA
     });
 
   } catch (error) {

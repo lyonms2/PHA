@@ -12,6 +12,8 @@ import {
   getEfeitoEmoji
 } from './utils';
 import SynergyDisplay from './components/SynergyDisplay';
+import AvatarDuoDisplay from './components/AvatarDuoDisplay';
+import BattleLog from './components/BattleLog';
 
 function BatalhaTreinoIAContent() {
   const router = useRouter();
@@ -21,6 +23,7 @@ function BatalhaTreinoIAContent() {
   const [battleId, setBattleId] = useState(null);
   const [meuAvatar, setMeuAvatar] = useState(null);
   const [iaAvatar, setIaAvatar] = useState(null);
+  const [currentTurn, setCurrentTurn] = useState(1);
   const [myHp, setMyHp] = useState(100);
   const [myHpMax, setMyHpMax] = useState(100);
   const [opponentHp, setOpponentHp] = useState(100);
@@ -46,8 +49,9 @@ function BatalhaTreinoIAContent() {
   const [aplicandoRecompensas, setAplicandoRecompensas] = useState(false);
   const recompensasAplicadasRef = useRef(false); // Proteção contra cliques duplicados
 
-  // Sinergia ativa
+  // Sinergias ativas
   const [sinergiaAtiva, setSinergiaAtiva] = useState(null);
+  const [sinergiaIA, setSinergiaIA] = useState(null);
 
   // Carregar usuário
   useEffect(() => {
@@ -76,10 +80,14 @@ function BatalhaTreinoIAContent() {
         setIaAvatar(dados.oponente);
         setDificuldade(dados.dificuldade || 'normal');
 
-        // Carregar sinergia se houver
+        // Carregar sinergias
         if (dados.sinergia) {
           setSinergiaAtiva(dados.sinergia);
-          console.log('✨ Sinergia carregada na batalha:', dados.sinergia.nome);
+          console.log('✨ Sinergia Player:', dados.sinergia.nome);
+        }
+        if (dados.sinergiaIA) {
+          setSinergiaIA(dados.sinergiaIA);
+          console.log('✨ Sinergia IA:', dados.sinergiaIA.nome);
         }
 
         // Inicializar batalha
