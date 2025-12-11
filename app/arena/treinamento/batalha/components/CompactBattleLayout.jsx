@@ -32,6 +32,7 @@ export default function CompactBattleLayout({
 
   // Ações
   atacar,
+  defender,
   usarHabilidade,
   abandonar,
   actionInProgress
@@ -52,9 +53,9 @@ export default function CompactBattleLayout({
       </div>
 
       {/* Grid Principal - 3 Colunas */}
-      <div className="flex-1 grid grid-cols-3 gap-2 min-h-0">
+      <div className="flex-1 grid grid-cols-[1fr_1.2fr_1fr] gap-2 min-h-0">
         {/* COLUNA ESQUERDA - PLAYER */}
-        <div className="flex flex-col gap-2 min-h-0">
+        <div className="flex flex-col gap-1.5 min-h-0">
           {/* Avatar Duo */}
           <AvatarDuoDisplay
             principal={meuAvatar}
@@ -63,7 +64,7 @@ export default function CompactBattleLayout({
           />
 
           {/* HP e Energia */}
-          <div className="bg-slate-900/95 rounded-lg border border-cyan-500/40 p-2 space-y-1.5">
+          <div className="bg-slate-900/95 rounded-lg border border-cyan-500/40 p-1.5 space-y-1">
             {/* HP */}
             <div>
               <div className="flex justify-between text-[9px] mb-0.5">
@@ -119,16 +120,21 @@ export default function CompactBattleLayout({
             </div>
           )}
 
-          {/* Sinergia Player */}
+          {/* Sinergia Player - Compacta */}
           {sinergiaPlayer && (
-            <div className="flex-1 min-h-0 overflow-y-auto">
-              <SynergyDisplay sinergia={sinergiaPlayer} />
+            <div className="bg-slate-900/95 rounded-lg border border-purple-500/40 p-1.5 max-h-32 overflow-y-auto">
+              <div className="text-[9px] font-bold text-purple-300 mb-1 text-center">
+                ✨ {sinergiaPlayer.nome}
+              </div>
+              <div className="text-[8px] text-slate-400 text-center">
+                {meuAvatar.elemento} × {sinergiaPlayer.avatarSuporte?.elemento}
+              </div>
             </div>
           )}
         </div>
 
         {/* COLUNA CENTRO - LOG E AÇÕES */}
-        <div className="flex flex-col gap-2 min-h-0">
+        <div className="flex flex-col gap-1.5 min-h-0">
           {/* Log de Batalha */}
           <div className="flex-1 min-h-0">
             <BattleLog logs={log} currentTurn={currentTurn} />
@@ -141,24 +147,40 @@ export default function CompactBattleLayout({
             </div>
 
             <div className="space-y-1.5">
-              {/* Ataque Básico */}
-              <button
-                onClick={atacar}
-                disabled={!isYourTurn || actionInProgress}
-                className={`w-full px-2 py-1.5 rounded text-[11px] font-bold ${
-                  isYourTurn && !actionInProgress
-                    ? 'bg-red-600 hover:bg-red-500 text-white'
-                    : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                }`}
-              >
-                ⚔️ Ataque Básico
-              </button>
+              {/* Ataque e Defender */}
+              <div className="grid grid-cols-2 gap-1.5">
+                <button
+                  onClick={atacar}
+                  disabled={!isYourTurn || actionInProgress}
+                  className={`px-2 py-1.5 rounded text-[10px] font-bold ${
+                    isYourTurn && !actionInProgress
+                      ? 'bg-red-600 hover:bg-red-500 text-white'
+                      : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                  }`}
+                >
+                  <div>⚔️ Ataque</div>
+                  <div className="text-[8px] opacity-75">-10⚡</div>
+                </button>
+
+                <button
+                  onClick={defender}
+                  disabled={!isYourTurn || actionInProgress}
+                  className={`px-2 py-1.5 rounded text-[10px] font-bold ${
+                    isYourTurn && !actionInProgress
+                      ? 'bg-blue-600 hover:bg-blue-500 text-white'
+                      : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                  }`}
+                >
+                  <div>🛡️ Defender</div>
+                  <div className="text-[8px] opacity-75">+20⚡|-50%</div>
+                </button>
+              </div>
 
               {/* Habilidades */}
               {meuAvatar?.habilidades?.slice(0, 3).map((hab, idx) => (
                 <button
                   key={idx}
-                  onClick={() => usarHabilidade(hab)}
+                  onClick={() => usarHabilidade(idx)}
                   disabled={!isYourTurn || actionInProgress || myEnergy < (hab.custo || 20)}
                   className={`w-full px-2 py-1.5 rounded text-[10px] font-bold ${
                     isYourTurn && !actionInProgress && myEnergy >= (hab.custo || 20)
@@ -184,7 +206,7 @@ export default function CompactBattleLayout({
         </div>
 
         {/* COLUNA DIREITA - IA */}
-        <div className="flex flex-col gap-2 min-h-0">
+        <div className="flex flex-col gap-1.5 min-h-0">
           {/* Avatar Duo */}
           <AvatarDuoDisplay
             principal={iaAvatar}
@@ -193,7 +215,7 @@ export default function CompactBattleLayout({
           />
 
           {/* HP e Energia */}
-          <div className="bg-slate-900/95 rounded-lg border border-red-500/40 p-2 space-y-1.5">
+          <div className="bg-slate-900/95 rounded-lg border border-red-500/40 p-1.5 space-y-1">
             {/* HP */}
             <div>
               <div className="flex justify-between text-[9px] mb-0.5">
@@ -249,10 +271,15 @@ export default function CompactBattleLayout({
             </div>
           )}
 
-          {/* Sinergia IA */}
+          {/* Sinergia IA - Compacta */}
           {sinergiaIA && (
-            <div className="flex-1 min-h-0 overflow-y-auto">
-              <SynergyDisplay sinergia={sinergiaIA} />
+            <div className="bg-slate-900/95 rounded-lg border border-purple-500/40 p-1.5 max-h-32 overflow-y-auto">
+              <div className="text-[9px] font-bold text-purple-300 mb-1 text-center">
+                ✨ {sinergiaIA.nome}
+              </div>
+              <div className="text-[8px] text-slate-400 text-center">
+                {iaAvatar.elemento} × {sinergiaIA.avatarSuporte?.elemento}
+              </div>
             </div>
           )}
         </div>

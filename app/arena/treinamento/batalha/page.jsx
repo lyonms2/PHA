@@ -464,6 +464,10 @@ function BatalhaTreinoIAContent() {
 
       const result = await response.json();
       if (result.success) {
+        // Incrementar turno
+        setCurrentTurn(prev => prev + 1);
+        addLog(`🌀 === Turno ${currentTurn + 1} ===`);
+
         // Log da ação do jogador
         if (result.log && result.log.detalhes) {
           addLog(result.log.detalhes);
@@ -576,6 +580,7 @@ function BatalhaTreinoIAContent() {
           currentTurn={currentTurn}
           log={log}
           atacar={atacar}
+          defender={defender}
           usarHabilidade={usarHabilidade}
           abandonar={() => router.push('/arena/treinamento')}
           actionInProgress={actionInProgress}
