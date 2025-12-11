@@ -1,30 +1,42 @@
 /**
  * Componente de log de batalha detalhado e compacto
- * Mostra apenas os últimos 8 eventos para economizar espaço
+ * Mostra todos os logs com scroll automático para o mais recente
  */
 
+import { useEffect, useRef } from 'react';
+
 export default function BattleLog({ logs, currentTurn }) {
-  // Mostrar apenas os últimos 8 logs
-  const recentLogs = logs.slice(-8);
+  const logEndRef = useRef(null);
+
+  // Auto-scroll para o log mais recente
+  useEffect(() => {
+    if (logEndRef.current) {
+      logEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [logs]);
 
   return (
     <div className="bg-slate-900/95 rounded-lg border border-slate-700 p-2 h-full flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-2 pb-1 border-b border-slate-700">
         <span className="text-[10px] font-bold text-slate-400">📜 LOG DE BATALHA</span>
-        <span className="text-[9px] text-slate-500">Turno {currentTurn || 1}</span>
+        <span className="text-[9px] text-slate-500">Turno {currentTurn || 1} | {logs.length} eventos</span>
       </div>
 
       {/* Logs - Fixed height com scroll interno */}
       <div className="flex-1 overflow-y-auto space-y-1 min-h-0 pr-1">
-        {recentLogs.length === 0 ? (
+        {logs.length === 0 ? (
           <div className="text-[10px] text-slate-500 text-center py-4">
             Aguardando início da batalha...
           </div>
         ) : (
-          recentLogs.map((msg, idx) => (
-            <LogEntry key={idx} message={msg} isLatest={idx === recentLogs.length - 1} />
-          ))
+          <>
+            {logs.map((msg, idx) => (
+              <LogEntry key={idx} message={msg} isLatest={idx === logs.length - 1} />
+            ))}
+            {/* Elemento invisível para scroll automático */}
+            <div ref={logEndRef} />
+          </>
         )}
       </div>
     </div>
@@ -58,15 +70,27 @@ function LogEntry({ message, isLatest }) {
     bgColor = 'bg-purple-900/20';
     borderColor = 'border-purple-700/30';
     textColor = 'text-purple-300';
+  } else if (message.includes('📊')) {
+    // Linha de cálculos - destaque especial
+    bgColor = 'bg-cyan-900/20';
+    borderColor = 'border-cyan-700/30';
+    textColor = 'text-cyan-200';
   }
+
+  // Quebrar mensagem em linhas para melhor formatação
+  const lines = message.split('\n');
 
   return (
     <div
-      className={`${bgColor} ${textColor} border ${borderColor} rounded px-2 py-1 text-[10px] leading-tight ${
-        isLatest ? 'animate-pulse' : ''
+      className={`${bgColor} ${textColor} border ${borderColor} rounded px-2 py-1.5 text-[10px] leading-relaxed ${
+        isLatest ? 'ring-2 ring-purple-500/50' : ''
       }`}
     >
-      {message}
+      {lines.map((line, idx) => (
+        <div key={idx} className={idx > 0 ? 'mt-0.5' : ''}>
+          {line}
+        </div>
+      ))}
     </div>
   );
 }
