@@ -11,6 +11,10 @@ import {
   ehBuff,
   getEfeitoEmoji
 } from './utils';
+import SynergyDisplay from './components/SynergyDisplay';
+import AvatarDuoDisplay from './components/AvatarDuoDisplay';
+import BattleLog from './components/BattleLog';
+import CompactBattleLayout from './components/CompactBattleLayout';
 
 function BatalhaTreinoIAContent() {
   const router = useRouter();
@@ -20,6 +24,7 @@ function BatalhaTreinoIAContent() {
   const [battleId, setBattleId] = useState(null);
   const [meuAvatar, setMeuAvatar] = useState(null);
   const [iaAvatar, setIaAvatar] = useState(null);
+  const [currentTurn, setCurrentTurn] = useState(1);
   const [myHp, setMyHp] = useState(100);
   const [myHpMax, setMyHpMax] = useState(100);
   const [opponentHp, setOpponentHp] = useState(100);
@@ -44,6 +49,10 @@ function BatalhaTreinoIAContent() {
   const [mostrarRecompensas, setMostrarRecompensas] = useState(false);
   const [aplicandoRecompensas, setAplicandoRecompensas] = useState(false);
   const recompensasAplicadasRef = useRef(false); // Proteção contra cliques duplicados
+
+  // Sinergias ativas
+  const [sinergiaAtiva, setSinergiaAtiva] = useState(null);
+  const [sinergiaIA, setSinergiaIA] = useState(null);
 
   // Carregar usuário
   useEffect(() => {
@@ -71,6 +80,16 @@ function BatalhaTreinoIAContent() {
         setMeuAvatar(dados.playerAvatar);
         setIaAvatar(dados.oponente);
         setDificuldade(dados.dificuldade || 'normal');
+
+        // Carregar sinergias
+        if (dados.sinergia) {
+          setSinergiaAtiva(dados.sinergia);
+          console.log('✨ Sinergia Player:', dados.sinergia.nome);
+        }
+        if (dados.sinergiaIA) {
+          setSinergiaIA(dados.sinergiaIA);
+          console.log('✨ Sinergia IA:', dados.sinergiaIA.nome);
+        }
 
         // Inicializar batalha
         const response = await fetch('/api/arena/treino-ia/batalha', {
@@ -396,6 +415,10 @@ function BatalhaTreinoIAContent() {
 
       const result = await response.json();
       if (result.success) {
+        // Incrementar turno
+        setCurrentTurn(prev => prev + 1);
+        addLog(`🌀 === Turno ${currentTurn + 1} ===`);
+
         // Log da ação do jogador
         if (result.log && result.log.detalhes) {
           addLog(result.log.detalhes);
@@ -478,6 +501,10 @@ function BatalhaTreinoIAContent() {
 
       const result = await response.json();
       if (result.success) {
+        // Incrementar turno
+        setCurrentTurn(prev => prev + 1);
+        addLog(`🌀 === Turno ${currentTurn + 1} ===`);
+
         // Log da ação do jogador
         if (result.log && result.log.detalhes) {
           addLog(result.log.detalhes);
@@ -527,9 +554,37 @@ function BatalhaTreinoIAContent() {
 
   const poderMeu = calcularPoderTotal(meuAvatar);
   const poderIA = calcularPoderTotal(iaAvatar);
-  const hpMeuPercent = (myHp / myHpMax) * 100;
-  const hpIAPercent = (opponentHp / opponentHpMax) * 100;
 
+  // Se batalha ativa, usar layout compacto
+  if (status === 'active') {
+    return (
+      <>
+        <CompactBattleLayout
+          meuAvatar={meuAvatar}
+          iaAvatar={iaAvatar}
+          sinergiaPlayer={sinergiaAtiva}
+          sinergiaIA={sinergiaIA}
+          myHp={myHp}
+          myHpMax={myHpMax}
+          opponentHp={opponentHp}
+          opponentHpMax={opponentHpMax}
+          myEnergy={myEnergy}
+          opponentEnergy={opponentEnergy}
+          myEffects={myEffects}
+          opponentEffects={opponentEffects}
+          isYourTurn={isYourTurn}
+          currentTurn={currentTurn}
+          log={log}
+          atacar={atacar}
+          usarHabilidade={usarHabilidade}
+          abandonar={() => router.push('/arena/treinamento')}
+          actionInProgress={actionInProgress}
+        />
+      </>
+    );
+  }
+
+  // Se batalha finalizada, mostrar recompensas
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950 text-gray-100 p-4">
       <div className="max-w-4xl mx-auto">
@@ -671,6 +726,13 @@ function BatalhaTreinoIAContent() {
               )}
             </div>
           </div>
+
+          {/* SINERGIA ATIVA */}
+          {sinergiaAtiva && (
+            <div className="lg:col-span-2">
+              <SynergyDisplay sinergia={sinergiaAtiva} />
+            </div>
+          )}
 
           {/* OPONENTE IA */}
           <div className="relative">

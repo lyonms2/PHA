@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import AvatarSVG from "../../../components/AvatarSVG";
 import { calcularPoderTotal } from "@/lib/gameLogic";
 import { HABILIDADES_POR_ELEMENTO } from "@/app/avatares/sistemas/abilitiesSystem";
+import { aplicarSinergia } from "@/lib/combat/synergyApplicator";
+import SynergyDisplay from "../../treinamento/batalha/components/SynergyDisplay";
 import {
   atualizarBalanceamentoHabilidade,
   getElementoEmoji,
@@ -20,10 +22,13 @@ function DuelContent() {
   const roomIdParam = searchParams.get('room');
   const minPower = parseInt(searchParams.get('minPower') || '0');
   const maxPower = parseInt(searchParams.get('maxPower') || '999');
+  const suporteIdParam = searchParams.get('suporteId');
 
   const [visitorId, setVisitorId] = useState(null);
   const [meuNome, setMeuNome] = useState('');
   const [meuAvatar, setMeuAvatar] = useState(null);
+  const [meuAvatarSuporte, setMeuAvatarSuporte] = useState(null);
+  const [minhaSinergia, setMinhaSinergia] = useState(null);
   const [roomId, setRoomId] = useState(roomIdParam);
   const [players, setPlayers] = useState([]);
   const [pendingChallenge, setPendingChallenge] = useState(null);
@@ -92,6 +97,40 @@ function DuelContent() {
       if (response.ok) {
         const ativo = data.avatares.find(av => av.ativo && av.vivo);
         setMeuAvatar(ativo || null);
+
+        // Carregar avatar suporte se fornecido
+        if (suporteIdParam && ativo) {
+          const suporte = data.avatares.find(av => av.id === suporteIdParam);
+          if (suporte) {
+            setMeuAvatarSuporte(suporte);
+
+            // Aplicar sinergia
+            const resultadoSinergia = aplicarSinergia(ativo, suporte);
+            const sinergiaInfo = {
+              ...resultadoSinergia.synergy,
+              modificadores: resultadoSinergia.modificadores,
+              avatarSuporte: {
+                id: suporte.id,
+                nome: suporte.nome,
+                elemento: suporte.elemento,
+                nivel: suporte.nivel
+              }
+            };
+            setMinhaSinergia(sinergiaInfo);
+
+            // Atualizar avatar principal com stats da sinergia
+            setMeuAvatar({
+              ...ativo,
+              ...resultadoSinergia.stats
+            });
+
+            console.log('✨ Sinergia carregada no PVP:', {
+              principal: ativo.nome,
+              suporte: suporte.nome,
+              sinergia: sinergiaInfo.nome
+            });
+          }
+        }
       }
     } catch (error) {
       console.error("Erro ao carregar avatar:", error);
@@ -1498,6 +1537,13 @@ function DuelContent() {
             </div>
           </div>
         </div>
+
+        {/* Sinergia Ativa */}
+        {minhaSinergia && (
+          <div className="mb-3">
+            <SynergyDisplay sinergia={minhaSinergia} />
+          </div>
+        )}
 
         {/* Modal de Apostas */}
         {showBetUI && (

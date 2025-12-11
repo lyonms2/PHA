@@ -12,7 +12,9 @@ export const ELEMENTOS = {
   VENTO: 'Vento',
   ELETRICIDADE: 'Eletricidade',
   SOMBRA: 'Sombra',
-  LUZ: 'Luz'
+  LUZ: 'Luz',
+  VOID: 'Void',      // Elemento raro - domínio do vazio
+  AETHER: 'Aether'   // Elemento raro - essência primordial
 };
 
 /**
@@ -61,10 +63,25 @@ export const VANTAGENS_ELEMENTAIS = {
     oposto: ELEMENTOS.LUZ
   },
   [ELEMENTOS.LUZ]: {
-    forte_contra: [ELEMENTOS.SOMBRA],
-    fraco_contra: [ELEMENTOS.SOMBRA],
+    forte_contra: [ELEMENTOS.SOMBRA, ELEMENTOS.VOID],
+    fraco_contra: [],
     neutro: [ELEMENTOS.FOGO, ELEMENTOS.AGUA, ELEMENTOS.TERRA, ELEMENTOS.VENTO, ELEMENTOS.ELETRICIDADE],
     oposto: ELEMENTOS.SOMBRA
+  },
+  [ELEMENTOS.VOID]: {
+    forte_contra: [ELEMENTOS.LUZ, ELEMENTOS.SOMBRA],
+    fraco_contra: [ELEMENTOS.AETHER],
+    neutro: [ELEMENTOS.FOGO, ELEMENTOS.AGUA, ELEMENTOS.TERRA, ELEMENTOS.VENTO],
+    resiste: [ELEMENTOS.ELETRICIDADE],
+    oposto: ELEMENTOS.AETHER,
+    especial: 'Reduz dano de todos os elementos em 30%, exceto Aether'
+  },
+  [ELEMENTOS.AETHER]: {
+    forte_contra: [ELEMENTOS.VOID],
+    fraco_contra: [],
+    neutro: [ELEMENTOS.FOGO, ELEMENTOS.AGUA, ELEMENTOS.TERRA, ELEMENTOS.VENTO, ELEMENTOS.ELETRICIDADE, ELEMENTOS.LUZ, ELEMENTOS.SOMBRA],
+    oposto: ELEMENTOS.VOID,
+    especial: 'Ignora porção de defesas básicas; age sempre antes de Void'
   }
 };
 
@@ -81,24 +98,37 @@ export function calcularVantagemElemental(elementoAtacante, elementoDefensor) {
   }
 
   const vantagens = VANTAGENS_ELEMENTAIS[elementoAtacante];
-  
+
   if (!vantagens) {
     return 1.0; // Elemento inválido
   }
 
-  // Verifica se é oposto (Luz vs Sombra)
-  if (vantagens.oposto === elementoDefensor) {
-    return 2.0; // Dano extremo contra oposto
+  // REGRA ESPECIAL: Void vs Aether ou Aether vs Void = 1.4x
+  if ((elementoAtacante === ELEMENTOS.VOID && elementoDefensor === ELEMENTOS.AETHER) ||
+      (elementoAtacante === ELEMENTOS.AETHER && elementoDefensor === ELEMENTOS.VOID)) {
+    return 1.4;
+  }
+
+  // Verifica se é oposto (Luz vs Sombra) = 2.0x
+  if (vantagens.oposto === elementoDefensor &&
+      elementoAtacante !== ELEMENTOS.VOID &&
+      elementoAtacante !== ELEMENTOS.AETHER) {
+    return 2.0; // Dano extremo contra oposto (exceto Void/Aether que usam 1.4x)
   }
 
   // Super efetivo
-  if (vantagens.forte_contra.includes(elementoDefensor)) {
+  if (vantagens.forte_contra && vantagens.forte_contra.includes(elementoDefensor)) {
     return 1.5;
   }
 
   // Pouco efetivo
-  if (vantagens.fraco_contra.includes(elementoDefensor)) {
+  if (vantagens.fraco_contra && vantagens.fraco_contra.includes(elementoDefensor)) {
     return 0.75;
+  }
+
+  // Resistência
+  if (vantagens.resiste && vantagens.resiste.includes(elementoDefensor)) {
+    return 0.85;
   }
 
   // Neutro (padrão)
@@ -207,6 +237,38 @@ export const CARACTERISTICAS_ELEMENTAIS = {
     estilo_combate: 'Clérigo',
     cor_primaria: '#FFD700',
     cor_secundaria: '#FFFFFF'
+  },
+  [ELEMENTOS.VOID]: {
+    stat_primaria: 'foco',
+    stat_secundaria: 'forca',
+    stat_fraca: 'agilidade',
+    descricao: 'Domínio do vazio - anula buffs e drena energia',
+    bonus_passivo: {
+      tipo: 'anulacao',
+      valor: 0.50, // 50% chance de ignorar dano
+      descricao: 'Distorção: 50% de chance de ignorar completamente o dano recebido'
+    },
+    estilo_combate: 'Anulador',
+    cor_primaria: '#1a0033',
+    cor_secundaria: '#4d0099',
+    emoji: '🕳️',
+    raridade: 'extremamente_raro'
+  },
+  [ELEMENTOS.AETHER]: {
+    stat_primaria: 'foco',
+    stat_secundaria: 'resistencia',
+    stat_fraca: 'forca',
+    descricao: 'Essência primordial - ignora defesas e purifica debuffs',
+    bonus_passivo: {
+      tipo: 'primordial',
+      valor: 0.50, // 50% de penetração de defesa
+      descricao: 'Campo Primordial: Ignora 50% das defesas inimigas'
+    },
+    estilo_combate: 'Transcendente',
+    cor_primaria: '#e6f7ff',
+    cor_secundaria: '#b3e0ff',
+    emoji: '✨',
+    raridade: 'extremamente_raro'
   }
 };
 
@@ -297,27 +359,42 @@ export const TABELA_VANTAGENS = `
 ║              TABELA DE VANTAGENS ELEMENTAIS                    ║
 ╠════════════════════════════════════════════════════════════════╣
 ║ 🔥 FOGO                                                        ║
-║   ├─ Forte contra: 💨 Vento, 🪨 Terra                         ║
-║   └─ Fraco contra: 💧 Água                                     ║
+║   ├─ Forte contra: 💨 Vento, 🌑 Sombra                        ║
+║   └─ Fraco contra: 💧 Água, 🌱 Terra                          ║
 ╠════════════════════════════════════════════════════════════════╣
 ║ 💧 ÁGUA                                                        ║
-║   ├─ Forte contra: 🔥 Fogo, 🪨 Terra                          ║
-║   └─ Fraco contra: ⚡ Eletricidade, 💨 Vento                  ║
+║   ├─ Forte contra: 🔥 Fogo, 🌱 Terra                          ║
+║   └─ Fraco contra: ⚡ Eletricidade, 🌑 Sombra                 ║
 ╠════════════════════════════════════════════════════════════════╣
-║ 🪨 TERRA                                                       ║
-║   ├─ Forte contra: ⚡ Eletricidade, 💨 Vento                  ║
-║   └─ Fraco contra: 🔥 Fogo, 💧 Água                           ║
+║ 🌱 TERRA                                                       ║
+║   ├─ Forte contra: ⚡ Eletricidade, 🔥 Fogo                   ║
+║   └─ Fraco contra: 💧 Água, 💨 Vento                          ║
 ╠════════════════════════════════════════════════════════════════╣
 ║ 💨 VENTO                                                       ║
-║   ├─ Forte contra: 💧 Água                                     ║
-║   └─ Fraco contra: 🔥 Fogo, 🪨 Terra                          ║
+║   ├─ Forte contra: 🌱 Terra, 💧 Água                          ║
+║   └─ Fraco contra: 🔥 Fogo, ⚡ Eletricidade                   ║
 ╠════════════════════════════════════════════════════════════════╣
 ║ ⚡ ELETRICIDADE                                                ║
 ║   ├─ Forte contra: 💧 Água, 💨 Vento                          ║
-║   └─ Fraco contra: 🪨 Terra                                    ║
+║   └─ Fraco contra: 🌱 Terra                                    ║
 ╠════════════════════════════════════════════════════════════════╣
-║ 🌑 SOMBRA ↔ ✨ LUZ (Opostos - 2x dano mútuo)                  ║
-║   └─ Neutros contra elementos físicos                          ║
+║ 🌑 SOMBRA ↔ 🌞 LUZ (Opostos - 2x dano mútuo)                  ║
+║   ├─ Luz forte contra: Sombra, Void                            ║
+║   └─ Sombra forte contra: Luz, Água                            ║
+╠════════════════════════════════════════════════════════════════╣
+║ 🕳️ VOID (EXTREMAMENTE RARO)                                  ║
+║   ├─ Forte contra: 🌞 Luz, 🌑 Sombra                          ║
+║   ├─ Fraco contra: ✨ Aether                                   ║
+║   ├─ Resiste: ⚡ Eletricidade                                  ║
+║   └─ Especial: Reduz 30% dano de todos exceto Aether          ║
+╠════════════════════════════════════════════════════════════════╣
+║ ✨ AETHER (EXTREMAMENTE RARO)                                 ║
+║   ├─ Forte contra: 🕳️ Void (1.4x)                            ║
+║   ├─ Sem fraqueza                                              ║
+║   └─ Especial: Ignora defesas; age antes de Void              ║
+╠════════════════════════════════════════════════════════════════╣
+║ ⚠️ VOID ↔ AETHER (Opostos Dimensionais - 1.4x mútuo)         ║
+║   └─ Juntos: +30% dano mas dano true crescente por turno      ║
 ╚════════════════════════════════════════════════════════════════╝
 `;
 
