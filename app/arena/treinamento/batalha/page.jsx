@@ -971,9 +971,9 @@ function BatalhaTreinoIAContent() {
             <div className="bg-slate-900 border-2 border-yellow-500 rounded-xl p-6 max-w-md w-full">
               <div className="text-center mb-4">
                 <div className="text-4xl font-black mb-2">
-                  {recompensas.vitoria ? '🎉 VITÓRIA!' : '💀 DERROTA'}
+                  {winner === 'player' ? '🎉 VITÓRIA!' : '💀 DERROTA'}
                 </div>
-                <p className="text-slate-400 text-sm">{recompensas.descricao}</p>
+                <p className="text-slate-400 text-sm">{recompensas.descricao || 'Batalha finalizada'}</p>
               </div>
 
               {/* Recompensas */}
@@ -983,17 +983,17 @@ function BatalhaTreinoIAContent() {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="text-cyan-400">✨ XP Ganho:</span>
-                      <span className="text-white font-bold">+{recompensas.xp}</span>
+                      <span className="text-white font-bold">+{recompensas.xp || 0}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-pink-400">❤️ Vínculo:</span>
-                      <span className={`font-bold ${recompensas.vinculo > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {recompensas.vinculo > 0 ? '+' : ''}{recompensas.vinculo}
+                      <span className={`font-bold ${(recompensas.vinculo || 0) > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {(recompensas.vinculo || 0) > 0 ? '+' : ''}{recompensas.vinculo || 0}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-orange-400">😰 Exaustão:</span>
-                      <span className="text-orange-300 font-bold">+{recompensas.exaustao}</span>
+                      <span className="text-orange-300 font-bold">+{recompensas.exaustao || 0}</span>
                     </div>
                   </div>
                 </div>
@@ -1002,13 +1002,13 @@ function BatalhaTreinoIAContent() {
                   <h3 className="text-cyan-400 font-bold mb-2 text-center">🎯 Recompensas do Caçador</h3>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-300">✨ XP Ganho:</span>
-                    <span className="text-white font-bold">+{recompensas.xpCacador}</span>
+                    <span className="text-white font-bold">+{recompensas.xpCacador || 0}</span>
                   </div>
                 </div>
 
                 <div className="bg-green-900/30 border border-green-500/50 rounded-lg p-3 text-center">
                   <p className="text-green-400 text-sm">
-                    ❤️ HP permanece {recompensas.hpOriginal} (É treino, não real!)
+                    ❤️ HP permanece {recompensas.hpOriginal || myHpMax} (É treino, não real!)
                   </p>
                 </div>
               </div>
