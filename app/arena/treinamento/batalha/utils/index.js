@@ -6,4 +6,4 @@
 export { atualizarBalanceamentoHabilidade } from '@/app/api/pvp/room/state/utils/balanceUpdater';
 
 // Funções específicas de batalha
-export { getElementoEmoji, ehBuff, getEfeitoEmoji } from './battleEffects';
+export { getElementoEmoji, getElementoCor, ehBuff, getEfeitoEmoji } from './battleEffects';

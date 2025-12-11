@@ -11,6 +11,7 @@ import {
   ehBuff,
   getEfeitoEmoji
 } from './utils';
+import SynergyDisplay from './components/SynergyDisplay';
 
 function BatalhaTreinoIAContent() {
   const router = useRouter();
@@ -45,6 +46,9 @@ function BatalhaTreinoIAContent() {
   const [aplicandoRecompensas, setAplicandoRecompensas] = useState(false);
   const recompensasAplicadasRef = useRef(false); // Proteção contra cliques duplicados
 
+  // Sinergia ativa
+  const [sinergiaAtiva, setSinergiaAtiva] = useState(null);
+
   // Carregar usuário
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -71,6 +75,12 @@ function BatalhaTreinoIAContent() {
         setMeuAvatar(dados.playerAvatar);
         setIaAvatar(dados.oponente);
         setDificuldade(dados.dificuldade || 'normal');
+
+        // Carregar sinergia se houver
+        if (dados.sinergia) {
+          setSinergiaAtiva(dados.sinergia);
+          console.log('✨ Sinergia carregada na batalha:', dados.sinergia.nome);
+        }
 
         // Inicializar batalha
         const response = await fetch('/api/arena/treino-ia/batalha', {
@@ -671,6 +681,13 @@ function BatalhaTreinoIAContent() {
               )}
             </div>
           </div>
+
+          {/* SINERGIA ATIVA */}
+          {sinergiaAtiva && (
+            <div className="lg:col-span-2">
+              <SynergyDisplay sinergia={sinergiaAtiva} />
+            </div>
+          )}
 
           {/* OPONENTE IA */}
           <div className="relative">

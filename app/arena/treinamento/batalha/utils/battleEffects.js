@@ -15,9 +15,31 @@ export function getElementoEmoji(elemento) {
     'Vento': '💨',
     'Eletricidade': '⚡',
     'Luz': '✨',
-    'Sombra': '🌑'
+    'Sombra': '🌑',
+    'Void': '🕳️',
+    'Aether': '✨'
   };
   return emojis[elemento] || '⚪';
+}
+
+/**
+ * Retorna cor correspondente ao elemento
+ * @param {string} elemento - Elemento do avatar
+ * @returns {string} Classe Tailwind de cor
+ */
+export function getElementoCor(elemento) {
+  const cores = {
+    'Fogo': 'text-red-400',
+    'Água': 'text-blue-400',
+    'Terra': 'text-amber-600',
+    'Vento': 'text-cyan-300',
+    'Eletricidade': 'text-yellow-400',
+    'Luz': 'text-yellow-300',
+    'Sombra': 'text-purple-400',
+    'Void': 'text-purple-900',
+    'Aether': 'text-cyan-200'
+  };
+  return cores[elemento] || 'text-gray-400';
 }
 
 /**
