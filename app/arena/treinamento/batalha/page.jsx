@@ -415,9 +415,10 @@ function BatalhaTreinoIAContent() {
 
       const result = await response.json();
       if (result.success) {
-        // Incrementar turno
-        setCurrentTurn(prev => prev + 1);
-        addLog(`🌀 === Turno ${currentTurn + 1} ===`);
+        // Incrementar turno e mostrar no log
+        const novoTurno = currentTurn + 1;
+        setCurrentTurn(novoTurno);
+        addLog(`🌀 === Turno ${novoTurno} ===`);
 
         // Log da ação do jogador
         if (result.log && result.log.detalhes) {
@@ -476,9 +477,10 @@ function BatalhaTreinoIAContent() {
 
       const result = await response.json();
       if (result.success) {
-        // Incrementar turno
-        setCurrentTurn(prev => prev + 1);
-        addLog(`🌀 === Turno ${currentTurn + 1} ===`);
+        // Incrementar turno e mostrar no log
+        const novoTurno = currentTurn + 1;
+        setCurrentTurn(novoTurno);
+        addLog(`🌀 === Turno ${novoTurno} ===`);
 
         // Log da ação do jogador
         if (result.log && result.log.detalhes) {
@@ -517,9 +519,10 @@ function BatalhaTreinoIAContent() {
 
       const result = await response.json();
       if (result.success) {
-        // Incrementar turno
-        setCurrentTurn(prev => prev + 1);
-        addLog(`🌀 === Turno ${currentTurn + 1} ===`);
+        // Incrementar turno e mostrar no log
+        const novoTurno = currentTurn + 1;
+        setCurrentTurn(novoTurno);
+        addLog(`🌀 === Turno ${novoTurno} ===`);
 
         // Log da ação do jogador
         if (result.log && result.log.detalhes) {
