@@ -8,12 +8,16 @@ import {
   aplicarPenalidadesExaustao,
   getNivelExaustao
 } from "@/lib/gameLogic";
+import { previewSinergia } from "@/lib/combat/synergyApplicator";
 import AvatarSVG from "../../components/AvatarSVG";
 
 export default function TreinamentoAIPage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [avatarAtivo, setAvatarAtivo] = useState(null);
+  const [avatarSuporte, setAvatarSuporte] = useState(null);
+  const [todosAvatares, setTodosAvatares] = useState([]);
+  const [sinergiaPreview, setSinergiaPreview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [modalAlerta, setModalAlerta] = useState(null);
   const [iniciandoBatalha, setIniciandoBatalha] = useState(false);
@@ -39,6 +43,12 @@ export default function TreinamentoAIPage() {
       if (response.ok) {
         const ativo = data.avatares.find(av => av.ativo && av.vivo);
         setAvatarAtivo(ativo || null);
+
+        // Armazenar todos avatares vivos (exceto o ativo) para seleção de suporte
+        const avataresSuporte = data.avatares.filter(av =>
+          av.vivo && av.id !== ativo?.id && (av.exaustao || 0) < 100
+        );
+        setTodosAvatares(avataresSuporte);
       }
     } catch (error) {
       console.error("Erro ao carregar avatar ativo:", error);
@@ -46,6 +56,16 @@ export default function TreinamentoAIPage() {
       setLoading(false);
     }
   };
+
+  // Atualizar preview de sinergia quando avatar suporte mudar
+  useEffect(() => {
+    if (avatarAtivo && avatarSuporte) {
+      const preview = previewSinergia(avatarAtivo.elemento, avatarSuporte.elemento);
+      setSinergiaPreview(preview);
+    } else {
+      setSinergiaPreview(null);
+    }
+  }, [avatarAtivo, avatarSuporte]);
 
   const iniciarTreinoIA = async (minPower, maxPower, dificuldade) => {
     if (!avatarAtivo) {
@@ -96,6 +116,7 @@ export default function TreinamentoAIPage() {
         body: JSON.stringify({
           userId: user.id,
           avatarId: avatarAtivo.id,
+          suporteId: avatarSuporte?.id || null, // Avatar suporte (opcional)
           minPower,
           maxPower,
           dificuldade
@@ -117,7 +138,8 @@ export default function TreinamentoAIPage() {
         },
         oponente: data.oponente,
         personalidadeIA: data.personalidadeIA,
-        dificuldade: data.dificuldade
+        dificuldade: data.dificuldade,
+        sinergia: data.sinergia || null // Informações da sinergia (se houver)
       };
 
       sessionStorage.setItem('treino_ia_dados', JSON.stringify(dadosPartida));
@@ -306,6 +328,78 @@ export default function TreinamentoAIPage() {
               </div>
             </div>
 
+            {/* Seleção de Avatar Suporte */}
+            <div className="bg-slate-900/50 border border-cyan-700 rounded-lg p-4">
+              <h3 className="text-sm font-bold text-cyan-400 mb-3">✨ Avatar Suporte (Opcional)</h3>
+
+              {todosAvatares.length === 0 ? (
+                <p className="text-slate-500 text-xs text-center py-2">
+                  Nenhum avatar disponível para suporte
+                </p>
+              ) : (
+                <select
+                  value={avatarSuporte?.id || ''}
+                  onChange={(e) => {
+                    const selecionado = todosAvatares.find(av => av.id === e.target.value);
+                    setAvatarSuporte(selecionado || null);
+                  }}
+                  className="w-full bg-slate-800 border border-cyan-500/30 rounded px-3 py-2 text-sm text-white focus:border-cyan-400 focus:outline-none"
+                >
+                  <option value="">Nenhum (Sem sinergia)</option>
+                  {todosAvatares.map(avatar => (
+                    <option key={avatar.id} value={avatar.id}>
+                      {avatar.nome} - {avatar.elemento} Nv.{avatar.nivel}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              {/* Preview de Sinergia */}
+              {sinergiaPreview && (
+                <div className="mt-3 bg-gradient-to-br from-purple-950/50 to-cyan-950/50 border border-cyan-500/30 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`text-xs font-black ${sinergiaPreview.isSpecial ? 'text-yellow-400' : 'text-cyan-400'}`}>
+                      {sinergiaPreview.isSpecial && '⚠️ '}{sinergiaPreview.nome}
+                    </span>
+                  </div>
+
+                  <p className="text-[10px] text-slate-300 mb-2 leading-relaxed">
+                    {sinergiaPreview.descricao}
+                  </p>
+
+                  {/* Bônus */}
+                  {sinergiaPreview.bonus && Object.keys(sinergiaPreview.bonus).length > 0 && (
+                    <div className="mb-2">
+                      <div className="text-[9px] text-green-400 font-bold mb-1">BÔNUS:</div>
+                      <div className="text-[9px] text-slate-400 space-y-0.5">
+                        {Object.entries(sinergiaPreview.bonus).slice(0, 3).map(([key, val]) => (
+                          <div key={key}>+ {key}: {typeof val === 'boolean' ? 'Sim' : typeof val === 'number' ? `${Math.floor(val * 100)}%` : val}</div>
+                        ))}
+                        {Object.keys(sinergiaPreview.bonus).length > 3 && (
+                          <div className="text-cyan-400">+ {Object.keys(sinergiaPreview.bonus).length - 3} outros...</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Desvantagens */}
+                  {sinergiaPreview.desvantagem && Object.keys(sinergiaPreview.desvantagem).length > 0 && (
+                    <div>
+                      <div className="text-[9px] text-red-400 font-bold mb-1">DESVANTAGENS:</div>
+                      <div className="text-[9px] text-slate-400 space-y-0.5">
+                        {Object.entries(sinergiaPreview.desvantagem).slice(0, 2).map(([key, val]) => (
+                          <div key={key}>- {key}: {typeof val === 'boolean' ? 'Sim' : typeof val === 'number' ? `${Math.floor(val * 100)}%` : val}</div>
+                        ))}
+                        {Object.keys(sinergiaPreview.desvantagem).length > 2 && (
+                          <div className="text-red-400">- {Object.keys(sinergiaPreview.desvantagem).length - 2} outras...</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             {/* Info sobre Treino IA */}
             <div className="bg-slate-900/50 border border-purple-700 rounded-lg p-6">
               <h3 className="text-lg font-bold text-purple-400 mb-3">🤖 Sobre o Treino IA</h3>
@@ -315,6 +409,7 @@ export default function TreinamentoAIPage() {
                 <li>• Sem risco de morte permanente</li>
                 <li>• Ganhe XP e fortaleça vínculo</li>
                 <li>• Dificuldade adaptativa por sala</li>
+                <li className="text-cyan-400">• ✨ Novo: Use avatar suporte para sinergias!</li>
               </ul>
             </div>
           </div>

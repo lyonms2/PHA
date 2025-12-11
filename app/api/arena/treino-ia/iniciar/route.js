@@ -5,6 +5,7 @@ import { NextResponse } from 'next/server';
 import { getDocument } from '@/lib/firebase/firestore';
 import { selecionarHabilidadesIniciais } from '@/app/avatares/sistemas/abilitiesSystem';
 import { escolherPersonalidade } from '@/lib/pvp/ai-engine';
+import { aplicarSinergia } from '@/lib/combat/synergyApplicator';
 
 export const dynamic = 'force-dynamic';
 
@@ -164,7 +165,7 @@ function gerarDistribuicaoStats(total) {
 
 export async function POST(request) {
   try {
-    const { userId, avatarId, minPower, maxPower, dificuldade } = await request.json();
+    const { userId, avatarId, suporteId, minPower, maxPower, dificuldade } = await request.json();
 
     if (!userId || !avatarId || minPower === undefined || maxPower === undefined || !dificuldade) {
       return NextResponse.json(
@@ -173,7 +174,7 @@ export async function POST(request) {
       );
     }
 
-    // Buscar avatar do jogador no Firestore
+    // Buscar avatar principal do jogador no Firestore
     const avatar = await getDocument('avatares', avatarId);
 
     if (!avatar || avatar.user_id !== userId) {
@@ -196,6 +197,46 @@ export async function POST(request) {
         { message: 'Avatar está colapsado! Precisa descansar.' },
         { status: 400 }
       );
+    }
+
+    // Buscar avatar suporte (opcional)
+    let avatarSuporte = null;
+    let sinergiaInfo = null;
+
+    if (suporteId) {
+      avatarSuporte = await getDocument('avatares', suporteId);
+
+      if (!avatarSuporte || avatarSuporte.user_id !== userId) {
+        return NextResponse.json(
+          { message: 'Avatar suporte não encontrado' },
+          { status: 404 }
+        );
+      }
+
+      // Aplicar sinergia entre Principal e Suporte
+      const resultado = aplicarSinergia(avatar, avatarSuporte);
+
+      // Substituir stats do avatar principal pelos stats com sinergia aplicada
+      Object.assign(avatar, resultado.stats);
+
+      // Armazenar informações da sinergia
+      sinergiaInfo = {
+        ...resultado.synergy,
+        modificadores: resultado.modificadores,
+        avatarSuporte: {
+          id: avatarSuporte.id,
+          nome: avatarSuporte.nome,
+          elemento: avatarSuporte.elemento,
+          nivel: avatarSuporte.nivel
+        }
+      };
+
+      console.log('✨ Sinergia aplicada:', {
+        principal: avatar.nome,
+        suporte: avatarSuporte.nome,
+        sinergia: sinergiaInfo.nome,
+        modificadores: Object.keys(resultado.modificadores).length
+      });
     }
 
     // Calcular poder do avatar do jogador
@@ -234,7 +275,8 @@ export async function POST(request) {
       sucesso: true,
       oponente,
       personalidadeIA,
-      dificuldade
+      dificuldade,
+      sinergia: sinergiaInfo // Informações da sinergia (ou null se não houver)
     });
 
   } catch (error) {
