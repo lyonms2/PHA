@@ -599,6 +599,10 @@ function BatalhaTreinoIAContent() {
   const poderMeu = calcularPoderTotal(meuAvatar);
   const poderIA = calcularPoderTotal(iaAvatar);
 
+  // Calcular porcentagens de HP
+  const hpMeuPercent = myHpMax > 0 ? Math.max(0, Math.min(100, (myHp / myHpMax) * 100)) : 0;
+  const hpIAPercent = opponentHpMax > 0 ? Math.max(0, Math.min(100, (opponentHp / opponentHpMax) * 100)) : 0;
+
   // Se batalha ativa, usar layout compacto
   if (status === 'active') {
     return (
