@@ -14,6 +14,7 @@ import {
 import SynergyDisplay from './components/SynergyDisplay';
 import AvatarDuoDisplay from './components/AvatarDuoDisplay';
 import BattleLog from './components/BattleLog';
+import CompactBattleLayout from './components/CompactBattleLayout';
 
 function BatalhaTreinoIAContent() {
   const router = useRouter();
@@ -414,6 +415,10 @@ function BatalhaTreinoIAContent() {
 
       const result = await response.json();
       if (result.success) {
+        // Incrementar turno
+        setCurrentTurn(prev => prev + 1);
+        addLog(`🌀 === Turno ${currentTurn + 1} ===`);
+
         // Log da ação do jogador
         if (result.log && result.log.detalhes) {
           addLog(result.log.detalhes);
@@ -496,6 +501,10 @@ function BatalhaTreinoIAContent() {
 
       const result = await response.json();
       if (result.success) {
+        // Incrementar turno
+        setCurrentTurn(prev => prev + 1);
+        addLog(`🌀 === Turno ${currentTurn + 1} ===`);
+
         // Log da ação do jogador
         if (result.log && result.log.detalhes) {
           addLog(result.log.detalhes);
@@ -545,9 +554,37 @@ function BatalhaTreinoIAContent() {
 
   const poderMeu = calcularPoderTotal(meuAvatar);
   const poderIA = calcularPoderTotal(iaAvatar);
-  const hpMeuPercent = (myHp / myHpMax) * 100;
-  const hpIAPercent = (opponentHp / opponentHpMax) * 100;
 
+  // Se batalha ativa, usar layout compacto
+  if (status === 'active') {
+    return (
+      <>
+        <CompactBattleLayout
+          meuAvatar={meuAvatar}
+          iaAvatar={iaAvatar}
+          sinergiaPlayer={sinergiaAtiva}
+          sinergiaIA={sinergiaIA}
+          myHp={myHp}
+          myHpMax={myHpMax}
+          opponentHp={opponentHp}
+          opponentHpMax={opponentHpMax}
+          myEnergy={myEnergy}
+          opponentEnergy={opponentEnergy}
+          myEffects={myEffects}
+          opponentEffects={opponentEffects}
+          isYourTurn={isYourTurn}
+          currentTurn={currentTurn}
+          log={log}
+          atacar={atacar}
+          usarHabilidade={usarHabilidade}
+          abandonar={() => router.push('/arena/treinamento')}
+          actionInProgress={actionInProgress}
+        />
+      </>
+    );
+  }
+
+  // Se batalha finalizada, mostrar recompensas
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950 text-gray-100 p-4">
       <div className="max-w-4xl mx-auto">
