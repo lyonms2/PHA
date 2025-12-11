@@ -120,14 +120,31 @@ export default function CompactBattleLayout({
             </div>
           )}
 
-          {/* Sinergia Player - Compacta */}
+          {/* Sinergia Player - Detalhada */}
           {sinergiaPlayer && (
-            <div className="bg-slate-900/95 rounded-lg border border-purple-500/40 p-1.5 max-h-32 overflow-y-auto">
-              <div className="text-[9px] font-bold text-purple-300 mb-1 text-center">
+            <div className="bg-slate-900/95 rounded-lg border border-purple-500/40 p-2 overflow-y-auto">
+              <div className="text-xs font-bold text-purple-300 mb-1 text-center">
                 ✨ {sinergiaPlayer.nome}
               </div>
-              <div className="text-[8px] text-slate-400 text-center">
+              <div className="text-[10px] text-slate-400 text-center mb-2">
                 {meuAvatar.elemento} × {sinergiaPlayer.avatarSuporte?.elemento}
+              </div>
+
+              {/* Modificadores */}
+              {sinergiaPlayer.modificadores && Object.keys(sinergiaPlayer.modificadores).length > 0 && (
+                <div className="space-y-1">
+                  {Object.entries(sinergiaPlayer.modificadores).map(([key, value]) => (
+                    <div key={key} className={`text-[9px] px-1.5 py-0.5 rounded ${
+                      value > 0 ? 'bg-green-900/30 text-green-300 border border-green-600/30' : 'bg-red-900/30 text-red-300 border border-red-600/30'
+                    }`}>
+                      {value > 0 ? '✅' : '⚠️'} {key}: {value > 0 ? '+' : ''}{(value * 100).toFixed(0)}%
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="text-[9px] text-slate-500 mt-2 italic text-center">
+                {sinergiaPlayer.descricao}
               </div>
             </div>
           )}
@@ -271,14 +288,31 @@ export default function CompactBattleLayout({
             </div>
           )}
 
-          {/* Sinergia IA - Compacta */}
+          {/* Sinergia IA - Detalhada */}
           {sinergiaIA && (
-            <div className="bg-slate-900/95 rounded-lg border border-purple-500/40 p-1.5 max-h-32 overflow-y-auto">
-              <div className="text-[9px] font-bold text-purple-300 mb-1 text-center">
+            <div className="bg-slate-900/95 rounded-lg border border-purple-500/40 p-2 overflow-y-auto">
+              <div className="text-xs font-bold text-purple-300 mb-1 text-center">
                 ✨ {sinergiaIA.nome}
               </div>
-              <div className="text-[8px] text-slate-400 text-center">
+              <div className="text-[10px] text-slate-400 text-center mb-2">
                 {iaAvatar.elemento} × {sinergiaIA.avatarSuporte?.elemento}
+              </div>
+
+              {/* Modificadores */}
+              {sinergiaIA.modificadores && Object.keys(sinergiaIA.modificadores).length > 0 && (
+                <div className="space-y-1">
+                  {Object.entries(sinergiaIA.modificadores).map(([key, value]) => (
+                    <div key={key} className={`text-[9px] px-1.5 py-0.5 rounded ${
+                      value > 0 ? 'bg-green-900/30 text-green-300 border border-green-600/30' : 'bg-red-900/30 text-red-300 border border-red-600/30'
+                    }`}>
+                      {value > 0 ? '✅' : '⚠️'} {key}: {value > 0 ? '+' : ''}{(value * 100).toFixed(0)}%
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="text-[9px] text-slate-500 mt-2 italic text-center">
+                {sinergiaIA.descricao}
               </div>
             </div>
           )}
