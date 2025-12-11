@@ -9,6 +9,7 @@ import {
   getNivelExaustao
 } from "@/lib/gameLogic";
 import AvatarSVG from "../../components/AvatarSVG";
+import { previewSinergia, formatarModificadores } from "@/lib/combat/synergyApplicator";
 
 export default function PvPPage() {
   const router = useRouter();
@@ -16,6 +17,11 @@ export default function PvPPage() {
   const [avatarAtivo, setAvatarAtivo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [modalAlerta, setModalAlerta] = useState(null);
+
+  // Estados para Sistema de Sinergias
+  const [todosAvatares, setTodosAvatares] = useState([]);
+  const [avatarSuporte, setAvatarSuporte] = useState(null);
+  const [sinergiaPreview, setSinergiaPreview] = useState(null);
 
   // Estados de ranking
   const [rankingData, setRankingData] = useState(null);
@@ -47,6 +53,16 @@ export default function PvPPage() {
     };
   }, [router]);
 
+  // Preview de Sinergia em tempo real
+  useEffect(() => {
+    if (avatarAtivo && avatarSuporte) {
+      const preview = previewSinergia(avatarAtivo.elemento, avatarSuporte.elemento);
+      setSinergiaPreview(preview);
+    } else {
+      setSinergiaPreview(null);
+    }
+  }, [avatarAtivo, avatarSuporte]);
+
   const carregarAvatarAtivo = async (userId) => {
     try {
       setLoading(true);
@@ -56,6 +72,8 @@ export default function PvPPage() {
       if (response.ok) {
         const ativo = data.avatares.find(av => av.ativo && av.vivo);
         setAvatarAtivo(ativo || null);
+        // Armazenar todos os avatares para seleção de suporte
+        setTodosAvatares(data.avatares.filter(av => av.vivo) || []);
       }
     } catch (error) {
       console.error("Erro ao carregar avatar ativo:", error);
@@ -525,6 +543,86 @@ export default function PvPPage() {
               </div>
             </div>
 
+            {/* Seleção de Avatar Suporte (OBRIGATÓRIO) */}
+            <div className="bg-slate-900 border-2 border-purple-500 rounded-lg p-6">
+              <h2 className="text-xl font-bold text-purple-400 mb-2 text-center">
+                ✨ AVATAR SUPORTE
+              </h2>
+              <p className="text-red-400 text-center mb-1 text-sm font-bold">
+                ⚠️ OBRIGATÓRIO PARA ENTRAR EM QUALQUER SALA
+              </p>
+              <p className="text-slate-400 text-center mb-4 text-xs">
+                Escolha um avatar suporte para criar sinergias em batalha
+              </p>
+
+              <div className="space-y-3">
+                <select
+                  value={avatarSuporte?.id || ''}
+                  onChange={(e) => {
+                    const selected = todosAvatares.find(av => av.id === e.target.value);
+                    setAvatarSuporte(selected || null);
+                  }}
+                  className="w-full bg-slate-800 border border-purple-500/50 text-white rounded-lg px-3 py-2 text-sm"
+                >
+                  <option value="">Selecione um Avatar Suporte</option>
+                  {todosAvatares
+                    .filter(av => av.id !== avatarAtivo?.id)
+                    .map(av => (
+                      <option key={av.id} value={av.id}>
+                        {av.nome} ({av.elemento}) - Nv.{av.nivel}
+                      </option>
+                    ))
+                  }
+                </select>
+
+                {/* Preview de Sinergia */}
+                {sinergiaPreview && (
+                  <div className={`border rounded-lg p-3 ${
+                    sinergiaPreview.isSpecial
+                      ? 'border-yellow-500 bg-yellow-900/20'
+                      : 'border-purple-500/50 bg-purple-900/20'
+                  }`}>
+                    <div className="text-center mb-2">
+                      <div className="text-sm font-bold text-purple-300">
+                        {sinergiaPreview.isSpecial && '⭐ '}
+                        {sinergiaPreview.nome}
+                        {sinergiaPreview.isSpecial && ' ⭐'}
+                      </div>
+                      <div className="text-xs text-slate-400 mt-0.5">
+                        {avatarAtivo.elemento} × {avatarSuporte.elemento}
+                      </div>
+                    </div>
+
+                    <div className="text-xs space-y-1">
+                      {/* Bônus */}
+                      {sinergiaPreview.bonus && Object.keys(sinergiaPreview.bonus).length > 0 && (
+                        <div className="bg-green-900/30 border border-green-600/50 rounded p-2">
+                          <div className="font-bold text-green-400 mb-1">✅ Bônus:</div>
+                          {formatarModificadores(sinergiaPreview.bonus).map((mod, i) => (
+                            <div key={i} className="text-green-300">• {mod}</div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Desvantagens */}
+                      {sinergiaPreview.desvantagem && Object.keys(sinergiaPreview.desvantagem).length > 0 && (
+                        <div className="bg-red-900/30 border border-red-600/50 rounded p-2">
+                          <div className="font-bold text-red-400 mb-1">⚠️ Desvantagens:</div>
+                          {formatarModificadores(sinergiaPreview.desvantagem).map((mod, i) => (
+                            <div key={i} className="text-red-300">• {mod}</div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="text-xs text-slate-400 mt-2 italic text-center">
+                      {sinergiaPreview.descricao}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Salas por Poder */}
             <div className="bg-slate-900 border border-orange-500 rounded-lg p-6">
               <h2 className="text-xl font-bold text-orange-400 mb-4 text-center">
@@ -547,7 +645,16 @@ export default function PvPPage() {
                       <p className="text-sm text-slate-400">Poder: 0 - 39</p>
                     </div>
                     <button
-                      onClick={() => router.push('/arena/pvp/duel?minPower=0&maxPower=39')}
+                      onClick={() => {
+                        if (!avatarSuporte) {
+                          setModalAlerta({
+                            titulo: '⚠️ Avatar Suporte Obrigatório',
+                            mensagem: 'Você precisa selecionar um avatar suporte para entrar na Arena PvP!'
+                          });
+                          return;
+                        }
+                        router.push(`/arena/pvp/duel?minPower=0&maxPower=39&suporteId=${avatarSuporte.id}`);
+                      }}
                       disabled={poderTotal < 0 || poderTotal > 39}
                       className={`px-6 py-2 rounded-lg font-bold ${
                         poderTotal >= 0 && poderTotal <= 39
@@ -572,7 +679,16 @@ export default function PvPPage() {
                       <p className="text-sm text-slate-400">Poder: 40 - 60</p>
                     </div>
                     <button
-                      onClick={() => router.push('/arena/pvp/duel?minPower=40&maxPower=60')}
+                      onClick={() => {
+                        if (!avatarSuporte) {
+                          setModalAlerta({
+                            titulo: '⚠️ Avatar Suporte Obrigatório',
+                            mensagem: 'Você precisa selecionar um avatar suporte para entrar na Arena PvP!'
+                          });
+                          return;
+                        }
+                        router.push(`/arena/pvp/duel?minPower=40&maxPower=60&suporteId=${avatarSuporte.id}`);
+                      }}
                       disabled={poderTotal < 40 || poderTotal > 60}
                       className={`px-6 py-2 rounded-lg font-bold ${
                         poderTotal >= 40 && poderTotal <= 60
@@ -597,7 +713,16 @@ export default function PvPPage() {
                       <p className="text-sm text-slate-400">Poder: 61 - 90</p>
                     </div>
                     <button
-                      onClick={() => router.push('/arena/pvp/duel?minPower=61&maxPower=90')}
+                      onClick={() => {
+                        if (!avatarSuporte) {
+                          setModalAlerta({
+                            titulo: '⚠️ Avatar Suporte Obrigatório',
+                            mensagem: 'Você precisa selecionar um avatar suporte para entrar na Arena PvP!'
+                          });
+                          return;
+                        }
+                        router.push(`/arena/pvp/duel?minPower=61&maxPower=90&suporteId=${avatarSuporte.id}`);
+                      }}
                       disabled={poderTotal < 61 || poderTotal > 90}
                       className={`px-6 py-2 rounded-lg font-bold ${
                         poderTotal >= 61 && poderTotal <= 90
@@ -622,7 +747,16 @@ export default function PvPPage() {
                       <p className="text-sm text-slate-400">Poder: 91+</p>
                     </div>
                     <button
-                      onClick={() => router.push('/arena/pvp/duel?minPower=91&maxPower=999')}
+                      onClick={() => {
+                        if (!avatarSuporte) {
+                          setModalAlerta({
+                            titulo: '⚠️ Avatar Suporte Obrigatório',
+                            mensagem: 'Você precisa selecionar um avatar suporte para entrar na Arena PvP!'
+                          });
+                          return;
+                        }
+                        router.push(`/arena/pvp/duel?minPower=91&maxPower=999&suporteId=${avatarSuporte.id}`);
+                      }}
                       disabled={poderTotal <= 90}
                       className={`px-6 py-2 rounded-lg font-bold ${
                         poderTotal > 90

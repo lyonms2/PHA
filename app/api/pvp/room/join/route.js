@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getDocuments, updateDocument, getDocument } from '@/lib/firebase/firestore';
 import { calcularHPMaximoCompleto } from '@/lib/combat/statsCalculator';
 import { aplicarPenalidadesExaustao } from '@/app/avatares/sistemas/exhaustionSystem';
+import { aplicarSinergia } from '@/lib/combat/synergyApplicator';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,11 +12,19 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request) {
   try {
-    const { visitorId, roomCode } = await request.json();
+    const { visitorId, roomCode, suporteId } = await request.json();
 
     if (!visitorId || !roomCode) {
       return NextResponse.json(
         { error: 'visitorId e roomCode são obrigatórios' },
+        { status: 400 }
+      );
+    }
+
+    // Validar que avatar suporte é obrigatório
+    if (!suporteId) {
+      return NextResponse.json(
+        { error: 'Avatar suporte é obrigatório para entrar em uma sala PVP' },
         { status: 400 }
       );
     }
@@ -78,20 +87,57 @@ export async function POST(request) {
       );
     }
 
-    // Calcular HP máximo do avatar
-    const hpMaximo = calcularHPMaximoCompleto(avatar);
+    // Buscar avatar suporte
+    const avatarSuporte = await getDocument('avatares', suporteId);
+
+    if (!avatarSuporte || avatarSuporte.user_id !== visitorId) {
+      return NextResponse.json(
+        { error: 'Avatar suporte não encontrado ou não pertence a você' },
+        { status: 404 }
+      );
+    }
+
+    // Aplicar sinergia entre Principal e Suporte
+    const resultadoSinergia = aplicarSinergia(avatar, avatarSuporte);
+
+    // Criar objeto de avatar com stats modificados pela sinergia
+    const avatarComSinergia = {
+      ...avatar,
+      ...resultadoSinergia.stats
+    };
+
+    // Preparar informações da sinergia para armazenar na sala
+    const sinergiaInfo = {
+      ...resultadoSinergia.synergy,
+      modificadores: resultadoSinergia.modificadores,
+      avatarSuporte: {
+        id: avatarSuporte.id,
+        nome: avatarSuporte.nome,
+        elemento: avatarSuporte.elemento,
+        nivel: avatarSuporte.nivel
+      }
+    };
+
+    console.log('✨ Sinergia aplicada (Guest):', {
+      principal: avatar.nome,
+      suporte: avatarSuporte.nome,
+      sinergia: sinergiaInfo.nome
+    });
+
+    // Calcular HP máximo do avatar (com stats da sinergia)
+    const hpMaximo = calcularHPMaximoCompleto(avatarComSinergia);
     const hpAtual = Math.min(avatar.hp_atual || hpMaximo, hpMaximo);
 
-    // Aplicar penalidades de exaustão nos stats
+    // Aplicar penalidades de exaustão nos stats (usando stats com sinergia)
     const statsBase = {
-      forca: avatar.forca || 10,
-      agilidade: avatar.agilidade || 10,
-      resistencia: avatar.resistencia || 10,
-      foco: avatar.foco || 10
+      forca: avatarComSinergia.forca || 10,
+      agilidade: avatarComSinergia.agilidade || 10,
+      resistencia: avatarComSinergia.resistencia || 10,
+      foco: avatarComSinergia.foco || 10
     };
     const statsComPenalidades = aplicarPenalidadesExaustao(statsBase, avatar.exaustao || 0);
 
-    // Atualizar sala com o convidado
+    // Atualizar sala com o convidado e sinergia
     await updateDocument('pvp_duel_rooms', room.id, {
       guest_user_id: visitorId,
       guest_nome: playerStats?.nome_operacao || 'Jogador 2',
@@ -103,8 +149,10 @@ export async function POST(request) {
         exaustao: avatar.exaustao || 0,
         nivel: avatar.nivel || 1,
         raridade: avatar.raridade || 'comum',
-        ...statsComPenalidades // Stats com penalidades de exaustão aplicadas
+        elemento: avatar.elemento,
+        ...statsComPenalidades // Stats com penalidades de exaustão aplicadas (já incluem sinergia)
       },
+      guest_sinergia: sinergiaInfo, // Informações da sinergia do guest
       guest_hp: hpAtual,
       status: 'ready'
     });
