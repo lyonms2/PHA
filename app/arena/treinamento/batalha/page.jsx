@@ -424,6 +424,18 @@ function BatalhaTreinoIAContent() {
           addLog(result.log.detalhes);
         }
 
+        // Mostrar mensagem elemental
+        if (result.elemental === 'vantagem') {
+          addLog('🔥 Super efetivo!');
+        } else if (result.elemental === 'desvantagem') {
+          addLog('💨 Pouco efetivo...');
+        }
+
+        // Mensagem de contra-ataque
+        if (result.contraAtaque) {
+          addLog('🔥🛡️ CONTRA-ATAQUE! Você foi queimado!');
+        }
+
         // Logs da IA (processados automaticamente pelo backend)
         if (result.logsParaJogador && Array.isArray(result.logsParaJogador)) {
           console.log('📜 [LOGS ATACAR] Logs da IA:', result.logsParaJogador);
@@ -512,6 +524,31 @@ function BatalhaTreinoIAContent() {
         // Log da ação do jogador
         if (result.log && result.log.detalhes) {
           addLog(result.log.detalhes);
+        }
+
+        // Mostrar mensagem elemental
+        if (result.elemental === 'vantagem') {
+          addLog('🔥 Super efetivo!');
+        } else if (result.elemental === 'desvantagem') {
+          addLog('💨 Pouco efetivo...');
+        }
+
+        // Mostrar efeitos aplicados
+        if (result.log && result.log.efeitos && result.log.efeitos.length > 0) {
+          const buffsPositivos = ['defesa_aumentada', 'velocidade', 'regeneração', 'regeneracao', 'escudo', 'foco_aumentado', 'forca_aumentada', 'sobrecarga', 'benção', 'bencao', 'queimadura_contra_ataque', 'evasao_aumentada', 'velocidade_aumentada', 'invisivel', 'precisao_aumentada'];
+          const primeiroEfeito = result.log.efeitos[0].replace(/[^\w]/g, '').toLowerCase();
+          const ehBuff = buffsPositivos.some(buff => primeiroEfeito.includes(buff.replace(/[^\w]/g, '').toLowerCase()));
+
+          if (ehBuff) {
+            addLog(`💚 Aplicado em você: ${result.log.efeitos.join(', ')}`);
+          } else {
+            addLog(`🎯 Aplicado no oponente: ${result.log.efeitos.join(', ')}`);
+          }
+        }
+
+        // Mensagem de contra-ataque
+        if (result.contraAtaque) {
+          addLog('🔥🛡️ CONTRA-ATAQUE! Você foi queimado!');
         }
 
         // Logs da IA (processados automaticamente pelo backend)
