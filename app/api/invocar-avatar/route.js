@@ -17,6 +17,48 @@ function escolherAleatorio(array) {
 }
 
 /**
+ * Escolhe elemento baseado na raridade
+ * Void e Aether são EXTREMAMENTE RAROS - apenas em invocações Lendárias
+ * E mesmo em Lendárias, têm apenas 1% de chance cada
+ */
+function escolherElemento(raridade) {
+  // Se NÃO for Lendário, Void/Aether são impossíveis
+  if (raridade !== 'Lendário') {
+    const elementosComuns = [
+      ELEMENTOS.FOGO,
+      ELEMENTOS.AGUA,
+      ELEMENTOS.TERRA,
+      ELEMENTOS.VENTO,
+      ELEMENTOS.ELETRICIDADE,
+      ELEMENTOS.SOMBRA,
+      ELEMENTOS.LUZ
+    ];
+    return escolherAleatorio(elementosComuns);
+  }
+
+  // Se for Lendário: 1% Void, 1% Aether, 98% elementos normais
+  const rand = Math.random();
+
+  if (rand < 0.01) {
+    return ELEMENTOS.VOID;  // 1% chance
+  } else if (rand < 0.02) {
+    return ELEMENTOS.AETHER; // 1% chance
+  } else {
+    // 98% chance de elemento normal
+    const elementosComuns = [
+      ELEMENTOS.FOGO,
+      ELEMENTOS.AGUA,
+      ELEMENTOS.TERRA,
+      ELEMENTOS.VENTO,
+      ELEMENTOS.ELETRICIDADE,
+      ELEMENTOS.SOMBRA,
+      ELEMENTOS.LUZ
+    ];
+    return escolherAleatorio(elementosComuns);
+  }
+}
+
+/**
  * Determina raridade baseado em probabilidades balanceadas
  * Primeira invocação sempre é Comum
  * Aplica bônus do rank do caçador
@@ -56,9 +98,8 @@ function gerarAvatarCompleto(primeiraInvocacao = false, hunterRank = null) {
   const raridade = determinarRaridade(primeiraInvocacao, hunterRank);
   console.log(`Raridade: ${raridade}`);
   
-  // 2. ESCOLHER ELEMENTO ALEATÓRIO
-  const elementosDisponiveis = Object.values(ELEMENTOS);
-  const elemento = escolherAleatorio(elementosDisponiveis);
+  // 2. ESCOLHER ELEMENTO (com raridade para Void e Aether)
+  const elemento = escolherElemento(raridade);
   console.log(`Elemento: ${elemento}`);
   
   // 3. GERAR NOME COM LORE SYSTEM
