@@ -16,30 +16,30 @@ export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true }
     <div className={`bg-slate-900/95 rounded-lg border ${borderColor} overflow-hidden`}>
       {/* Header com nome */}
       <div className={`bg-gradient-to-r ${bgColor} px-2 py-1 border-b ${borderColor}`}>
-        <div className="font-bold ${textColor} text-xs truncate">{principal.nome}</div>
+        <div className={`font-bold ${textColor} text-sm truncate`}>{principal.nome}</div>
       </div>
 
       {/* Container dos Avatares */}
-      <div className="p-2 flex gap-2 items-center">
-        {/* Avatar Principal (Maior) */}
+      <div className="p-3 flex gap-3 items-center">
+        {/* Avatar Principal (3x maior) */}
         <div className="flex-shrink-0">
-          <AvatarSVG avatar={principal} tamanho={70} />
-          <div className="text-center mt-0.5">
-            <span className="text-[9px] bg-purple-600/50 px-1 py-0.5 rounded font-bold text-white">
+          <AvatarSVG avatar={principal} tamanho={180} />
+          <div className="text-center mt-1">
+            <span className="text-xs bg-purple-600/50 px-2 py-1 rounded font-bold text-white">
               PRINCIPAL
             </span>
           </div>
         </div>
 
         {/* Seta */}
-        <div className="text-slate-500 text-lg">+</div>
+        <div className="text-slate-500 text-2xl font-bold">+</div>
 
-        {/* Avatar Suporte (Menor) */}
+        {/* Avatar Suporte (3x maior) */}
         {suporte && (
           <div className="flex-shrink-0">
-            <AvatarSVG avatar={suporte} tamanho={45} />
-            <div className="text-center mt-0.5">
-              <span className="text-[9px] bg-slate-600/50 px-1 py-0.5 rounded font-bold text-slate-300">
+            <AvatarSVG avatar={suporte} tamanho={120} />
+            <div className="text-center mt-1">
+              <span className="text-xs bg-slate-600/50 px-2 py-1 rounded font-bold text-slate-300">
                 SUPORTE
               </span>
             </div>
@@ -47,7 +47,7 @@ export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true }
         )}
 
         {/* Stats Compactos */}
-        <div className="flex-1 text-[9px] space-y-0.5">
+        <div className="flex-1 text-xs space-y-1">
           <div className="flex justify-between">
             <span className="text-slate-400">Nv</span>
             <span className="text-white font-bold">{principal.nivel}</span>

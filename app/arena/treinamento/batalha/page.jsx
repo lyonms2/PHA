@@ -24,7 +24,7 @@ function BatalhaTreinoIAContent() {
   const [battleId, setBattleId] = useState(null);
   const [meuAvatar, setMeuAvatar] = useState(null);
   const [iaAvatar, setIaAvatar] = useState(null);
-  const [currentTurn, setCurrentTurn] = useState(1);
+  const [currentTurn, setCurrentTurn] = useState(0);
   const [myHp, setMyHp] = useState(100);
   const [myHpMax, setMyHpMax] = useState(100);
   const [opponentHp, setOpponentHp] = useState(100);
@@ -388,7 +388,7 @@ function BatalhaTreinoIAContent() {
   };
 
   const addLog = (msg) => {
-    setLog(prev => [msg, ...prev].slice(0, 20)); // Mais recente no topo, máximo 20 logs
+    setLog(prev => [...prev, msg]); // Mais recente no final (embaixo), mostra todos os logs
   };
 
   const mostrarDanoVisual = (alvo, dano) => {
@@ -415,13 +415,26 @@ function BatalhaTreinoIAContent() {
 
       const result = await response.json();
       if (result.success) {
-        // Incrementar turno
-        setCurrentTurn(prev => prev + 1);
-        addLog(`🌀 === Turno ${currentTurn + 1} ===`);
+        // Incrementar turno e mostrar no log
+        const novoTurno = currentTurn + 1;
+        setCurrentTurn(novoTurno);
+        addLog(`🌀 === Turno ${novoTurno} ===`);
 
         // Log da ação do jogador
         if (result.log && result.log.detalhes) {
           addLog(result.log.detalhes);
+        }
+
+        // Mostrar mensagem elemental
+        if (result.elemental === 'vantagem') {
+          addLog('🔥 Super efetivo!');
+        } else if (result.elemental === 'desvantagem') {
+          addLog('💨 Pouco efetivo...');
+        }
+
+        // Mensagem de contra-ataque
+        if (result.contraAtaque) {
+          addLog('🔥🛡️ CONTRA-ATAQUE! Você foi queimado!');
         }
 
         // Logs da IA (processados automaticamente pelo backend)
@@ -464,6 +477,11 @@ function BatalhaTreinoIAContent() {
 
       const result = await response.json();
       if (result.success) {
+        // Incrementar turno e mostrar no log
+        const novoTurno = currentTurn + 1;
+        setCurrentTurn(novoTurno);
+        addLog(`🌀 === Turno ${novoTurno} ===`);
+
         // Log da ação do jogador
         if (result.log && result.log.detalhes) {
           addLog(result.log.detalhes);
@@ -501,13 +519,39 @@ function BatalhaTreinoIAContent() {
 
       const result = await response.json();
       if (result.success) {
-        // Incrementar turno
-        setCurrentTurn(prev => prev + 1);
-        addLog(`🌀 === Turno ${currentTurn + 1} ===`);
+        // Incrementar turno e mostrar no log
+        const novoTurno = currentTurn + 1;
+        setCurrentTurn(novoTurno);
+        addLog(`🌀 === Turno ${novoTurno} ===`);
 
         // Log da ação do jogador
         if (result.log && result.log.detalhes) {
           addLog(result.log.detalhes);
+        }
+
+        // Mostrar mensagem elemental
+        if (result.elemental === 'vantagem') {
+          addLog('🔥 Super efetivo!');
+        } else if (result.elemental === 'desvantagem') {
+          addLog('💨 Pouco efetivo...');
+        }
+
+        // Mostrar efeitos aplicados
+        if (result.log && result.log.efeitos && result.log.efeitos.length > 0) {
+          const buffsPositivos = ['defesa_aumentada', 'velocidade', 'regeneração', 'regeneracao', 'escudo', 'foco_aumentado', 'forca_aumentada', 'sobrecarga', 'benção', 'bencao', 'queimadura_contra_ataque', 'evasao_aumentada', 'velocidade_aumentada', 'invisivel', 'precisao_aumentada'];
+          const primeiroEfeito = result.log.efeitos[0].replace(/[^\w]/g, '').toLowerCase();
+          const ehBuff = buffsPositivos.some(buff => primeiroEfeito.includes(buff.replace(/[^\w]/g, '').toLowerCase()));
+
+          if (ehBuff) {
+            addLog(`💚 Aplicado em você: ${result.log.efeitos.join(', ')}`);
+          } else {
+            addLog(`🎯 Aplicado no oponente: ${result.log.efeitos.join(', ')}`);
+          }
+        }
+
+        // Mensagem de contra-ataque
+        if (result.contraAtaque) {
+          addLog('🔥🛡️ CONTRA-ATAQUE! Você foi queimado!');
         }
 
         // Logs da IA (processados automaticamente pelo backend)
@@ -555,6 +599,10 @@ function BatalhaTreinoIAContent() {
   const poderMeu = calcularPoderTotal(meuAvatar);
   const poderIA = calcularPoderTotal(iaAvatar);
 
+  // Calcular porcentagens de HP
+  const hpMeuPercent = myHpMax > 0 ? Math.max(0, Math.min(100, (myHp / myHpMax) * 100)) : 0;
+  const hpIAPercent = opponentHpMax > 0 ? Math.max(0, Math.min(100, (opponentHp / opponentHpMax) * 100)) : 0;
+
   // Se batalha ativa, usar layout compacto
   if (status === 'active') {
     return (
@@ -576,6 +624,7 @@ function BatalhaTreinoIAContent() {
           currentTurn={currentTurn}
           log={log}
           atacar={atacar}
+          defender={defender}
           usarHabilidade={usarHabilidade}
           abandonar={() => router.push('/arena/treinamento')}
           actionInProgress={actionInProgress}
@@ -929,9 +978,9 @@ function BatalhaTreinoIAContent() {
             <div className="bg-slate-900 border-2 border-yellow-500 rounded-xl p-6 max-w-md w-full">
               <div className="text-center mb-4">
                 <div className="text-4xl font-black mb-2">
-                  {recompensas.vitoria ? '🎉 VITÓRIA!' : '💀 DERROTA'}
+                  {winner === 'player' ? '🎉 VITÓRIA!' : '💀 DERROTA'}
                 </div>
-                <p className="text-slate-400 text-sm">{recompensas.descricao}</p>
+                <p className="text-slate-400 text-sm">{recompensas.descricao || 'Batalha finalizada'}</p>
               </div>
 
               {/* Recompensas */}
@@ -941,17 +990,17 @@ function BatalhaTreinoIAContent() {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="text-cyan-400">✨ XP Ganho:</span>
-                      <span className="text-white font-bold">+{recompensas.xp}</span>
+                      <span className="text-white font-bold">+{recompensas.xp || 0}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-pink-400">❤️ Vínculo:</span>
-                      <span className={`font-bold ${recompensas.vinculo > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {recompensas.vinculo > 0 ? '+' : ''}{recompensas.vinculo}
+                      <span className={`font-bold ${(recompensas.vinculo || 0) > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {(recompensas.vinculo || 0) > 0 ? '+' : ''}{recompensas.vinculo || 0}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-orange-400">😰 Exaustão:</span>
-                      <span className="text-orange-300 font-bold">+{recompensas.exaustao}</span>
+                      <span className="text-orange-300 font-bold">+{recompensas.exaustao || 0}</span>
                     </div>
                   </div>
                 </div>
@@ -960,13 +1009,13 @@ function BatalhaTreinoIAContent() {
                   <h3 className="text-cyan-400 font-bold mb-2 text-center">🎯 Recompensas do Caçador</h3>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-300">✨ XP Ganho:</span>
-                    <span className="text-white font-bold">+{recompensas.xpCacador}</span>
+                    <span className="text-white font-bold">+{recompensas.xpCacador || 0}</span>
                   </div>
                 </div>
 
                 <div className="bg-green-900/30 border border-green-500/50 rounded-lg p-3 text-center">
                   <p className="text-green-400 text-sm">
-                    ❤️ HP permanece {recompensas.hpOriginal} (É treino, não real!)
+                    ❤️ HP permanece {recompensas.hpOriginal || myHpMax} (É treino, não real!)
                   </p>
                 </div>
               </div>
