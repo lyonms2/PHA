@@ -23,19 +23,19 @@ export default function BattleLog({ logs, currentTurn }) {
         <span className="text-[9px] text-slate-500">Turno {currentTurn || 1} | {logs.length} eventos</span>
       </div>
 
-      {/* Logs - Fixed height com scroll interno - ORDEM INVERTIDA (mais recente no topo) */}
-      <div className="flex-1 overflow-y-auto space-y-1 min-h-0 pr-1 flex flex-col-reverse">
+      {/* Logs - Fixed height com scroll interno - Último round sempre visível */}
+      <div className="flex-1 overflow-y-auto space-y-1 min-h-0 pr-1">
         {logs.length === 0 ? (
           <div className="text-[10px] text-slate-500 text-center py-4">
             Aguardando início da batalha...
           </div>
         ) : (
           <>
-            {/* Elemento invisível para scroll automático */}
-            <div ref={logEndRef} />
-            {[...logs].reverse().map((msg, idx) => (
-              <LogEntry key={logs.length - 1 - idx} message={msg} isLatest={idx === 0} />
+            {logs.map((msg, idx) => (
+              <LogEntry key={idx} message={msg} isLatest={idx === logs.length - 1} />
             ))}
+            {/* Elemento invisível para scroll automático - último log sempre visível */}
+            <div ref={logEndRef} />
           </>
         )}
       </div>

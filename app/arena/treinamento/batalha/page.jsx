@@ -24,7 +24,7 @@ function BatalhaTreinoIAContent() {
   const [battleId, setBattleId] = useState(null);
   const [meuAvatar, setMeuAvatar] = useState(null);
   const [iaAvatar, setIaAvatar] = useState(null);
-  const [currentTurn, setCurrentTurn] = useState(1);
+  const [currentTurn, setCurrentTurn] = useState(0);
   const [myHp, setMyHp] = useState(100);
   const [myHpMax, setMyHpMax] = useState(100);
   const [opponentHp, setOpponentHp] = useState(100);

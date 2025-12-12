@@ -98,23 +98,30 @@ export default function CompactBattleLayout({
             </div>
           </div>
 
-          {/* Efeitos */}
+          {/* Efeitos Ativos */}
           {myEffects.length > 0 && (
-            <div className="bg-slate-900/95 rounded-lg border border-cyan-500/40 p-1.5">
-              <div className="text-[9px] text-slate-400 mb-1">Efeitos Ativos:</div>
-              <div className="flex flex-wrap gap-0.5">
+            <div className="bg-slate-900/95 rounded-lg border border-cyan-500/40 p-2">
+              <div className="text-[10px] font-bold text-cyan-400 mb-1.5 text-center">
+                ⚡ EFEITOS ATIVOS
+              </div>
+              <div className="space-y-1">
                 {myEffects.map((ef, i) => (
-                  <span
+                  <div
                     key={i}
-                    className={`text-[9px] px-1 py-0.5 rounded ${
+                    className={`text-[9px] px-2 py-1 rounded flex items-center justify-between ${
                       ehBuff(ef.tipo)
-                        ? 'bg-green-900/30 border border-green-600/50'
-                        : 'bg-red-900/30 border border-red-600/50'
+                        ? 'bg-green-900/40 border border-green-500/50 text-green-200'
+                        : 'bg-red-900/40 border border-red-500/50 text-red-200'
                     }`}
-                    title={ef.tipo}
                   >
-                    {getEfeitoEmoji(ef.tipo)}{ef.turnosRestantes}
-                  </span>
+                    <span className="flex items-center gap-1">
+                      <span className="text-sm">{getEfeitoEmoji(ef.tipo)}</span>
+                      <span className="font-semibold capitalize">{ef.tipo.replace(/_/g, ' ')}</span>
+                    </span>
+                    <span className="bg-slate-900/50 px-1.5 py-0.5 rounded font-bold">
+                      {ef.turnosRestantes} ⏱️
+                    </span>
+                  </div>
                 ))}
               </div>
             </div>
@@ -266,23 +273,30 @@ export default function CompactBattleLayout({
             </div>
           </div>
 
-          {/* Efeitos */}
+          {/* Efeitos Ativos */}
           {opponentEffects.length > 0 && (
-            <div className="bg-slate-900/95 rounded-lg border border-red-500/40 p-1.5">
-              <div className="text-[9px] text-slate-400 mb-1">Efeitos Ativos:</div>
-              <div className="flex flex-wrap gap-0.5">
+            <div className="bg-slate-900/95 rounded-lg border border-red-500/40 p-2">
+              <div className="text-[10px] font-bold text-red-400 mb-1.5 text-center">
+                ⚡ EFEITOS ATIVOS
+              </div>
+              <div className="space-y-1">
                 {opponentEffects.map((ef, i) => (
-                  <span
+                  <div
                     key={i}
-                    className={`text-[9px] px-1 py-0.5 rounded ${
+                    className={`text-[9px] px-2 py-1 rounded flex items-center justify-between ${
                       ehBuff(ef.tipo)
-                        ? 'bg-green-900/30 border border-green-600/50'
-                        : 'bg-red-900/30 border border-red-600/50'
+                        ? 'bg-green-900/40 border border-green-500/50 text-green-200'
+                        : 'bg-red-900/40 border border-red-500/50 text-red-200'
                     }`}
-                    title={ef.tipo}
                   >
-                    {getEfeitoEmoji(ef.tipo)}{ef.turnosRestantes}
-                  </span>
+                    <span className="flex items-center gap-1">
+                      <span className="text-sm">{getEfeitoEmoji(ef.tipo)}</span>
+                      <span className="font-semibold capitalize">{ef.tipo.replace(/_/g, ' ')}</span>
+                    </span>
+                    <span className="bg-slate-900/50 px-1.5 py-0.5 rounded font-bold">
+                      {ef.turnosRestantes} ⏱️
+                    </span>
+                  </div>
                 ))}
               </div>
             </div>
