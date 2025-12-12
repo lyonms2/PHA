@@ -388,7 +388,7 @@ function BatalhaTreinoIAContent() {
   };
 
   const addLog = (msg) => {
-    setLog(prev => [msg, ...prev].slice(0, 20)); // Mais recente no topo, máximo 20 logs
+    setLog(prev => [...prev, msg]); // Mais recente no final (embaixo), mostra todos os logs
   };
 
   const mostrarDanoVisual = (alvo, dano) => {
