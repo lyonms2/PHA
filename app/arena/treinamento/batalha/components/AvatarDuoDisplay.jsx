@@ -5,12 +5,15 @@
 import AvatarSVG from "@/app/components/AvatarSVG";
 import { getElementoEmoji, getElementoCor } from '../utils/battleEffects';
 
-export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true }) {
+export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true, hp, hpMax, energy }) {
   const borderColor = isPlayer ? 'border-cyan-500/40' : 'border-red-500/40';
   const bgColor = isPlayer
     ? 'from-cyan-900/50 to-blue-900/50'
     : 'from-red-900/50 to-orange-900/50';
   const textColor = isPlayer ? 'text-cyan-400' : 'text-red-400';
+
+  // Calcular porcentagens se HP for fornecido
+  const hpPercent = (hp !== undefined && hpMax) ? (hp / hpMax) * 100 : 0;
 
   return (
     <div className={`bg-slate-900/95 rounded-lg border ${borderColor} overflow-hidden`}>
@@ -80,6 +83,43 @@ export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true }
           </div>
         </div>
       </div>
+
+      {/* HP e Energia - Abaixo das imagens */}
+      {hp !== undefined && hpMax !== undefined && energy !== undefined && (
+        <div className="px-3 pb-3 space-y-1.5">
+          {/* HP */}
+          <div>
+            <div className="flex justify-between text-[9px] mb-0.5">
+              <span className="text-red-400 font-bold">❤️ HP</span>
+              <span className="font-mono">{hp}/{hpMax}</span>
+            </div>
+            <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+              <div
+                className={`h-full transition-all ${
+                  hpPercent > 50 ? 'bg-gradient-to-r from-green-500 to-emerald-400' :
+                  hpPercent > 25 ? 'bg-gradient-to-r from-yellow-500 to-orange-400' :
+                  'bg-gradient-to-r from-red-600 to-red-400'
+                }`}
+                style={{ width: `${hpPercent}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Energia */}
+          <div>
+            <div className="flex justify-between text-[9px] mb-0.5">
+              <span className="text-blue-400 font-bold">⚡ Energia</span>
+              <span className="font-mono">{energy}/100</span>
+            </div>
+            <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all"
+                style={{ width: `${energy}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

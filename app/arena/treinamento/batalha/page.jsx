@@ -100,7 +100,9 @@ function BatalhaTreinoIAContent() {
             playerAvatar: dados.playerAvatar,
             iaAvatar: dados.oponente,
             personalidadeIA: dados.personalidadeIA,
-            dificuldade: dados.dificuldade || 'normal'
+            dificuldade: dados.dificuldade || 'normal',
+            sinergia: dados.sinergia || null,
+            sinergiaIA: dados.sinergiaIA || null
           })
         });
 

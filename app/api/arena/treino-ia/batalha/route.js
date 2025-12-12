@@ -91,7 +91,7 @@ export async function GET(request) {
  */
 export async function POST(request) {
   try {
-    const { battleId, action, playerAvatar, iaAvatar, personalidadeIA, abilityIndex, dificuldade } = await request.json();
+    const { battleId, action, playerAvatar, iaAvatar, personalidadeIA, abilityIndex, dificuldade, sinergia, sinergiaIA } = await request.json();
 
     // ===== INICIAR NOVA BATALHA =====
     if (action === 'init') {
@@ -136,7 +136,12 @@ export async function POST(request) {
         dificuldade: dificuldade || 'normal',
         poderOponente,
         playerAvatarOriginal: { ...playerAvatar },
-        rewardsApplied: false
+        rewardsApplied: false,
+        // Armazenar sinergias e modificadores
+        sinergia: sinergia || null,
+        sinergiaIA: sinergiaIA || null,
+        modificadoresPlayer: sinergia?.modificadores || {},
+        modificadoresIA: sinergiaIA?.modificadores || {}
       };
 
       battleSessions.set(newBattleId, newBattle);
@@ -215,7 +220,8 @@ export async function POST(request) {
       hp: battle.player.hp,
       hpMax: battle.player.hp_max,
       defending: battle.player.defending,
-      nome: battle.player.nome
+      nome: battle.player.nome,
+      modificadoresSinergia: battle.modificadoresPlayer
     };
 
     const defender = {
@@ -226,7 +232,8 @@ export async function POST(request) {
       hp: battle.ia.hp,
       hpMax: battle.ia.hp_max,
       defending: battle.ia.defending,
-      nome: battle.ia.nome
+      nome: battle.ia.nome,
+      modificadoresSinergia: battle.modificadoresIA
     };
 
     if (action === 'attack') {
@@ -456,7 +463,8 @@ export async function POST(request) {
       hp: battle.ia.hp,
       hpMax: battle.ia.hp_max,
       defending: battle.ia.defending,
-      nome: battle.ia.nome
+      nome: battle.ia.nome,
+      modificadoresSinergia: battle.modificadoresIA
     };
 
     const iaDefender = {
@@ -467,7 +475,8 @@ export async function POST(request) {
       hp: battle.player.hp,
       hpMax: battle.player.hp_max,
       defending: battle.player.defending,
-      nome: battle.player.nome
+      nome: battle.player.nome,
+      modificadoresSinergia: battle.modificadoresPlayer
     };
 
     console.log('⚙️ [IA] Objetos construídos:', {
