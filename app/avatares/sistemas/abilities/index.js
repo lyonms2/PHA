@@ -8,9 +8,11 @@ import { HABILIDADES_VENTO } from './vento';
 import { HABILIDADES_ELETRICIDADE } from './eletricidade';
 import { HABILIDADES_SOMBRA } from './sombra';
 import { HABILIDADES_LUZ } from './luz';
+import { HABILIDADES_VOID } from './void';
+import { HABILIDADES_AETHER } from './aether';
 
 /**
- * Todas as habilidades organizadas por elemento
+ * Todas as habilidades organizadas por elemento (9 elementos completos)
  */
 export const HABILIDADES_POR_ELEMENTO = {
   Fogo: HABILIDADES_FOGO,
@@ -19,7 +21,9 @@ export const HABILIDADES_POR_ELEMENTO = {
   Vento: HABILIDADES_VENTO,
   Eletricidade: HABILIDADES_ELETRICIDADE,
   Sombra: HABILIDADES_SOMBRA,
-  Luz: HABILIDADES_LUZ
+  Luz: HABILIDADES_LUZ,
+  Void: HABILIDADES_VOID,
+  Aether: HABILIDADES_AETHER
 };
 
 /**
