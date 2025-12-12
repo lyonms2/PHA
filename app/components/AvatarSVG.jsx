@@ -56,6 +56,20 @@ export default function AvatarSVG({ avatar, tamanho = 200, className = "", isEne
       corBrilho: '#ffffff',
       corOlho: '#fef3c7',
       particulas: 'estrelas'
+    },
+    'Void': {
+      cores: ['#0a0014', '#1a0033', '#2d004d', '#4d0099'],
+      coresSecundarias: ['#000000', '#0d0019', '#1a0028'],
+      corBrilho: '#8000ff',
+      corOlho: '#a000ff',
+      particulas: 'void'
+    },
+    'Aether': {
+      cores: ['#f0f9ff', '#e6f7ff', '#d6f0ff', '#b3e0ff'],
+      coresSecundarias: ['#cce7ff', '#b3d9ff', '#99ccff'],
+      corBrilho: '#ffffff',
+      corOlho: '#bfecff',
+      particulas: 'aether'
     }
   };
 
@@ -599,6 +613,28 @@ export default function AvatarSVG({ avatar, tamanho = 200, className = "", isEne
               <animate attributeName="r" values="${tamanhoP};${tamanhoP * 1.5};${tamanhoP}" dur="2s" begin="${delay}s" repeatCount="indefinite"/>
               <animate attributeName="opacity" values="0.4;0.1;0.4" dur="2s" begin="${delay}s" repeatCount="indefinite"/>
             </circle>`;
+            break;
+          case 'void':
+            // Partículas de distorção do vazio - preto profundo com brilho roxo
+            svgContent += `<circle cx="${px}" cy="${py}" r="${tamanhoP * 1.5}" fill="#000000" opacity="0.6" filter="url(#glow${seed})">
+              <animate attributeName="r" values="${tamanhoP * 1.5};${tamanhoP * 0.5};${tamanhoP * 1.5}" dur="2.5s" begin="${delay}s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0.6;0.2;0.6" dur="2.5s" begin="${delay}s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="${px}" cy="${py}" r="${tamanhoP}" fill="${corBrilho}" opacity="0.5" filter="url(#glow${seed})">
+              <animate attributeName="r" values="${tamanhoP};${tamanhoP * 1.2};${tamanhoP}" dur="1.8s" begin="${delay}s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0.5;0.8;0.5" dur="1.8s" begin="${delay}s" repeatCount="indefinite"/>
+            </circle>`;
+            break;
+          case 'aether':
+            // Partículas etéreas - quase transparentes com brilho celestial
+            svgContent += `<circle cx="${px}" cy="${py}" r="${tamanhoP * 1.2}" fill="${corBrilho}" opacity="0.3" filter="url(#glow${seed})">
+              <animate attributeName="r" values="${tamanhoP * 1.2};${tamanhoP * 1.8};${tamanhoP * 1.2}" dur="3s" begin="${delay}s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0.3;0.6;0.3" dur="3s" begin="${delay}s" repeatCount="indefinite"/>
+            </circle>
+            <path d="M ${px - tamanhoP} ${py} L ${px} ${py - tamanhoP} L ${px + tamanhoP} ${py} L ${px} ${py + tamanhoP}" fill="none" stroke="${corBrilho}" stroke-width="1" opacity="0.5" filter="url(#glow${seed})">
+              <animate attributeName="opacity" values="0.5;0.8;0.5" dur="2s" begin="${delay}s" repeatCount="indefinite"/>
+              <animateTransform attributeName="transform" type="rotate" from="0 ${px} ${py}" to="360 ${px} ${py}" dur="6s" begin="${delay}s" repeatCount="indefinite"/>
+            </path>`;
             break;
         }
       }
