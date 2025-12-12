@@ -108,13 +108,20 @@ export default function CompactBattleLayout({
               {/* Modificadores */}
               {sinergiaPlayer.modificadores && Object.keys(sinergiaPlayer.modificadores).length > 0 && (
                 <div className="space-y-1">
-                  {Object.entries(sinergiaPlayer.modificadores).map(([key, value]) => (
-                    <div key={key} className={`text-[9px] px-1.5 py-0.5 rounded ${
-                      value > 0 ? 'bg-green-900/30 text-green-300 border border-green-600/30' : 'bg-red-900/30 text-red-300 border border-red-600/30'
-                    }`}>
-                      {value > 0 ? '✅' : '⚠️'} {key}: {value > 0 ? '+' : ''}{(value * 100).toFixed(0)}%
-                    </div>
-                  ))}
+                  {Object.entries(sinergiaPlayer.modificadores).map(([key, value]) => {
+                    // Modificadores _mult são multiplicadores (1.25 = +25%), outros são percentuais diretos (0.25 = 25%)
+                    const isMult = key.endsWith('_mult') || key.includes('_reducao');
+                    const percentValue = isMult ? ((value - 1) * 100) : (value * 100);
+                    const isPositive = percentValue > 0;
+
+                    return (
+                      <div key={key} className={`text-[9px] px-1.5 py-0.5 rounded ${
+                        isPositive ? 'bg-green-900/30 text-green-300 border border-green-600/30' : 'bg-red-900/30 text-red-300 border border-red-600/30'
+                      }`}>
+                        {isPositive ? '✅' : '⚠️'} {key}: {isPositive ? '+' : ''}{percentValue.toFixed(0)}%
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
@@ -251,13 +258,20 @@ export default function CompactBattleLayout({
               {/* Modificadores */}
               {sinergiaIA.modificadores && Object.keys(sinergiaIA.modificadores).length > 0 && (
                 <div className="space-y-1">
-                  {Object.entries(sinergiaIA.modificadores).map(([key, value]) => (
-                    <div key={key} className={`text-[9px] px-1.5 py-0.5 rounded ${
-                      value > 0 ? 'bg-green-900/30 text-green-300 border border-green-600/30' : 'bg-red-900/30 text-red-300 border border-red-600/30'
-                    }`}>
-                      {value > 0 ? '✅' : '⚠️'} {key}: {value > 0 ? '+' : ''}{(value * 100).toFixed(0)}%
-                    </div>
-                  ))}
+                  {Object.entries(sinergiaIA.modificadores).map(([key, value]) => {
+                    // Modificadores _mult são multiplicadores (1.25 = +25%), outros são percentuais diretos (0.25 = 25%)
+                    const isMult = key.endsWith('_mult') || key.includes('_reducao');
+                    const percentValue = isMult ? ((value - 1) * 100) : (value * 100);
+                    const isPositive = percentValue > 0;
+
+                    return (
+                      <div key={key} className={`text-[9px] px-1.5 py-0.5 rounded ${
+                        isPositive ? 'bg-green-900/30 text-green-300 border border-green-600/30' : 'bg-red-900/30 text-red-300 border border-red-600/30'
+                      }`}>
+                        {isPositive ? '✅' : '⚠️'} {key}: {isPositive ? '+' : ''}{percentValue.toFixed(0)}%
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 

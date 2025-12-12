@@ -23,8 +23,8 @@ export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true, 
       </div>
 
       {/* Container dos Avatares */}
-      <div className="p-3 flex gap-3 items-center">
-        {/* Avatar Principal (3x maior) */}
+      <div className="p-3 flex gap-3 items-center justify-center">
+        {/* Avatar Principal */}
         <div className="flex-shrink-0">
           <AvatarSVG avatar={principal} tamanho={180} />
           <div className="text-center mt-1">
@@ -35,9 +35,9 @@ export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true, 
         </div>
 
         {/* Seta */}
-        <div className="text-slate-500 text-2xl font-bold">+</div>
+        {suporte && <div className="text-slate-500 text-2xl font-bold">+</div>}
 
-        {/* Avatar Suporte (3x maior) */}
+        {/* Avatar Suporte */}
         {suporte && (
           <div className="flex-shrink-0">
             <AvatarSVG avatar={suporte} tamanho={120} />
@@ -48,22 +48,20 @@ export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true, 
             </div>
           </div>
         )}
+      </div>
 
-        {/* Stats Compactos */}
-        <div className="flex-1 text-xs space-y-1">
+      {/* Stats - Abaixo das imagens */}
+      <div className="px-3 pb-2">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
           <div className="flex justify-between">
             <span className="text-slate-400">Nv</span>
             <span className="text-white font-bold">{principal.nivel}</span>
           </div>
           <div className="flex justify-between">
+            <span className="text-slate-400">Elemento</span>
             <span className={getElementoCor(principal.elemento)}>
               {getElementoEmoji(principal.elemento)}
             </span>
-            {suporte && (
-              <span className={getElementoCor(suporte.elemento)}>
-                {getElementoEmoji(suporte.elemento)}
-              </span>
-            )}
           </div>
           <div className="flex justify-between">
             <span className="text-slate-400">💪</span>

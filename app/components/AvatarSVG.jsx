@@ -56,6 +56,20 @@ export default function AvatarSVG({ avatar, tamanho = 200, className = "", isEne
       corBrilho: '#ffffff',
       corOlho: '#fef3c7',
       particulas: 'estrelas'
+    },
+    'Void': {
+      cores: ['#18181b', '#27272a', '#3f3f46', '#52525b'],
+      coresSecundarias: ['#0a0a0a', '#171717', '#262626'],
+      corBrilho: '#a855f7',
+      corOlho: '#c084fc',
+      particulas: 'vazio'
+    },
+    'Aether': {
+      cores: ['#d8b4fe', '#e9d5ff', '#f3e8ff', '#fae8ff'],
+      coresSecundarias: ['#9333ea', '#a855f7', '#c084fc'],
+      corBrilho: '#fef3c7',
+      corOlho: '#fde047',
+      particulas: 'cosmos'
     }
   };
 
@@ -91,7 +105,7 @@ export default function AvatarSVG({ avatar, tamanho = 200, className = "", isEne
       const random = createSeededRandom(seed);
       const escolher = (array) => array[random(0, array.length - 1)];
 
-      const config = elementosConfig[avatar.elemento];
+      const config = elementosConfig[avatar.elemento] || elementosConfig['Fogo']; // Fallback para Fogo se elemento não encontrado
 
       // Aplicar cores mais escuras para inimigos
       const ajustarCorParaInimigo = (cor) => {
