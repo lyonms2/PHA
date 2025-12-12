@@ -556,24 +556,69 @@ export default function PvPPage() {
               </p>
 
               <div className="space-y-3">
-                <select
-                  value={avatarSuporte?.id || ''}
-                  onChange={(e) => {
-                    const selected = todosAvatares.find(av => av.id === e.target.value);
-                    setAvatarSuporte(selected || null);
-                  }}
-                  className="w-full bg-slate-800 border border-purple-500/50 text-white rounded-lg px-3 py-2 text-sm"
-                >
-                  <option value="">Selecione um Avatar Suporte</option>
-                  {todosAvatares
-                    .filter(av => av.id !== avatarAtivo?.id)
-                    .map(av => (
-                      <option key={av.id} value={av.id}>
-                        {av.nome} ({av.elemento}) - Nv.{av.nivel}
-                      </option>
-                    ))
-                  }
-                </select>
+                {avatarSuporte ? (
+                  <div>
+                    <div className="bg-slate-800/50 rounded-lg p-3 border border-purple-500/30 mb-3">
+                      <div className="flex items-center gap-3">
+                        <AvatarSVG avatar={avatarSuporte} tamanho={80} />
+                        <div className="flex-1">
+                          <h4 className="text-base font-bold text-white mb-1">{avatarSuporte.nome}</h4>
+                          <div className="text-xs text-slate-400 mb-2">
+                            {avatarSuporte.elemento} • Nv.{avatarSuporte.nivel}
+                          </div>
+                          <div className="grid grid-cols-4 gap-1 text-[10px]">
+                            <div className="bg-slate-900/50 rounded px-1.5 py-0.5">
+                              <div className="text-slate-500">FOR</div>
+                              <div className="font-bold text-red-400">{avatarSuporte.forca}</div>
+                            </div>
+                            <div className="bg-slate-900/50 rounded px-1.5 py-0.5">
+                              <div className="text-slate-500">AGI</div>
+                              <div className="font-bold text-green-400">{avatarSuporte.agilidade}</div>
+                            </div>
+                            <div className="bg-slate-900/50 rounded px-1.5 py-0.5">
+                              <div className="text-slate-500">RES</div>
+                              <div className="font-bold text-blue-400">{avatarSuporte.resistencia}</div>
+                            </div>
+                            <div className="bg-slate-900/50 rounded px-1.5 py-0.5">
+                              <div className="text-slate-500">FOC</div>
+                              <div className="font-bold text-purple-400">{avatarSuporte.foco}</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => setAvatarSuporte(null)}
+                      className="w-full px-3 py-1.5 bg-red-900/30 hover:bg-red-800/40 border border-red-500/30 text-red-400 font-semibold rounded text-xs transition-all"
+                    >
+                      Remover
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="mb-3 p-4 bg-purple-950/20 rounded-lg border border-purple-900/30 text-center">
+                      <div className="text-3xl mb-1">⚔️</div>
+                      <div className="text-[10px] text-purple-400">Selecione um avatar suporte</div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-1.5 max-h-64 overflow-y-auto custom-scrollbar">
+                      {todosAvatares
+                        .filter(av => av.id !== avatarAtivo?.id)
+                        .map((avatar) => (
+                          <button
+                            key={avatar.id}
+                            onClick={() => setAvatarSuporte(avatar)}
+                            className="p-1.5 bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700 hover:border-purple-500/50 rounded transition-all flex flex-col items-center"
+                          >
+                            <AvatarSVG avatar={avatar} tamanho={50} />
+                            <div className="text-[10px] font-bold text-white mt-1 truncate w-full text-center">{avatar.nome}</div>
+                            <div className="text-[9px] text-slate-400">Nv.{avatar.nivel}</div>
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Preview de Sinergia */}
                 {sinergiaPreview && (
@@ -870,6 +915,26 @@ export default function PvPPage() {
           </div>
         </div>
       )}
+
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(15, 23, 42, 0.5);
+          border-radius: 3px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(147, 51, 234, 0.5);
+          border-radius: 3px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(147, 51, 234, 0.7);
+        }
+      `}</style>
     </div>
   );
 }
