@@ -421,33 +421,35 @@ export default function TreinamentoAIPage() {
                     {sinergiaPreview.descricao}
                   </p>
 
-                  {/* Bônus */}
-                  {sinergiaPreview.bonus && Object.keys(sinergiaPreview.bonus).length > 0 && (
+                  {/* Vantagens */}
+                  {sinergiaPreview.vantagens && sinergiaPreview.vantagens.length > 0 && (
                     <div className="mb-2">
-                      <div className="text-[9px] text-green-400 font-bold mb-1">BÔNUS:</div>
-                      <div className="text-[9px] text-slate-400 space-y-0.5">
-                        {Object.entries(sinergiaPreview.bonus).slice(0, 3).map(([key, val]) => (
-                          <div key={key}>+ {key}: {typeof val === 'boolean' ? 'Sim' : typeof val === 'number' ? `${Math.floor(val * 100)}%` : val}</div>
+                      <div className="text-[9px] text-green-400 font-bold mb-1">✅ VANTAGENS:</div>
+                      <div className="text-[10px] space-y-1">
+                        {sinergiaPreview.vantagens.map((vantagem, idx) => (
+                          <div key={idx} className="bg-green-900/30 text-green-300 border border-green-600/30 rounded px-2 py-1">
+                            ✨ {vantagem.texto}
+                          </div>
                         ))}
-                        {Object.keys(sinergiaPreview.bonus).length > 3 && (
-                          <div className="text-cyan-400">+ {Object.keys(sinergiaPreview.bonus).length - 3} outros...</div>
-                        )}
                       </div>
                     </div>
                   )}
 
                   {/* Desvantagens */}
-                  {sinergiaPreview.desvantagem && Object.keys(sinergiaPreview.desvantagem).length > 0 && (
+                  {sinergiaPreview.desvantagens && sinergiaPreview.desvantagens.length > 0 ? (
                     <div>
-                      <div className="text-[9px] text-red-400 font-bold mb-1">DESVANTAGENS:</div>
-                      <div className="text-[9px] text-slate-400 space-y-0.5">
-                        {Object.entries(sinergiaPreview.desvantagem).slice(0, 2).map(([key, val]) => (
-                          <div key={key}>- {key}: {typeof val === 'boolean' ? 'Sim' : typeof val === 'number' ? `${Math.floor(val * 100)}%` : val}</div>
+                      <div className="text-[9px] text-red-400 font-bold mb-1">⚠️ DESVANTAGENS:</div>
+                      <div className="text-[10px] space-y-1">
+                        {sinergiaPreview.desvantagens.map((desvantagem, idx) => (
+                          <div key={idx} className="bg-red-900/30 text-red-300 border border-red-600/30 rounded px-2 py-1">
+                            💢 {desvantagem.texto}
+                          </div>
                         ))}
-                        {Object.keys(sinergiaPreview.desvantagem).length > 2 && (
-                          <div className="text-red-400">- {Object.keys(sinergiaPreview.desvantagem).length - 2} outras...</div>
-                        )}
                       </div>
+                    </div>
+                  ) : (
+                    <div className="bg-purple-900/30 text-purple-300 border border-purple-600/30 rounded px-2 py-1 text-center text-[10px]">
+                      ⭐ Sinergia Perfeita - Sem Desvantagens!
                     </div>
                   )}
                 </div>
