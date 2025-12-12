@@ -216,13 +216,11 @@ export async function POST(request) {
       // Aplicar sinergia entre Principal e Suporte
       const resultado = aplicarSinergia(avatar, avatarSuporte);
 
-      // Substituir stats do avatar principal pelos stats com sinergia aplicada
-      Object.assign(avatar, resultado.stats);
-
-      // Armazenar informações da sinergia
+      // Armazenar informações da sinergia (não modificar stats, apenas guardar modificadores)
       sinergiaInfo = {
-        ...resultado.synergy,
+        ...resultado.sinergiaAtiva,
         modificadores: resultado.modificadores,
+        logTexto: resultado.logTexto,
         avatarSuporte: {
           id: avatarSuporte.id,
           nome: avatarSuporte.nome,
@@ -231,11 +229,11 @@ export async function POST(request) {
         }
       };
 
-      console.log('✨ Sinergia aplicada:', {
+      console.log('✨ Sinergia aplicada (Jogador):', {
         principal: avatar.nome,
         suporte: avatarSuporte.nome,
         sinergia: sinergiaInfo.nome,
-        modificadores: Object.keys(resultado.modificadores).length
+        log: resultado.logTexto
       });
     }
 
@@ -266,11 +264,11 @@ export async function POST(request) {
 
     // Aplicar sinergia da IA
     const resultadoSinergiaIA = aplicarSinergia(oponentePrincipal, oponenteSuporte);
-    Object.assign(oponentePrincipal, resultadoSinergiaIA.stats);
 
     const sinergiaIA = {
-      ...resultadoSinergiaIA.synergy,
+      ...resultadoSinergiaIA.sinergiaAtiva,
       modificadores: resultadoSinergiaIA.modificadores,
+      logTexto: resultadoSinergiaIA.logTexto,
       avatarSuporte: {
         id: oponenteSuporte.id,
         nome: oponenteSuporte.nome,
