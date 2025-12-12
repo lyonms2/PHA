@@ -100,16 +100,11 @@ export async function POST(request) {
     // Aplicar sinergia entre Principal e Suporte
     const resultadoSinergia = aplicarSinergia(avatar, avatarSuporte);
 
-    // Criar objeto de avatar com stats modificados pela sinergia
-    const avatarComSinergia = {
-      ...avatar,
-      ...resultadoSinergia.stats
-    };
-
     // Preparar informações da sinergia para armazenar na sala
     const sinergiaInfo = {
-      ...resultadoSinergia.synergy,
+      ...resultadoSinergia.sinergiaAtiva,
       modificadores: resultadoSinergia.modificadores,
+      logTexto: resultadoSinergia.logTexto,
       avatarSuporte: {
         id: avatarSuporte.id,
         nome: avatarSuporte.nome,
@@ -121,19 +116,20 @@ export async function POST(request) {
     console.log('✨ Sinergia aplicada (Guest):', {
       principal: avatar.nome,
       suporte: avatarSuporte.nome,
-      sinergia: sinergiaInfo.nome
+      sinergia: sinergiaInfo.nome,
+      log: resultadoSinergia.logTexto
     });
 
-    // Calcular HP máximo do avatar (com stats da sinergia)
-    const hpMaximo = calcularHPMaximoCompleto(avatarComSinergia);
+    // Calcular HP máximo do avatar
+    const hpMaximo = calcularHPMaximoCompleto(avatar);
     const hpAtual = Math.min(avatar.hp_atual || hpMaximo, hpMaximo);
 
-    // Aplicar penalidades de exaustão nos stats (usando stats com sinergia)
+    // Aplicar penalidades de exaustão nos stats
     const statsBase = {
-      forca: avatarComSinergia.forca || 10,
-      agilidade: avatarComSinergia.agilidade || 10,
-      resistencia: avatarComSinergia.resistencia || 10,
-      foco: avatarComSinergia.foco || 10
+      forca: avatar.forca || 10,
+      agilidade: avatar.agilidade || 10,
+      resistencia: avatar.resistencia || 10,
+      foco: avatar.foco || 10
     };
     const statsComPenalidades = aplicarPenalidadesExaustao(statsBase, avatar.exaustao || 0);
 

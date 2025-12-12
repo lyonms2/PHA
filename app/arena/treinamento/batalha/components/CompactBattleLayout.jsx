@@ -56,47 +56,15 @@ export default function CompactBattleLayout({
       <div className="flex-1 grid grid-cols-[1fr_1.2fr_1fr] gap-2 min-h-0">
         {/* COLUNA ESQUERDA - PLAYER */}
         <div className="flex flex-col gap-1.5 min-h-0">
-          {/* Avatar Duo */}
+          {/* Avatar Duo com HP e Energia integrados */}
           <AvatarDuoDisplay
             principal={meuAvatar}
             suporte={sinergiaPlayer?.avatarSuporte}
             isPlayer={true}
+            hp={myHp}
+            hpMax={myHpMax}
+            energy={myEnergy}
           />
-
-          {/* HP e Energia */}
-          <div className="bg-slate-900/95 rounded-lg border border-cyan-500/40 p-1.5 space-y-1">
-            {/* HP */}
-            <div>
-              <div className="flex justify-between text-[9px] mb-0.5">
-                <span className="text-red-400 font-bold">❤️ HP</span>
-                <span className="font-mono">{myHp}/{myHpMax}</span>
-              </div>
-              <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                <div
-                  className={`h-full transition-all ${
-                    hpMeuPercent > 50 ? 'bg-gradient-to-r from-green-500 to-emerald-400' :
-                    hpMeuPercent > 25 ? 'bg-gradient-to-r from-yellow-500 to-orange-400' :
-                    'bg-gradient-to-r from-red-600 to-red-400'
-                  }`}
-                  style={{ width: `${hpMeuPercent}%` }}
-                />
-              </div>
-            </div>
-
-            {/* Energia */}
-            <div>
-              <div className="flex justify-between text-[9px] mb-0.5">
-                <span className="text-blue-400 font-bold">⚡ Energia</span>
-                <span className="font-mono">{myEnergy}/100</span>
-              </div>
-              <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all"
-                  style={{ width: `${myEnergy}%` }}
-                />
-              </div>
-            </div>
-          </div>
 
           {/* Efeitos Ativos */}
           {myEffects.length > 0 && (
@@ -231,47 +199,15 @@ export default function CompactBattleLayout({
 
         {/* COLUNA DIREITA - IA */}
         <div className="flex flex-col gap-1.5 min-h-0">
-          {/* Avatar Duo */}
+          {/* Avatar Duo com HP e Energia integrados */}
           <AvatarDuoDisplay
             principal={iaAvatar}
             suporte={sinergiaIA?.avatarSuporte}
             isPlayer={false}
+            hp={opponentHp}
+            hpMax={opponentHpMax}
+            energy={opponentEnergy}
           />
-
-          {/* HP e Energia */}
-          <div className="bg-slate-900/95 rounded-lg border border-red-500/40 p-1.5 space-y-1">
-            {/* HP */}
-            <div>
-              <div className="flex justify-between text-[9px] mb-0.5">
-                <span className="text-red-400 font-bold">❤️ HP</span>
-                <span className="font-mono">{opponentHp}/{opponentHpMax}</span>
-              </div>
-              <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                <div
-                  className={`h-full transition-all ${
-                    hpIAPercent > 50 ? 'bg-gradient-to-r from-green-500 to-emerald-400' :
-                    hpIAPercent > 25 ? 'bg-gradient-to-r from-yellow-500 to-orange-400' :
-                    'bg-gradient-to-r from-red-600 to-red-400'
-                  }`}
-                  style={{ width: `${hpIAPercent}%` }}
-                />
-              </div>
-            </div>
-
-            {/* Energia */}
-            <div>
-              <div className="flex justify-between text-[9px] mb-0.5">
-                <span className="text-blue-400 font-bold">⚡ Energia</span>
-                <span className="font-mono">{opponentEnergy}/100</span>
-              </div>
-              <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all"
-                  style={{ width: `${opponentEnergy}%` }}
-                />
-              </div>
-            </div>
-          </div>
 
           {/* Efeitos Ativos */}
           {opponentEffects.length > 0 && (
