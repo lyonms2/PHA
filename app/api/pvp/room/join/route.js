@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getDocuments, updateDocument, getDocument } from '@/lib/firebase/firestore';
 import { calcularHPMaximoCompleto } from '@/lib/combat/statsCalculator';
 import { aplicarPenalidadesExaustao } from '@/app/avatares/sistemas/exhaustionSystem';
-import { aplicarSinergia } from '@/lib/combat/synergyApplicator';
+import { aplicarSinergia, calcularHPComSinergia, calcularEnergiaComSinergia } from '@/lib/combat/synergyApplicator';
 
 export const dynamic = 'force-dynamic';
 
@@ -120,8 +120,9 @@ export async function POST(request) {
       log: resultadoSinergia.logTexto
     });
 
-    // Calcular HP máximo do avatar
-    const hpMaximo = calcularHPMaximoCompleto(avatar);
+    // Calcular HP máximo do avatar com modificadores de sinergia
+    const hpMaximoBase = calcularHPMaximoCompleto(avatar);
+    const hpMaximo = calcularHPComSinergia(hpMaximoBase, resultadoSinergia.modificadores);
     const hpAtual = Math.min(avatar.hp_atual || hpMaximo, hpMaximo);
 
     // Aplicar penalidades de exaustão nos stats
