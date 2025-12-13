@@ -9,7 +9,7 @@ import {
   getNivelExaustao
 } from "@/lib/gameLogic";
 import AvatarSVG from "../../components/AvatarSVG";
-import { previewSinergia, formatarModificadores } from "@/lib/combat/synergyApplicator";
+import { previewSinergia } from "@/lib/combat/synergyApplicator";
 
 export default function PvPPage() {
   const router = useRouter();
@@ -639,23 +639,27 @@ export default function PvPPage() {
                     </div>
 
                     <div className="text-xs space-y-1">
-                      {/* Bônus */}
-                      {sinergiaPreview.bonus && Object.keys(sinergiaPreview.bonus).length > 0 && (
+                      {/* Vantagens */}
+                      {sinergiaPreview.vantagens && sinergiaPreview.vantagens.length > 0 && (
                         <div className="bg-green-900/30 border border-green-600/50 rounded p-2">
-                          <div className="font-bold text-green-400 mb-1">✅ Bônus:</div>
-                          {formatarModificadores(sinergiaPreview.bonus).map((mod, i) => (
-                            <div key={i} className="text-green-300">• {mod}</div>
+                          <div className="font-bold text-green-400 mb-1">✅ Vantagens:</div>
+                          {sinergiaPreview.vantagens.map((vantagem, i) => (
+                            <div key={i} className="text-green-300">• {vantagem.texto}</div>
                           ))}
                         </div>
                       )}
 
                       {/* Desvantagens */}
-                      {sinergiaPreview.desvantagem && Object.keys(sinergiaPreview.desvantagem).length > 0 && (
+                      {sinergiaPreview.desvantagens && sinergiaPreview.desvantagens.length > 0 ? (
                         <div className="bg-red-900/30 border border-red-600/50 rounded p-2">
                           <div className="font-bold text-red-400 mb-1">⚠️ Desvantagens:</div>
-                          {formatarModificadores(sinergiaPreview.desvantagem).map((mod, i) => (
-                            <div key={i} className="text-red-300">• {mod}</div>
+                          {sinergiaPreview.desvantagens.map((desvantagem, i) => (
+                            <div key={i} className="text-red-300">• {desvantagem.texto}</div>
                           ))}
+                        </div>
+                      ) : sinergiaPreview.vantagens && sinergiaPreview.vantagens.length > 0 && (
+                        <div className="bg-purple-900/30 border border-purple-600/50 rounded p-2 text-center">
+                          <div className="font-bold text-purple-300">⭐ Sinergia Perfeita</div>
                         </div>
                       )}
                     </div>
