@@ -84,7 +84,13 @@ export async function POST(request) {
         id: avatarSuporte.id,
         nome: avatarSuporte.nome,
         elemento: avatarSuporte.elemento,
-        nivel: avatarSuporte.nivel
+        nivel: avatarSuporte.nivel,
+        raridade: avatarSuporte.raridade,
+        marca_morte: avatarSuporte.marca_morte || false,
+        forca: avatarSuporte.forca,
+        agilidade: avatarSuporte.agilidade,
+        resistencia: avatarSuporte.resistencia,
+        foco: avatarSuporte.foco
       }
     };
 
