@@ -641,7 +641,7 @@ export default function AvatarsPage() {
                           <div className="text-center">
                             <div className="text-xs text-red-400 uppercase mb-1">Poder Total Perdido</div>
                             <div className="text-3xl font-black text-red-300">
-                              {modalSacrificar.forca + modalSacrificar.agilidade + modalSacrificar.resistencia + modalSacrificar.foco}
+                              {calcularPoderTotal(modalSacrificar)}
                             </div>
                             <div className="text-[10px] text-red-500 mt-1">
                               XP: {modalSacrificar.xp || 0} | Vínculo: {modalSacrificar.vinculo}%

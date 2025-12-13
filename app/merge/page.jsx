@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AvatarSVG from '../components/AvatarSVG';
 import GameNav from '../components/GameNav';
+import { calcularPoderTotal } from '@/lib/gameLogic';
 
 export default function MergePage() {
   const router = useRouter();
@@ -743,10 +744,10 @@ export default function MergePage() {
                           <div className="text-center">
                             <div className="text-xs text-indigo-400 uppercase mb-1">Poder Total</div>
                             <div className="text-3xl font-black bg-gradient-to-r from-indigo-300 to-violet-300 bg-clip-text text-transparent">
-                              {(resultado.avatarBase?.forca || 0) + (resultado.avatarBase?.agilidade || 0) + (resultado.avatarBase?.resistencia || 0) + (resultado.avatarBase?.foco || 0)}
+                              {calcularPoderTotal(resultado.avatarBase)}
                             </div>
                             <div className="text-xs text-green-400 font-bold mt-1">
-                              +{(resultado.ganhos?.forca || 0) + (resultado.ganhos?.agilidade || 0) + (resultado.ganhos?.resistencia || 0) + (resultado.ganhos?.foco || 0)} pts ganhos
+                              +{(resultado.ganhos?.forca || 0) + (resultado.ganhos?.agilidade || 0) + (resultado.ganhos?.resistencia || 0) + (resultado.ganhos?.foco || 0)} pts em stats
                             </div>
                           </div>
                         </div>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AvatarSVG from '../components/AvatarSVG';
 import GameNav, { COMMON_ACTIONS } from '../components/GameNav';
+import { calcularPoderTotal } from '@/lib/gameLogic';
 
 export default function MercadoPage() {
   const router = useRouter();
@@ -540,7 +541,7 @@ export default function MercadoPage() {
                           <div className="text-center">
                             <div className="text-xs text-amber-400 uppercase mb-1">Poder Total</div>
                             <div className="text-3xl font-black text-amber-300">
-                              {modalDetalhes.forca + modalDetalhes.agilidade + modalDetalhes.resistencia + modalDetalhes.foco}
+                              {calcularPoderTotal(modalDetalhes)}
                             </div>
                             <div className="text-[10px] text-amber-500 mt-1">
                               XP: {modalDetalhes.experiencia || 0} | Vínculo: {modalDetalhes.vinculo}%

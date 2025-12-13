@@ -2,6 +2,7 @@ import { useState } from 'react';
 import AvatarSVG from '../../components/AvatarSVG';
 import { aplicarPenalidadesExaustao, getNivelExaustao } from '../sistemas/exhaustionSystem';
 import { calcularXPNecessario } from '../sistemas/progressionSystem';
+import { calcularPoderTotal } from '@/lib/gameLogic';
 
 const getInfoExaustao = (exaustao) => {
   if (exaustao >= 100) {
@@ -413,19 +414,19 @@ export default function AvatarDetalhes({
                         {temPenalidade ? (
                           <div className="space-y-1">
                             <div className="text-lg text-slate-500 line-through">
-                              {statsBase.forca + statsBase.agilidade + statsBase.resistencia + statsBase.foco}
+                              {calcularPoderTotal({ ...avatar, ...statsBase })}
                             </div>
                             <div className="text-3xl font-black text-red-400">
-                              {statsAtuais.forca + statsAtuais.agilidade + statsAtuais.resistencia + statsAtuais.foco}
+                              {calcularPoderTotal({ ...avatar, ...statsAtuais })}
                             </div>
                             <div className="text-xs text-red-400 font-bold">
-                              {(statsAtuais.forca + statsAtuais.agilidade + statsAtuais.resistencia + statsAtuais.foco) -
-                               (statsBase.forca + statsBase.agilidade + statsBase.resistencia + statsBase.foco)} pts
+                              {calcularPoderTotal({ ...avatar, ...statsAtuais }) -
+                               calcularPoderTotal({ ...avatar, ...statsBase })} pts
                             </div>
                           </div>
                         ) : (
                           <div className="text-3xl font-black bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                            {statsBase.forca + statsBase.agilidade + statsBase.resistencia + statsBase.foco}
+                            {calcularPoderTotal(avatar)}
                           </div>
                         )}
                         <div className="text-[10px] text-slate-500 mt-1">

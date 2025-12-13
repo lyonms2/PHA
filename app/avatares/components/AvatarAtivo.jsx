@@ -1,6 +1,7 @@
 import AvatarSVG from '../../components/AvatarSVG';
 import { aplicarPenalidadesExaustao, getNivelExaustao } from '../sistemas/exhaustionSystem';
 import { calcularXPNecessario } from '../sistemas/progressionSystem';
+import { calcularPoderTotal } from '@/lib/gameLogic';
 
 const getInfoExaustao = (exaustao) => {
   if (exaustao >= 100) {
@@ -284,15 +285,15 @@ export default function AvatarAtivo({
                     {temPenalidade ? (
                       <div className="text-right">
                         <div className="text-xs md:text-sm text-slate-600 line-through">
-                          {statsBase.forca + statsBase.agilidade + statsBase.resistencia + statsBase.foco}
+                          {calcularPoderTotal({ ...avatar, ...statsBase })}
                         </div>
                         <div className="text-lg md:text-2xl font-bold text-red-400">
-                          {statsAtuais.forca + statsAtuais.agilidade + statsAtuais.resistencia + statsAtuais.foco}
+                          {calcularPoderTotal({ ...avatar, ...statsAtuais })}
                         </div>
                       </div>
                     ) : (
                       <span className="text-lg md:text-2xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
-                        {statsBase.forca + statsBase.agilidade + statsBase.resistencia + statsBase.foco}
+                        {calcularPoderTotal(avatar)}
                       </span>
                     )}
                   </div>
