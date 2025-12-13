@@ -179,6 +179,7 @@ export const NAV_PRESETS = {
 export const COMMON_ACTIONS = {
   mercado: { href: "/mercado", label: "MERCADO", icon: "🏪", color: "amber" },
   fusao: { href: "/merge", label: "FUSAO", icon: "🧬", color: "indigo" },
+  forjador: { href: "/forjador", label: "FORJADOR", icon: "🔮", color: "purple" },
   memorial: { href: "/memorial", label: "MEMORIAL", icon: "🕯️", color: "gray" },
   invocar: { href: "/ocultista", label: "INVOCAR", icon: "🔮", color: "purple" },
   avatares: { href: "/avatares", label: "AVATARES", icon: "👤", color: "cyan" },
