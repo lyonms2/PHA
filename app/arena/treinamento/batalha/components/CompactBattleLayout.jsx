@@ -105,18 +105,29 @@ export default function CompactBattleLayout({
                 {meuAvatar.elemento} × {sinergiaPlayer.avatarSuporte?.elemento}
               </div>
 
-              {/* Modificadores */}
-              {sinergiaPlayer.modificadores && Object.keys(sinergiaPlayer.modificadores).length > 0 && (
-                <div className="space-y-1">
-                  {Object.entries(sinergiaPlayer.modificadores).map(([key, value]) => (
-                    <div key={key} className={`text-[9px] px-1.5 py-0.5 rounded ${
-                      value > 0 ? 'bg-green-900/30 text-green-300 border border-green-600/30' : 'bg-red-900/30 text-red-300 border border-red-600/30'
-                    }`}>
-                      {value > 0 ? '✅' : '⚠️'} {key}: {value > 0 ? '+' : ''}{(value * 100).toFixed(0)}%
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* Vantagens e Desvantagens */}
+              <div className="space-y-1">
+                {/* Vantagens */}
+                {sinergiaPlayer.vantagens && sinergiaPlayer.vantagens.length > 0 && sinergiaPlayer.vantagens.map((vantagem, idx) => (
+                  <div key={`vantagem-${idx}`} className="text-[9px] px-1.5 py-0.5 rounded bg-green-900/30 text-green-300 border border-green-600/30">
+                    ✅ {vantagem.texto}
+                  </div>
+                ))}
+
+                {/* Desvantagens */}
+                {sinergiaPlayer.desvantagens && sinergiaPlayer.desvantagens.length > 0 && sinergiaPlayer.desvantagens.map((desvantagem, idx) => (
+                  <div key={`desvantagem-${idx}`} className="text-[9px] px-1.5 py-0.5 rounded bg-red-900/30 text-red-300 border border-red-600/30">
+                    ⚠️ {desvantagem.texto}
+                  </div>
+                ))}
+
+                {/* Sem desvantagens (sinergia perfeita) */}
+                {(!sinergiaPlayer.desvantagens || sinergiaPlayer.desvantagens.length === 0) && (
+                  <div className="text-[9px] px-1.5 py-0.5 rounded bg-purple-900/30 text-purple-300 border border-purple-600/30 text-center">
+                    ⭐ Sinergia Perfeita
+                  </div>
+                )}
+              </div>
 
               <div className="text-[9px] text-slate-500 mt-2 italic text-center">
                 {sinergiaPlayer.descricao}
@@ -248,18 +259,29 @@ export default function CompactBattleLayout({
                 {iaAvatar.elemento} × {sinergiaIA.avatarSuporte?.elemento}
               </div>
 
-              {/* Modificadores */}
-              {sinergiaIA.modificadores && Object.keys(sinergiaIA.modificadores).length > 0 && (
-                <div className="space-y-1">
-                  {Object.entries(sinergiaIA.modificadores).map(([key, value]) => (
-                    <div key={key} className={`text-[9px] px-1.5 py-0.5 rounded ${
-                      value > 0 ? 'bg-green-900/30 text-green-300 border border-green-600/30' : 'bg-red-900/30 text-red-300 border border-red-600/30'
-                    }`}>
-                      {value > 0 ? '✅' : '⚠️'} {key}: {value > 0 ? '+' : ''}{(value * 100).toFixed(0)}%
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* Vantagens e Desvantagens */}
+              <div className="space-y-1">
+                {/* Vantagens */}
+                {sinergiaIA.vantagens && sinergiaIA.vantagens.length > 0 && sinergiaIA.vantagens.map((vantagem, idx) => (
+                  <div key={`vantagem-${idx}`} className="text-[9px] px-1.5 py-0.5 rounded bg-green-900/30 text-green-300 border border-green-600/30">
+                    ✅ {vantagem.texto}
+                  </div>
+                ))}
+
+                {/* Desvantagens */}
+                {sinergiaIA.desvantagens && sinergiaIA.desvantagens.length > 0 && sinergiaIA.desvantagens.map((desvantagem, idx) => (
+                  <div key={`desvantagem-${idx}`} className="text-[9px] px-1.5 py-0.5 rounded bg-red-900/30 text-red-300 border border-red-600/30">
+                    ⚠️ {desvantagem.texto}
+                  </div>
+                ))}
+
+                {/* Sem desvantagens (sinergia perfeita) */}
+                {(!sinergiaIA.desvantagens || sinergiaIA.desvantagens.length === 0) && (
+                  <div className="text-[9px] px-1.5 py-0.5 rounded bg-purple-900/30 text-purple-300 border border-purple-600/30 text-center">
+                    ⭐ Sinergia Perfeita
+                  </div>
+                )}
+              </div>
 
               <div className="text-[9px] text-slate-500 mt-2 italic text-center">
                 {sinergiaIA.descricao}

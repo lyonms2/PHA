@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDocuments, updateDocument, getDocument } from '@/lib/firebase/firestore';
 import { calcularHPMaximoCompleto } from '@/lib/combat/statsCalculator';
-import { aplicarPenalidadesExaustao } from '@/app/avatares/sistemas/exhaustionSystem';
-import { aplicarSinergia } from '@/lib/combat/synergyApplicator';
+import { aplicarSinergia, calcularHPComSinergia, calcularEnergiaComSinergia } from '@/lib/combat/synergyApplicator';
 
 export const dynamic = 'force-dynamic';
 
@@ -109,7 +108,13 @@ export async function POST(request) {
         id: avatarSuporte.id,
         nome: avatarSuporte.nome,
         elemento: avatarSuporte.elemento,
-        nivel: avatarSuporte.nivel
+        nivel: avatarSuporte.nivel,
+        raridade: avatarSuporte.raridade,
+        marca_morte: avatarSuporte.marca_morte || false,
+        forca: avatarSuporte.forca,
+        agilidade: avatarSuporte.agilidade,
+        resistencia: avatarSuporte.resistencia,
+        foco: avatarSuporte.foco
       }
     };
 
@@ -120,18 +125,10 @@ export async function POST(request) {
       log: resultadoSinergia.logTexto
     });
 
-    // Calcular HP máximo do avatar
-    const hpMaximo = calcularHPMaximoCompleto(avatar);
+    // Calcular HP máximo do avatar com modificadores de sinergia
+    const hpMaximoBase = calcularHPMaximoCompleto(avatar);
+    const hpMaximo = calcularHPComSinergia(hpMaximoBase, resultadoSinergia.modificadores);
     const hpAtual = Math.min(avatar.hp_atual || hpMaximo, hpMaximo);
-
-    // Aplicar penalidades de exaustão nos stats
-    const statsBase = {
-      forca: avatar.forca || 10,
-      agilidade: avatar.agilidade || 10,
-      resistencia: avatar.resistencia || 10,
-      foco: avatar.foco || 10
-    };
-    const statsComPenalidades = aplicarPenalidadesExaustao(statsBase, avatar.exaustao || 0);
 
     // Atualizar sala com o convidado e sinergia
     await updateDocument('pvp_duel_rooms', room.id, {
@@ -146,7 +143,10 @@ export async function POST(request) {
         nivel: avatar.nivel || 1,
         raridade: avatar.raridade || 'comum',
         elemento: avatar.elemento,
-        ...statsComPenalidades // Stats com penalidades de exaustão aplicadas (já incluem sinergia)
+        forca: avatar.forca || 10,
+        agilidade: avatar.agilidade || 10,
+        resistencia: avatar.resistencia || 10,
+        foco: avatar.foco || 10
       },
       guest_sinergia: sinergiaInfo, // Informações da sinergia do guest
       guest_hp: hpAtual,

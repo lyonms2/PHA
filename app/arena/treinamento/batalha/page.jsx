@@ -202,13 +202,28 @@ function BatalhaTreinoIAContent() {
       });
 
       if (response.ok) {
+        const data = await response.json();
+
         addLog('✅ Recompensas aplicadas!');
+
+        // Se subiu de nível, mostrar info detalhada
+        if (data.levelUp) {
+          addLog(`🎉 LEVEL UP! Nível ${data.nivelAnterior} → ${data.novoNivel}`);
+          if (data.statsNovos) {
+            addLog(`⚔️ Força: ${data.statsNovos.forca} | ⚡ Agi: ${data.statsNovos.agilidade}`);
+            addLog(`🛡️ Res: ${data.statsNovos.resistencia} | 🎯 Foco: ${data.statsNovos.foco}`);
+          }
+          if (data.recompensas) {
+            addLog(`💰 Moedas: +${data.recompensas.moedas} | 💎 Fragmentos: +${data.recompensas.fragmentos}`);
+          }
+        }
+
         // Limpar sessionStorage
         sessionStorage.removeItem('treino_ia_dados');
-        // Voltar para tela de treino após 2s
+        // Voltar para tela de treino após 3s (mais tempo se teve level up)
         setTimeout(() => {
           router.push('/arena/treinamento');
-        }, 2000);
+        }, data.levelUp ? 3000 : 2000);
       } else {
         addLog('❌ Erro ao aplicar recompensas');
         // Permitir tentar novamente em caso de erro do servidor

@@ -8,26 +8,7 @@ import { getElementoEmoji, getElementoCor } from '../utils/battleEffects';
 export default function SynergyDisplay({ sinergia }) {
   if (!sinergia) return null;
 
-  const { nome, elementos, modificadores, avatarSuporte, isSpecial } = sinergia;
-
-  // Contar bônus e penalidades
-  const modificadoresChaves = Object.keys(modificadores || {});
-  const totalModificadores = modificadoresChaves.length;
-
-  // Separar em bônus e penalidades baseado no nome da chave
-  const bonus = modificadoresChaves.filter(k =>
-    !k.includes('penalidade') &&
-    !k.includes('bloqueada') &&
-    !k.includes('revelado') &&
-    !k.includes('perda')
-  );
-
-  const penalidades = modificadoresChaves.filter(k =>
-    k.includes('penalidade') ||
-    k.includes('bloqueada') ||
-    k.includes('revelado') ||
-    k.includes('perda')
-  );
+  const { nome, elementos, vantagens = [], desvantagens = [], avatarSuporte, isSpecial } = sinergia;
 
   return (
     <div className="bg-gradient-to-br from-purple-950/40 to-cyan-950/40 border border-cyan-500/30 rounded-lg p-3">
@@ -69,85 +50,36 @@ export default function SynergyDisplay({ sinergia }) {
         </div>
       )}
 
-      {/* Modificadores Resumo */}
-      <div className="flex gap-2 text-[9px]">
-        {bonus.length > 0 && (
-          <div className="flex items-center gap-1">
-            <span className="text-green-400">↑</span>
-            <span className="text-slate-400">{bonus.length} bônus</span>
+      {/* Vantagens e Desvantagens */}
+      <div className="space-y-1.5">
+        {/* Vantagens */}
+        {vantagens.length > 0 && (
+          <div>
+            <div className="text-[9px] text-green-400 font-bold mb-1">✅ VANTAGENS:</div>
+            {vantagens.map((vantagem, idx) => (
+              <div key={idx} className="text-[10px] bg-green-900/30 text-green-300 border border-green-600/30 rounded px-2 py-1">
+                ✨ {vantagem.texto}
+              </div>
+            ))}
           </div>
         )}
-        {penalidades.length > 0 && (
-          <div className="flex items-center gap-1">
-            <span className="text-red-400">↓</span>
-            <span className="text-slate-400">{penalidades.length} penalidades</span>
+
+        {/* Desvantagens */}
+        {desvantagens.length > 0 ? (
+          <div>
+            <div className="text-[9px] text-red-400 font-bold mb-1">⚠️ DESVANTAGENS:</div>
+            {desvantagens.map((desvantagem, idx) => (
+              <div key={idx} className="text-[10px] bg-red-900/30 text-red-300 border border-red-600/30 rounded px-2 py-1">
+                💢 {desvantagem.texto}
+              </div>
+            ))}
+          </div>
+        ) : vantagens.length > 0 && (
+          <div className="text-[10px] bg-purple-900/30 text-purple-300 border border-purple-600/30 rounded px-2 py-1 text-center">
+            ⭐ Sinergia Perfeita - Sem Desvantagens!
           </div>
         )}
       </div>
-
-      {/* Modificadores Detalhados (Colapsável) */}
-      {totalModificadores > 0 && (
-        <details className="mt-2 text-[9px]">
-          <summary className="cursor-pointer text-cyan-400 hover:text-cyan-300 select-none">
-            Ver modificadores ({totalModificadores})
-          </summary>
-          <div className="mt-1.5 space-y-1 bg-slate-950/50 rounded p-1.5">
-            {/* Bônus */}
-            {bonus.length > 0 && (
-              <div>
-                <div className="text-green-400 font-bold mb-0.5">BÔNUS:</div>
-                {bonus.map(key => (
-                  <div key={key} className="text-slate-400 pl-2">
-                    • {formatarModificador(key, modificadores[key])}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Penalidades */}
-            {penalidades.length > 0 && (
-              <div className="mt-1">
-                <div className="text-red-400 font-bold mb-0.5">PENALIDADES:</div>
-                {penalidades.map(key => (
-                  <div key={key} className="text-slate-400 pl-2">
-                    • {formatarModificador(key, modificadores[key])}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </details>
-      )}
     </div>
   );
-}
-
-/**
- * Formata um modificador para exibição
- */
-function formatarModificador(chave, valor) {
-  // Formatar nomes de chaves para legibilidade
-  const nomeFormatado = chave
-    .replace(/_/g, ' ')
-    .replace(/bonus/i, '')
-    .replace(/penalidade/i, '')
-    .trim();
-
-  // Formatar valor
-  let valorFormatado = valor;
-  if (typeof valor === 'boolean') {
-    valorFormatado = valor ? 'Sim' : 'Não';
-  } else if (typeof valor === 'number') {
-    if (Math.abs(valor) < 1) {
-      valorFormatado = `${valor > 0 ? '+' : ''}${Math.floor(valor * 100)}%`;
-    } else {
-      valorFormatado = `${valor > 0 ? '+' : ''}${valor}`;
-    }
-  } else if (typeof valor === 'string') {
-    valorFormatado = valor;
-  } else if (typeof valor === 'object' && valor !== null) {
-    valorFormatado = JSON.stringify(valor);
-  }
-
-  return `${nomeFormatado}: ${valorFormatado}`;
 }

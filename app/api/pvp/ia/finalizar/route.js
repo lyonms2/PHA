@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDocument, getDocuments, updateDocument, createDocument } from '@/lib/firebase/firestore';
-import { getHunterRank, calcularXpFeito, verificarPromocao, aplicarBonusMoedas, aplicarBonusFragmentos } from '@/lib/hunter/hunterRankSystem';
+import { getHunterRank, calcularXpFeito, verificarPromocao } from '@/lib/hunter/hunterRankSystem';
 
 export const dynamic = 'force-dynamic';
 

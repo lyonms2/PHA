@@ -4,12 +4,10 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   calcularPoderTotal,
-  calcularHPMaximoCompleto,
-  aplicarPenalidadesExaustao,
-  getNivelExaustao
+  calcularHPMaximoCompleto
 } from "@/lib/gameLogic";
 import AvatarSVG from "../../components/AvatarSVG";
-import { previewSinergia, formatarModificadores } from "@/lib/combat/synergyApplicator";
+import { previewSinergia } from "@/lib/combat/synergyApplicator";
 
 export default function PvPPage() {
   const router = useRouter();
@@ -142,12 +140,6 @@ export default function PvPPage() {
 
     try {
       const poderTotal = calcularPoderTotal(avatarAtivo);
-      const statsComPenalidades = aplicarPenalidadesExaustao({
-        forca: avatarAtivo.forca,
-        agilidade: avatarAtivo.agilidade,
-        resistencia: avatarAtivo.resistencia,
-        foco: avatarAtivo.foco
-      }, avatarAtivo.exaustao || 0);
 
       const response = await fetch('/api/pvp/queue/join', {
         method: 'POST',
@@ -182,7 +174,6 @@ export default function PvPPage() {
           matchId: data.matchId,
           avatarJogador: {
             ...avatarAtivo,
-            ...statsComPenalidades,
             habilidades: avatarAtivo.habilidades || []
           },
           avatarOponente: data.opponent?.avatar || null,
@@ -219,7 +210,6 @@ export default function PvPPage() {
               matchId: checkData.matchId,
               avatarJogador: {
                 ...avatarAtivo,
-                ...statsComPenalidades,
                 habilidades: avatarAtivo.habilidades || []
               },
               avatarOponente: checkData.opponent?.avatar || null,
@@ -358,17 +348,6 @@ export default function PvPPage() {
   const poderTotal = calcularPoderTotal(avatarAtivo);
   const tierInfo = getTierInfo(rankingData?.fama || 0);
 
-  // Calcular stats com debuffs de exaustão
-  const exaustao = avatarAtivo.exaustao || 0;
-  const nivelExaustao = getNivelExaustao(exaustao);
-  const statsDebuffados = aplicarPenalidadesExaustao({
-    forca: avatarAtivo.forca,
-    agilidade: avatarAtivo.agilidade,
-    resistencia: avatarAtivo.resistencia,
-    foco: avatarAtivo.foco
-  }, exaustao);
-  const temDebuff = exaustao >= 40;
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-gray-100 p-6">
       <div className="max-w-6xl mx-auto">
@@ -424,11 +403,7 @@ export default function PvPPage() {
             {/* Seu Avatar Resumido */}
             <div className="relative">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/30 to-cyan-500/30 rounded-xl blur"></div>
-              <div className={`relative bg-slate-900/95 rounded-xl overflow-hidden ${
-                temDebuff
-                  ? 'border-2 border-dashed border-orange-500'
-                  : 'border-2 border-purple-500'
-              }`}>
+              <div className="relative bg-slate-900/95 rounded-xl border-2 border-purple-500 overflow-hidden">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-purple-900/50 to-cyan-900/50 px-3 py-2 border-b border-purple-500/50 flex justify-between items-center">
                   <div>
@@ -494,45 +469,6 @@ export default function PvPPage() {
                       />
                     </div>
                   </div>
-
-                  {/* Aviso de Debuff Ativo */}
-                  {temDebuff && (
-                    <div className="bg-orange-950/30 border border-orange-500/50 rounded p-2">
-                      <div className="text-[10px] text-orange-400 font-bold text-center mb-1">
-                        ⚠️ {nivelExaustao.nome.toUpperCase()} - STATS REDUZIDOS
-                      </div>
-                      <div className="grid grid-cols-2 gap-1 text-[9px]">
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">💪 Força:</span>
-                          <span>
-                            <span className="line-through text-slate-600">{avatarAtivo.forca}</span>
-                            <span className="text-orange-400 ml-1 font-bold">{statsDebuffados.forca}</span>
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">💨 Agilidade:</span>
-                          <span>
-                            <span className="line-through text-slate-600">{avatarAtivo.agilidade}</span>
-                            <span className="text-green-400 ml-1 font-bold">{statsDebuffados.agilidade}</span>
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">🛡️ Resistência:</span>
-                          <span>
-                            <span className="line-through text-slate-600">{avatarAtivo.resistencia}</span>
-                            <span className="text-blue-400 ml-1 font-bold">{statsDebuffados.resistencia}</span>
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">🎯 Foco:</span>
-                          <span>
-                            <span className="line-through text-slate-600">{avatarAtivo.foco}</span>
-                            <span className="text-purple-400 ml-1 font-bold">{statsDebuffados.foco}</span>
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
 
                   {/* Poder Total */}
                   <div className="flex items-center justify-between pt-2 border-t border-slate-700">
@@ -639,23 +575,27 @@ export default function PvPPage() {
                     </div>
 
                     <div className="text-xs space-y-1">
-                      {/* Bônus */}
-                      {sinergiaPreview.bonus && Object.keys(sinergiaPreview.bonus).length > 0 && (
+                      {/* Vantagens */}
+                      {sinergiaPreview.vantagens && sinergiaPreview.vantagens.length > 0 && (
                         <div className="bg-green-900/30 border border-green-600/50 rounded p-2">
-                          <div className="font-bold text-green-400 mb-1">✅ Bônus:</div>
-                          {formatarModificadores(sinergiaPreview.bonus).map((mod, i) => (
-                            <div key={i} className="text-green-300">• {mod}</div>
+                          <div className="font-bold text-green-400 mb-1">✅ Vantagens:</div>
+                          {sinergiaPreview.vantagens.map((vantagem, i) => (
+                            <div key={i} className="text-green-300">• {vantagem.texto}</div>
                           ))}
                         </div>
                       )}
 
                       {/* Desvantagens */}
-                      {sinergiaPreview.desvantagem && Object.keys(sinergiaPreview.desvantagem).length > 0 && (
+                      {sinergiaPreview.desvantagens && sinergiaPreview.desvantagens.length > 0 ? (
                         <div className="bg-red-900/30 border border-red-600/50 rounded p-2">
                           <div className="font-bold text-red-400 mb-1">⚠️ Desvantagens:</div>
-                          {formatarModificadores(sinergiaPreview.desvantagem).map((mod, i) => (
-                            <div key={i} className="text-red-300">• {mod}</div>
+                          {sinergiaPreview.desvantagens.map((desvantagem, i) => (
+                            <div key={i} className="text-red-300">• {desvantagem.texto}</div>
                           ))}
+                        </div>
+                      ) : sinergiaPreview.vantagens && sinergiaPreview.vantagens.length > 0 && (
+                        <div className="bg-purple-900/30 border border-purple-600/50 rounded p-2 text-center">
+                          <div className="font-bold text-purple-300">⭐ Sinergia Perfeita</div>
                         </div>
                       )}
                     </div>

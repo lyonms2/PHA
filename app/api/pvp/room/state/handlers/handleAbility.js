@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { updateDocument } from '@/lib/firebase/firestore';
-import { aplicarPenalidadesExaustao } from '@/app/avatares/sistemas/exhaustionSystem';
 import { testarAcertoHabilidade } from '@/lib/combat/core/hitChecker';
 import { calcularDanoHabilidade, calcularCuraHabilidade } from '@/lib/combat/core/damageCalculator';
 import { atualizarBalanceamentoHabilidade, adicionarLogBatalha } from '../utils';
@@ -52,31 +51,11 @@ export async function handleAbility({ room, role, isHost, abilityIndex }) {
     );
   }
 
-  // Aplicar penalidades de exaustão nos stats
-  const myExaustao = isHost ? (room.host_exaustao ?? 0) : (room.guest_exaustao ?? 0);
-  const opponentExaustao = isHost ? (room.guest_exaustao ?? 0) : (room.host_exaustao ?? 0);
-
-  const myStatsBase = {
-    forca: myAvatar?.forca ?? 10,
-    agilidade: myAvatar?.agilidade ?? 10,
-    resistencia: myAvatar?.resistencia ?? 10,
-    foco: myAvatar?.foco ?? 10
-  };
-  const myStats = aplicarPenalidadesExaustao(myStatsBase, myExaustao);
-
-  const opponentStatsBase = {
-    forca: opponentAvatar?.forca ?? 10,
-    agilidade: opponentAvatar?.agilidade ?? 10,
-    resistencia: opponentAvatar?.resistencia ?? 10,
-    foco: opponentAvatar?.foco ?? 10
-  };
-  const opponentStats = aplicarPenalidadesExaustao(opponentStatsBase, opponentExaustao);
-
-  // Stats do atacante (COM DEBUFFS DE EXAUSTÃO APLICADOS)
-  const forca = myStats.forca;
-  const foco = myStats.foco;
-  const agilidadeOponente = opponentStats.agilidade;
-  const resistenciaOponente = opponentStats.resistencia;
+  // Stats do atacante (sem penalidades de exaustão no PVP)
+  const forca = myAvatar?.forca ?? 10;
+  const foco = myAvatar?.foco ?? 10;
+  const agilidadeOponente = opponentAvatar?.agilidade ?? 10;
+  const resistenciaOponente = opponentAvatar?.resistencia ?? 10;
   const meuElemento = myAvatar?.elemento || 'Neutro';
   const elementoOponente = opponentAvatar?.elemento || 'Neutro';
 
