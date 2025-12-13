@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDocument, updateDocument } from '@/lib/firebase/firestore';
+import { getHunterRank, aplicarBonusMoedas, aplicarBonusFragmentos } from '@/lib/hunter/hunterRankSystem';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,9 +40,22 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Erro ao buscar stats do jogador' }, { status: 500 });
     }
 
+    // Obter rank do caçador para aplicar bônus
+    const hunterRank = getHunterRank(stats.hunterRankXp || 0);
+
+    // Aplicar bônus de rank às recompensas
+    const moedasBase = recompensa.moedas || 0;
+    const fragmentosBase = recompensa.fragmentos || 0;
+
+    const moedasComBonus = aplicarBonusMoedas(moedasBase, hunterRank);
+    const fragmentosComBonus = Math.floor(fragmentosBase * (1 + (hunterRank.bonusFragmentos || 0)));
+
+    const bonusMoedas = moedasComBonus - moedasBase;
+    const bonusFragmentos = fragmentosComBonus - fragmentosBase;
+
     // Calcular novos valores
-    const novasMoedas = (stats.moedas || 0) + (recompensa.moedas || 0);
-    const novosFragmentos = (stats.fragmentos || 0) + (recompensa.fragmentos || 0);
+    const novasMoedas = (stats.moedas || 0) + moedasComBonus;
+    const novosFragmentos = (stats.fragmentos || 0) + fragmentosComBonus;
 
     // Atualizar moedas e fragmentos do jogador
     await updateDocument('player_stats', userId, {
@@ -64,12 +78,21 @@ export async function POST(request) {
     return NextResponse.json({
       success: true,
       recompensa: {
-        moedas: recompensa.moedas,
-        fragmentos: recompensa.fragmentos,
+        moedas_base: moedasBase,
+        moedas_total: moedasComBonus,
+        fragmentos_base: fragmentosBase,
+        fragmentos_total: fragmentosComBonus,
         avatar_lendario: recompensa.avatar_lendario,
         avatar_raro: recompensa.avatar_raro,
         ganhouAvatar,
         raridadeAvatar
+      },
+      bonus_hunter_rank: {
+        rank: hunterRank.nome,
+        bonus_moedas: bonusMoedas,
+        bonus_fragmentos: bonusFragmentos,
+        percentual_moedas: Math.round((hunterRank.bonusMoedas || 0) * 100),
+        percentual_fragmentos: Math.round((hunterRank.bonusFragmentos || 0) * 100)
       },
       novosValores: {
         moedas: novasMoedas,
