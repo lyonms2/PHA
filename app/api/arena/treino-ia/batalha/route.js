@@ -113,10 +113,23 @@ export async function POST(request) {
       const modificadoresPlayer = sinergia?.modificadores || {};
       const modificadoresIA = sinergiaIA?.modificadores || {};
 
-      const playerHpMax = calcularHPComSinergia(playerHpMaxBase, modificadoresPlayer);
-      const playerEnergyMax = calcularEnergiaComSinergia(100, modificadoresPlayer);
-      const iaHpMax = calcularHPComSinergia(iaHpMaxBase, modificadoresIA);
-      const iaEnergyMax = calcularEnergiaComSinergia(100, modificadoresIA);
+      // HP e Energia do jogador (próprios modificadores + redução do inimigo)
+      let playerHpMax = calcularHPComSinergia(playerHpMaxBase, modificadoresPlayer);
+      let playerEnergyMax = calcularEnergiaComSinergia(100, modificadoresPlayer);
+
+      // Aplicar redução de energia causada pelo inimigo
+      if (modificadoresIA.energia_inimigo_reducao) {
+        playerEnergyMax = Math.floor(playerEnergyMax * (1 - modificadoresIA.energia_inimigo_reducao));
+      }
+
+      // HP e Energia da IA (próprios modificadores + redução do jogador)
+      let iaHpMax = calcularHPComSinergia(iaHpMaxBase, modificadoresIA);
+      let iaEnergyMax = calcularEnergiaComSinergia(100, modificadoresIA);
+
+      // Aplicar redução de energia causada pelo jogador
+      if (modificadoresPlayer.energia_inimigo_reducao) {
+        iaEnergyMax = Math.floor(iaEnergyMax * (1 - modificadoresPlayer.energia_inimigo_reducao));
+      }
 
       const newBattle = {
         id: newBattleId,
