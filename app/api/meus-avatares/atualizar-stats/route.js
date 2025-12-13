@@ -5,6 +5,7 @@
 
 import { NextResponse } from 'next/server';
 import { getDocument, updateDocument } from '@/lib/firebase/firestore';
+import { processarGanhoXP } from '@/app/avatares/sistemas/progressionSystem';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,23 +51,44 @@ export async function POST(request) {
     }
 
     // Calcular novos valores do AVATAR
-    const xpAtual = avatarData.xp || 0;
     const vinculoAtual = avatarData.vinculo || 0;
     const exaustaoAtual = avatarData.exaustao || 0;
-    const nivelAtual = avatarData.nivel || 1;
 
-    const novoXP = Math.max(0, xpAtual + (xp || 0));
     const novoVinculo = Math.min(100, Math.max(0, vinculoAtual + (vinculo || 0)));
     const novaExaustao = Math.min(100, Math.max(0, exaustaoAtual + (exaustao || 0)));
 
-    // Verificar subida de nível (100 XP por nível)
-    const xpNecessario = nivelAtual * 100;
-    let novoNivel = nivelAtual;
-    let subiuNivel = false;
+    // === PROCESSAR XP E LEVEL UP COM SISTEMA COMPLETO ===
+    let levelUpData = null;
+    let novoNivel = avatarData.nivel || 1;
+    let novoXP = avatarData.xp || 0;
+    let statsNovos = null;
 
-    if (novoXP >= xpNecessario && xpAtual < xpNecessario) {
-      novoNivel = nivelAtual + 1;
-      subiuNivel = true;
+    if (xp && xp > 0) {
+      const resultadoXP = processarGanhoXP(avatarData, xp);
+
+      novoNivel = resultadoXP.nivelAtual;
+      novoXP = resultadoXP.xpAtual;
+
+      if (resultadoXP.levelUps > 0) {
+        // Avatar subiu de nível!
+        statsNovos = resultadoXP.statsNovos;
+        levelUpData = {
+          levelUp: true,
+          nivelAnterior: resultadoXP.nivelAnterior,
+          novoNivel: resultadoXP.nivelAtual,
+          levelUps: resultadoXP.levelUps,
+          statsNovos: resultadoXP.statsNovos,
+          recompensas: resultadoXP.recompensas,
+          mensagens: resultadoXP.mensagens
+        };
+
+        console.log('🎉 LEVEL UP!', {
+          avatar: avatarData.nome,
+          nivelAnterior: resultadoXP.nivelAnterior,
+          novoNivel: resultadoXP.nivelAtual,
+          statsNovos: statsNovos
+        });
+      }
     }
 
     // Calcular novos valores do CAÇADOR (Hunter/Player)
@@ -82,6 +104,14 @@ export async function POST(request) {
       nivel: novoNivel,
       ultima_atualizacao_stats: agora // Timestamp para proteção anti-duplicação
     };
+
+    // Se subiu de nível, atualizar stats!
+    if (statsNovos) {
+      avatarUpdate.forca = statsNovos.forca;
+      avatarUpdate.agilidade = statsNovos.agilidade;
+      avatarUpdate.resistencia = statsNovos.resistencia;
+      avatarUpdate.foco = statsNovos.foco;
+    }
 
     // HP só atualiza se fornecido (para treino, permanece o mesmo)
     if (hp !== undefined && hp !== null) {
@@ -99,11 +129,11 @@ export async function POST(request) {
 
     console.log('✅ Stats atualizados:', {
       avatar: avatarData.nome,
-      xp: `${xpAtual} → ${novoXP}`,
+      xp: `${avatarData.xp || 0} → ${novoXP}`,
       vinculo: `${vinculoAtual} → ${novoVinculo}`,
       exaustao: `${exaustaoAtual} → ${novaExaustao}`,
       nivel: novoNivel,
-      subiuNivel,
+      subiuNivel: levelUpData !== null,
       cacador: {
         hunterRankXp: `${hunterRankXpAtual} → ${novoHunterRankXp}`
       }
@@ -116,13 +146,14 @@ export async function POST(request) {
         vinculo: novoVinculo,
         exaustao: novaExaustao,
         nivel: novoNivel,
-        subiuNivel,
+        subiuNivel: levelUpData !== null,
         hp: hp !== undefined ? hp : avatarData.hp_atual
       },
       cacador: {
         hunterRankXp: novoHunterRankXp,
         ganhouXp: xpCacador || 0
-      }
+      },
+      ...levelUpData // Inclui dados de level up se houver
     });
 
   } catch (error) {

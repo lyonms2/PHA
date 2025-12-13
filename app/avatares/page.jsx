@@ -864,15 +864,33 @@ export default function AvatarsPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div className="bg-slate-900/50 rounded px-3 py-2 text-center">
-                      <div className="text-slate-400">HP Máximo</div>
-                      <div className="text-green-400 font-bold">
-                        +{(modalLevelUp.nivel || 1) * 5}
+                      <div className="text-slate-400">⚔️ Força</div>
+                      <div className="text-red-400 font-bold">
+                        {modalLevelUp.forca || 10}
                       </div>
                     </div>
                     <div className="bg-slate-900/50 rounded px-3 py-2 text-center">
-                      <div className="text-slate-400">Poder</div>
-                      <div className="text-cyan-400 font-bold">
-                        Aumentado
+                      <div className="text-slate-400">⚡ Agilidade</div>
+                      <div className="text-yellow-400 font-bold">
+                        {modalLevelUp.agilidade || 10}
+                      </div>
+                    </div>
+                    <div className="bg-slate-900/50 rounded px-3 py-2 text-center">
+                      <div className="text-slate-400">🛡️ Resistência</div>
+                      <div className="text-blue-400 font-bold">
+                        {modalLevelUp.resistencia || 10}
+                      </div>
+                    </div>
+                    <div className="bg-slate-900/50 rounded px-3 py-2 text-center">
+                      <div className="text-slate-400">🎯 Foco</div>
+                      <div className="text-purple-400 font-bold">
+                        {modalLevelUp.foco || 10}
+                      </div>
+                    </div>
+                    <div className="bg-slate-900/50 rounded px-3 py-2 text-center col-span-2">
+                      <div className="text-slate-400">💚 HP Máximo</div>
+                      <div className="text-green-400 font-bold">
+                        {Math.floor(50 + ((modalLevelUp.resistencia || 10) * 5) + ((modalLevelUp.nivel || 1) * 3))}
                       </div>
                     </div>
                   </div>
