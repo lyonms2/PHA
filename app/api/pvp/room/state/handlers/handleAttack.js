@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { updateDocument } from '@/lib/firebase/firestore';
-import { aplicarPenalidadesExaustao } from '@/app/avatares/sistemas/exhaustionSystem';
 import { testarAcertoAtaque } from '@/lib/combat/core/hitChecker';
 import { calcularDanoAtaque } from '@/lib/combat/core/damageCalculator';
 import { adicionarLogBatalha } from '../utils';
@@ -40,31 +39,13 @@ export async function handleAttack({ room, role, isHost }) {
   const myAvatar = isHost ? room.host_avatar : room.guest_avatar;
   const opponentAvatar = isHost ? room.guest_avatar : room.host_avatar;
   const myExaustao = isHost ? (room.host_exaustao ?? 0) : (room.guest_exaustao ?? 0);
-  const opponentExaustao = isHost ? (room.guest_exaustao ?? 0) : (room.host_exaustao ?? 0);
 
-  // Aplicar penalidades de exaustão nos stats
-  const myStatsBase = {
-    forca: myAvatar?.forca ?? 10,
-    agilidade: myAvatar?.agilidade ?? 10,
-    resistencia: myAvatar?.resistencia ?? 10,
-    foco: myAvatar?.foco ?? 10
-  };
-  const myStats = aplicarPenalidadesExaustao(myStatsBase, myExaustao);
-
-  const opponentStatsBase = {
-    forca: opponentAvatar?.forca ?? 10,
-    agilidade: opponentAvatar?.agilidade ?? 10,
-    resistencia: opponentAvatar?.resistencia ?? 10,
-    foco: opponentAvatar?.foco ?? 10
-  };
-  const opponentStats = aplicarPenalidadesExaustao(opponentStatsBase, opponentExaustao);
-
-  // Stats do atacante e defensor (COM DEBUFFS DE EXAUSTÃO APLICADOS)
-  const forca = myStats.forca;
-  const foco = myStats.foco;
-  const agilidade = myStats.agilidade;
-  const resistenciaOponente = opponentStats.resistencia;
-  const agilidadeOponente = opponentStats.agilidade;
+  // Stats do atacante e defensor (sem penalidades de exaustão no PVP)
+  const forca = myAvatar?.forca ?? 10;
+  const foco = myAvatar?.foco ?? 10;
+  const agilidade = myAvatar?.agilidade ?? 10;
+  const resistenciaOponente = opponentAvatar?.resistencia ?? 10;
+  const agilidadeOponente = opponentAvatar?.agilidade ?? 10;
   const vinculo = myAvatar?.vinculo ?? 0;
   const meuElemento = myAvatar?.elemento || 'Neutro';
   const elementoOponente = opponentAvatar?.elemento || 'Neutro';

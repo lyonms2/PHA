@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createDocument, getDocument, getDocuments } from '@/lib/firebase/firestore';
 import { calcularHPMaximoCompleto } from '@/lib/combat/statsCalculator';
-import { aplicarPenalidadesExaustao } from '@/app/avatares/sistemas/exhaustionSystem';
 import { aplicarSinergia, calcularHPComSinergia, calcularEnergiaComSinergia } from '@/lib/combat/synergyApplicator';
 
 export const dynamic = 'force-dynamic';
@@ -106,15 +105,6 @@ export async function POST(request) {
     const hpMaximo = calcularHPComSinergia(hpMaximoBase, resultadoSinergia.modificadores);
     const hpAtual = Math.min(avatar.hp_atual || hpMaximo, hpMaximo);
 
-    // Aplicar penalidades de exaustão nos stats
-    const statsBase = {
-      forca: avatar.forca || 10,
-      agilidade: avatar.agilidade || 10,
-      resistencia: avatar.resistencia || 10,
-      foco: avatar.foco || 10
-    };
-    const statsComPenalidades = aplicarPenalidadesExaustao(statsBase, avatar.exaustao || 0);
-
     // Gerar código de 6 caracteres
     const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
 
@@ -132,7 +122,10 @@ export async function POST(request) {
         nivel: avatar.nivel || 1,
         raridade: avatar.raridade || 'comum',
         elemento: avatar.elemento,
-        ...statsComPenalidades // Stats com penalidades de exaustão aplicadas (já incluem sinergia)
+        forca: avatar.forca || 10,
+        agilidade: avatar.agilidade || 10,
+        resistencia: avatar.resistencia || 10,
+        foco: avatar.foco || 10
       },
       host_sinergia: sinergiaInfo, // Informações da sinergia do host
       guest_user_id: null,
