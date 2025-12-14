@@ -63,11 +63,30 @@ export const HABILIDADES_FOGO = {
     custo_energia: 30,
     cooldown: 3,
     nivel_minimo: 3
+  }),
+
+  // ==================== 4. ULTIMATE ====================
+  // Dano massivo + efeito instantâneo devastador (normalmente só para Lendários)
+  INFERNO_DEVASTADOR: criarHabilidade({
+    nome: 'Inferno Devastador',
+    descricao: 'Invoca chamas apocalípticas causando dano massivo e enfraquecendo o inimigo (reduz -40% resistência no próximo turno)',
+    tipo: TIPO_HABILIDADE.OFENSIVA,
+    raridade: RARIDADE_HABILIDADE.ULTIMATE,
+    elemento: ELEMENTOS.FOGO,
+    dano_base: 190, // Dano massivo
+    multiplicador_stat: 2.5,
+    stat_primario: 'forca',
+    efeitos_status: ['enfraquecido'], // Reduz resistência do inimigo instantaneamente
+    duracao_efeito: 1, // Apenas próximo turno
+    custo_energia: 75,
+    cooldown: 4,
+    nivel_minimo: 1, // TESTE: normalmente seria 20+, mas liberado para teste
+    vinculo_minimo: 0 // TESTE: normalmente seria 60+, mas liberado para teste
   })
 };
 
 /**
- * ESTRUTURA FINAL:
+ * ESTRUTURA FINAL - 4 HABILIDADES:
  *
  * 1️⃣ LABAREDA (Ataque Fraco)
  *    - 45 dano base (maior que ataque normal ~25-30)
@@ -83,6 +102,12 @@ export const HABILIDADES_FOGO = {
  *    - +60% resistência INSTANTÂNEA (só neste turno, como Defender)
  *    - 25 dano de contra-ataque (queima quem ataca)
  *    - 30 energia, cooldown 3
+ *
+ * 4️⃣ INFERNO DEVASTADOR (Ultimate - Lendário)
+ *    - 190 dano base MASSIVO
+ *    - Enfraquece inimigo (-40% resistência no próximo turno)
+ *    - 75 energia, cooldown 4
+ *    - TESTE: Disponível nível 1 (normalmente nível 20+, vínculo 60+)
  *
  * ❌ SEM DoTs/HoTs
  * ❌ SEM efeitos que duram múltiplos turnos
