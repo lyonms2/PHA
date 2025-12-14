@@ -1,5 +1,7 @@
 import AvatarSVG from '../../components/AvatarSVG';
 import { aplicarPenalidadesExaustao, getNivelExaustao } from '../sistemas/exhaustionSystem';
+import { calcularPoderTotal } from '@/lib/gameLogic';
+import { calcularXPNecessario } from '../sistemas/progressionSystem';
 
 const getInfoExaustao = (exaustao) => {
   if (exaustao >= 100) {
@@ -195,14 +197,14 @@ export default function AvatarCard({
               <div className="flex justify-between text-[10px] mb-1">
                 <span className="text-cyan-400 font-bold">📊 Nv {avatar.nivel}</span>
                 <span className="text-slate-400">
-                  {avatar.xp || 0} / {avatar.nivel * 100} XP
+                  {avatar.experiencia || 0} / {calcularXPNecessario(avatar.nivel)} XP
                 </span>
               </div>
               <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-700">
                 <div
                   className="h-full bg-gradient-to-r from-cyan-600 to-blue-400 transition-all duration-500"
                   style={{
-                    width: `${Math.min(((avatar.xp || 0) / (avatar.nivel * 100)) * 100, 100)}%`
+                    width: `${Math.min(((avatar.experiencia || 0) / calcularXPNecessario(avatar.nivel)) * 100, 100)}%`
                   }}
                 ></div>
               </div>
@@ -240,15 +242,15 @@ export default function AvatarCard({
               {temPenalidade ? (
                 <div>
                   <div className="text-xs text-slate-600 line-through">
-                    {statsBase.forca + statsBase.agilidade + statsBase.resistencia + statsBase.foco}
+                    {calcularPoderTotal({ ...avatar, ...statsBase })}
                   </div>
                   <div className="text-lg font-bold text-red-400">
-                    {statsAtuais.forca + statsAtuais.agilidade + statsAtuais.resistencia + statsAtuais.foco}
+                    {calcularPoderTotal({ ...avatar, ...statsAtuais })}
                   </div>
                 </div>
               ) : (
                 <div className="text-lg font-bold text-cyan-400">
-                  {statsBase.forca + statsBase.agilidade + statsBase.resistencia + statsBase.foco}
+                  {calcularPoderTotal(avatar)}
                 </div>
               )}
             </div>

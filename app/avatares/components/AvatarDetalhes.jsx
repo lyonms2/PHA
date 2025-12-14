@@ -2,6 +2,7 @@ import { useState } from 'react';
 import AvatarSVG from '../../components/AvatarSVG';
 import { aplicarPenalidadesExaustao, getNivelExaustao } from '../sistemas/exhaustionSystem';
 import { calcularXPNecessario } from '../sistemas/progressionSystem';
+import { calcularPoderTotal } from '@/lib/gameLogic';
 
 const getInfoExaustao = (exaustao) => {
   if (exaustao >= 100) {
@@ -356,11 +357,11 @@ export default function AvatarDetalhes({
                           <div className="w-full bg-slate-700 rounded-full h-1.5 mb-1">
                             <div
                               className="bg-cyan-400 h-1.5 rounded-full transition-all"
-                              style={{width: `${((avatar.xp || 0) / calcularXPNecessario(avatar.nivel)) * 100}%`}}
+                              style={{width: `${((avatar.experiencia || 0) / calcularXPNecessario(avatar.nivel)) * 100}%`}}
                             ></div>
                           </div>
                           <div className="flex justify-between text-[9px] text-slate-500">
-                            <span>{avatar.xp || 0} XP</span>
+                            <span>{avatar.experiencia || 0} XP</span>
                             <span>{calcularXPNecessario(avatar.nivel)} XP</span>
                           </div>
                         </div>
@@ -413,19 +414,19 @@ export default function AvatarDetalhes({
                         {temPenalidade ? (
                           <div className="space-y-1">
                             <div className="text-lg text-slate-500 line-through">
-                              {statsBase.forca + statsBase.agilidade + statsBase.resistencia + statsBase.foco}
+                              {calcularPoderTotal({ ...avatar, ...statsBase })}
                             </div>
                             <div className="text-3xl font-black text-red-400">
-                              {statsAtuais.forca + statsAtuais.agilidade + statsAtuais.resistencia + statsAtuais.foco}
+                              {calcularPoderTotal({ ...avatar, ...statsAtuais })}
                             </div>
                             <div className="text-xs text-red-400 font-bold">
-                              {(statsAtuais.forca + statsAtuais.agilidade + statsAtuais.resistencia + statsAtuais.foco) -
-                               (statsBase.forca + statsBase.agilidade + statsBase.resistencia + statsBase.foco)} pts
+                              {calcularPoderTotal({ ...avatar, ...statsAtuais }) -
+                               calcularPoderTotal({ ...avatar, ...statsBase })} pts
                             </div>
                           </div>
                         ) : (
                           <div className="text-3xl font-black bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                            {statsBase.forca + statsBase.agilidade + statsBase.resistencia + statsBase.foco}
+                            {calcularPoderTotal(avatar)}
                           </div>
                         )}
                         <div className="text-[10px] text-slate-500 mt-1">

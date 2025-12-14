@@ -72,24 +72,24 @@ export async function POST(request) {
     ]);
 
     // Atualizar stats do host avatar
-    const novoHostXP = (hostAvatar.xp || 0) + hostRecompensas.xp;
+    const novoHostXP = (hostAvatar.experiencia || 0) + hostRecompensas.xp;
     const novoHostVinculo = Math.min(100, Math.max(0, (hostAvatar.vinculo || 0) + hostRecompensas.vinculo));
     const novoHostExaustao = Math.min(100, Math.max(0, (hostAvatar.exaustao || 0) + hostRecompensas.exaustao));
 
     await updateDocument('avatares', hostAvatar.id, {
-      xp: novoHostXP,
+      experiencia: novoHostXP,
       vinculo: novoHostVinculo,
       exaustao: novoHostExaustao,
       hp_atual: hostWon ? room.host_hp : 0 // Se perdeu, HP = 0
     });
 
     // Atualizar stats do guest avatar
-    const novoGuestXP = (guestAvatar.xp || 0) + guestRecompensas.xp;
+    const novoGuestXP = (guestAvatar.experiencia || 0) + guestRecompensas.xp;
     const novoGuestVinculo = Math.min(100, Math.max(0, (guestAvatar.vinculo || 0) + guestRecompensas.vinculo));
     const novoGuestExaustao = Math.min(100, Math.max(0, (guestAvatar.exaustao || 0) + guestRecompensas.exaustao));
 
     await updateDocument('avatares', guestAvatar.id, {
-      xp: novoGuestXP,
+      experiencia: novoGuestXP,
       vinculo: novoGuestVinculo,
       exaustao: novoGuestExaustao,
       hp_atual: !hostWon ? room.guest_hp : 0 // Se perdeu, HP = 0
@@ -141,7 +141,7 @@ export async function POST(request) {
         recompensas: hostRecompensas,
         stats: {
           avatar: {
-            xp: novoHostXP,
+            experiencia: novoHostXP,
             vinculo: novoHostVinculo,
             exaustao: novoHostExaustao,
             hp_atual: hostWon ? room.host_hp : 0
@@ -156,7 +156,7 @@ export async function POST(request) {
         recompensas: guestRecompensas,
         stats: {
           avatar: {
-            xp: novoGuestXP,
+            experiencia: novoGuestXP,
             vinculo: novoGuestVinculo,
             exaustao: novoGuestExaustao,
             hp_atual: !hostWon ? room.guest_hp : 0

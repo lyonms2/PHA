@@ -235,12 +235,12 @@ export default function AvatarsPage() {
                     {/* Barra de XP */}
                     <div className="mt-1">
                       <div className="flex items-center gap-2 text-[10px] text-slate-400 mb-1">
-                        <span>XP: {avatarAtivo.xp || 0}/{calcularXPNecessario(avatarAtivo.nivel)}</span>
+                        <span>XP: {avatarAtivo.experiencia || 0}/{calcularXPNecessario(avatarAtivo.nivel)}</span>
                       </div>
                       <div className="h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-500"
-                          style={{ width: `${Math.min(((avatarAtivo.xp || 0) / calcularXPNecessario(avatarAtivo.nivel)) * 100, 100)}%` }}
+                          style={{ width: `${Math.min(((avatarAtivo.experiencia || 0) / calcularXPNecessario(avatarAtivo.nivel)) * 100, 100)}%` }}
                         />
                       </div>
                     </div>
@@ -641,7 +641,7 @@ export default function AvatarsPage() {
                           <div className="text-center">
                             <div className="text-xs text-red-400 uppercase mb-1">Poder Total Perdido</div>
                             <div className="text-3xl font-black text-red-300">
-                              {modalSacrificar.forca + modalSacrificar.agilidade + modalSacrificar.resistencia + modalSacrificar.foco}
+                              {calcularPoderTotal(modalSacrificar)}
                             </div>
                             <div className="text-[10px] text-red-500 mt-1">
                               XP: {modalSacrificar.xp || 0} | Vínculo: {modalSacrificar.vinculo}%

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDocuments, getDocument } from '@/lib/firebase/firestore';
+import { calcularPoderTotal } from '@/lib/gameLogic';
 
 export const dynamic = 'force-dynamic';
 
@@ -69,7 +70,7 @@ export async function GET(request) {
     // Calcular poder total e filtrar por range
     const avataresFiltrados = avatares
       .map(avatar => {
-        const poderTotal = (avatar.forca || 0) + (avatar.agilidade || 0) + (avatar.resistencia || 0) + (avatar.foco || 0);
+        const poderTotal = calcularPoderTotal(avatar);
         return { ...avatar, poderTotal };
       })
       .filter(avatar => {

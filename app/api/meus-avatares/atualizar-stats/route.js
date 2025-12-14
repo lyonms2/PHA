@@ -60,7 +60,7 @@ export async function POST(request) {
     // === PROCESSAR XP E LEVEL UP COM SISTEMA COMPLETO ===
     let levelUpData = null;
     let novoNivel = avatarData.nivel || 1;
-    let novoXP = avatarData.xp || 0;
+    let novoXP = avatarData.experiencia || 0;
     let statsNovos = null;
 
     if (xp && xp > 0) {
@@ -98,7 +98,7 @@ export async function POST(request) {
 
     // Atualizar AVATAR no Firestore
     const avatarUpdate = {
-      xp: novoXP,
+      experiencia: novoXP,
       vinculo: novoVinculo,
       exaustao: novaExaustao,
       nivel: novoNivel,
@@ -129,7 +129,7 @@ export async function POST(request) {
 
     console.log('✅ Stats atualizados:', {
       avatar: avatarData.nome,
-      xp: `${avatarData.xp || 0} → ${novoXP}`,
+      experiencia: `${avatarData.experiencia || 0} → ${novoXP}`,
       vinculo: `${vinculoAtual} → ${novoVinculo}`,
       exaustao: `${exaustaoAtual} → ${novaExaustao}`,
       nivel: novoNivel,
@@ -142,7 +142,7 @@ export async function POST(request) {
     return NextResponse.json({
       success: true,
       avatar: {
-        xp: novoXP,
+        experiencia: novoXP,
         vinculo: novoVinculo,
         exaustao: novaExaustao,
         nivel: novoNivel,
