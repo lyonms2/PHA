@@ -134,6 +134,15 @@ export const EFEITOS_STATUS = {
     icone: '🛡️'
   },
 
+  defesa_aumentada_instantanea: {
+    nome: 'Defesa Aumentada (Turno Atual)',
+    tipo: 'buff',
+    bonus_resistencia: 0.60, // +60% resistência APENAS neste turno
+    duracao_base: 1, // Dura apenas 1 turno (instantâneo)
+    icone: '🛡️🔥',
+    instantaneo: true // Flag para indicar que é efeito instantâneo
+  },
+
   evasao_aumentada: {
     nome: 'Evasão Aumentada',
     tipo: 'buff',

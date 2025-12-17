@@ -60,7 +60,7 @@ export default function TreinamentoAIPage() {
   // Atualizar preview de sinergia quando avatar suporte mudar
   useEffect(() => {
     if (avatarAtivo && avatarSuporte) {
-      const preview = previewSinergia(avatarAtivo.elemento, avatarSuporte.elemento);
+      const preview = previewSinergia(avatarAtivo.elemento, avatarSuporte.elemento, avatarAtivo.raridade);
       setSinergiaPreview(preview);
     } else {
       setSinergiaPreview(null);

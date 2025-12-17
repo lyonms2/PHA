@@ -54,7 +54,7 @@ export default function PvPPage() {
   // Preview de Sinergia em tempo real
   useEffect(() => {
     if (avatarAtivo && avatarSuporte) {
-      const preview = previewSinergia(avatarAtivo.elemento, avatarSuporte.elemento);
+      const preview = previewSinergia(avatarAtivo.elemento, avatarSuporte.elemento, avatarAtivo.raridade);
       setSinergiaPreview(preview);
     } else {
       setSinergiaPreview(null);
