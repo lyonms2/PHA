@@ -1,93 +1,108 @@
-// ==================== HABILIDADES DE VENTO ====================
+// ==================== HABILIDADES DE VENTO - SIMPLIFICADO ====================
 // Arquivo: /app/avatares/sistemas/abilities/vento.js
+//
+// NOVA ESTRUTURA: 4 habilidades por elemento
+// 1. Ataque Fraco (dano médio, mais forte que ataque básico, SEM efeitos)
+// 2. Ataque Forte (dano alto + efeito INSTANTÂNEO)
+// 3. Defesa/Suporte (efeito defensivo INSTANTÂNEO)
+// 4. Ultimate (dano massivo + efeito devastador INSTANTÂNEO)
+//
+// IMPORTANTE: NENHUM efeito dura turnos - tudo é INSTANTÂNEO
 
 import { TIPO_HABILIDADE, RARIDADE_HABILIDADE, criarHabilidade } from '../constants/abilityTypes';
 import { ELEMENTOS } from '../elementalSystem';
 
 export const HABILIDADES_VENTO = {
-  // Básicas
-  LAMINAS_DE_AR: criarHabilidade({
-    nome: 'Lâminas de Ar',
-    descricao: 'Múltiplos cortes rápidos de vento afiado (3 golpes)',
+  // ==================== 1. ATAQUE FRACO ====================
+  RAJADA: criarHabilidade({
+    nome: 'Rajada',
+    descricao: 'Lança uma rajada de vento cortante no inimigo (dano médio)',
     tipo: TIPO_HABILIDADE.OFENSIVA,
     elemento: ELEMENTOS.VENTO,
-    dano_base: 12,
-    multiplicador_stat: 0.7,
+    dano_base: 45,
+    multiplicador_stat: 1.3,
     stat_primario: 'agilidade',
-    num_golpes: 3,
-    custo_energia: 15,
+    custo_energia: 20,
     cooldown: 0,
-    evolui_para: 'CICLONE',
-    nivel_evolucao: 10
+    nivel_minimo: 1
   }),
 
-  VELOCIDADE_DO_VENTO: criarHabilidade({
-    nome: 'Velocidade do Vento',
-    descricao: 'Aumenta drasticamente a evasão e velocidade de ataque',
-    tipo: TIPO_HABILIDADE.SUPORTE,
+  // ==================== 2. ATAQUE FORTE ====================
+  TORNADO: criarHabilidade({
+    nome: 'Tornado',
+    descricao: 'Ciclone devastador com 65% de chance de desorientar o inimigo (-30% acerto)',
+    tipo: TIPO_HABILIDADE.OFENSIVA,
+    raridade: RARIDADE_HABILIDADE.AVANCADA,
     elemento: ELEMENTOS.VENTO,
-    dano_base: 0,
-    multiplicador_stat: 1.5,
+    dano_base: 110,
+    multiplicador_stat: 2.0,
     stat_primario: 'agilidade',
-    efeitos_status: ['evasao_aumentada', 'velocidade_aumentada'],
-    alvo: 'self',
-    duracao_efeito: 3,
-    custo_energia: 30,
-    cooldown: 3,
+    efeitos_status: ['desorientado'],
+    chance_efeito: 65,
+    duracao_efeito: 1,
+    custo_energia: 50,
+    cooldown: 2,
     nivel_minimo: 5
   }),
 
-  // Avançadas
-  CICLONE: criarHabilidade({
-    nome: 'Ciclone',
-    descricao: 'Tornado que desorienta e pode incapacitar por 1 turno',
-    tipo: TIPO_HABILIDADE.CONTROLE,
-    raridade: RARIDADE_HABILIDADE.AVANCADA,
+  // ==================== 3. SUPORTE ====================
+  VELOCIDADE_DO_VENTO: criarHabilidade({
+    nome: 'Velocidade do Vento',
+    descricao: 'Aumenta drasticamente a evasão (+50% evasão neste turno)',
+    tipo: TIPO_HABILIDADE.SUPORTE,
     elemento: ELEMENTOS.VENTO,
-    dano_base: 60,
-    multiplicador_stat: 1.4,
+    dano_base: 0,
+    multiplicador_stat: 0,
     stat_primario: 'agilidade',
-    efeitos_status: ['desorientado', 'atordoado'],
-    chance_efeito: 70,
-    duracao_efeito: 1,
-    custo_energia: 40,
+    efeitos_status: ['evasao_aumentada'],
+    alvo: 'self',
+    custo_energia: 30,
     cooldown: 3,
-    nivel_minimo: 10,
-    evolui_para: 'TEMPESTADE_DIVINA',
-    nivel_evolucao: 25
+    nivel_minimo: 3
   }),
 
-  RAJADA_CORTANTE: criarHabilidade({
-    nome: 'Rajada Cortante',
-    descricao: 'Vendaval concentrado que ignora evasão (100% acerto)',
-    tipo: TIPO_HABILIDADE.OFENSIVA,
-    raridade: RARIDADE_HABILIDADE.AVANCADA,
-    elemento: ELEMENTOS.VENTO,
-    dano_base: 65,
-    multiplicador_stat: 1.6,
-    stat_primario: 'agilidade',
-    chance_acerto: 100,
-    custo_energia: 45,
-    cooldown: 2,
-    nivel_minimo: 15
-  }),
-
-  // Ultimate
-  TEMPESTADE_DIVINA: criarHabilidade({
-    nome: 'Tempestade Divina',
-    descricao: 'Furacão catastrófico com 5 golpes e aumenta precisão',
+  // ==================== 4. ULTIMATE ====================
+  TEMPESTADE_DEVASTADORA: criarHabilidade({
+    nome: 'Tempestade Devastadora',
+    descricao: 'Invoca uma tempestade apocalíptica causando dano massivo e aumentando velocidade (+40% agilidade)',
     tipo: TIPO_HABILIDADE.OFENSIVA,
     raridade: RARIDADE_HABILIDADE.ULTIMATE,
     elemento: ELEMENTOS.VENTO,
-    dano_base: 40,
-    multiplicador_stat: 1.8,
+    dano_base: 185,
+    multiplicador_stat: 2.4,
     stat_primario: 'agilidade',
-    efeitos_status: ['vendaval_cortante', 'precisao_aumentada'],
-    num_golpes: 5,
-    duracao_efeito: 3,
-    custo_energia: 80,
-    cooldown: 5,
-    nivel_minimo: 25,
-    vinculo_minimo: 60
+    efeitos_status: ['velocidade_aumentada'],
+    duracao_efeito: 1,
+    custo_energia: 75,
+    cooldown: 4,
+    nivel_minimo: 1, // TESTE
+    vinculo_minimo: 0 // TESTE
   })
 };
+
+/**
+ * ESTRUTURA FINAL - 4 HABILIDADES:
+ *
+ * 1️⃣ RAJADA (Ataque Fraco)
+ *    - 45 dano base
+ *    - Sem efeitos, apenas dano puro
+ *    - 20 energia, sem cooldown
+ *
+ * 2️⃣ TORNADO (Ataque Forte)
+ *    - 110 dano base
+ *    - 65% chance de desorientar (-30% acerto no próximo turno)
+ *    - 50 energia, cooldown 2
+ *
+ * 3️⃣ VELOCIDADE DO VENTO (Suporte)
+ *    - +50% evasão INSTANTÂNEA (só neste turno)
+ *    - 30 energia, cooldown 3
+ *
+ * 4️⃣ TEMPESTADE DEVASTADORA (Ultimate)
+ *    - 185 dano base MASSIVO
+ *    - +40% agilidade no próximo turno
+ *    - 75 energia, cooldown 4
+ *
+ * ❌ SEM DoTs/HoTs
+ * ❌ SEM efeitos que duram múltiplos turnos
+ * ✅ TUDO instantâneo e previsível
+ */

@@ -301,6 +301,59 @@ export const EFEITOS_STATUS = {
     remove_debuffs: true,
     duracao_base: 0,
     icone: '✨'
+  },
+
+  // ==================== NOVOS EFEITOS - SISTEMA SIMPLIFICADO ====================
+
+  cura_instantanea: {
+    nome: 'Cura Instantânea',
+    tipo: 'especial',
+    percentual_cura: 0.30, // 30% do HP máximo
+    duracao_base: 0,
+    icone: '💚'
+  },
+
+  anula_buffs: {
+    nome: 'Anular Buffs',
+    tipo: 'especial',
+    remove_buffs_inimigo: true, // Remove todos os buffs do inimigo
+    duracao_base: 0,
+    icone: '🚫'
+  },
+
+  reducao_dano: {
+    nome: 'Redução de Dano',
+    tipo: 'buff',
+    reducao_dano_recebido: 0.40, // Reduz 40% do dano recebido
+    duracao_base: 1,
+    icone: '🛡️💜',
+    instantaneo: true
+  },
+
+  dreno_energia: {
+    nome: 'Dreno de Energia',
+    tipo: 'especial',
+    drena_energia: 30, // Drena 30 de energia do oponente
+    duracao_base: 0,
+    icone: '⚡💀'
+  },
+
+  transcendencia: {
+    nome: 'Transcendência',
+    tipo: 'buff',
+    bonus_todos_stats: 0.30, // +30% todos os stats
+    duracao_base: 1,
+    icone: '✨🌟',
+    instantaneo: true
+  },
+
+  evasao_aumentada_instantanea: {
+    nome: 'Evasão Aumentada (Turno Atual)',
+    tipo: 'buff',
+    bonus_evasao: 0.50, // +50% evasão APENAS neste turno
+    duracao_base: 1,
+    icone: '💨⚡',
+    instantaneo: true
   }
 };
 

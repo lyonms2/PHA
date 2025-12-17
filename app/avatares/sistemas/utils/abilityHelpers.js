@@ -17,14 +17,12 @@ export function selecionarHabilidadesIniciais(elemento, raridade) {
     return [];
   }
 
-  // ==================== TESTE: FOGO RECEBE TODAS AS 3 HABILIDADES ====================
+  // ==================== TESTE: TODOS OS ELEMENTOS RECEBEM TODAS AS 4 HABILIDADES ====================
   // TODO: Remover após teste e implementar sistema de desbloqueio progressivo
-  if (elemento === 'Fogo') {
-    console.log('🔥 [TESTE] Avatar de Fogo recebe TODAS as 3 habilidades simplificadas');
-    // Retorna TODAS as 3 habilidades do novo sistema simplificado
-    return Object.values(habilidadesElemento);
-  }
-  // ==================================================================================
+  console.log(`⚡ [TESTE] Avatar de ${elemento} recebe TODAS as 4 habilidades simplificadas`);
+  // Retorna TODAS as 4 habilidades do novo sistema simplificado
+  return Object.values(habilidadesElemento);
+  // ================================================================================================
 
   const habilidadesDisponiveis = Object.values(habilidadesElemento)
     .filter(hab => hab.nivel_minimo === 1 || hab.raridade === RARIDADE_HABILIDADE.BASICA);

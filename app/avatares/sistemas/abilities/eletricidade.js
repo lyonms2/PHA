@@ -1,96 +1,109 @@
-// ==================== HABILIDADES DE ELETRICIDADE ====================
+// ==================== HABILIDADES DE ELETRICIDADE - SIMPLIFICADO ====================
 // Arquivo: /app/avatares/sistemas/abilities/eletricidade.js
+//
+// NOVA ESTRUTURA: 4 habilidades por elemento
+// 1. Ataque Fraco (dano médio, mais forte que ataque básico, SEM efeitos)
+// 2. Ataque Forte (dano alto + efeito INSTANTÂNEO)
+// 3. Suporte (efeito de buff INSTANTÂNEO)
+// 4. Ultimate (dano massivo + efeito devastador INSTANTÂNEO)
+//
+// IMPORTANTE: NENHUM efeito dura turnos - tudo é INSTANTÂNEO
 
 import { TIPO_HABILIDADE, RARIDADE_HABILIDADE, criarHabilidade } from '../constants/abilityTypes';
 import { ELEMENTOS } from '../elementalSystem';
 
 export const HABILIDADES_ELETRICIDADE = {
-  // Básicas
-  CHOQUE_BASICO: criarHabilidade({
-    nome: 'Choque Básico',
-    descricao: 'Descarga elétrica rápida',
+  // ==================== 1. ATAQUE FRACO ====================
+  CHOQUE: criarHabilidade({
+    nome: 'Choque',
+    descricao: 'Descarga elétrica rápida no inimigo (dano médio)',
     tipo: TIPO_HABILIDADE.OFENSIVA,
     elemento: ELEMENTOS.ELETRICIDADE,
-    dano_base: 28,
+    dano_base: 45,
     multiplicador_stat: 1.3,
     stat_primario: 'foco',
-    efeitos_status: ['paralisia'],
-    duracao_efeito: 1,
-    chance_efeito: 20,
-    custo_energia: 35,
+    custo_energia: 20,
     cooldown: 0,
-    evolui_para: 'RAIO_PERFURANTE',
-    nivel_evolucao: 10
+    nivel_minimo: 1
   }),
 
-  CAMPO_ELETRICO: criarHabilidade({
-    nome: 'Campo Elétrico',
-    descricao: 'Dano elétrico contínuo por 3 turnos',
-    tipo: TIPO_HABILIDADE.CONTROLE,
+  // ==================== 2. ATAQUE FORTE ====================
+  RELAMPAGO: criarHabilidade({
+    nome: 'Relâmpago',
+    descricao: 'Raio devastador com 70% de chance de paralisar o inimigo (30% chance de falhar ações)',
+    tipo: TIPO_HABILIDADE.OFENSIVA,
+    raridade: RARIDADE_HABILIDADE.AVANCADA,
     elemento: ELEMENTOS.ELETRICIDADE,
-    dano_base: 25,
-    multiplicador_stat: 0.8,
+    dano_base: 115,
+    multiplicador_stat: 2.1,
     stat_primario: 'foco',
-    efeitos_status: ['eletrocucao'],
-    duracao_efeito: 3,
-    custo_energia: 35,
-    cooldown: 3,
+    efeitos_status: ['paralisia'],
+    chance_efeito: 70,
+    duracao_efeito: 1,
+    custo_energia: 50,
+    cooldown: 2,
     nivel_minimo: 5
   }),
 
-  // Avançadas
-  RAIO_PERFURANTE: criarHabilidade({
-    nome: 'Raio Perfurante',
-    descricao: 'Raio concentrado com alto dano e chance de paralisia',
-    tipo: TIPO_HABILIDADE.OFENSIVA,
-    raridade: RARIDADE_HABILIDADE.AVANCADA,
-    elemento: ELEMENTOS.ELETRICIDADE,
-    dano_base: 85,
-    multiplicador_stat: 1.8,
-    stat_primario: 'foco',
-    efeitos_status: ['paralisia'],
-    chance_efeito: 50,
-    duracao_efeito: 1,
-    custo_energia: 40,
-    cooldown: 2,
-    nivel_minimo: 10,
-    evolui_para: 'JULGAMENTO_TROVAO',
-    nivel_evolucao: 25
-  }),
-
+  // ==================== 3. SUPORTE ====================
   SOBRECARGA: criarHabilidade({
     nome: 'Sobrecarga',
-    descricao: 'Aumenta poder de ataque drasticamente mas reduz defesa',
+    descricao: 'Aumenta drasticamente o foco (+60% foco neste turno, mas -20% resistência)',
     tipo: TIPO_HABILIDADE.SUPORTE,
-    raridade: RARIDADE_HABILIDADE.AVANCADA,
     elemento: ELEMENTOS.ELETRICIDADE,
     dano_base: 0,
-    multiplicador_stat: 2.5,
+    multiplicador_stat: 0,
     stat_primario: 'foco',
     efeitos_status: ['sobrecarga'],
     alvo: 'self',
-    duracao_efeito: 3,
     custo_energia: 30,
-    cooldown: 4,
-    nivel_minimo: 15
+    cooldown: 3,
+    nivel_minimo: 3
   }),
 
-  // Ultimate
-  JULGAMENTO_TROVAO: criarHabilidade({
-    nome: 'Julgamento do Trovão',
-    descricao: 'Raios devastadores com paralisia intensa e dano por 3 turnos',
+  // ==================== 4. ULTIMATE ====================
+  TEMPESTADE_ELETRICA: criarHabilidade({
+    nome: 'Tempestade Elétrica',
+    descricao: 'Invoca raios apocalípticos causando dano massivo e paralisando intensamente (60% chance de falhar ações)',
     tipo: TIPO_HABILIDADE.OFENSIVA,
     raridade: RARIDADE_HABILIDADE.ULTIMATE,
     elemento: ELEMENTOS.ELETRICIDADE,
-    dano_base: 220,
-    multiplicador_stat: 2.8,
+    dano_base: 195,
+    multiplicador_stat: 2.5,
     stat_primario: 'foco',
-    efeitos_status: ['paralisia_intensa', 'eletrocucao'],
-    chance_efeito: 70,
-    duracao_efeito: 3,
-    custo_energia: 85,
-    cooldown: 5,
-    nivel_minimo: 25,
-    vinculo_minimo: 60
+    efeitos_status: ['paralisia_intensa'],
+    chance_efeito: 80,
+    duracao_efeito: 1,
+    custo_energia: 75,
+    cooldown: 4,
+    nivel_minimo: 1, // TESTE
+    vinculo_minimo: 0 // TESTE
   })
 };
+
+/**
+ * ESTRUTURA FINAL - 4 HABILIDADES:
+ *
+ * 1️⃣ CHOQUE (Ataque Fraco)
+ *    - 45 dano base
+ *    - Sem efeitos, apenas dano puro
+ *    - 20 energia, sem cooldown
+ *
+ * 2️⃣ RELÂMPAGO (Ataque Forte)
+ *    - 115 dano base
+ *    - 70% chance de paralisar (30% chance de falhar ações)
+ *    - 50 energia, cooldown 2
+ *
+ * 3️⃣ SOBRECARGA (Suporte)
+ *    - +60% foco, -20% resistência (trade-off)
+ *    - 30 energia, cooldown 3
+ *
+ * 4️⃣ TEMPESTADE ELÉTRICA (Ultimate)
+ *    - 195 dano base MASSIVO
+ *    - 80% chance de paralisia intensa (60% chance de falhar ações)
+ *    - 75 energia, cooldown 4
+ *
+ * ❌ SEM DoTs/HoTs
+ * ❌ SEM efeitos que duram múltiplos turnos
+ * ✅ TUDO instantâneo e previsível
+ */
