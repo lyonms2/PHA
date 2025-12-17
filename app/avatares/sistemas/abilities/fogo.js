@@ -46,19 +46,17 @@ export const HABILIDADES_FOGO = {
     nivel_minimo: 5
   }),
 
-  // ==================== 3. DEFESA/CONTRA-ATAQUE ====================
-  // Efeito defensivo instantâneo (tipo "Defender") + dano de contra-ataque
+  // ==================== 3. DEFESA ====================
+  // Buff de defesa instantâneo (tipo "Defender")
   ESCUDO_DE_CHAMAS: criarHabilidade({
     nome: 'Escudo de Chamas',
-    descricao: 'Assume postura defensiva (+60% resistência neste turno) e queima o atacante',
-    tipo: TIPO_HABILIDADE.DEFENSIVA,
+    descricao: 'Assume postura defensiva (+60% resistência neste turno)',
+    tipo: TIPO_HABILIDADE.SUPORTE, // Mudado para SUPORTE para ser processado corretamente
     elemento: ELEMENTOS.FOGO,
-    dano_base: 25, // Dano de queimadura contra-ataque
-    multiplicador_stat: 0.8,
+    dano_base: 0, // Sem dano por enquanto (contra-ataque será implementado depois)
+    multiplicador_stat: 0,
     stat_primario: 'resistencia',
-    efeitos_status: ['defesa_aumentada_instantanea'], // +60% resist APENAS neste turno (como Defender)
-    bonus_resistencia_turno: 0.60, // +60% resistência instantânea
-    contra_ataque: true, // Causa dano quando é atacado
+    efeitos_status: ['defesa_aumentada_instantanea'], // +60% resist APENAS neste turno
     alvo: 'self',
     custo_energia: 30,
     cooldown: 3,
@@ -98,10 +96,10 @@ export const HABILIDADES_FOGO = {
  *    - 70% chance de atordoar (pula 1 turno)
  *    - 50 energia, cooldown 2
  *
- * 3️⃣ ESCUDO DE CHAMAS (Defesa)
+ * 3️⃣ ESCUDO DE CHAMAS (Defesa/Buff)
  *    - +60% resistência INSTANTÂNEA (só neste turno, como Defender)
- *    - 25 dano de contra-ataque (queima quem ataca)
  *    - 30 energia, cooldown 3
+ *    - TODO: Implementar contra-ataque depois que o buff funcionar
  *
  * 4️⃣ INFERNO DEVASTADOR (Ultimate - Lendário)
  *    - 190 dano base MASSIVO
