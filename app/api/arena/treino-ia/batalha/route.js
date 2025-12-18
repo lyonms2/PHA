@@ -263,6 +263,8 @@ export async function POST(request) {
 
     // ===== VERIFICAR ATORDOAMENTO DO PLAYER =====
     // A lib processEffects já retorna stunned: true se estiver atordoado/paralisado
+    let result; // Declarar result aqui para uso em ambos os blocos
+
     if (playerEffectsResult.stunned) {
       console.log(`😵 [ATORDOADO] Player está ${playerEffectsResult.stunnedType} e pula o turno!`);
 
