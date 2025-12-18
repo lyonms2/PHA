@@ -180,7 +180,7 @@ export default function CompactBattleLayout({
               </div>
 
               {/* Habilidades */}
-              {meuAvatar?.habilidades?.slice(0, 3).map((hab, idx) => (
+              {meuAvatar?.habilidades?.map((hab, idx) => (
                 <button
                   key={idx}
                   onClick={() => usarHabilidade(idx)}

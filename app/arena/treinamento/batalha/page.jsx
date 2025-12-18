@@ -964,7 +964,7 @@ function BatalhaTreinoIAContent() {
                   ✨ HABILIDADES
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
-                  {meuAvatar.habilidades.slice(0, 5).map((habAvatar, index) => {
+                  {meuAvatar.habilidades.map((habAvatar, index) => {
                     const hab = atualizarBalanceamentoHabilidade(habAvatar, meuAvatar?.elemento);
                     const custoEnergia = hab.custo_energia || 20;
                     return (
