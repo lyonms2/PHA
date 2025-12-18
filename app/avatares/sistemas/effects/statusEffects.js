@@ -354,6 +354,16 @@ export const EFEITOS_STATUS = {
     duracao_base: 1,
     icone: '💨⚡',
     instantaneo: true
+  },
+
+  escudo_flamejante: {
+    nome: 'Escudo Flamejante',
+    tipo: 'buff',
+    contra_ataque_percent: 0.20, // Reflete 20% do dano recebido como queimadura
+    duracao_base: 1,
+    icone: '🔥🛡️',
+    instantaneo: true,
+    descricao: 'Quando recebe dano, queima o atacante com 20% do dano'
   }
 };
 
