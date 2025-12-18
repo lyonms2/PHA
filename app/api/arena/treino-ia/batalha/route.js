@@ -262,17 +262,16 @@ export async function POST(request) {
     }
 
     // ===== VERIFICAR ATORDOAMENTO DO PLAYER =====
-    const playerAtordoado = (battle.player.efeitos || []).some(ef => ef.tipo === 'atordoado');
-
-    if (playerAtordoado) {
-      console.log('😵 [ATORDOADO] Player está atordoado e pula o turno!');
+    // A lib processEffects já retorna stunned: true se estiver atordoado/paralisado
+    if (playerEffectsResult.stunned) {
+      console.log(`😵 [ATORDOADO] Player está ${playerEffectsResult.stunnedType} e pula o turno!`);
 
       // Adicionar log de turno pulado
       battle.battle_log = adicionarLogBatalha(battle.battle_log, {
         acao: 'atordoado',
         jogador: battle.player.nome,
         alvo: battle.player.nome,
-        mensagem: 'está atordoado e não pode agir!'
+        mensagem: `está ${playerEffectsResult.stunnedType} e não pode agir!`
       });
 
       // Pular para o turno da IA (result vazio para player)
@@ -284,7 +283,7 @@ export async function POST(request) {
         log: {
           acao: 'atordoado',
           jogador: battle.player.nome,
-          mensagem: 'está atordoado e não pode agir!'
+          mensagem: `está ${playerEffectsResult.stunnedType} e não pode agir!`
         }
       };
     } else {
@@ -537,20 +536,19 @@ export async function POST(request) {
     }
 
     // ===== VERIFICAR ATORDOAMENTO DA IA =====
-    const iaAtordoada = (battle.ia.efeitos || []).some(ef => ef.tipo === 'atordoado');
-
+    // A lib processEffects já retorna stunned: true se estiver atordoado/paralisado
     let iaResult;
     let acaoIA = { acao: 'stunned' }; // Default para atordoado
 
-    if (iaAtordoada) {
-      console.log('😵 [ATORDOADO] IA está atordoada e pula o turno!');
+    if (iaEffectsResult.stunned) {
+      console.log(`😵 [ATORDOADO] IA está ${iaEffectsResult.stunnedType} e pula o turno!`);
 
       // Adicionar log de turno pulado
       battle.battle_log = adicionarLogBatalha(battle.battle_log, {
         acao: 'atordoado',
         jogador: battle.ia.nome,
         alvo: battle.ia.nome,
-        mensagem: 'está atordoado e não pode agir!'
+        mensagem: `está ${iaEffectsResult.stunnedType} e não pode agir!`
       });
 
       // IA não age, apenas cria resultado vazio
@@ -571,7 +569,7 @@ export async function POST(request) {
         log: {
           acao: 'atordoado',
           jogador: battle.ia.nome,
-          mensagem: 'está atordoado e não pode agir!'
+          mensagem: `está ${iaEffectsResult.stunnedType} e não pode agir!`
         }
       };
     } else {
