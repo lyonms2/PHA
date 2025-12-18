@@ -213,6 +213,54 @@ export async function POST(request) {
       );
     }
 
+    // ===== PROCESSAR EFEITOS DO PLAYER (INÍCIO DO TURNO) =====
+    console.log('🔥 [EFEITOS PLAYER] Processando efeitos no início do turno:', {
+      playerHp: battle.player.hp,
+      playerEffects: battle.player.efeitos
+    });
+
+    const playerEffectsResult = processEffects({
+      hp: battle.player.hp,
+      hpMax: battle.player.hp_max,
+      effects: battle.player.efeitos || [],
+      nome: battle.player.nome
+    });
+
+    console.log('🔥 [EFEITOS PLAYER] Resultado:', {
+      newHp: playerEffectsResult.newHp,
+      dano: playerEffectsResult.dano,
+      cura: playerEffectsResult.cura,
+      newEffects: playerEffectsResult.newEffects
+    });
+
+    // Atualizar HP e efeitos do jogador
+    battle.player.hp = playerEffectsResult.newHp;
+    battle.player.efeitos = playerEffectsResult.newEffects;
+
+    // Adicionar log se houve dano ou cura
+    if (playerEffectsResult.dano > 0 || playerEffectsResult.cura > 0) {
+      battle.battle_log = adicionarLogBatalha(battle.battle_log, {
+        acao: 'effects',
+        jogador: battle.player.nome,
+        dano: playerEffectsResult.dano,
+        cura: playerEffectsResult.cura
+      });
+    }
+
+    // Verificar se player morreu por efeitos
+    if (playerEffectsResult.finished) {
+      battle.status = 'finished';
+      battle.winner = 'ia';
+      battleSessions.set(battleId, battle);
+
+      return NextResponse.json({
+        success: true,
+        finished: true,
+        winner: 'ia',
+        message: 'Você foi derrotado por efeitos de status!'
+      });
+    }
+
     // ===== PROCESSAR AÇÃO DO PLAYER =====
     let result;
 
