@@ -7,6 +7,7 @@ import AvatarDuoDisplay from './AvatarDuoDisplay';
 import SynergyDisplay from './SynergyDisplay';
 import BattleLog from './BattleLog';
 import { getEfeitoEmoji, ehBuff } from '../utils/battleEffects';
+import { atualizarBalanceamentoHabilidade } from '@/lib/combat/battle';
 
 export default function CompactBattleLayout({
   // Avatares
@@ -180,21 +181,25 @@ export default function CompactBattleLayout({
               </div>
 
               {/* Habilidades */}
-              {meuAvatar?.habilidades?.map((hab, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => usarHabilidade(idx)}
-                  disabled={!isYourTurn || actionInProgress || myEnergy < (hab.custo || 20)}
-                  className={`w-full px-2 py-1.5 rounded text-[10px] font-bold ${
-                    isYourTurn && !actionInProgress && myEnergy >= (hab.custo || 20)
-                      ? 'bg-purple-600 hover:bg-purple-500 text-white'
-                      : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                  }`}
-                  title={hab.descricao}
-                >
-                  ✨ {hab.nome} ({hab.custo || 20}⚡)
-                </button>
-              ))}
+              {meuAvatar?.habilidades?.map((habAvatar, idx) => {
+                const hab = atualizarBalanceamentoHabilidade(habAvatar, meuAvatar?.elemento);
+                const custoEnergia = hab.custo_energia || 20;
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => usarHabilidade(idx)}
+                    disabled={!isYourTurn || actionInProgress || myEnergy < custoEnergia}
+                    className={`w-full px-2 py-1.5 rounded text-[10px] font-bold ${
+                      isYourTurn && !actionInProgress && myEnergy >= custoEnergia
+                        ? 'bg-purple-600 hover:bg-purple-500 text-white'
+                        : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                    }`}
+                    title={hab.descricao}
+                  >
+                    ✨ {hab.nome} ({custoEnergia}⚡)
+                  </button>
+                );
+              })}
 
               {/* Abandonar */}
               <button
