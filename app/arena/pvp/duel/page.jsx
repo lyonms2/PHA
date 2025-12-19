@@ -48,6 +48,8 @@ function DuelContent() {
   const [opponentAvatar, setOpponentAvatar] = useState(null);
   const [myEffects, setMyEffects] = useState([]);
   const [opponentEffects, setOpponentEffects] = useState([]);
+  const [myCooldowns, setMyCooldowns] = useState({});
+  const [opponentCooldowns, setOpponentCooldowns] = useState({});
   const [log, setLog] = useState([]);
   const [inLobby, setInLobby] = useState(false);
 
@@ -205,6 +207,8 @@ function DuelContent() {
           setOpponentAvatar(data.opponentAvatar || null);
           setMyEffects(data.myEffects || []);
           setOpponentEffects(data.opponentEffects || []);
+          setMyCooldowns(data.myCooldowns || {});
+          setOpponentCooldowns(data.opponentCooldowns || {});
 
           // Atualizar apostas
           setMyBet(data.role === 'host' ? (data.room.host_bet || 0) : (data.room.guest_bet || 0));
@@ -1743,19 +1747,27 @@ function DuelContent() {
                       // Atualizar valores de balanceamento com os do sistema
                       const hab = atualizarBalanceamentoHabilidade(habAvatar, meuAvatar?.elemento);
                       const custoEnergia = hab.custo_energia || 20;
+                      const cooldownRestante = (myCooldowns || {})[hab.nome] || 0;
+                      const emCooldown = cooldownRestante > 0;
+
                       return (
                         <button
                           key={index}
                           onClick={() => usarHabilidade(index)}
-                          disabled={!isYourTurn || myEnergy < custoEnergia || actionInProgress}
+                          disabled={!isYourTurn || myEnergy < custoEnergia || actionInProgress || emCooldown}
                           className={`py-1.5 px-2 rounded text-left transition-all ${
-                            isYourTurn && myEnergy >= custoEnergia && !actionInProgress
+                            isYourTurn && myEnergy >= custoEnergia && !actionInProgress && !emCooldown
                               ? 'bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500 hover:to-pink-500 hover:scale-[1.02] active:scale-95 border border-purple-400/30'
                               : 'bg-slate-700/50 cursor-not-allowed opacity-40 border border-slate-600/30'
                           }`}
+                          title={emCooldown ? `Em cooldown (${cooldownRestante} turno(s))` : hab.descricao}
                         >
-                          <div className="truncate text-[10px] font-bold">{hab.nome}</div>
-                          <div className="text-[9px] opacity-75">-{custoEnergia} ⚡</div>
+                          <div className="truncate text-[10px] font-bold">
+                            {emCooldown ? `⏱️ ${hab.nome}` : hab.nome}
+                          </div>
+                          <div className="text-[9px] opacity-75">
+                            {emCooldown ? `${cooldownRestante}🔒` : `-${custoEnergia} ⚡`}
+                          </div>
                         </button>
                       );
                     })}

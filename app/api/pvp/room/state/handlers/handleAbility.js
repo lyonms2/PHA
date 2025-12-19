@@ -51,6 +51,18 @@ export async function handleAbility({ room, role, isHost, abilityIndex }) {
     );
   }
 
+  // ===== VERIFICAR COOLDOWN =====
+  const myCooldownsField = isHost ? 'host_cooldowns' : 'guest_cooldowns';
+  const currentCooldowns = room[myCooldownsField] || {};
+  const cooldownRestante = currentCooldowns[habilidade.nome] || 0;
+
+  if (cooldownRestante > 0) {
+    return NextResponse.json(
+      { error: `Habilidade ${habilidade.nome} em cooldown! Aguarde ${cooldownRestante} turno(s).` },
+      { status: 400 }
+    );
+  }
+
   // Stats do atacante (sem penalidades de exaustão no PVP)
   const forca = myAvatar?.forca ?? 10;
   const foco = myAvatar?.foco ?? 10;
@@ -341,11 +353,20 @@ export async function handleAbility({ room, role, isHost, abilityIndex }) {
     elemental: detalhesCalculo.elementalMult ? (detalhesCalculo.elementalMult > 1 ? 'vantagem' : detalhesCalculo.elementalMult < 1 ? 'desvantagem' : 'neutro') : 'neutro'
   });
 
+  // ===== ATIVAR COOLDOWN SE HABILIDADE TEM COOLDOWN =====
+  const updatedCooldowns = { ...currentCooldowns };
+  const cooldownHabilidade = habilidade.cooldown || 0;
+  if (cooldownHabilidade > 0) {
+    updatedCooldowns[habilidade.nome] = cooldownHabilidade;
+    console.log(`⏱️ [COOLDOWN PVP] ${habilidade.nome} de ${meuNome} em cooldown por ${cooldownHabilidade} turno(s)`);
+  }
+
   const updates = {
     [myEnergyField]: newEnergy,
     [opponentDefendingField]: false,
     [opponentEffectsField]: currentOpponentEffects,
     [myEffectsField]: currentMyEffects,
+    [myCooldownsField]: updatedCooldowns,
     current_turn: isHost ? 'guest' : 'host',
     battle_log: battleLog
   };

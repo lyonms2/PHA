@@ -3,6 +3,31 @@ import { updateDocument } from '@/lib/firebase/firestore';
 import { processEffects } from '@/lib/combat/battle';
 
 /**
+ * Decrementa cooldowns no início do turno
+ * Remove habilidades que ficaram prontas (cooldown = 0)
+ */
+function decrementarCooldowns(cooldowns, jogador) {
+  const novosCooldowns = {};
+  let decrementados = [];
+
+  for (const [habilidade, turnos] of Object.entries(cooldowns)) {
+    const novosTurnos = turnos - 1;
+    if (novosTurnos > 0) {
+      novosCooldowns[habilidade] = novosTurnos;
+      decrementados.push(`${habilidade}:${novosTurnos}`);
+    } else {
+      console.log(`✅ [COOLDOWN PVP] ${habilidade} de ${jogador} disponível novamente!`);
+    }
+  }
+
+  if (decrementados.length > 0) {
+    console.log(`⏱️ [COOLDOWN PVP] Cooldowns de ${jogador}: ${decrementados.join(', ')}`);
+  }
+
+  return novosCooldowns;
+}
+
+/**
  * Handler para ação 'process_effects'
  * Processa efeitos de status no início do turno
  * (dano contínuo, regeneração, paralisia, atordoamento, etc.)
@@ -16,6 +41,11 @@ export async function handleProcessEffects({ room, isHost }) {
   const currentHp = isHost ? room.host_hp : room.guest_hp;
   const hpMax = isHost ? (room.host_hp_max || 100) : (room.guest_hp_max || 100);
   const myEffects = room[myEffectsField] || [];
+
+  // ===== DECREMENTAR COOLDOWNS NO INÍCIO DO TURNO =====
+  const myCooldownsField = isHost ? 'host_cooldowns' : 'guest_cooldowns';
+  const currentCooldowns = room[myCooldownsField] || {};
+  const updatedCooldowns = decrementarCooldowns(currentCooldowns, myNome);
 
   // ===== USAR LIB COMPARTILHADA =====
   const result = processEffects({
@@ -43,6 +73,7 @@ export async function handleProcessEffects({ room, isHost }) {
     // Passar o turno automaticamente
     await updateDocument('pvp_duel_rooms', room.id, {
       [myEffectsField]: result.newEffects,
+      [myCooldownsField]: updatedCooldowns,
       current_turn: isHost ? 'guest' : 'host'
     });
 
@@ -82,7 +113,8 @@ export async function handleProcessEffects({ room, isHost }) {
 
   const updates = {
     [myHpField]: result.newHp,
-    [myEffectsField]: result.newEffects
+    [myEffectsField]: result.newEffects,
+    [myCooldownsField]: updatedCooldowns
   };
 
   // Verificar morte por efeito

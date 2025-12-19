@@ -73,6 +73,8 @@ export async function handleGetState(request) {
       opponentAvatar: isHost ? room.guest_avatar : room.host_avatar,
       myEffects: isHost ? (room.host_effects || []) : (room.guest_effects || []),
       opponentEffects: isHost ? (room.guest_effects || []) : (room.host_effects || []),
+      myCooldowns: isHost ? (room.host_cooldowns || {}) : (room.guest_cooldowns || {}),
+      opponentCooldowns: isHost ? (room.guest_cooldowns || {}) : (room.host_cooldowns || {}),
       battleLog: room.battle_log || []
     });
 
