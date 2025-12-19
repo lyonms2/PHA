@@ -24,11 +24,13 @@ export async function handleDefend({ room, role, isHost }) {
   }
 
   const myEnergyField = isHost ? 'host_energy' : 'guest_energy';
+  const myEnergyMaxField = isHost ? 'host_energy_max' : 'guest_energy_max';
   const myDefendingField = isHost ? 'host_defending' : 'guest_defending';
   const currentEnergy = room[myEnergyField] ?? 100;
+  const myEnergyMax = room[myEnergyMaxField] || 100;
 
-  // Recuperar energia (+20, max 100)
-  const newEnergy = Math.min(100, currentEnergy + 20);
+  // Recuperar energia (+20, máximo até energy_max)
+  const newEnergy = Math.min(myEnergyMax, currentEnergy + 20);
   const energyGained = newEnergy - currentEnergy;
 
   // Log de defesa
