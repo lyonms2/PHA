@@ -168,7 +168,8 @@ export async function POST(request) {
           energy: playerEnergyMax,
           efeitos: [],
           defending: false,
-          exaustao: 0
+          exaustao: 0,
+          modificadoresSinergia: modificadoresPlayer
         },
         ia: {
           ...iaAvatar,
@@ -177,7 +178,8 @@ export async function POST(request) {
           energy: iaEnergyMax,
           efeitos: [],
           defending: false,
-          exaustao: 0
+          exaustao: 0,
+          modificadoresSinergia: modificadoresIA
         },
         personalidadeIA,
         battle_log: [],
