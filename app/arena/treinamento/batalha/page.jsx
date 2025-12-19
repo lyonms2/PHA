@@ -33,6 +33,8 @@ function BatalhaTreinoIAContent() {
   const [opponentEnergy, setOpponentEnergy] = useState(100);
   const [myEffects, setMyEffects] = useState([]);
   const [opponentEffects, setOpponentEffects] = useState([]);
+  const [playerCooldowns, setPlayerCooldowns] = useState({});
+  const [iaCooldowns, setIaCooldowns] = useState({});
   const [isYourTurn, setIsYourTurn] = useState(true);
   const [status, setStatus] = useState('active');
   const [winner, setWinner] = useState(null);
@@ -255,6 +257,8 @@ function BatalhaTreinoIAContent() {
         setOpponentEnergy(battle.iaEnergy);
         setMyEffects(battle.playerEffects || []);
         setOpponentEffects(battle.iaEffects || []);
+        setPlayerCooldowns(battle.playerCooldowns || {});
+        setIaCooldowns(battle.iaCooldowns || {});
         setIsYourTurn(battle.currentTurn === 'player');
         setStatus(battle.status);
         setWinner(battle.winner);
@@ -637,6 +641,8 @@ function BatalhaTreinoIAContent() {
           opponentEnergy={opponentEnergy}
           myEffects={myEffects}
           opponentEffects={opponentEffects}
+          playerCooldowns={playerCooldowns}
+          iaCooldowns={iaCooldowns}
           isYourTurn={isYourTurn}
           currentTurn={currentTurn}
           log={log}
@@ -964,7 +970,7 @@ function BatalhaTreinoIAContent() {
                   ✨ HABILIDADES
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
-                  {meuAvatar.habilidades.slice(0, 5).map((habAvatar, index) => {
+                  {meuAvatar.habilidades.map((habAvatar, index) => {
                     const hab = atualizarBalanceamentoHabilidade(habAvatar, meuAvatar?.elemento);
                     const custoEnergia = hab.custo_energia || 20;
                     return (

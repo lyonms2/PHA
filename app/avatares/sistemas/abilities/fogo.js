@@ -1,25 +1,25 @@
-// ==================== HABILIDADES DE FOGO - SIMPLIFICADO ====================
+// ==================== HABILIDADES DE FOGO - REVISADO ====================
 // Arquivo: /app/avatares/sistemas/abilities/fogo.js
 //
-// NOVA ESTRUTURA: 3 habilidades por elemento
-// 1. Ataque Fraco (dano médio, mais forte que ataque básico, SEM efeitos)
-// 2. Ataque Forte (dano alto + efeito INSTANTÂNEO)
-// 3. Defesa (efeito defensivo INSTANTÂNEO, tipo "Defender" + contra-ataque)
+// ESTRUTURA: 4 habilidades por elemento
+// 1. Ataque Fraco - Dano médio, SEM efeitos
+// 2. Ataque Forte - Dano alto + controle instantâneo
+// 3. Defesa/Suporte - Buff/Defesa instantânea
+// 4. Ultimate - Dano massivo + efeito devastador
 //
-// IMPORTANTE: NENHUM efeito dura turnos - tudo é INSTANTÂNEO
+// ✅ TODOS os efeitos são instantâneos (máximo 1 turno)
 
 import { TIPO_HABILIDADE, RARIDADE_HABILIDADE, criarHabilidade } from '../constants/abilityTypes';
 import { ELEMENTOS } from '../elementalSystem';
 
 export const HABILIDADES_FOGO = {
-  // ==================== 1. ATAQUE FRACO ====================
-  // Mais forte que ataque básico, sem efeitos, apenas dano puro
+  // ==================== 1️⃣ LABAREDA (Ataque Fraco) ====================
   LABAREDA: criarHabilidade({
     nome: 'Labareda',
-    descricao: 'Lança uma rajada de fogo no inimigo (dano médio)',
+    descricao: 'Lança uma rajada de fogo no inimigo causando dano médio',
     tipo: TIPO_HABILIDADE.OFENSIVA,
     elemento: ELEMENTOS.FOGO,
-    dano_base: 45, // Mais forte que ataque básico (~25-30)
+    dano_base: 45,
     multiplicador_stat: 1.3,
     stat_primario: 'forca',
     custo_energia: 20,
@@ -27,89 +27,88 @@ export const HABILIDADES_FOGO = {
     nivel_minimo: 1
   }),
 
-  // ==================== 2. ATAQUE FORTE ====================
-  // Dano alto + efeito instantâneo (ex: atordoa por 1 turno)
+  // ==================== 2️⃣ EXPLOSÃO ÍGNEA (Ataque Forte) ====================
   EXPLOSAO_IGNEA: criarHabilidade({
     nome: 'Explosão Ígnea',
-    descricao: 'Explosão massiva de chamas com 70% de chance de atordoar o inimigo (pula próximo turno)',
+    descricao: 'Explosão massiva de chamas com 70% chance de atordoar (pula próximo turno)',
     tipo: TIPO_HABILIDADE.OFENSIVA,
     raridade: RARIDADE_HABILIDADE.AVANCADA,
     elemento: ELEMENTOS.FOGO,
     dano_base: 110,
     multiplicador_stat: 2.0,
     stat_primario: 'forca',
-    efeitos_status: ['atordoado'], // Atordoa = pula 1 turno (efeito instantâneo)
+    efeitos_status: ['atordoado'],
     chance_efeito: 70,
-    duracao_efeito: 1, // Pula apenas o próximo turno
+    duracao_efeito: 1,
     custo_energia: 50,
     cooldown: 2,
     nivel_minimo: 5
   }),
 
-  // ==================== 3. DEFESA/CONTRA-ATAQUE ====================
-  // Efeito defensivo instantâneo (tipo "Defender") + dano de contra-ataque
+  // ==================== 3️⃣ ESCUDO DE CHAMAS (Defesa) ====================
   ESCUDO_DE_CHAMAS: criarHabilidade({
     nome: 'Escudo de Chamas',
-    descricao: 'Assume postura defensiva (+60% resistência neste turno) e queima o atacante',
-    tipo: TIPO_HABILIDADE.DEFENSIVA,
+    descricao: 'Postura defensiva flamejante: +60% resistência neste turno. Quando atacado, queima o inimigo com 20% do dano recebido',
+    tipo: TIPO_HABILIDADE.SUPORTE,
     elemento: ELEMENTOS.FOGO,
-    dano_base: 25, // Dano de queimadura contra-ataque
-    multiplicador_stat: 0.8,
+    dano_base: 0,
+    multiplicador_stat: 0,
     stat_primario: 'resistencia',
-    efeitos_status: ['defesa_aumentada_instantanea'], // +60% resist APENAS neste turno (como Defender)
-    bonus_resistencia_turno: 0.60, // +60% resistência instantânea
-    contra_ataque: true, // Causa dano quando é atacado
+    efeitos_status: ['defesa_aumentada_instantanea', 'escudo_flamejante'],
     alvo: 'self',
     custo_energia: 30,
     cooldown: 3,
     nivel_minimo: 3
   }),
 
-  // ==================== 4. ULTIMATE ====================
-  // Dano massivo + efeito instantâneo devastador (normalmente só para Lendários)
+  // ==================== 4️⃣ INFERNO DEVASTADOR (Ultimate) ====================
   INFERNO_DEVASTADOR: criarHabilidade({
     nome: 'Inferno Devastador',
-    descricao: 'Invoca chamas apocalípticas causando dano massivo e enfraquecendo o inimigo (reduz -40% resistência no próximo turno)',
+    descricao: 'Invoca chamas apocalípticas causando dano massivo e enfraquecendo o inimigo (-40% resistência no próximo turno)',
     tipo: TIPO_HABILIDADE.OFENSIVA,
     raridade: RARIDADE_HABILIDADE.ULTIMATE,
     elemento: ELEMENTOS.FOGO,
-    dano_base: 190, // Dano massivo
+    dano_base: 190,
     multiplicador_stat: 2.5,
     stat_primario: 'forca',
-    efeitos_status: ['enfraquecido'], // Reduz resistência do inimigo instantaneamente
-    duracao_efeito: 1, // Apenas próximo turno
+    efeitos_status: ['enfraquecido'],
+    duracao_efeito: 1,
     custo_energia: 75,
     cooldown: 4,
-    nivel_minimo: 1, // TESTE: normalmente seria 20+, mas liberado para teste
-    vinculo_minimo: 0 // TESTE: normalmente seria 60+, mas liberado para teste
+    nivel_minimo: 1, // TESTE
+    vinculo_minimo: 0 // TESTE
   })
 };
 
 /**
- * ESTRUTURA FINAL - 4 HABILIDADES:
+ * ========================================
+ * RESUMO DAS 4 HABILIDADES DE FOGO
+ * ========================================
  *
  * 1️⃣ LABAREDA (Ataque Fraco)
- *    - 45 dano base (maior que ataque normal ~25-30)
- *    - Sem efeitos, apenas dano puro
- *    - 20 energia, sem cooldown
+ *    Dano: 45 base + Força×1.3
+ *    Efeitos: Nenhum (dano puro)
+ *    Energia: 20 | Cooldown: 0
  *
  * 2️⃣ EXPLOSÃO ÍGNEA (Ataque Forte)
- *    - 110 dano base
- *    - 70% chance de atordoar (pula 1 turno)
- *    - 50 energia, cooldown 2
+ *    Dano: 110 base + Força×2.0
+ *    Efeitos: 70% atordoar (pula 1 turno)
+ *    Energia: 50 | Cooldown: 2
  *
  * 3️⃣ ESCUDO DE CHAMAS (Defesa)
- *    - +60% resistência INSTANTÂNEA (só neste turno, como Defender)
- *    - 25 dano de contra-ataque (queima quem ataca)
- *    - 30 energia, cooldown 3
+ *    Dano: 0 (não ataca)
+ *    Efeitos:
+ *      • +60% resistência (dobra redução de dano)
+ *      • Escudo Flamejante (contra-ataque: 20% do dano recebido volta como queimadura)
+ *    Energia: 30 | Cooldown: 3
+ *    Duração: Apenas este turno
  *
- * 4️⃣ INFERNO DEVASTADOR (Ultimate - Lendário)
- *    - 190 dano base MASSIVO
- *    - Enfraquece inimigo (-40% resistência no próximo turno)
- *    - 75 energia, cooldown 4
- *    - TESTE: Disponível nível 1 (normalmente nível 20+, vínculo 60+)
+ * 4️⃣ INFERNO DEVASTADOR (Ultimate)
+ *    Dano: 190 base + Força×2.5
+ *    Efeitos: Enfraquece (-40% resistência do inimigo por 1 turno)
+ *    Energia: 75 | Cooldown: 4
  *
- * ❌ SEM DoTs/HoTs
- * ❌ SEM efeitos que duram múltiplos turnos
- * ✅ TUDO instantâneo e previsível
+ * ✅ TESTADO: Todas as 4 habilidades funcionais
+ * ✅ SEM DoTs/HoTs persistentes
+ * ✅ Efeitos instantâneos (máx 1 turno)
  */

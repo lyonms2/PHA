@@ -7,6 +7,7 @@ import AvatarDuoDisplay from './AvatarDuoDisplay';
 import SynergyDisplay from './SynergyDisplay';
 import BattleLog from './BattleLog';
 import { getEfeitoEmoji, ehBuff } from '../utils/battleEffects';
+import { atualizarBalanceamentoHabilidade } from '@/lib/combat/battle';
 
 export default function CompactBattleLayout({
   // Avatares
@@ -24,6 +25,8 @@ export default function CompactBattleLayout({
   opponentEnergy,
   myEffects,
   opponentEffects,
+  playerCooldowns,
+  iaCooldowns,
 
   // Controle
   isYourTurn,
@@ -41,7 +44,8 @@ export default function CompactBattleLayout({
   const hpIAPercent = (opponentHp / opponentHpMax) * 100;
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950 text-gray-100 p-2">
+    <div className="h-screen overflow-auto bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950">
+      <div className="h-full flex flex-col text-gray-100 p-2" style={{ zoom: '1.2', minHeight: 'calc(100vh / 1.2)' }}>
       {/* Header Compacto */}
       <div className="text-center mb-2">
         <h1 className="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400">
@@ -180,21 +184,32 @@ export default function CompactBattleLayout({
               </div>
 
               {/* Habilidades */}
-              {meuAvatar?.habilidades?.slice(0, 3).map((hab, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => usarHabilidade(idx)}
-                  disabled={!isYourTurn || actionInProgress || myEnergy < (hab.custo || 20)}
-                  className={`w-full px-2 py-1.5 rounded text-[10px] font-bold ${
-                    isYourTurn && !actionInProgress && myEnergy >= (hab.custo || 20)
-                      ? 'bg-purple-600 hover:bg-purple-500 text-white'
-                      : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                  }`}
-                  title={hab.descricao}
-                >
-                  ✨ {hab.nome} ({hab.custo || 20}⚡)
-                </button>
-              ))}
+              {meuAvatar?.habilidades?.map((habAvatar, idx) => {
+                const hab = atualizarBalanceamentoHabilidade(habAvatar, meuAvatar?.elemento);
+                const custoEnergia = hab.custo_energia || 20;
+                const cooldownRestante = (playerCooldowns || {})[hab.nome] || 0;
+                const emCooldown = cooldownRestante > 0;
+
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => usarHabilidade(idx)}
+                    disabled={!isYourTurn || actionInProgress || myEnergy < custoEnergia || emCooldown}
+                    className={`w-full px-2 py-1.5 rounded text-[10px] font-bold ${
+                      isYourTurn && !actionInProgress && myEnergy >= custoEnergia && !emCooldown
+                        ? 'bg-purple-600 hover:bg-purple-500 text-white'
+                        : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                    }`}
+                    title={emCooldown ? `Em cooldown (${cooldownRestante} turno(s))` : hab.descricao}
+                  >
+                    {emCooldown ? (
+                      <>⏱️ {hab.nome} ({cooldownRestante}🔒)</>
+                    ) : (
+                      <>✨ {hab.nome} ({custoEnergia}⚡)</>
+                    )}
+                  </button>
+                );
+              })}
 
               {/* Abandonar */}
               <button
@@ -289,6 +304,7 @@ export default function CompactBattleLayout({
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

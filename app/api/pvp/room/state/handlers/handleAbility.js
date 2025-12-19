@@ -3,6 +3,7 @@ import { updateDocument } from '@/lib/firebase/firestore';
 import { testarAcertoHabilidade } from '@/lib/combat/core/hitChecker';
 import { calcularDanoHabilidade, calcularCuraHabilidade } from '@/lib/combat/core/damageCalculator';
 import { atualizarBalanceamentoHabilidade, adicionarLogBatalha } from '../utils';
+import { ativarCooldown } from '@/lib/combat/cooldownSystem';
 
 /**
  * Handler para ação 'ability'
@@ -47,6 +48,18 @@ export async function handleAbility({ room, role, isHost, abilityIndex }) {
   if (currentEnergy < custoEnergia) {
     return NextResponse.json(
       { error: `Energia insuficiente! (${custoEnergia} necessária)` },
+      { status: 400 }
+    );
+  }
+
+  // ===== VERIFICAR COOLDOWN =====
+  const myCooldownsField = isHost ? 'host_cooldowns' : 'guest_cooldowns';
+  const currentCooldowns = room[myCooldownsField] || {};
+  const cooldownRestante = currentCooldowns[habilidade.nome] || 0;
+
+  if (cooldownRestante > 0) {
+    return NextResponse.json(
+      { error: `Habilidade ${habilidade.nome} em cooldown! Aguarde ${cooldownRestante} turno(s).` },
       { status: 400 }
     );
   }
@@ -341,11 +354,22 @@ export async function handleAbility({ room, role, isHost, abilityIndex }) {
     elemental: detalhesCalculo.elementalMult ? (detalhesCalculo.elementalMult > 1 ? 'vantagem' : detalhesCalculo.elementalMult < 1 ? 'desvantagem' : 'neutro') : 'neutro'
   });
 
+  // ===== ATIVAR COOLDOWN SE HABILIDADE TEM COOLDOWN =====
+  const cooldownHabilidade = habilidade.cooldown || 0;
+  const updatedCooldowns = ativarCooldown(
+    currentCooldowns,
+    habilidade.nome,
+    cooldownHabilidade,
+    meuNome,
+    'PVP'
+  );
+
   const updates = {
     [myEnergyField]: newEnergy,
     [opponentDefendingField]: false,
     [opponentEffectsField]: currentOpponentEffects,
     [myEffectsField]: currentMyEffects,
+    [myCooldownsField]: updatedCooldowns,
     current_turn: isHost ? 'guest' : 'host',
     battle_log: battleLog
   };

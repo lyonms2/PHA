@@ -21,6 +21,7 @@ import {
 import { calcularHPMaximoCompleto } from '@/lib/combat/statsCalculator';
 import { trackMissionProgress } from '@/lib/missions/missionTracker';
 import { calcularHPComSinergia, calcularEnergiaComSinergia } from '@/lib/combat/synergyApplicator';
+import { decrementarCooldowns, ativarCooldown } from '@/lib/combat/cooldownSystem';
 
 export const dynamic = 'force-dynamic';
 
@@ -73,7 +74,9 @@ export async function GET(request) {
         iaAvatar: battle.ia,
         playerDefending: battle.player.defending || false,
         iaDefending: battle.ia.defending || false,
-        battleLog: battle.battle_log || []
+        battleLog: battle.battle_log || [],
+        playerCooldowns: battle.player_cooldowns || {},
+        iaCooldowns: battle.ia_cooldowns || {}
       },
       isYourTurn: battle.current_turn === 'player'
     });
@@ -164,7 +167,10 @@ export async function POST(request) {
         sinergia: sinergia || null,
         sinergiaIA: sinergiaIA || null,
         modificadoresPlayer,
-        modificadoresIA
+        modificadoresIA,
+        // Sistema de cooldown: { nomeHabilidade: turnosRestantes }
+        player_cooldowns: {},
+        ia_cooldowns: {}
       };
 
       battleSessions.set(newBattleId, newBattle);
@@ -213,18 +219,92 @@ export async function POST(request) {
       );
     }
 
-    // ===== PROCESSAR AÇÃO DO PLAYER =====
-    let result;
-
-    // Validar estado antes de processar
-    console.log('🎮 [BATALHA] Estado antes de processar ação do jogador:', {
+    // ===== PROCESSAR EFEITOS DO PLAYER (INÍCIO DO TURNO) =====
+    console.log('🔥 [EFEITOS PLAYER] Processando efeitos no início do turno:', {
       playerHp: battle.player.hp,
-      iaHp: battle.ia.hp,
-      action,
-      abilityIndex
+      playerEffects: battle.player.efeitos
     });
 
-    if (battle.player.hp === undefined || battle.ia.hp === undefined) {
+    const playerEffectsResult = processEffects({
+      hp: battle.player.hp,
+      hpMax: battle.player.hp_max,
+      effects: battle.player.efeitos || [],
+      nome: battle.player.nome
+    });
+
+    console.log('🔥 [EFEITOS PLAYER] Resultado:', {
+      newHp: playerEffectsResult.newHp,
+      dano: playerEffectsResult.dano,
+      cura: playerEffectsResult.cura,
+      newEffects: playerEffectsResult.newEffects
+    });
+
+    // Atualizar HP e efeitos do jogador
+    battle.player.hp = playerEffectsResult.newHp;
+    battle.player.efeitos = playerEffectsResult.newEffects;
+
+    // Adicionar log se houve dano ou cura
+    if (playerEffectsResult.dano > 0 || playerEffectsResult.cura > 0) {
+      battle.battle_log = adicionarLogBatalha(battle.battle_log, {
+        acao: 'effects',
+        jogador: battle.player.nome,
+        dano: playerEffectsResult.dano,
+        cura: playerEffectsResult.cura
+      });
+    }
+
+    // Verificar se player morreu por efeitos
+    if (playerEffectsResult.finished) {
+      battle.status = 'finished';
+      battle.winner = 'ia';
+      battleSessions.set(battleId, battle);
+
+      return NextResponse.json({
+        success: true,
+        finished: true,
+        winner: 'ia',
+        message: 'Você foi derrotado por efeitos de status!'
+      });
+    }
+
+    // ===== VERIFICAR ATORDOAMENTO DO PLAYER =====
+    // A lib processEffects já retorna stunned: true se estiver atordoado/paralisado
+    let result; // Declarar result aqui para uso em ambos os blocos
+
+    if (playerEffectsResult.stunned) {
+      console.log(`😵 [ATORDOADO] Player está ${playerEffectsResult.stunnedType} e pula o turno!`);
+
+      // Adicionar log de turno pulado
+      battle.battle_log = adicionarLogBatalha(battle.battle_log, {
+        acao: 'atordoado',
+        jogador: battle.player.nome,
+        alvo: battle.player.nome,
+        mensagem: `está ${playerEffectsResult.stunnedType} e não pode agir!`
+      });
+
+      // Pular para o turno da IA (result vazio para player)
+      result = {
+        success: true,
+        action: 'stunned',
+        attackerHp: battle.player.hp,
+        defenderHp: battle.ia.hp,
+        log: {
+          acao: 'atordoado',
+          jogador: battle.player.nome,
+          mensagem: `está ${playerEffectsResult.stunnedType} e não pode agir!`
+        }
+      };
+    } else {
+      // ===== PROCESSAR AÇÃO DO PLAYER =====
+      // Validar estado antes de processar
+      console.log('🎮 [BATALHA] Estado antes de processar ação do jogador:', {
+        playerHp: battle.player.hp,
+        iaHp: battle.ia.hp,
+        action,
+        abilityIndex
+      });
+
+      if (battle.player.hp === undefined || battle.ia.hp === undefined) {
       console.error('❌ [BATALHA] HP está undefined!', {
         player: battle.player,
         ia: battle.ia
@@ -287,7 +367,30 @@ export async function POST(request) {
         battle.player.elemento
       );
 
+      // ===== VERIFICAR COOLDOWN =====
+      const cooldownsPlayer = battle.player_cooldowns || {};
+      const cooldownRestante = cooldownsPlayer[habilidadeAtualizada.nome] || 0;
+
+      if (cooldownRestante > 0) {
+        return NextResponse.json(
+          { error: `Habilidade ${habilidadeAtualizada.nome} em cooldown! Aguarde ${cooldownRestante} turno(s).` },
+          { status: 400 }
+        );
+      }
+
       result = processAbility(battle, attacker, defender, habilidadeAtualizada);
+
+      // ===== ATIVAR COOLDOWN SE HABILIDADE FOI USADA COM SUCESSO =====
+      if (result.success && !result.errou) {
+        const cooldown = habilidadeAtualizada.cooldown || 0;
+        battle.player_cooldowns = ativarCooldown(
+          battle.player_cooldowns || {},
+          habilidadeAtualizada.nome,
+          cooldown,
+          battle.player.nome,
+          'TREINO'
+        );
+      }
     } else {
       return NextResponse.json(
         { error: 'Ação inválida' },
@@ -388,10 +491,14 @@ export async function POST(request) {
         winner: 'player',
         recompensas
       });
-    }
+      }
+    } // Fim do else - player não atordoado
 
     // ===== TURNO DA IA =====
     battle.current_turn = 'ia';
+
+    // Decrementar cooldowns da IA no início do turno
+    battle.ia_cooldowns = decrementarCooldowns(battle.ia_cooldowns || {}, battle.ia.nome, 'TREINO');
 
     console.log('🤖 [TURNO IA] Iniciando turno da IA');
 
@@ -462,75 +569,135 @@ export async function POST(request) {
       });
     }
 
-    // IA escolhe ação
-    console.log('🎯 [IA] Escolhendo ação da IA:', {
-      iaHp: battle.ia.hp,
-      playerHp: battle.player.hp
-    });
-
-    const acaoIA = escolherAcaoIA(battle.ia, battle.player, battle.personalidadeIA);
-
-    console.log('🎯 [IA] Ação escolhida:', acaoIA.acao);
-
-    // Processar ação da IA
-    console.log('⚙️ [IA] Construindo iaAttacker e iaDefender:', {
-      'battle.ia.hp': battle.ia.hp,
-      'battle.player.hp': battle.player.hp
-    });
-
-    const iaAttacker = {
-      avatar: battle.ia,
-      exaustao: battle.ia.exaustao,
-      effects: battle.ia.efeitos,
-      energy: battle.ia.energy,
-      hp: battle.ia.hp,
-      hpMax: battle.ia.hp_max,
-      defending: battle.ia.defending,
-      nome: battle.ia.nome,
-      modificadoresSinergia: battle.modificadoresIA
-    };
-
-    const iaDefender = {
-      avatar: battle.player,
-      exaustao: battle.player.exaustao,
-      effects: battle.player.efeitos,
-      energy: battle.player.energy,
-      hp: battle.player.hp,
-      hpMax: battle.player.hp_max,
-      defending: battle.player.defending,
-      nome: battle.player.nome,
-      modificadoresSinergia: battle.modificadoresPlayer
-    };
-
-    console.log('⚙️ [IA] Objetos construídos:', {
-      'iaAttacker.hp': iaAttacker.hp,
-      'iaDefender.hp': iaDefender.hp
-    });
-
+    // ===== VERIFICAR ATORDOAMENTO DA IA =====
+    // A lib processEffects já retorna stunned: true se estiver atordoado/paralisado
     let iaResult;
-    console.log('🔨 [IA] Processando ação:', acaoIA.acao);
+    let acaoIA = { acao: 'stunned' }; // Default para atordoado
 
-    if (acaoIA.acao === 'attack') {
-      iaResult = processAttack(battle, iaAttacker, iaDefender);
-    } else if (acaoIA.acao === 'defend') {
-      iaResult = processDefend(battle, iaAttacker);
-    } else if (acaoIA.acao === 'ability') {
-      const habilidadeIA = battle.ia.habilidades?.[acaoIA.abilityIndex];
-      if (habilidadeIA) {
-        const habAtualizada = atualizarBalanceamentoHabilidade(habilidadeIA, battle.ia.elemento);
-        iaResult = processAbility(battle, iaAttacker, iaDefender, habAtualizada);
-      } else {
-        // Fallback para ataque
+    if (iaEffectsResult.stunned) {
+      console.log(`😵 [ATORDOADO] IA está ${iaEffectsResult.stunnedType} e pula o turno!`);
+
+      // Adicionar log de turno pulado
+      battle.battle_log = adicionarLogBatalha(battle.battle_log, {
+        acao: 'atordoado',
+        jogador: battle.ia.nome,
+        alvo: battle.ia.nome,
+        mensagem: `está ${iaEffectsResult.stunnedType} e não pode agir!`
+      });
+
+      // IA não age, apenas cria resultado vazio
+      iaResult = {
+        success: true,
+        action: 'stunned',
+        attacker: {
+          ...battle.ia,
+          hp: battle.ia.hp,
+          energy: battle.ia.energy,
+          effects: battle.ia.efeitos
+        },
+        defender: {
+          ...battle.player,
+          hp: battle.player.hp,
+          effects: battle.player.efeitos
+        },
+        log: {
+          acao: 'atordoado',
+          jogador: battle.ia.nome,
+          mensagem: `está ${iaEffectsResult.stunnedType} e não pode agir!`
+        }
+      };
+    } else {
+      // IA escolhe ação
+      console.log('🎯 [IA] Escolhendo ação da IA:', {
+        iaHp: battle.ia.hp,
+        playerHp: battle.player.hp
+      });
+
+      acaoIA = escolherAcaoIA(battle.ia, battle.player, battle.personalidadeIA);
+
+      console.log('🎯 [IA] Ação escolhida:', acaoIA.acao);
+
+      // Processar ação da IA
+      console.log('⚙️ [IA] Construindo iaAttacker e iaDefender:', {
+        'battle.ia.hp': battle.ia.hp,
+        'battle.player.hp': battle.player.hp
+      });
+
+      const iaAttacker = {
+        avatar: battle.ia,
+        exaustao: battle.ia.exaustao,
+        effects: battle.ia.efeitos,
+        energy: battle.ia.energy,
+        hp: battle.ia.hp,
+        hpMax: battle.ia.hp_max,
+        defending: battle.ia.defending,
+        nome: battle.ia.nome,
+        modificadoresSinergia: battle.modificadoresIA
+      };
+
+      const iaDefender = {
+        avatar: battle.player,
+        exaustao: battle.player.exaustao,
+        effects: battle.player.efeitos,
+        energy: battle.player.energy,
+        hp: battle.player.hp,
+        hpMax: battle.player.hp_max,
+        defending: battle.player.defending,
+        nome: battle.player.nome,
+        modificadoresSinergia: battle.modificadoresPlayer
+      };
+
+      console.log('⚙️ [IA] Objetos construídos:', {
+        'iaAttacker.hp': iaAttacker.hp,
+        'iaDefender.hp': iaDefender.hp
+      });
+
+      console.log('🔨 [IA] Processando ação:', acaoIA.acao);
+
+      if (acaoIA.acao === 'attack') {
         iaResult = processAttack(battle, iaAttacker, iaDefender);
-      }
-    }
+      } else if (acaoIA.acao === 'defend') {
+        iaResult = processDefend(battle, iaAttacker);
+      } else if (acaoIA.acao === 'ability') {
+        const habilidadeIA = battle.ia.habilidades?.[acaoIA.abilityIndex];
+        if (habilidadeIA) {
+          const habAtualizada = atualizarBalanceamentoHabilidade(habilidadeIA, battle.ia.elemento);
 
-    console.log('📝 [IA] Resultado da ação da IA:', {
-      success: iaResult?.success,
-      action: iaResult?.action,
-      attackerHp: iaResult?.attacker?.hp,
-      defenderHp: iaResult?.defender?.hp
-    });
+          // ===== VERIFICAR COOLDOWN DA IA =====
+          const cooldownsIA = battle.ia_cooldowns || {};
+          const cooldownRestante = cooldownsIA[habAtualizada.nome] || 0;
+
+          if (cooldownRestante > 0) {
+            console.log(`⏱️ [COOLDOWN IA] ${habAtualizada.nome} em cooldown (${cooldownRestante} turnos). Usando ataque básico.`);
+            iaResult = processAttack(battle, iaAttacker, iaDefender);
+          } else {
+            iaResult = processAbility(battle, iaAttacker, iaDefender, habAtualizada);
+
+            // ===== ATIVAR COOLDOWN SE HABILIDADE FOI USADA COM SUCESSO =====
+            if (iaResult.success && !iaResult.errou) {
+              const cooldown = habAtualizada.cooldown || 0;
+              battle.ia_cooldowns = ativarCooldown(
+                battle.ia_cooldowns || {},
+                habAtualizada.nome,
+                cooldown,
+                battle.ia.nome,
+                'TREINO'
+              );
+            }
+          }
+        } else {
+          // Fallback para ataque
+          iaResult = processAttack(battle, iaAttacker, iaDefender);
+        }
+      }
+
+      console.log('📝 [IA] Resultado da ação da IA:', {
+        success: iaResult?.success,
+        action: iaResult?.action,
+        attackerHp: iaResult?.attacker?.hp,
+        defenderHp: iaResult?.defender?.hp
+      });
+    } // Fim do else - IA não atordoada
 
     if (iaResult && iaResult.success) {
       // Atualizar estado
@@ -596,6 +763,9 @@ export async function POST(request) {
         });
       }
     }
+
+    // Decrementar cooldowns do player no início do turno
+    battle.player_cooldowns = decrementarCooldowns(battle.player_cooldowns || {}, battle.player.nome, 'TREINO');
 
     // Voltar turno para player
     battle.current_turn = 'player';
