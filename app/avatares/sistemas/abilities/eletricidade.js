@@ -48,7 +48,7 @@ export const HABILIDADES_ELETRICIDADE = {
   // ==================== 3. SUPORTE ====================
   SOBRECARGA: criarHabilidade({
     nome: 'Sobrecarga',
-    descricao: 'Aumenta drasticamente o foco (+60% foco neste turno, mas -20% resistência)',
+    descricao: 'Aumenta drasticamente o foco (+60% foco neste turno, mas -30% resistência)',
     tipo: TIPO_HABILIDADE.SUPORTE,
     elemento: ELEMENTOS.ELETRICIDADE,
     dano_base: 0,
