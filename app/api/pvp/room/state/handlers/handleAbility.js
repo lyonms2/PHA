@@ -3,6 +3,7 @@ import { updateDocument } from '@/lib/firebase/firestore';
 import { testarAcertoHabilidade } from '@/lib/combat/core/hitChecker';
 import { calcularDanoHabilidade, calcularCuraHabilidade } from '@/lib/combat/core/damageCalculator';
 import { atualizarBalanceamentoHabilidade, adicionarLogBatalha } from '../utils';
+import { ativarCooldown } from '@/lib/combat/cooldownSystem';
 
 /**
  * Handler para ação 'ability'
@@ -354,12 +355,14 @@ export async function handleAbility({ room, role, isHost, abilityIndex }) {
   });
 
   // ===== ATIVAR COOLDOWN SE HABILIDADE TEM COOLDOWN =====
-  const updatedCooldowns = { ...currentCooldowns };
   const cooldownHabilidade = habilidade.cooldown || 0;
-  if (cooldownHabilidade > 0) {
-    updatedCooldowns[habilidade.nome] = cooldownHabilidade;
-    console.log(`⏱️ [COOLDOWN PVP] ${habilidade.nome} de ${meuNome} em cooldown por ${cooldownHabilidade} turno(s)`);
-  }
+  const updatedCooldowns = ativarCooldown(
+    currentCooldowns,
+    habilidade.nome,
+    cooldownHabilidade,
+    meuNome,
+    'PVP'
+  );
 
   const updates = {
     [myEnergyField]: newEnergy,

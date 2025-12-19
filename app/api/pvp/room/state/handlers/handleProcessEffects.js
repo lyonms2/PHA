@@ -1,31 +1,7 @@
 import { NextResponse } from 'next/server';
 import { updateDocument } from '@/lib/firebase/firestore';
 import { processEffects } from '@/lib/combat/battle';
-
-/**
- * Decrementa cooldowns no início do turno
- * Remove habilidades que ficaram prontas (cooldown = 0)
- */
-function decrementarCooldowns(cooldowns, jogador) {
-  const novosCooldowns = {};
-  let decrementados = [];
-
-  for (const [habilidade, turnos] of Object.entries(cooldowns)) {
-    const novosTurnos = turnos - 1;
-    if (novosTurnos > 0) {
-      novosCooldowns[habilidade] = novosTurnos;
-      decrementados.push(`${habilidade}:${novosTurnos}`);
-    } else {
-      console.log(`✅ [COOLDOWN PVP] ${habilidade} de ${jogador} disponível novamente!`);
-    }
-  }
-
-  if (decrementados.length > 0) {
-    console.log(`⏱️ [COOLDOWN PVP] Cooldowns de ${jogador}: ${decrementados.join(', ')}`);
-  }
-
-  return novosCooldowns;
-}
+import { decrementarCooldowns } from '@/lib/combat/cooldownSystem';
 
 /**
  * Handler para ação 'process_effects'
@@ -45,7 +21,7 @@ export async function handleProcessEffects({ room, isHost }) {
   // ===== DECREMENTAR COOLDOWNS NO INÍCIO DO TURNO =====
   const myCooldownsField = isHost ? 'host_cooldowns' : 'guest_cooldowns';
   const currentCooldowns = room[myCooldownsField] || {};
-  const updatedCooldowns = decrementarCooldowns(currentCooldowns, myNome);
+  const updatedCooldowns = decrementarCooldowns(currentCooldowns, myNome, 'PVP');
 
   // ===== USAR LIB COMPARTILHADA =====
   const result = processEffects({

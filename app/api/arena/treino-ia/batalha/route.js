@@ -21,38 +21,12 @@ import {
 import { calcularHPMaximoCompleto } from '@/lib/combat/statsCalculator';
 import { trackMissionProgress } from '@/lib/missions/missionTracker';
 import { calcularHPComSinergia, calcularEnergiaComSinergia } from '@/lib/combat/synergyApplicator';
+import { decrementarCooldowns, ativarCooldown } from '@/lib/combat/cooldownSystem';
 
 export const dynamic = 'force-dynamic';
 
 // Armazenamento em memória das batalhas
 const battleSessions = new Map();
-
-/**
- * Decrementar todos os cooldowns de um jogador
- * @param {Object} cooldowns - Objeto com { nomeHabilidade: turnosRestantes }
- * @param {string} jogador - Nome do jogador (para logs)
- * @returns {Object} - Cooldowns atualizados
- */
-function decrementarCooldowns(cooldowns, jogador) {
-  const novosCooldowns = {};
-  let decrementados = [];
-
-  for (const [habilidade, turnos] of Object.entries(cooldowns)) {
-    const novosTurnos = turnos - 1;
-    if (novosTurnos > 0) {
-      novosCooldowns[habilidade] = novosTurnos;
-      decrementados.push(`${habilidade}:${novosTurnos}`);
-    } else {
-      console.log(`✅ [COOLDOWN] ${habilidade} de ${jogador} disponível novamente!`);
-    }
-  }
-
-  if (decrementados.length > 0) {
-    console.log(`⏱️ [COOLDOWN] Cooldowns de ${jogador}: ${decrementados.join(', ')}`);
-  }
-
-  return novosCooldowns;
-}
 
 /**
  * GET - Buscar estado da batalha
@@ -409,10 +383,13 @@ export async function POST(request) {
       // ===== ATIVAR COOLDOWN SE HABILIDADE FOI USADA COM SUCESSO =====
       if (result.success && !result.errou) {
         const cooldown = habilidadeAtualizada.cooldown || 0;
-        if (cooldown > 0) {
-          battle.player_cooldowns[habilidadeAtualizada.nome] = cooldown;
-          console.log(`⏱️ [COOLDOWN] ${habilidadeAtualizada.nome} em cooldown por ${cooldown} turno(s)`);
-        }
+        battle.player_cooldowns = ativarCooldown(
+          battle.player_cooldowns || {},
+          habilidadeAtualizada.nome,
+          cooldown,
+          battle.player.nome,
+          'TREINO'
+        );
       }
     } else {
       return NextResponse.json(
@@ -521,7 +498,7 @@ export async function POST(request) {
     battle.current_turn = 'ia';
 
     // Decrementar cooldowns da IA no início do turno
-    battle.ia_cooldowns = decrementarCooldowns(battle.ia_cooldowns || {}, battle.ia.nome);
+    battle.ia_cooldowns = decrementarCooldowns(battle.ia_cooldowns || {}, battle.ia.nome, 'TREINO');
 
     console.log('🤖 [TURNO IA] Iniciando turno da IA');
 
@@ -699,10 +676,13 @@ export async function POST(request) {
             // ===== ATIVAR COOLDOWN SE HABILIDADE FOI USADA COM SUCESSO =====
             if (iaResult.success && !iaResult.errou) {
               const cooldown = habAtualizada.cooldown || 0;
-              if (cooldown > 0) {
-                battle.ia_cooldowns[habAtualizada.nome] = cooldown;
-                console.log(`⏱️ [COOLDOWN IA] ${habAtualizada.nome} em cooldown por ${cooldown} turno(s)`);
-              }
+              battle.ia_cooldowns = ativarCooldown(
+                battle.ia_cooldowns || {},
+                habAtualizada.nome,
+                cooldown,
+                battle.ia.nome,
+                'TREINO'
+              );
             }
           }
         } else {
@@ -785,7 +765,7 @@ export async function POST(request) {
     }
 
     // Decrementar cooldowns do player no início do turno
-    battle.player_cooldowns = decrementarCooldowns(battle.player_cooldowns || {}, battle.player.nome);
+    battle.player_cooldowns = decrementarCooldowns(battle.player_cooldowns || {}, battle.player.nome, 'TREINO');
 
     // Voltar turno para player
     battle.current_turn = 'player';
