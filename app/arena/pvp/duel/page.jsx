@@ -1273,8 +1273,8 @@ function DuelContent() {
 
   // Tela de batalha
   return (
-    <div className="min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-red-950">
-      <div className="min-h-screen text-gray-100 p-3" style={{ zoom: '1.2' }}>
+    <div className="min-h-screen overflow-auto bg-gradient-to-br from-slate-950 via-slate-900 to-red-950">
+      <div className="min-h-full text-gray-100 p-3" style={{ zoom: '1.2', minHeight: 'calc(100vh / 1.2)' }}>
       <div className="max-w-xl mx-auto">
 
         {/* Header com título */}

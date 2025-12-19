@@ -23,7 +23,7 @@ export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true, 
       </div>
 
       {/* Container dos Avatares */}
-      <div className="p-3 flex gap-3 items-center justify-center">
+      <div className={`p-3 flex gap-3 items-center justify-center ${isPlayer ? 'flex-row-reverse' : ''}`}>
         {/* Avatar Principal */}
         <div className="flex-shrink-0">
           <AvatarSVG avatar={principal} tamanho={180} />

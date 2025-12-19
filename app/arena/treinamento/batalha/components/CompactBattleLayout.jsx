@@ -42,8 +42,8 @@ export default function CompactBattleLayout({
   const hpIAPercent = (opponentHp / opponentHpMax) * 100;
 
   return (
-    <div className="h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950">
-      <div className="h-screen flex flex-col text-gray-100 p-2" style={{ zoom: '1.2' }}>
+    <div className="h-screen overflow-auto bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950">
+      <div className="h-full flex flex-col text-gray-100 p-2" style={{ zoom: '1.2', minHeight: 'calc(100vh / 1.2)' }}>
       {/* Header Compacto */}
       <div className="text-center mb-2">
         <h1 className="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400">

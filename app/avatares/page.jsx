@@ -249,7 +249,7 @@ export default function AvatarsPage() {
                   <div>
                     <div className="text-xs text-slate-500 mb-1">HP</div>
                     <div className="text-sm font-semibold text-green-400">
-                      {avatarAtivo.hp_atual || 0} / {(avatarAtivo.resistencia * 10) + (avatarAtivo.nivel * 5) + (avatarAtivo.raridade === 'Lendário' ? 100 : avatarAtivo.raridade === 'Raro' ? 50 : 0)}
+                      {avatarAtivo.hp_atual || 0} / {(avatarAtivo.resistencia * 20) + (avatarAtivo.nivel * 10) + (avatarAtivo.raridade === 'Lendário' ? 200 : avatarAtivo.raridade === 'Raro' ? 100 : 0)}
                     </div>
                   </div>
 
@@ -391,7 +391,7 @@ export default function AvatarsPage() {
                       {/* HP */}
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-red-400">❤️ HP</span>
-                        <span className="font-mono text-slate-300">{avatar.hp_atual || 0}/{(avatar.resistencia * 10) + (avatar.nivel * 5)}</span>
+                        <span className="font-mono text-slate-300">{avatar.hp_atual || 0}/{(avatar.resistencia * 20) + (avatar.nivel * 10) + (avatar.raridade === 'Lendário' ? 200 : avatar.raridade === 'Raro' ? 100 : 0)}</span>
                       </div>
                       {/* Poder Total */}
                       <div className="flex items-center justify-between text-xs">
@@ -890,7 +890,7 @@ export default function AvatarsPage() {
                     <div className="bg-slate-900/50 rounded px-3 py-2 text-center col-span-2">
                       <div className="text-slate-400">💚 HP Máximo</div>
                       <div className="text-green-400 font-bold">
-                        {Math.floor(50 + ((modalLevelUp.resistencia || 10) * 5) + ((modalLevelUp.nivel || 1) * 3))}
+                        {Math.floor(((modalLevelUp.resistencia || 10) * 20) + ((modalLevelUp.nivel || 1) * 10) + (modalLevelUp.raridade === 'Lendário' ? 200 : modalLevelUp.raridade === 'Raro' ? 100 : 0))}
                       </div>
                     </div>
                   </div>
