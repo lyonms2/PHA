@@ -28,6 +28,33 @@ export const dynamic = 'force-dynamic';
 const battleSessions = new Map();
 
 /**
+ * Decrementar todos os cooldowns de um jogador
+ * @param {Object} cooldowns - Objeto com { nomeHabilidade: turnosRestantes }
+ * @param {string} jogador - Nome do jogador (para logs)
+ * @returns {Object} - Cooldowns atualizados
+ */
+function decrementarCooldowns(cooldowns, jogador) {
+  const novosCooldowns = {};
+  let decrementados = [];
+
+  for (const [habilidade, turnos] of Object.entries(cooldowns)) {
+    const novosTurnos = turnos - 1;
+    if (novosTurnos > 0) {
+      novosCooldowns[habilidade] = novosTurnos;
+      decrementados.push(`${habilidade}:${novosTurnos}`);
+    } else {
+      console.log(`✅ [COOLDOWN] ${habilidade} de ${jogador} disponível novamente!`);
+    }
+  }
+
+  if (decrementados.length > 0) {
+    console.log(`⏱️ [COOLDOWN] Cooldowns de ${jogador}: ${decrementados.join(', ')}`);
+  }
+
+  return novosCooldowns;
+}
+
+/**
  * GET - Buscar estado da batalha
  */
 export async function GET(request) {
@@ -73,7 +100,9 @@ export async function GET(request) {
         iaAvatar: battle.ia,
         playerDefending: battle.player.defending || false,
         iaDefending: battle.ia.defending || false,
-        battleLog: battle.battle_log || []
+        battleLog: battle.battle_log || [],
+        playerCooldowns: battle.player_cooldowns || {},
+        iaCooldowns: battle.ia_cooldowns || {}
       },
       isYourTurn: battle.current_turn === 'player'
     });
@@ -164,7 +193,10 @@ export async function POST(request) {
         sinergia: sinergia || null,
         sinergiaIA: sinergiaIA || null,
         modificadoresPlayer,
-        modificadoresIA
+        modificadoresIA,
+        // Sistema de cooldown: { nomeHabilidade: turnosRestantes }
+        player_cooldowns: {},
+        ia_cooldowns: {}
       };
 
       battleSessions.set(newBattleId, newBattle);
@@ -361,7 +393,27 @@ export async function POST(request) {
         battle.player.elemento
       );
 
+      // ===== VERIFICAR COOLDOWN =====
+      const cooldownsPlayer = battle.player_cooldowns || {};
+      const cooldownRestante = cooldownsPlayer[habilidadeAtualizada.nome] || 0;
+
+      if (cooldownRestante > 0) {
+        return NextResponse.json(
+          { error: `Habilidade ${habilidadeAtualizada.nome} em cooldown! Aguarde ${cooldownRestante} turno(s).` },
+          { status: 400 }
+        );
+      }
+
       result = processAbility(battle, attacker, defender, habilidadeAtualizada);
+
+      // ===== ATIVAR COOLDOWN SE HABILIDADE FOI USADA COM SUCESSO =====
+      if (result.success && !result.errou) {
+        const cooldown = habilidadeAtualizada.cooldown || 0;
+        if (cooldown > 0) {
+          battle.player_cooldowns[habilidadeAtualizada.nome] = cooldown;
+          console.log(`⏱️ [COOLDOWN] ${habilidadeAtualizada.nome} em cooldown por ${cooldown} turno(s)`);
+        }
+      }
     } else {
       return NextResponse.json(
         { error: 'Ação inválida' },
@@ -467,6 +519,9 @@ export async function POST(request) {
 
     // ===== TURNO DA IA =====
     battle.current_turn = 'ia';
+
+    // Decrementar cooldowns da IA no início do turno
+    battle.ia_cooldowns = decrementarCooldowns(battle.ia_cooldowns || {}, battle.ia.nome);
 
     console.log('🤖 [TURNO IA] Iniciando turno da IA');
 
@@ -630,7 +685,26 @@ export async function POST(request) {
         const habilidadeIA = battle.ia.habilidades?.[acaoIA.abilityIndex];
         if (habilidadeIA) {
           const habAtualizada = atualizarBalanceamentoHabilidade(habilidadeIA, battle.ia.elemento);
-          iaResult = processAbility(battle, iaAttacker, iaDefender, habAtualizada);
+
+          // ===== VERIFICAR COOLDOWN DA IA =====
+          const cooldownsIA = battle.ia_cooldowns || {};
+          const cooldownRestante = cooldownsIA[habAtualizada.nome] || 0;
+
+          if (cooldownRestante > 0) {
+            console.log(`⏱️ [COOLDOWN IA] ${habAtualizada.nome} em cooldown (${cooldownRestante} turnos). Usando ataque básico.`);
+            iaResult = processAttack(battle, iaAttacker, iaDefender);
+          } else {
+            iaResult = processAbility(battle, iaAttacker, iaDefender, habAtualizada);
+
+            // ===== ATIVAR COOLDOWN SE HABILIDADE FOI USADA COM SUCESSO =====
+            if (iaResult.success && !iaResult.errou) {
+              const cooldown = habAtualizada.cooldown || 0;
+              if (cooldown > 0) {
+                battle.ia_cooldowns[habAtualizada.nome] = cooldown;
+                console.log(`⏱️ [COOLDOWN IA] ${habAtualizada.nome} em cooldown por ${cooldown} turno(s)`);
+              }
+            }
+          }
         } else {
           // Fallback para ataque
           iaResult = processAttack(battle, iaAttacker, iaDefender);
@@ -709,6 +783,9 @@ export async function POST(request) {
         });
       }
     }
+
+    // Decrementar cooldowns do player no início do turno
+    battle.player_cooldowns = decrementarCooldowns(battle.player_cooldowns || {}, battle.player.nome);
 
     // Voltar turno para player
     battle.current_turn = 'player';

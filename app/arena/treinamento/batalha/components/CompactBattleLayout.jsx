@@ -25,6 +25,8 @@ export default function CompactBattleLayout({
   opponentEnergy,
   myEffects,
   opponentEffects,
+  playerCooldowns,
+  iaCooldowns,
 
   // Controle
   isYourTurn,
@@ -185,19 +187,26 @@ export default function CompactBattleLayout({
               {meuAvatar?.habilidades?.map((habAvatar, idx) => {
                 const hab = atualizarBalanceamentoHabilidade(habAvatar, meuAvatar?.elemento);
                 const custoEnergia = hab.custo_energia || 20;
+                const cooldownRestante = (playerCooldowns || {})[hab.nome] || 0;
+                const emCooldown = cooldownRestante > 0;
+
                 return (
                   <button
                     key={idx}
                     onClick={() => usarHabilidade(idx)}
-                    disabled={!isYourTurn || actionInProgress || myEnergy < custoEnergia}
+                    disabled={!isYourTurn || actionInProgress || myEnergy < custoEnergia || emCooldown}
                     className={`w-full px-2 py-1.5 rounded text-[10px] font-bold ${
-                      isYourTurn && !actionInProgress && myEnergy >= custoEnergia
+                      isYourTurn && !actionInProgress && myEnergy >= custoEnergia && !emCooldown
                         ? 'bg-purple-600 hover:bg-purple-500 text-white'
                         : 'bg-slate-700 text-slate-500 cursor-not-allowed'
                     }`}
-                    title={hab.descricao}
+                    title={emCooldown ? `Em cooldown (${cooldownRestante} turno(s))` : hab.descricao}
                   >
-                    ✨ {hab.nome} ({custoEnergia}⚡)
+                    {emCooldown ? (
+                      <>⏱️ {hab.nome} ({cooldownRestante}🔒)</>
+                    ) : (
+                      <>✨ {hab.nome} ({custoEnergia}⚡)</>
+                    )}
                   </button>
                 );
               })}
