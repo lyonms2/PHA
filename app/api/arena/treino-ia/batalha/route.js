@@ -116,6 +116,13 @@ export async function POST(request) {
       const modificadoresPlayer = sinergia?.modificadores || {};
       const modificadoresIA = sinergiaIA?.modificadores || {};
 
+      console.log('🔍 [SINERGIA DEBUG] Modificadores recebidos:', {
+        playerSinergia: sinergia?.nome || 'Nenhuma',
+        playerModificadores: modificadoresPlayer,
+        iaSinergia: sinergiaIA?.nome || 'Nenhuma',
+        iaModificadores: modificadoresIA
+      });
+
       // HP e Energia do jogador (próprios modificadores + redução do inimigo)
       let playerHpMax = calcularHPComSinergia(playerHpMaxBase, modificadoresPlayer);
       let playerEnergyMax = calcularEnergiaComSinergia(100, modificadoresPlayer);
@@ -133,6 +140,21 @@ export async function POST(request) {
       if (modificadoresPlayer.energia_inimigo_reducao) {
         iaEnergyMax = Math.floor(iaEnergyMax * (1 - modificadoresPlayer.energia_inimigo_reducao));
       }
+
+      console.log('📊 [SINERGIA DEBUG] Valores finais:', {
+        player: {
+          hpBase: playerHpMaxBase,
+          hpComSinergia: playerHpMax,
+          energiaBase: 100,
+          energiaComSinergia: playerEnergyMax
+        },
+        ia: {
+          hpBase: iaHpMaxBase,
+          hpComSinergia: iaHpMax,
+          energiaBase: 100,
+          energiaComSinergia: iaEnergyMax
+        }
+      });
 
       const newBattle = {
         id: newBattleId,
