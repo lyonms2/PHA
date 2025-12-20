@@ -30,14 +30,14 @@ export const HABILIDADES_LUZ = {
   // ==================== 2. ATAQUE FORTE ====================
   JULGAMENTO_DIVINO: criarHabilidade({
     nome: 'Julgamento Divino',
-    descricao: 'Dano massivo com +50% de dano em inimigos com <30% HP',
+    descricao: 'Dano massivo com roubo de vida (30% do dano vira cura)',
     tipo: TIPO_HABILIDADE.OFENSIVA,
     raridade: RARIDADE_HABILIDADE.AVANCADA,
     elemento: ELEMENTOS.LUZ,
     dano_base: 110,
     multiplicador_stat: 2.0,
     stat_primario: 'foco',
-    efeitos_status: ['execucao'], // +50% dano em alvos com baixo HP
+    efeitos_status: ['roubo_vida_intenso'], // 30% do dano vira cura
     custo_energia: 50,
     cooldown: 2,
     nivel_minimo: 5
@@ -89,7 +89,7 @@ export const HABILIDADES_LUZ = {
  *
  * 2️⃣ JULGAMENTO DIVINO (Ataque Forte)
  *    - 110 dano base
- *    - Execução: +50% dano em inimigos com <30% HP
+ *    - Roubo de Vida Intenso: 30% do dano vira cura
  *    - 50 energia, cooldown 2
  *
  * 3️⃣ BENÇÃO (Suporte)
