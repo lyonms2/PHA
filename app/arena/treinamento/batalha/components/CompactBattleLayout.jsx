@@ -71,6 +71,7 @@ export default function CompactBattleLayout({
             hpMax={myHpMax}
             energy={myEnergy}
             energyMax={myEnergyMax}
+            effects={myEffects}
           />
 
           {/* Efeitos Ativos */}
@@ -237,6 +238,7 @@ export default function CompactBattleLayout({
             hpMax={opponentHpMax}
             energy={opponentEnergy}
             energyMax={opponentEnergyMax}
+            effects={opponentEffects}
           />
 
           {/* Efeitos Ativos */}

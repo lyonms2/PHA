@@ -5,7 +5,40 @@
 import AvatarSVG from "@/app/components/AvatarSVG";
 import { getElementoEmoji, getElementoCor } from '../utils/battleEffects';
 
-export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true, hp, hpMax, energy, energyMax = 100 }) {
+// Mapa de ícones e cores por tipo de efeito
+const EFEITO_INFO = {
+  // Buffs
+  bencao: { icone: '✨', cor: 'text-yellow-400', nome: 'Benção', tipo: 'buff' },
+  defesa_aumentada: { icone: '🛡️', cor: 'text-blue-400', nome: 'Defesa+', tipo: 'buff' },
+  defesa_aumentada_instantanea: { icone: '🛡️🔥', cor: 'text-blue-400', nome: 'Defesa++', tipo: 'buff' },
+  velocidade_aumentada: { icone: '⚡', cor: 'text-green-400', nome: 'Velocidade+', tipo: 'buff' },
+  evasao_aumentada: { icone: '💨', cor: 'text-cyan-400', nome: 'Evasão+', tipo: 'buff' },
+  transcendencia: { icone: '✨🌟', cor: 'text-purple-400', nome: 'Transcendência', tipo: 'buff' },
+  regeneracao: { icone: '💚', cor: 'text-green-400', nome: 'Regeneração', tipo: 'buff' },
+  sobrecarga: { icone: '⚡🔴', cor: 'text-orange-400', nome: 'Sobrecarga', tipo: 'buff' },
+
+  // Debuffs
+  queimadura: { icone: '🔥', cor: 'text-red-400', nome: 'Queimadura', tipo: 'debuff' },
+  queimadura_intensa: { icone: '🔥🔥', cor: 'text-red-500', nome: 'Queimadura Intensa', tipo: 'debuff' },
+  paralisia: { icone: '⚡', cor: 'text-yellow-400', nome: 'Paralisia', tipo: 'debuff' },
+  paralisia_intensa: { icone: '⚡⚡', cor: 'text-yellow-500', nome: 'Paralisia Intensa', tipo: 'debuff' },
+  atordoado: { icone: '💫', cor: 'text-purple-400', nome: 'Atordoado', tipo: 'debuff' },
+  congelado: { icone: '❄️', cor: 'text-cyan-400', nome: 'Congelado', tipo: 'debuff' },
+  enfraquecido: { icone: '⬇️', cor: 'text-gray-400', nome: 'Enfraquecido', tipo: 'debuff' },
+  lentidao: { icone: '🐌', cor: 'text-gray-400', nome: 'Lentidão', tipo: 'debuff' },
+  maldito: { icone: '💀', cor: 'text-purple-500', nome: 'Maldito', tipo: 'debuff' },
+};
+
+function getEfeitoInfo(efeito) {
+  return EFEITO_INFO[efeito.tipo] || {
+    icone: '❓',
+    cor: 'text-gray-400',
+    nome: efeito.tipo,
+    tipo: 'unknown'
+  };
+}
+
+export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true, hp, hpMax, energy, energyMax = 100, effects = [] }) {
   const borderColor = isPlayer ? 'border-cyan-500/40' : 'border-red-500/40';
   const bgColor = isPlayer
     ? 'from-cyan-900/50 to-blue-900/50'
@@ -15,6 +48,16 @@ export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true, 
   // Calcular porcentagens se HP for fornecido
   const hpPercent = (hp !== undefined && hpMax) ? (hp / hpMax) * 100 : 0;
   const energyPercent = (energy !== undefined && energyMax) ? (energy / energyMax) * 100 : 0;
+
+  // Filtrar e agrupar efeitos
+  const buffs = effects.filter(ef => {
+    const info = getEfeitoInfo(ef);
+    return info.tipo === 'buff';
+  });
+  const debuffs = effects.filter(ef => {
+    const info = getEfeitoInfo(ef);
+    return info.tipo === 'debuff';
+  });
 
   return (
     <div className={`bg-slate-900/95 rounded-lg border ${borderColor} overflow-hidden`}>
@@ -116,6 +159,63 @@ export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true, 
                 style={{ width: `${energyPercent}%` }}
               />
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Efeitos Ativos */}
+      {effects.length > 0 && (
+        <div className="px-3 pb-3 border-t border-slate-700/50 pt-2">
+          <div className="text-[9px] text-slate-400 mb-1.5">Status:</div>
+          <div className="flex flex-wrap gap-1">
+            {/* Buffs */}
+            {buffs.map((efeito, idx) => {
+              const info = getEfeitoInfo(efeito);
+              return (
+                <div
+                  key={`buff-${idx}`}
+                  className="relative group"
+                  title={`${info.nome} (${efeito.turnosRestantes || efeito.duracao} turnos)`}
+                >
+                  <div className="flex items-center gap-0.5 bg-green-900/30 border border-green-500/30 rounded px-1.5 py-0.5">
+                    <span className={`text-xs ${info.cor}`}>{info.icone}</span>
+                    <span className="text-[9px] text-green-300 font-mono">
+                      {efeito.turnosRestantes || efeito.duracao}
+                    </span>
+                  </div>
+                  {/* Tooltip */}
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block z-50">
+                    <div className="bg-slate-800 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap border border-green-500/50">
+                      {info.nome}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            {/* Debuffs */}
+            {debuffs.map((efeito, idx) => {
+              const info = getEfeitoInfo(efeito);
+              return (
+                <div
+                  key={`debuff-${idx}`}
+                  className="relative group"
+                  title={`${info.nome} (${efeito.turnosRestantes || efeito.duracao} turnos)`}
+                >
+                  <div className="flex items-center gap-0.5 bg-red-900/30 border border-red-500/30 rounded px-1.5 py-0.5">
+                    <span className={`text-xs ${info.cor}`}>{info.icone}</span>
+                    <span className="text-[9px] text-red-300 font-mono">
+                      {efeito.turnosRestantes || efeito.duracao}
+                    </span>
+                  </div>
+                  {/* Tooltip */}
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block z-50">
+                    <div className="bg-slate-800 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap border border-red-500/50">
+                      {info.nome}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
