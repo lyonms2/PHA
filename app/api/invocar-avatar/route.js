@@ -161,7 +161,7 @@ function gerarAvatarCompleto(primeiraInvocacao = false, hunterRank = null) {
       num_alvos: hab.num_alvos,
       chance_acerto: hab.chance_acerto,
       chance_efeito: hab.chance_efeito,
-      duracao_efeito: hab.duracao_efeito,
+      duracao_efeito: hab.duracao_efeito ?? null, // Converter undefined para null (Firebase não aceita undefined)
       nivel_minimo: hab.nivel_minimo,
       vinculo_minimo: hab.vinculo_minimo
     })),
