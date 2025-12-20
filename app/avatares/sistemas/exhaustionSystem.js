@@ -238,26 +238,51 @@ function getProximoNivel(exaustao) {
 }
 
 /**
- * Aplica penalidades de exaustão aos stats
+ * Aplica penalidades de exaustão e buffs de efeitos aos stats
  * @param {Object} stats - Stats base
  * @param {number} exaustao - Nível de exaustão
- * @returns {Object} Stats com penalidades aplicadas
+ * @param {Array} effects - Efeitos ativos (opcional)
+ * @returns {Object} Stats com penalidades e buffs aplicados
  */
-export function aplicarPenalidadesExaustao(stats, exaustao) {
+export function aplicarPenalidadesExaustao(stats, exaustao, effects = []) {
   const nivel = getNivelExaustao(exaustao);
 
-  if (!nivel.penalidades.stats) {
-    return stats; // Sem penalidades
+  let multiplicador = 1.0;
+
+  // Aplicar penalidades de exaustão
+  if (nivel.penalidades.stats) {
+    multiplicador += nivel.penalidades.stats;
   }
 
-  const multiplicador = 1 + nivel.penalidades.stats;
+  // Aplicar buffs de efeitos (bencao, velocidade_aumentada, etc.)
+  for (const efeito of effects) {
+    // Benção: +20% em TODOS os stats
+    if (efeito.bonusTodosStats) {
+      multiplicador += efeito.bonusTodosStats;
+    }
+    // Velocidade Aumentada: +40% agilidade (será aplicado depois)
+    if (efeito.bonusAgilidade) {
+      continue;
+    }
+  }
 
-  return {
+  // Calcular stats base com multiplicador geral
+  let finalStats = {
     forca: Math.floor(stats.forca * multiplicador),
     agilidade: Math.floor(stats.agilidade * multiplicador),
     resistencia: Math.floor(stats.resistencia * multiplicador),
     foco: Math.floor(stats.foco * multiplicador)
   };
+
+  // Aplicar buffs específicos de cada stat
+  for (const efeito of effects) {
+    // Velocidade Aumentada: +40% agilidade
+    if (efeito.tipo === 'velocidade_aumentada' && efeito.bonusAgilidade) {
+      finalStats.agilidade = Math.floor(finalStats.agilidade * (1 + efeito.bonusAgilidade));
+    }
+  }
+
+  return finalStats;
 }
 
 // ==================== TABELA DE REFERÊNCIA ====================
