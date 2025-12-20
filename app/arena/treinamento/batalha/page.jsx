@@ -154,7 +154,15 @@ function BatalhaTreinoIAContent() {
 
   // Processar fim de batalha e recompensas
   const processarFimDeBatalha = (result) => {
+    console.log('🏁 [FIM BATALHA] Verificando:', {
+      finished: result.finished,
+      hasRecompensas: !!result.recompensas,
+      recompensas: result.recompensas,
+      winner: result.winner
+    });
+
     if (result.finished && result.recompensas) {
+      console.log('✅ [FIM BATALHA] Processando fim de batalha...');
       setStatus('finished');
       setWinner(result.winner);
 
@@ -173,6 +181,11 @@ function BatalhaTreinoIAContent() {
       } else {
         addLog('☠️ DERROTA! Você foi derrotado...');
       }
+    } else {
+      console.warn('⚠️ [FIM BATALHA] Condições não atendidas:', {
+        finished: result.finished,
+        hasRecompensas: !!result.recompensas
+      });
     }
   };
 
