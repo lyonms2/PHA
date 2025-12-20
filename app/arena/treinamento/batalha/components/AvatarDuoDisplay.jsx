@@ -50,11 +50,12 @@ export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true, 
   const energyPercent = (energy !== undefined && energyMax) ? (energy / energyMax) * 100 : 0;
 
   // Filtrar e agrupar efeitos
-  const buffs = effects.filter(ef => {
+  const validEffects = effects.filter(ef => ef && ef.tipo); // Filtrar apenas efeitos válidos
+  const buffs = validEffects.filter(ef => {
     const info = getEfeitoInfo(ef);
     return info.tipo === 'buff';
   });
-  const debuffs = effects.filter(ef => {
+  const debuffs = validEffects.filter(ef => {
     const info = getEfeitoInfo(ef);
     return info.tipo === 'debuff';
   });
@@ -164,7 +165,7 @@ export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true, 
       )}
 
       {/* Efeitos Ativos */}
-      {effects.length > 0 && (
+      {validEffects.length > 0 && (
         <div className="px-3 pb-3 border-t border-slate-700/50 pt-2">
           <div className="text-[9px] text-slate-400 mb-1.5">Status:</div>
           <div className="flex flex-wrap gap-1">

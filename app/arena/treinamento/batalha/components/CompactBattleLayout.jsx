@@ -75,13 +75,13 @@ export default function CompactBattleLayout({
           />
 
           {/* Efeitos Ativos */}
-          {myEffects.length > 0 && (
+          {myEffects.filter(ef => ef && ef.tipo).length > 0 && (
             <div className="bg-slate-900/95 rounded-lg border border-cyan-500/40 p-2">
               <div className="text-[10px] font-bold text-cyan-400 mb-1.5 text-center">
                 ⚡ EFEITOS ATIVOS
               </div>
               <div className="space-y-1">
-                {myEffects.map((ef, i) => (
+                {myEffects.filter(ef => ef && ef.tipo).map((ef, i) => (
                   <div
                     key={i}
                     className={`text-[9px] px-2 py-1 rounded flex items-center justify-between ${
@@ -92,7 +92,7 @@ export default function CompactBattleLayout({
                   >
                     <span className="flex items-center gap-1">
                       <span className="text-sm">{getEfeitoEmoji(ef.tipo)}</span>
-                      <span className="font-semibold capitalize">{ef.tipo.replace(/_/g, ' ')}</span>
+                      <span className="font-semibold capitalize">{ef.tipo?.replace(/_/g, ' ') || 'Desconhecido'}</span>
                     </span>
                     <span className="bg-slate-900/50 px-1.5 py-0.5 rounded font-bold">
                       {ef.turnosRestantes} ⏱️
@@ -242,13 +242,13 @@ export default function CompactBattleLayout({
           />
 
           {/* Efeitos Ativos */}
-          {opponentEffects.length > 0 && (
+          {opponentEffects.filter(ef => ef && ef.tipo).length > 0 && (
             <div className="bg-slate-900/95 rounded-lg border border-red-500/40 p-2">
               <div className="text-[10px] font-bold text-red-400 mb-1.5 text-center">
                 ⚡ EFEITOS ATIVOS
               </div>
               <div className="space-y-1">
-                {opponentEffects.map((ef, i) => (
+                {opponentEffects.filter(ef => ef && ef.tipo).map((ef, i) => (
                   <div
                     key={i}
                     className={`text-[9px] px-2 py-1 rounded flex items-center justify-between ${
@@ -259,7 +259,7 @@ export default function CompactBattleLayout({
                   >
                     <span className="flex items-center gap-1">
                       <span className="text-sm">{getEfeitoEmoji(ef.tipo)}</span>
-                      <span className="font-semibold capitalize">{ef.tipo.replace(/_/g, ' ')}</span>
+                      <span className="font-semibold capitalize">{ef.tipo?.replace(/_/g, ' ') || 'Desconhecido'}</span>
                     </span>
                     <span className="bg-slate-900/50 px-1.5 py-0.5 rounded font-bold">
                       {ef.turnosRestantes} ⏱️
