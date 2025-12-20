@@ -271,6 +271,10 @@ export async function POST(request) {
     battle.player.hp = playerEffectsResult.newHp;
     battle.player.efeitos = playerEffectsResult.newEffects;
 
+    console.log('📊 [EFEITOS PLAYER] Efeitos atualizados no estado:',
+      battle.player.efeitos.map(ef => `${ef.tipo}:${ef.turnosRestantes}`).join(', ') || 'nenhum'
+    );
+
     // Adicionar log se houve dano ou cura
     if (playerEffectsResult.dano > 0 || playerEffectsResult.cura > 0) {
       battle.battle_log = adicionarLogBatalha(battle.battle_log, {
