@@ -23,7 +23,7 @@ export const EFEITOS_STATUS = {
     nome: 'Queimadura',
     tipo: 'dano_continuo',
     dano_por_turno: 0.05, // 5% do HP máximo
-    duracao_base: 3,
+    duracao_base: 2,
     icone: '🔥'
   },
 
@@ -31,7 +31,7 @@ export const EFEITOS_STATUS = {
     nome: 'Queimadura Intensa',
     tipo: 'dano_continuo',
     dano_por_turno: 0.10,
-    duracao_base: 3,
+    duracao_base: 2,
     icone: '🔥🔥'
   },
 
@@ -87,7 +87,7 @@ export const EFEITOS_STATUS = {
     nome: 'Enfraquecido',
     tipo: 'debuff',
     reducao_stats: 0.25, // -25% em todos os stats
-    duracao_base: 3,
+    duracao_base: 2,
     icone: '⬇️'
   },
 
@@ -95,7 +95,7 @@ export const EFEITOS_STATUS = {
     nome: 'Lentidão',
     tipo: 'debuff',
     reducao_agilidade: 0.40, // -40% agilidade
-    duracao_base: 3,
+    duracao_base: 2,
     icone: '🐌'
   },
 
@@ -103,7 +103,7 @@ export const EFEITOS_STATUS = {
     nome: 'Afogamento',
     tipo: 'dano_continuo',
     dano_por_turno: 0.08,
-    duracao_base: 3,
+    duracao_base: 2,
     icone: '💧'
   },
 
@@ -112,7 +112,7 @@ export const EFEITOS_STATUS = {
     tipo: 'dano_continuo',
     dano_por_turno: 0.07,
     impede_cura: true,
-    duracao_base: 4,
+    duracao_base: 2,
     icone: '💀'
   },
 
@@ -120,7 +120,7 @@ export const EFEITOS_STATUS = {
     nome: 'Eletrocução',
     tipo: 'dano_continuo',
     dano_por_turno: 0.06,
-    duracao_base: 3,
+    duracao_base: 2,
     icone: '⚡'
   },
 
@@ -130,7 +130,7 @@ export const EFEITOS_STATUS = {
     nome: 'Defesa Aumentada',
     tipo: 'buff',
     bonus_resistencia: 0.50, // +50% resistência
-    duracao_base: 3,
+    duracao_base: 2,
     icone: '🛡️'
   },
 
@@ -147,7 +147,7 @@ export const EFEITOS_STATUS = {
     nome: 'Evasão Aumentada',
     tipo: 'buff',
     bonus_evasao: 0.30, // +30% evasão
-    duracao_base: 3,
+    duracao_base: 2,
     icone: '💨'
   },
 
@@ -155,7 +155,7 @@ export const EFEITOS_STATUS = {
     nome: 'Velocidade Aumentada',
     tipo: 'buff',
     bonus_agilidade: 0.40, // +40% agilidade
-    duracao_base: 3,
+    duracao_base: 2,
     icone: '⚡'
   },
 
@@ -164,7 +164,7 @@ export const EFEITOS_STATUS = {
     tipo: 'buff_risco',
     bonus_foco: 0.60, // +60% foco
     reducao_resistencia: 0.30, // -30% resistência
-    duracao_base: 3,
+    duracao_base: 2,
     icone: '⚡🔴'
   },
 
@@ -172,7 +172,7 @@ export const EFEITOS_STATUS = {
     nome: 'Benção',
     tipo: 'buff',
     bonus_todos_stats: 0.20, // +20% todos os stats
-    duracao_base: 3,
+    duracao_base: 2,
     icone: '✨'
   },
 
@@ -180,7 +180,7 @@ export const EFEITOS_STATUS = {
     nome: 'Regeneração',
     tipo: 'cura_continua',
     cura_por_turno: 0.05, // 5% HP por turno
-    duracao_base: 4,
+    duracao_base: 2,
     icone: '💚'
   },
 
@@ -255,7 +255,7 @@ export const EFEITOS_STATUS = {
     nome: 'Terror',
     tipo: 'debuff',
     reducao_stats: 0.40, // -40% em todos os stats
-    duracao_base: 3,
+    duracao_base: 2,
     icone: '😱'
   },
 
@@ -265,7 +265,7 @@ export const EFEITOS_STATUS = {
     nome: 'Campo Elétrico',
     tipo: 'zona',
     dano_entrada: 20,
-    duracao_base: 4,
+    duracao_base: 2,
     icone: '⚡🔷'
   },
 
@@ -273,7 +273,7 @@ export const EFEITOS_STATUS = {
     nome: 'Fissuras Explosivas',
     tipo: 'zona',
     dano_continuo: 0.06,
-    duracao_base: 3,
+    duracao_base: 2,
     icone: '💥'
   },
 
@@ -289,7 +289,7 @@ export const EFEITOS_STATUS = {
     nome: 'Precisão Aumentada',
     tipo: 'buff',
     bonus_acerto: 0.25, // +25% chance de acerto
-    duracao_base: 3,
+    duracao_base: 2,
     icone: '🎯'
   },
 
