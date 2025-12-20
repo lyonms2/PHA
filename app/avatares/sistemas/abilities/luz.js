@@ -69,7 +69,9 @@ export const HABILIDADES_LUZ = {
     dano_base: 190,
     multiplicador_stat: 2.5,
     stat_primario: 'foco',
-    efeitos_status: ['limpar_debuffs'], // Remove todos os debuffs
+    efeitos_status: [
+      { efeito: 'limpar_debuffs', alvo: 'self' } // Remove debuffs do próprio jogador
+    ],
     custo_energia: 75,
     cooldown: 4,
     nivel_minimo: 1, // TESTE
