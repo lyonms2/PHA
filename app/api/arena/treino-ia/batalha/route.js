@@ -64,11 +64,13 @@ export async function GET(request) {
         playerHp: battle.player.hp,
         playerHpMax: battle.player.hp_max,
         playerEnergy: battle.player.energy,
+        playerEnergyMax: battle.player.energy_max || 100,
         playerExaustao: battle.player.exaustao || 0,
         playerEffects: battle.player.efeitos || [],
         iaHp: battle.ia.hp,
         iaHpMax: battle.ia.hp_max,
         iaEnergy: battle.ia.energy,
+        iaEnergyMax: battle.ia.energy_max || 100,
         iaExaustao: battle.ia.exaustao || 0,
         iaEffects: battle.ia.efeitos || [],
         iaAvatar: battle.ia,
@@ -116,6 +118,13 @@ export async function POST(request) {
       const modificadoresPlayer = sinergia?.modificadores || {};
       const modificadoresIA = sinergiaIA?.modificadores || {};
 
+      console.log('🔍 [SINERGIA DEBUG] Modificadores recebidos:', {
+        playerSinergia: sinergia?.nome || 'Nenhuma',
+        playerModificadores: modificadoresPlayer,
+        iaSinergia: sinergiaIA?.nome || 'Nenhuma',
+        iaModificadores: modificadoresIA
+      });
+
       // HP e Energia do jogador (próprios modificadores + redução do inimigo)
       let playerHpMax = calcularHPComSinergia(playerHpMaxBase, modificadoresPlayer);
       let playerEnergyMax = calcularEnergiaComSinergia(100, modificadoresPlayer);
@@ -134,6 +143,21 @@ export async function POST(request) {
         iaEnergyMax = Math.floor(iaEnergyMax * (1 - modificadoresPlayer.energia_inimigo_reducao));
       }
 
+      console.log('📊 [SINERGIA DEBUG] Valores finais:', {
+        player: {
+          hpBase: playerHpMaxBase,
+          hpComSinergia: playerHpMax,
+          energiaBase: 100,
+          energiaComSinergia: playerEnergyMax
+        },
+        ia: {
+          hpBase: iaHpMaxBase,
+          hpComSinergia: iaHpMax,
+          energiaBase: 100,
+          energiaComSinergia: iaEnergyMax
+        }
+      });
+
       const newBattle = {
         id: newBattleId,
         status: 'active',
@@ -144,18 +168,22 @@ export async function POST(request) {
           hp: playerHpMax,
           hp_max: playerHpMax,
           energy: playerEnergyMax,
+          energy_max: playerEnergyMax,
           efeitos: [],
           defending: false,
-          exaustao: 0
+          exaustao: 0,
+          modificadoresSinergia: modificadoresPlayer
         },
         ia: {
           ...iaAvatar,
           hp: iaHpMax,
           hp_max: iaHpMax,
           energy: iaEnergyMax,
+          energy_max: iaEnergyMax,
           efeitos: [],
           defending: false,
-          exaustao: 0
+          exaustao: 0,
+          modificadoresSinergia: modificadoresIA
         },
         personalidadeIA,
         battle_log: [],

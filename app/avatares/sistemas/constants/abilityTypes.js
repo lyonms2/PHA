@@ -49,7 +49,7 @@ export const criarHabilidade = (config) => ({
   // Chances e durações
   chance_acerto: config.chance_acerto || 100,
   chance_efeito: config.chance_efeito || 100,
-  duracao_efeito: config.duracao_efeito || 0,
+  duracao_efeito: config.duracao_efeito, // Não setar default - deixar undefined para usar duracao_base do dicionário
 
   // Requisitos
   nivel_minimo: config.nivel_minimo || 1,

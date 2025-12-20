@@ -100,6 +100,13 @@ export async function handleAttack({ room, role, isHost }) {
 
   // ===== CALCULAR DANO =====
   const opponentDefending = isHost ? room.guest_defending : room.host_defending;
+
+  // Obter modificadores de sinergia
+  const mySinergiaInfo = isHost ? room.host_sinergia : room.guest_sinergia;
+  const opponentSinergiaInfo = isHost ? room.guest_sinergia : room.host_sinergia;
+  const modificadoresSinergia = mySinergiaInfo?.modificadores || {};
+  const defenderModifiers = opponentSinergiaInfo?.modificadores || {};
+
   const { dano, critico, elemental, detalhes } = calcularDanoAtaque({
     forca,
     foco,
@@ -109,7 +116,9 @@ export async function handleAttack({ room, role, isHost }) {
     meuElemento,
     elementoOponente,
     opponentDefending,
-    opponentEffects
+    opponentEffects,
+    modificadoresSinergia,
+    defenderModifiers
   });
 
   // ===== VERIFICAR CONTRA-ATAQUE =====

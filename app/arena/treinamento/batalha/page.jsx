@@ -30,7 +30,9 @@ function BatalhaTreinoIAContent() {
   const [opponentHp, setOpponentHp] = useState(100);
   const [opponentHpMax, setOpponentHpMax] = useState(100);
   const [myEnergy, setMyEnergy] = useState(100);
+  const [myEnergyMax, setMyEnergyMax] = useState(100);
   const [opponentEnergy, setOpponentEnergy] = useState(100);
+  const [opponentEnergyMax, setOpponentEnergyMax] = useState(100);
   const [myEffects, setMyEffects] = useState([]);
   const [opponentEffects, setOpponentEffects] = useState([]);
   const [playerCooldowns, setPlayerCooldowns] = useState({});
@@ -254,7 +256,9 @@ function BatalhaTreinoIAContent() {
         setOpponentHp(battle.iaHp);
         setOpponentHpMax(battle.iaHpMax);
         setMyEnergy(battle.playerEnergy);
+        setMyEnergyMax(battle.playerEnergyMax || 100);
         setOpponentEnergy(battle.iaEnergy);
+        setOpponentEnergyMax(battle.iaEnergyMax || 100);
         setMyEffects(battle.playerEffects || []);
         setOpponentEffects(battle.iaEffects || []);
         setPlayerCooldowns(battle.playerCooldowns || {});
@@ -638,7 +642,9 @@ function BatalhaTreinoIAContent() {
           opponentHp={opponentHp}
           opponentHpMax={opponentHpMax}
           myEnergy={myEnergy}
+          myEnergyMax={myEnergyMax}
           opponentEnergy={opponentEnergy}
+          opponentEnergyMax={opponentEnergyMax}
           myEffects={myEffects}
           opponentEffects={opponentEffects}
           playerCooldowns={playerCooldowns}

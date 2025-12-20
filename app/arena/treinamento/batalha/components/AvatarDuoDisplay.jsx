@@ -5,7 +5,7 @@
 import AvatarSVG from "@/app/components/AvatarSVG";
 import { getElementoEmoji, getElementoCor } from '../utils/battleEffects';
 
-export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true, hp, hpMax, energy }) {
+export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true, hp, hpMax, energy, energyMax = 100 }) {
   const borderColor = isPlayer ? 'border-cyan-500/40' : 'border-red-500/40';
   const bgColor = isPlayer
     ? 'from-cyan-900/50 to-blue-900/50'
@@ -14,6 +14,7 @@ export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true, 
 
   // Calcular porcentagens se HP for fornecido
   const hpPercent = (hp !== undefined && hpMax) ? (hp / hpMax) * 100 : 0;
+  const energyPercent = (energy !== undefined && energyMax) ? (energy / energyMax) * 100 : 0;
 
   return (
     <div className={`bg-slate-900/95 rounded-lg border ${borderColor} overflow-hidden`}>
@@ -107,12 +108,12 @@ export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true, 
           <div>
             <div className="flex justify-between text-[9px] mb-0.5">
               <span className="text-blue-400 font-bold">⚡ Energia</span>
-              <span className="font-mono">{energy}/100</span>
+              <span className="font-mono">{energy}/{energyMax}</span>
             </div>
             <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all"
-                style={{ width: `${energy}%` }}
+                style={{ width: `${energyPercent}%` }}
               />
             </div>
           </div>

@@ -138,7 +138,7 @@ export const EFEITOS_STATUS = {
     nome: 'Defesa Aumentada (Turno Atual)',
     tipo: 'buff',
     bonus_resistencia: 0.60, // +60% resistência APENAS neste turno
-    duracao_base: 1, // Dura apenas 1 turno (instantâneo)
+    duracao_base: 2, // Dura 2 turnos para cobrir ataque do oponente
     icone: '🛡️🔥',
     instantaneo: true // Flag para indicar que é efeito instantâneo
   },
@@ -188,7 +188,7 @@ export const EFEITOS_STATUS = {
     nome: 'Invisível',
     tipo: 'defensivo',
     evasao_total: true, // 100% evasão
-    duracao_base: 1,
+    duracao_base: 2, // Dura 2 turnos para cobrir ataque do oponente
     icone: '👻'
   },
 
@@ -325,7 +325,7 @@ export const EFEITOS_STATUS = {
     nome: 'Redução de Dano',
     tipo: 'buff',
     reducao_dano_recebido: 0.40, // Reduz 40% do dano recebido
-    duracao_base: 1,
+    duracao_base: 2, // Dura 2 turnos para cobrir ataque do oponente
     icone: '🛡️💜',
     instantaneo: true
   },
@@ -342,7 +342,7 @@ export const EFEITOS_STATUS = {
     nome: 'Transcendência',
     tipo: 'buff',
     bonus_todos_stats: 0.30, // +30% todos os stats
-    duracao_base: 1,
+    duracao_base: 2, // Dura 2 turnos para cobrir turno completo
     icone: '✨🌟',
     instantaneo: true
   },
@@ -351,7 +351,7 @@ export const EFEITOS_STATUS = {
     nome: 'Evasão Aumentada (Turno Atual)',
     tipo: 'buff',
     bonus_evasao: 0.50, // +50% evasão APENAS neste turno
-    duracao_base: 1,
+    duracao_base: 2, // Dura 2 turnos para cobrir ataque do oponente
     icone: '💨⚡',
     instantaneo: true
   },
@@ -360,7 +360,7 @@ export const EFEITOS_STATUS = {
     nome: 'Escudo Flamejante',
     tipo: 'buff',
     contra_ataque_percent: 0.20, // Reflete 20% do dano recebido como queimadura
-    duracao_base: 1,
+    duracao_base: 2, // Dura 2 turnos para cobrir ataque do oponente
     icone: '🔥🛡️',
     instantaneo: true,
     descricao: 'Quando recebe dano, queima o atacante com 20% do dano'

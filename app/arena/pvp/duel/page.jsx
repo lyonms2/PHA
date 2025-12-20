@@ -43,7 +43,9 @@ function DuelContent() {
   const [opponentHpMax, setOpponentHpMax] = useState(100);
   const [opponentExaustao, setOpponentExaustao] = useState(0);
   const [myEnergy, setMyEnergy] = useState(100);
+  const [myEnergyMax, setMyEnergyMax] = useState(100);
   const [opponentEnergy, setOpponentEnergy] = useState(100);
+  const [opponentEnergyMax, setOpponentEnergyMax] = useState(100);
   const [opponentNome, setOpponentNome] = useState('');
   const [opponentAvatar, setOpponentAvatar] = useState(null);
   const [myEffects, setMyEffects] = useState([]);
@@ -202,7 +204,9 @@ function DuelContent() {
           setOpponentHpMax(data.opponentHpMax || 100);
           setOpponentExaustao(data.opponentExaustao || 0);
           setMyEnergy(data.myEnergy || 10);
+          setMyEnergyMax(data.myEnergyMax || 100);
           setOpponentEnergy(data.opponentEnergy || 10);
+          setOpponentEnergyMax(data.opponentEnergyMax || 100);
           setOpponentNome(data.opponentNome || 'Oponente');
           setOpponentAvatar(data.opponentAvatar || null);
           setMyEffects(data.myEffects || []);
@@ -1382,12 +1386,12 @@ function DuelContent() {
                 <div>
                   <div className="flex justify-between text-[10px] mb-0.5">
                     <span className="text-yellow-400 font-bold">⚡ Energia</span>
-                    <span className="font-mono">{myEnergy}/100</span>
+                    <span className="font-mono">{myEnergy}/{myEnergyMax}</span>
                   </div>
                   <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
                     <div
                       className="h-full transition-all duration-500 bg-gradient-to-r from-yellow-500 to-amber-400"
-                      style={{ width: `${(myEnergy / 100) * 100}%` }}
+                      style={{ width: `${(myEnergy / myEnergyMax) * 100}%` }}
                     />
                   </div>
                 </div>
@@ -1505,12 +1509,12 @@ function DuelContent() {
                 <div>
                   <div className="flex justify-between text-[10px] mb-0.5">
                     <span className="text-yellow-400 font-bold">⚡ Energia</span>
-                    <span className="font-mono">{opponentEnergy}/100</span>
+                    <span className="font-mono">{opponentEnergy}/{opponentEnergyMax}</span>
                   </div>
                   <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
                     <div
                       className="h-full transition-all duration-500 bg-gradient-to-r from-yellow-500 to-amber-400"
-                      style={{ width: `${(opponentEnergy / 100) * 100}%` }}
+                      style={{ width: `${(opponentEnergy / opponentEnergyMax) * 100}%` }}
                     />
                   </div>
                 </div>

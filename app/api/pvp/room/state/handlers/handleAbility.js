@@ -136,6 +136,13 @@ export async function handleAbility({ room, role, isHost, abilityIndex }) {
   // Habilidades Ofensivas e de Controle geralmente causam dano
   if (habilidade.tipo === 'Ofensiva' || habilidade.tipo === 'Controle' || habilidade.dano_base > 0) {
     const opponentDefending = isHost ? room.guest_defending : room.host_defending;
+
+    // Obter modificadores de sinergia
+    const mySinergiaInfo = isHost ? room.host_sinergia : room.guest_sinergia;
+    const opponentSinergiaInfo = isHost ? room.guest_sinergia : room.host_sinergia;
+    const modificadoresSinergia = mySinergiaInfo?.modificadores || {};
+    const defenderModifiers = opponentSinergiaInfo?.modificadores || {};
+
     const resultadoDano = calcularDanoHabilidade({
       habilidade,
       myAvatar,
@@ -145,7 +152,9 @@ export async function handleAbility({ room, role, isHost, abilityIndex }) {
       meuElemento,
       elementoOponente,
       opponentDefending,
-      opponentEffects
+      opponentEffects,
+      modificadoresSinergia,
+      defenderModifiers
     });
 
     dano = resultadoDano.dano;
