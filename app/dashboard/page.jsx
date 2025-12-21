@@ -555,11 +555,8 @@ export default function DashboardPage() {
                     <span className="text-xl">✨</span>
                   </div>
                   <div className="flex-1 text-left">
-                    <div className="font-bold text-cyan-300 text-sm mb-0.5 group-hover:text-cyan-200 transition-colors">
-                      O PURIFICADOR
-                    </div>
-                    <div className="text-[10px] text-slate-400 font-mono">
-                      Remover Marca da Morte
+                    <div className="font-bold text-cyan-300 text-sm group-hover:text-cyan-200 transition-colors">
+                      SERAPHINE - A PURIFICADORA
                     </div>
                   </div>
                   <div className="text-cyan-400 group-hover:translate-x-1 group-hover:text-cyan-300 transition-all text-lg">
