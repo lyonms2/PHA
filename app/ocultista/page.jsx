@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import AvatarSVG from '../components/AvatarSVG';
 import GameNav, { COMMON_ACTIONS } from '../components/GameNav';
 
@@ -127,8 +128,9 @@ export default function OcultistaPage() {
         <GameNav
           backTo="/avatares"
           backLabel="AVATARES"
-          title="O OCULTISTA"
-          subtitle="Invocador de Entidades Dimensionais"
+          actions={[
+            { href: "/dashboard", label: "DASHBOARD", icon: "🏠", color: "slate" }
+          ]}
         />
       )}
 
@@ -140,9 +142,19 @@ export default function OcultistaPage() {
             <div className="space-y-8 animate-fade-in">
               {/* Título */}
               <div className="text-center mb-8 md:mb-12">
-                <div className="text-5xl md:text-7xl mb-4 animate-pulse">🔮</div>
+                <div className="mb-4 flex justify-center">
+                  <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-purple-500/50">
+                    <Image
+                      src="/personagens/ocultista.png"
+                      alt="Averon - O Ocultista"
+                      width={128}
+                      height={128}
+                      className="object-cover"
+                    />
+                  </div>
+                </div>
                 <h1 className="text-3xl sm:text-4xl md:text-5xl font-black bg-gradient-to-r from-purple-300 via-pink-300 to-cyan-300 bg-clip-text text-transparent mb-4">
-                  O OCULTISTA
+                  AVERON - O OCULTISTA
                 </h1>
                 <div className="h-px w-48 md:w-64 mx-auto bg-gradient-to-r from-transparent via-purple-500 to-transparent mb-4"></div>
                 <p className="text-slate-400 font-mono text-sm">Invocador de Entidades Dimensionais</p>
@@ -151,27 +163,19 @@ export default function OcultistaPage() {
               {/* Diálogo do Ocultista */}
               <div className="relative group">
                 <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-cyan-500/20 rounded-lg blur opacity-50"></div>
-                
+
                 <div className="relative bg-slate-950/90 backdrop-blur-xl border border-purple-900/30 rounded-lg p-8">
-                  <div className="flex gap-4 mb-6">
-                    <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-3xl flex-shrink-0">
-                      👁️
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-purple-400 font-bold mb-2">O Ocultista</h3>
-                      <div className="space-y-3 text-slate-300 leading-relaxed">
-                        <p className="font-mono text-sm">
-                          "Bem-vindo, caçador. Sinto a marca dos portais em sua alma..."
-                        </p>
-                        <p className="font-mono text-sm">
-                          "Você busca um Avatar, uma entidade que lutará ao seu lado contra os horrores dimensionais. 
-                          Mas saiba: o vínculo entre caçador e Avatar é sagrado. Cuide bem dele, ou perderá mais do que imagina."
-                        </p>
-                        <p className="font-mono text-sm">
-                          "Deixe-me olhar através das fendas da realidade e invocar um guardião digno de sua essência..."
-                        </p>
-                      </div>
-                    </div>
+                  <div className="space-y-3 text-slate-300 leading-relaxed mb-6">
+                    <p className="font-mono text-sm">
+                      "Bem-vindo, caçador. Sinto a marca dos portais em sua alma..."
+                    </p>
+                    <p className="font-mono text-sm">
+                      "Você busca um Avatar, uma entidade que lutará ao seu lado contra os horrores dimensionais.
+                      Mas saiba: o vínculo entre caçador e Avatar é sagrado. Cuide bem dele, ou perderá mais do que imagina."
+                    </p>
+                    <p className="font-mono text-sm">
+                      "Deixe-me olhar através das fendas da realidade e invocar um guardião digno de sua essência..."
+                    </p>
                   </div>
 
                   <div className="h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent mb-6"></div>

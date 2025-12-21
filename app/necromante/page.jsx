@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import AvatarSVG from '../components/AvatarSVG';
 import GameNav, { COMMON_ACTIONS } from '../components/GameNav';
 
@@ -149,8 +150,9 @@ export default function NecromantePage() {
         <GameNav
           backTo="/avatares"
           backLabel="AVATARES"
-          title="O NECROMANTE"
-          subtitle="Senhor da Ressurreição"
+          actions={[
+            { href: "/dashboard", label: "DASHBOARD", icon: "🏠", color: "slate" }
+          ]}
         />
       )}
 
@@ -162,9 +164,19 @@ export default function NecromantePage() {
             <div className="space-y-8 animate-fade-in">
               {/* Título */}
               <div className="text-center mb-12">
-                <div className="text-7xl mb-4 animate-pulse-slow">⚰️</div>
+                <div className="mb-4 flex justify-center">
+                  <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-purple-500/50">
+                    <Image
+                      src="/personagens/necromante.png"
+                      alt="Ulthar - O Necromante"
+                      width={128}
+                      height={128}
+                      className="object-cover"
+                    />
+                  </div>
+                </div>
                 <h1 className="text-5xl font-black bg-gradient-to-r from-purple-300 via-red-300 to-purple-300 bg-clip-text text-transparent mb-4">
-                  O NECROMANTE
+                  ULTHAR - O NECROMANTE
                 </h1>
                 <div className="h-px w-64 mx-auto bg-gradient-to-r from-transparent via-purple-500 to-transparent mb-4"></div>
                 <p className="text-slate-400 font-mono text-sm">Mestre dos Rituais de Ressurreição</p>
@@ -183,27 +195,19 @@ export default function NecromantePage() {
               {/* Diálogo do Necromante */}
               <div className="relative group mb-12">
                 <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 via-red-500/20 to-purple-500/20 rounded-lg blur opacity-50"></div>
-                
+
                 <div className="relative bg-slate-950/90 backdrop-blur-xl border border-purple-900/30 rounded-lg p-8">
-                  <div className="flex gap-4 mb-6">
-                    <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-red-600 rounded-full flex items-center justify-center text-3xl flex-shrink-0 border-2 border-purple-500/50">
-                      💀
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-purple-400 font-bold mb-2">O Necromante</h3>
-                      <div className="space-y-3 text-slate-300 leading-relaxed">
-                        <p className="font-mono text-sm">
-                          "Ah... sinto o peso da perda em sua alma. Você vem buscar aqueles que cruzaram o véu..."
-                        </p>
-                        <p className="font-mono text-sm">
-                          "A morte não é o fim, caçador. Com os rituais corretos, posso trazer seus avatares de volta. 
-                          Mas saiba: eles retornarão... <span className="text-red-400">diferentes</span>. Mais fracos. Marcados pela morte."
-                        </p>
-                        <p className="font-mono text-sm">
-                          "O preço é alto, e as cicatrizes são eternas. <span className="text-purple-400">Cada avatar só pode ser ressuscitado uma vez.</span>"
-                        </p>
-                      </div>
-                    </div>
+                  <div className="space-y-3 text-slate-300 leading-relaxed mb-6">
+                    <p className="font-mono text-sm">
+                      "Ah... sinto o peso da perda em sua alma. Você vem buscar aqueles que cruzaram o véu..."
+                    </p>
+                    <p className="font-mono text-sm">
+                      "A morte não é o fim, caçador. Com os rituais corretos, posso trazer seus avatares de volta.
+                      Mas saiba: eles retornarão... <span className="text-red-400">diferentes</span>. Mais fracos. Marcados pela morte."
+                    </p>
+                    <p className="font-mono text-sm">
+                      "O preço é alto, e as cicatrizes são eternas. <span className="text-purple-400">Cada avatar só pode ser ressuscitado uma vez.</span>"
+                    </p>
                   </div>
 
                   <div className="h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent mb-6"></div>

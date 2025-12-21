@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import AvatarSVG from '../components/AvatarSVG';
 import GameNav, { COMMON_ACTIONS } from '../components/GameNav';
 
@@ -150,8 +151,9 @@ export default function PurificadorPage() {
         <GameNav
           backTo="/avatares"
           backLabel="AVATARES"
-          title="O PURIFICADOR"
-          subtitle="Purificador de Almas Marcadas"
+          actions={[
+            { href: "/dashboard", label: "DASHBOARD", icon: "🏠", color: "slate" }
+          ]}
         />
       )}
 
@@ -163,9 +165,19 @@ export default function PurificadorPage() {
             <div className="space-y-8 animate-fade-in">
               {/* Título */}
               <div className="text-center mb-12">
-                <div className="text-7xl mb-4 animate-pulse-slow">✨</div>
+                <div className="mb-4 flex justify-center">
+                  <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-cyan-500/50">
+                    <Image
+                      src="/personagens/purificador.png"
+                      alt="Seraphine - A Purificadora"
+                      width={128}
+                      height={128}
+                      className="object-cover"
+                    />
+                  </div>
+                </div>
                 <h1 className="text-5xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-cyan-300 bg-clip-text text-transparent mb-4">
-                  O PURIFICADOR
+                  SERAPHINE - A PURIFICADORA
                 </h1>
                 <div className="h-px w-64 mx-auto bg-gradient-to-r from-transparent via-cyan-500 to-transparent mb-4"></div>
                 <p className="text-slate-400 font-mono text-sm">Mestre dos Rituais de Purificação</p>
@@ -186,25 +198,17 @@ export default function PurificadorPage() {
                 <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-cyan-500/20 rounded-lg blur opacity-50"></div>
 
                 <div className="relative bg-slate-950/90 backdrop-blur-xl border border-cyan-900/30 rounded-lg p-8">
-                  <div className="flex gap-4 mb-6">
-                    <div className="w-16 h-16 bg-gradient-to-br from-cyan-600 to-blue-600 rounded-full flex items-center justify-center text-3xl flex-shrink-0 border-2 border-cyan-500/50">
-                      ✨
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-cyan-400 font-bold mb-2">O Purificador</h3>
-                      <div className="space-y-3 text-slate-300 leading-relaxed">
-                        <p className="font-mono text-sm">
-                          "Vejo que você carrega almas marcadas pela morte... Cicatrizes profundas que o Necromante deixou."
-                        </p>
-                        <p className="font-mono text-sm">
-                          "Posso purificar a Marca da Morte e <span className="text-cyan-400">restaurar 50% dos stats perdidos</span>.
-                          Minha magia é de luz e renovação, o oposto das sombras necromânticas."
-                        </p>
-                        <p className="font-mono text-sm">
-                          "O ritual é caro, mas seus avatares voltarão <span className="text-green-400">mais fortes</span> e sem a maldição."
-                        </p>
-                      </div>
-                    </div>
+                  <div className="space-y-3 text-slate-300 leading-relaxed mb-6">
+                    <p className="font-mono text-sm">
+                      "Vejo que você carrega almas marcadas pela morte... Cicatrizes profundas que o Necromante deixou."
+                    </p>
+                    <p className="font-mono text-sm">
+                      "Posso purificar a Marca da Morte e <span className="text-cyan-400">restaurar 50% dos stats perdidos</span>.
+                      Minha magia é de luz e renovação, o oposto das sombras necromânticas."
+                    </p>
+                    <p className="font-mono text-sm">
+                      "O ritual é caro, mas seus avatares voltarão <span className="text-green-400">mais fortes</span> e sem a maldição."
+                    </p>
                   </div>
 
                   <div className="h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent mb-6"></div>
