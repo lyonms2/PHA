@@ -38,8 +38,10 @@ export const HABILIDADES_SOMBRA = {
     dano_base: 110,
     multiplicador_stat: 2.0,
     stat_primario: 'foco',
-    efeitos_status: ['roubo_vida_intenso', 'atordoado'],
-    chance_efeito: 75,
+    efeitos_status: [
+      'roubo_vida_intenso',              // 100% chance (sempre aplica)
+      { efeito: 'atordoado', chance: 75 } // 75% chance (condicional)
+    ],
     duracao_efeito: 1,
     custo_energia: 50,
     cooldown: 2,
@@ -91,8 +93,8 @@ export const HABILIDADES_SOMBRA = {
  *
  * 2️⃣ ABRAÇO DAS TREVAS (Ataque Forte)
  *    - 110 dano base
- *    - Roubo de vida intenso (30% do dano vira cura)
- *    - 75% chance de atordoar (pula 1 turno)
+ *    - Roubo de vida intenso (30% do dano vira cura) - SEMPRE
+ *    - 75% chance de atordoar (pula 1 turno) - CONDICIONAL
  *    - 50 energia, cooldown 2
  *
  * 3️⃣ MANTO DA NOITE (Suporte)

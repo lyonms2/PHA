@@ -642,12 +642,18 @@ export async function POST(request) {
       // IA escolhe ação
       console.log('🎯 [IA] Escolhendo ação da IA:', {
         iaHp: battle.ia.hp,
-        playerHp: battle.player.hp
+        playerHp: battle.player.hp,
+        cooldowns: battle.ia_cooldowns
       });
 
-      acaoIA = escolherAcaoIA(battle.ia, battle.player, battle.personalidadeIA);
+      acaoIA = escolherAcaoIA(battle.ia, battle.player, battle.personalidadeIA, battle.ia_cooldowns || {});
 
-      console.log('🎯 [IA] Ação escolhida:', acaoIA.acao);
+      if (acaoIA.acao === 'ability' && acaoIA.habilidadeIndex !== undefined) {
+        const nomeHab = battle.ia.habilidades[acaoIA.habilidadeIndex]?.nome || 'desconhecida';
+        console.log('🎯 [IA] Ação escolhida:', acaoIA.acao, `- ${nomeHab} (index ${acaoIA.habilidadeIndex})`);
+      } else {
+        console.log('🎯 [IA] Ação escolhida:', acaoIA.acao);
+      }
 
       // Processar ação da IA
       console.log('⚙️ [IA] Construindo iaAttacker e iaDefender:', {
