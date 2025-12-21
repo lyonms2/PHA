@@ -168,7 +168,7 @@ export default function NecromantePage() {
                   <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-purple-500/50">
                     <Image
                       src="/personagens/necromante.png"
-                      alt="O Necromante"
+                      alt="Ulthar - O Necromante"
                       width={128}
                       height={128}
                       className="object-cover"
@@ -176,7 +176,7 @@ export default function NecromantePage() {
                   </div>
                 </div>
                 <h1 className="text-5xl font-black bg-gradient-to-r from-purple-300 via-red-300 to-purple-300 bg-clip-text text-transparent mb-4">
-                  O NECROMANTE
+                  ULTHAR - O NECROMANTE
                 </h1>
                 <div className="h-px w-64 mx-auto bg-gradient-to-r from-transparent via-purple-500 to-transparent mb-4"></div>
                 <p className="text-slate-400 font-mono text-sm">Mestre dos Rituais de Ressurreição</p>

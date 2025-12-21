@@ -528,7 +528,7 @@ export default function DashboardPage() {
                   <div className="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden border border-red-500/30 group-hover:border-red-400/50 transition-all">
                     <Image
                       src="/personagens/necromante.png"
-                      alt="Necromante"
+                      alt="Ulthar"
                       width={40}
                       height={40}
                       className="object-cover"
@@ -536,7 +536,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex-1 text-left">
                     <div className="font-bold text-red-300 text-sm mb-0.5 group-hover:text-red-200 transition-colors">
-                      O NECROMANTE
+                      ULTHAR - O NECROMANTE
                     </div>
                     <div className="text-[10px] text-slate-400 font-mono">
                       Ressuscitar avatares caídos
