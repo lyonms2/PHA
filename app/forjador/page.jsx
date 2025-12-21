@@ -128,8 +128,14 @@ export default function ForjadorPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900">
-        <GameNav user={user} stats={stats} />
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950">
+        <GameNav
+          backTo="/avatares"
+          backLabel="AVATARES"
+          actions={[
+            { href: "/dashboard", label: "DASHBOARD", icon: "🏠", color: "slate" }
+          ]}
+        />
         <div className="flex items-center justify-center min-h-[80vh]">
           <div className="text-white text-xl">Carregando...</div>
         </div>
@@ -138,15 +144,21 @@ export default function ForjadorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900">
-      <GameNav user={user} stats={stats} />
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950">
+      <GameNav
+        backTo="/avatares"
+        backLabel="AVATARES"
+        actions={[
+          { href: "/dashboard", label: "DASHBOARD", icon: "🏠", color: "slate" }
+        ]}
+      />
 
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header do Forjador */}
-        <div className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-xl p-6 mb-8 border border-purple-500/30">
+        <div className="bg-gradient-to-r from-slate-900/50 to-indigo-900/50 rounded-xl p-6 mb-8 border border-indigo-500/30">
           <div className="flex flex-col items-center text-center mb-6">
             <div className="mb-4">
-              <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-purple-500/50 mx-auto">
+              <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-indigo-500/50 mx-auto">
                 <Image
                   src="/personagens/forjador.png"
                   alt="Thorgal - Forjador de Almas"
@@ -157,17 +169,17 @@ export default function ForjadorPage() {
               </div>
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-pink-300">
+              <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-cyan-300">
                 THORGAL - FORJADOR DE ALMAS
               </h1>
-              <p className="text-purple-200 mt-1">
+              <p className="text-slate-300 mt-1">
                 Evolua seus avatares para raridades superiores
               </p>
             </div>
           </div>
 
           {/* Descrição do NPC */}
-          <div className="bg-black/30 rounded-lg p-4 text-sm text-purple-100">
+          <div className="bg-black/30 rounded-lg p-4 text-sm text-slate-300">
             <p className="mb-2">
               Antigo artífice que domina a arte de transformar a essência dos avatares.
             </p>
@@ -182,8 +194,8 @@ export default function ForjadorPage() {
           {/* Tabela de custos */}
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-black/30 rounded-lg p-4">
-              <h3 className="font-semibold text-purple-300 mb-2">Comum → Raro</h3>
-              <div className="text-sm space-y-1 text-purple-100">
+              <h3 className="font-semibold text-cyan-300 mb-2">Comum → Raro</h3>
+              <div className="text-sm space-y-1 text-slate-300">
                 <div>💰 Custo: {EVOLUCAO_CONFIG['Comum→Raro'].custoMoedas.toLocaleString()} moedas</div>
                 <div>💎 Custo: {EVOLUCAO_CONFIG['Comum→Raro'].custoFragmentos} fragmentos</div>
                 <div>📊 Chance base: {EVOLUCAO_CONFIG['Comum→Raro'].chanceBase}%</div>
@@ -192,7 +204,7 @@ export default function ForjadorPage() {
             </div>
             <div className="bg-black/30 rounded-lg p-4">
               <h3 className="font-semibold text-yellow-300 mb-2">Raro → Lendário</h3>
-              <div className="text-sm space-y-1 text-purple-100">
+              <div className="text-sm space-y-1 text-slate-300">
                 <div>💰 Custo: {EVOLUCAO_CONFIG['Raro→Lendário'].custoMoedas.toLocaleString()} moedas</div>
                 <div>💎 Custo: {EVOLUCAO_CONFIG['Raro→Lendário'].custoFragmentos} fragmentos</div>
                 <div>📊 Chance base: {EVOLUCAO_CONFIG['Raro→Lendário'].chanceBase}%</div>
@@ -264,8 +276,8 @@ export default function ForjadorPage() {
                     className={`
                       cursor-pointer rounded-xl p-4 transition-all transform hover:scale-105
                       ${selecionado
-                        ? 'bg-purple-600/30 border-2 border-purple-400 shadow-lg shadow-purple-500/50'
-                        : 'bg-slate-700/50 border border-slate-600 hover:border-purple-500/50'
+                        ? 'bg-indigo-600/30 border-2 border-indigo-400 shadow-lg shadow-indigo-500/50'
+                        : 'bg-slate-700/50 border border-slate-600 hover:border-indigo-500/50'
                       }
                     `}
                   >
@@ -306,8 +318,8 @@ export default function ForjadorPage() {
 
         {/* Painel de evolução */}
         {avatarSelecionado && info && (
-          <div className="mt-6 bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-xl p-6 border border-purple-500/30">
-            <h2 className="text-xl font-bold text-purple-200 mb-4">
+          <div className="mt-6 bg-gradient-to-r from-slate-900/50 to-indigo-900/50 rounded-xl p-6 border border-indigo-500/30">
+            <h2 className="text-xl font-bold text-slate-300 mb-4">
               Detalhes da Evolução
             </h2>
 
@@ -328,7 +340,7 @@ export default function ForjadorPage() {
                         {avatarSelecionado.raridade}
                       </div>
                     </div>
-                    <div className="text-4xl text-purple-400">→</div>
+                    <div className="text-4xl text-indigo-400">→</div>
                     <div className="text-center">
                       <AvatarSVG avatar={{...avatarSelecionado, raridade: info.proximaRaridade}} tamanho={64} />
                       <div className={`text-sm font-semibold mt-2 ${
@@ -343,19 +355,19 @@ export default function ForjadorPage() {
                 {/* Informações */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="bg-black/30 rounded-lg p-4">
-                    <h3 className="font-semibold text-purple-300 mb-2">💰 Custo</h3>
-                    <div className="text-sm space-y-1 text-purple-100">
+                    <h3 className="font-semibold text-indigo-300 mb-2">💰 Custo</h3>
+                    <div className="text-sm space-y-1 text-slate-300">
                       <div>Moedas: {info.config.custoMoedas.toLocaleString()}</div>
                       <div>Fragmentos: {info.config.custoFragmentos}</div>
                     </div>
                   </div>
                   <div className="bg-black/30 rounded-lg p-4">
-                    <h3 className="font-semibold text-purple-300 mb-2">📊 Chance de Sucesso</h3>
+                    <h3 className="font-semibold text-indigo-300 mb-2">📊 Chance de Sucesso</h3>
                     <div className="text-2xl font-bold text-green-400">
                       {Math.round(info.chanceSucesso)}%
                     </div>
                     {info.hunterRank.nivel > 0 && (
-                      <div className="text-xs text-purple-300 mt-1">
+                      <div className="text-xs text-indigo-300 mt-1">
                         (Inclui bônus de Hunter Rank {info.hunterRank.nome})
                       </div>
                     )}
@@ -364,8 +376,8 @@ export default function ForjadorPage() {
 
                 {/* Ganhos de stats */}
                 <div className="bg-black/30 rounded-lg p-4">
-                  <h3 className="font-semibold text-purple-300 mb-2">✨ Benefícios</h3>
-                  <div className="text-sm text-purple-100">
+                  <h3 className="font-semibold text-indigo-300 mb-2">✨ Benefícios</h3>
+                  <div className="text-sm text-slate-300">
                     <div>
                       {MULTIPLICADORES_STATS[info.tipoEvolucao].descricao}
                     </div>
@@ -393,7 +405,7 @@ export default function ForjadorPage() {
                 <button
                   onClick={() => setModalConfirmacao(true)}
                   disabled={evoluindo || !stats || stats.moedas < info.config.custoMoedas || stats.fragmentos < info.config.custoFragmentos}
-                  className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-bold text-lg rounded-xl transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg disabled:opacity-50"
+                  className="w-full py-4 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-bold text-lg rounded-xl transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg disabled:opacity-50"
                 >
                   {evoluindo ? '🔮 Evoluindo...' : '🔮 Evoluir Avatar'}
                 </button>
@@ -406,13 +418,13 @@ export default function ForjadorPage() {
       {/* Modal de Confirmação */}
       {modalConfirmacao && info && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-800 rounded-xl p-6 max-w-md w-full border-2 border-purple-500">
+          <div className="bg-slate-800 rounded-xl p-6 max-w-md w-full border-2 border-indigo-500">
             <h3 className="text-xl font-bold text-white mb-4">
               Confirmar Evolução
             </h3>
             <div className="space-y-3 text-sm text-slate-200 mb-6">
               <p>
-                Você está prestes a tentar evoluir <span className="font-semibold text-purple-300">{avatarSelecionado.nome}</span> de{" "}
+                Você está prestes a tentar evoluir <span className="font-semibold text-indigo-300">{avatarSelecionado.nome}</span> de{" "}
                 <span className={avatarSelecionado.raridade === 'Comum' ? 'text-gray-300' : 'text-blue-300'}>
                   {avatarSelecionado.raridade}
                 </span> para{" "}
@@ -440,7 +452,7 @@ export default function ForjadorPage() {
               <button
                 onClick={realizarEvolucao}
                 disabled={evoluindo}
-                className="flex-1 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold rounded-lg transition disabled:opacity-50"
+                className="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-semibold rounded-lg transition disabled:opacity-50"
               >
                 {evoluindo ? 'Evoluindo...' : 'Confirmar'}
               </button>
@@ -504,7 +516,7 @@ export default function ForjadorPage() {
                     </div>
                     <div>
                       <span className="text-slate-400">🎯 Foco:</span>{" "}
-                      <span className="text-purple-400 font-semibold">{resultado.avatar.statsNovos.foco}</span>
+                      <span className="text-indigo-400 font-semibold">{resultado.avatar.statsNovos.foco}</span>
                       <span className="text-green-400 text-xs ml-1">
                         (+{resultado.avatar.statsNovos.foco - resultado.avatar.statsAntigos.foco})
                       </span>
