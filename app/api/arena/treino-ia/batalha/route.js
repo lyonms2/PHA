@@ -701,8 +701,17 @@ export async function POST(request) {
       } else if (acaoIA.acao === 'defend') {
         iaResult = processDefend(battle, iaAttacker);
       } else if (acaoIA.acao === 'ability') {
+        console.log('🔍 [DEBUG IA HABILIDADE]', {
+          iaTemHabilidades: !!battle.ia.habilidades,
+          totalHabilidades: battle.ia.habilidades?.length,
+          indiceEscolhido: acaoIA.habilidadeIndex,
+          habilidadeNomes: battle.ia.habilidades?.map(h => h.nome)
+        });
+
         const habilidadeIA = battle.ia.habilidades?.[acaoIA.habilidadeIndex];
+
         if (habilidadeIA) {
+          console.log('✅ [IA HABILIDADE] Encontrada:', habilidadeIA.nome);
           const habAtualizada = atualizarBalanceamentoHabilidade(habilidadeIA, battle.ia.elemento);
 
           // ===== VERIFICAR COOLDOWN DA IA =====
@@ -728,6 +737,10 @@ export async function POST(request) {
             }
           }
         } else {
+          console.log('❌ [IA HABILIDADE] NÃO ENCONTRADA - Usando ataque básico', {
+            indice: acaoIA.habilidadeIndex,
+            habilidadesDisponiveis: battle.ia.habilidades?.length || 0
+          });
           // Fallback para ataque
           iaResult = processAttack(battle, iaAttacker, iaDefender);
         }
