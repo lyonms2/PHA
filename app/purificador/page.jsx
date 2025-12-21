@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import AvatarSVG from '../components/AvatarSVG';
 import GameNav, { COMMON_ACTIONS } from '../components/GameNav';
 
@@ -163,7 +164,17 @@ export default function PurificadorPage() {
             <div className="space-y-8 animate-fade-in">
               {/* Título */}
               <div className="text-center mb-12">
-                <div className="text-7xl mb-4 animate-pulse-slow">✨</div>
+                <div className="mb-4 flex justify-center">
+                  <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-cyan-500/50 shadow-lg shadow-cyan-500/30 animate-pulse-slow">
+                    <Image
+                      src="/personagens/purificador.png"
+                      alt="O Purificador"
+                      width={128}
+                      height={128}
+                      className="object-cover"
+                    />
+                  </div>
+                </div>
                 <h1 className="text-5xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-cyan-300 bg-clip-text text-transparent mb-4">
                   O PURIFICADOR
                 </h1>
@@ -187,8 +198,14 @@ export default function PurificadorPage() {
 
                 <div className="relative bg-slate-950/90 backdrop-blur-xl border border-cyan-900/30 rounded-lg p-8">
                   <div className="flex gap-4 mb-6">
-                    <div className="w-16 h-16 bg-gradient-to-br from-cyan-600 to-blue-600 rounded-full flex items-center justify-center text-3xl flex-shrink-0 border-2 border-cyan-500/50">
-                      ✨
+                    <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border-2 border-cyan-500/50 shadow-lg shadow-cyan-500/20">
+                      <Image
+                        src="/personagens/purificador.png"
+                        alt="O Purificador"
+                        width={64}
+                        height={64}
+                        className="object-cover"
+                      />
                     </div>
                     <div className="flex-1">
                       <h3 className="text-cyan-400 font-bold mb-2">O Purificador</h3>
