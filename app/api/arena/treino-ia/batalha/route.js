@@ -352,6 +352,7 @@ export async function POST(request) {
       exaustao: battle.player.exaustao,
       effects: battle.player.efeitos,
       energy: battle.player.energy,
+      energyMax: battle.player.energy_max || 100,
       hp: battle.player.hp,
       hpMax: battle.player.hp_max,
       defending: battle.player.defending,
@@ -364,6 +365,7 @@ export async function POST(request) {
       exaustao: battle.ia.exaustao,
       effects: battle.ia.efeitos,
       energy: battle.ia.energy,
+      energyMax: battle.ia.energy_max || 100,
       hp: battle.ia.hp,
       hpMax: battle.ia.hp_max,
       defending: battle.ia.defending,
@@ -666,6 +668,7 @@ export async function POST(request) {
         exaustao: battle.ia.exaustao,
         effects: battle.ia.efeitos,
         energy: battle.ia.energy,
+        energyMax: battle.ia.energy_max || 100,
         hp: battle.ia.hp,
         hpMax: battle.ia.hp_max,
         defending: battle.ia.defending,
@@ -678,6 +681,7 @@ export async function POST(request) {
         exaustao: battle.player.exaustao,
         effects: battle.player.efeitos,
         energy: battle.player.energy,
+        energyMax: battle.player.energy_max || 100,
         hp: battle.player.hp,
         hpMax: battle.player.hp_max,
         defending: battle.player.defending,
@@ -697,7 +701,7 @@ export async function POST(request) {
       } else if (acaoIA.acao === 'defend') {
         iaResult = processDefend(battle, iaAttacker);
       } else if (acaoIA.acao === 'ability') {
-        const habilidadeIA = battle.ia.habilidades?.[acaoIA.abilityIndex];
+        const habilidadeIA = battle.ia.habilidades?.[acaoIA.habilidadeIndex];
         if (habilidadeIA) {
           const habAtualizada = atualizarBalanceamentoHabilidade(habilidadeIA, battle.ia.elemento);
 
