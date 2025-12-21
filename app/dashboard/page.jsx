@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import BackgroundEffects from "@/components/BackgroundEffects";
 import HunterRankBadge from "@/app/components/HunterRankBadge";
 
@@ -551,12 +552,21 @@ export default function DashboardPage() {
 
               <div className="relative bg-slate-950/80 backdrop-blur-xl border border-cyan-900/30 rounded-lg p-3 group-hover:border-cyan-500/50 transition-all">
                 <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-lg flex items-center justify-center border border-cyan-500/30 group-hover:border-cyan-400/50 transition-all">
-                    <span className="text-xl">✨</span>
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden border border-cyan-500/30 group-hover:border-cyan-400/50 transition-all">
+                    <Image
+                      src="/personagens/purificador.png"
+                      alt="Seraphine"
+                      width={40}
+                      height={40}
+                      className="object-cover"
+                    />
                   </div>
                   <div className="flex-1 text-left">
-                    <div className="font-bold text-cyan-300 text-sm group-hover:text-cyan-200 transition-colors">
+                    <div className="font-bold text-cyan-300 text-sm mb-0.5 group-hover:text-cyan-200 transition-colors">
                       SERAPHINE - A PURIFICADORA
+                    </div>
+                    <div className="text-[10px] text-slate-400 font-mono">
+                      Remover Marca da Morte
                     </div>
                   </div>
                   <div className="text-cyan-400 group-hover:translate-x-1 group-hover:text-cyan-300 transition-all text-lg">

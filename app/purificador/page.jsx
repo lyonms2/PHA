@@ -151,7 +151,9 @@ export default function PurificadorPage() {
         <GameNav
           backTo="/avatares"
           backLabel="AVATARES"
-          title="SERAPHINE - A PURIFICADORA"
+          actions={[
+            { href: "/dashboard", label: "DASHBOARD", icon: "🏠", color: "slate" }
+          ]}
         />
       )}
 
