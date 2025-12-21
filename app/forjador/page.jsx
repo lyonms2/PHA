@@ -144,15 +144,17 @@ export default function ForjadorPage() {
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header do Forjador */}
         <div className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-xl p-6 mb-8 border border-purple-500/30">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-purple-500/50 flex-shrink-0">
-              <Image
-                src="/personagens/forjador.png"
-                alt="Thorgal - Forjador de Almas"
-                width={64}
-                height={64}
-                className="object-cover"
-              />
+          <div className="flex flex-col items-center text-center mb-6">
+            <div className="mb-4">
+              <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-purple-500/50 mx-auto">
+                <Image
+                  src="/personagens/forjador.png"
+                  alt="Thorgal - Forjador de Almas"
+                  width={128}
+                  height={128}
+                  className="object-cover"
+                />
+              </div>
             </div>
             <div>
               <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-pink-300">
