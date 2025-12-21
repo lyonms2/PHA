@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import AvatarSVG from '../components/AvatarSVG';
 import GameNav from '../components/GameNav';
 import HunterRankBadge from '../components/HunterRankBadge';
@@ -144,10 +145,18 @@ export default function ForjadorPage() {
         {/* Header do Forjador */}
         <div className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-xl p-6 mb-8 border border-purple-500/30">
           <div className="flex items-center gap-4 mb-4">
-            <div className="text-6xl">🔮</div>
+            <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-purple-500/50 flex-shrink-0">
+              <Image
+                src="/personagens/forjador.png"
+                alt="Thorgal - Forjador de Almas"
+                width={64}
+                height={64}
+                className="object-cover"
+              />
+            </div>
             <div>
               <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-pink-300">
-                Forjador de Almas
+                THORGAL - FORJADOR DE ALMAS
               </h1>
               <p className="text-purple-200 mt-1">
                 Evolua seus avatares para raridades superiores
@@ -158,11 +167,10 @@ export default function ForjadorPage() {
           {/* Descrição do NPC */}
           <div className="bg-black/30 rounded-lg p-4 text-sm text-purple-100">
             <p className="mb-2">
-              <span className="font-semibold text-purple-300">Mestre Kaelor</span>, o Forjador de Almas,
-              é um antigo artífice que domina a arte de transformar a essência dos avatares.
+              Antigo artífice que domina a arte de transformar a essência dos avatares.
             </p>
             <p>
-              Ele pode evoluir seus avatares de <span className="text-gray-300">Comum</span> para{" "}
+              Pode evoluir seus avatares de <span className="text-gray-300">Comum</span> para{" "}
               <span className="text-blue-300">Raro</span>, ou de{" "}
               <span className="text-blue-300">Raro</span> para{" "}
               <span className="text-yellow-300">Lendário</span>.

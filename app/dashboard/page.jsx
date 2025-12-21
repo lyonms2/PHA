@@ -597,12 +597,18 @@ export default function DashboardPage() {
 
               <div className="relative bg-slate-950/80 backdrop-blur-xl border border-purple-900/30 rounded-lg p-3 group-hover:border-purple-500/50 transition-all">
                 <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-lg flex items-center justify-center border border-purple-500/30 group-hover:border-purple-400/50 transition-all">
-                    <span className="text-xl">🔮</span>
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden border border-purple-500/30 group-hover:border-purple-400/50 transition-all">
+                    <Image
+                      src="/personagens/forjador.png"
+                      alt="Thorgal"
+                      width={40}
+                      height={40}
+                      className="object-cover"
+                    />
                   </div>
                   <div className="flex-1 text-left">
                     <div className="font-bold text-purple-300 text-sm mb-0.5 group-hover:text-purple-200 transition-colors">
-                      FORJADOR DE ALMAS
+                      THORGAL - FORJADOR DE ALMAS
                     </div>
                     <div className="text-[10px] text-slate-400 font-mono">
                       Evoluir avatares de raridade
