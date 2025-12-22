@@ -495,32 +495,7 @@ export default function DashboardPage() {
               </div>
             </button>
 
-            {/* Botão Missões Diárias */}
-            <button
-              onClick={() => router.push("/missoes-diarias")}
-              className="w-full group relative"
-            >
-              <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 rounded-lg blur opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
 
-              <div className="relative bg-slate-950/80 backdrop-blur-xl border border-amber-900/30 rounded-lg p-3 group-hover:border-amber-500/50 transition-all">
-                <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-lg flex items-center justify-center border border-amber-500/30 group-hover:border-amber-400/50 transition-all">
-                    <span className="text-xl">📋</span>
-                  </div>
-                  <div className="flex-1 text-left">
-                    <div className="font-bold text-amber-300 text-sm mb-0.5 group-hover:text-amber-200 transition-colors">
-                      MISSÕES DIÁRIAS
-                    </div>
-                    <div className="text-[10px] text-slate-400 font-mono">
-                      5 missões • Bônus de Streak
-                    </div>
-                  </div>
-                  <div className="text-amber-400 group-hover:translate-x-1 group-hover:text-amber-300 transition-all text-lg">
-                    →
-                  </div>
-                </div>
-              </div>
-            </button>
 
             {/* Botão Necromante */}
             <button
@@ -630,8 +605,8 @@ export default function DashboardPage() {
 
               <div className="relative bg-slate-950/80 backdrop-blur-xl border border-cyan-900/30 rounded-lg p-3 group-hover:border-cyan-500/50 transition-all">
                 <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-lg flex items-center justify-center border border-cyan-500/30 group-hover:border-cyan-400/50 transition-all">
-                    <span className="text-xl">📚</span>
+                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-lg flex items-center justify-center border border-cyan-500/30 group-hover:border-cyan-400/50 transition-all overflow-hidden">
+                    <Image src="/personagens/avatares.png" alt="Meus Avatares" width={40} height={40} className="object-cover" />
                   </div>
                   <div className="flex-1 text-left">
                     <div className="font-bold text-cyan-300 text-sm mb-0.5 group-hover:text-cyan-200 transition-colors">
@@ -648,6 +623,33 @@ export default function DashboardPage() {
               </div>
             </button>
 
+            {/* Botão Missões Diárias */}
+            <button
+              onClick={() => router.push("/missoes-diarias")}
+              className="w-full group relative"
+            >
+              <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 rounded-lg blur opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
+
+              <div className="relative bg-slate-950/80 backdrop-blur-xl border border-amber-900/30 rounded-lg p-3 group-hover:border-amber-500/50 transition-all">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-lg flex items-center justify-center border border-amber-500/30 group-hover:border-amber-400/50 transition-all overflow-hidden">
+                    <Image src="/personagens/missao.png" alt="Missões" width={40} height={40} className="object-cover" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="font-bold text-amber-300 text-sm mb-0.5 group-hover:text-amber-200 transition-colors">
+                      MISSÕES DIÁRIAS
+                    </div>
+                    <div className="text-[10px] text-slate-400 font-mono">
+                      5 missões • Bônus de Streak
+                    </div>
+                  </div>
+                  <div className="text-amber-400 group-hover:translate-x-1 group-hover:text-amber-300 transition-all text-lg">
+                    →
+                  </div>
+                </div>
+              </div>
+            </button>
+
             {/* Botão Inventário/Itens */}
             <button
               onClick={() => router.push("/inventario")}
@@ -657,8 +659,8 @@ export default function DashboardPage() {
 
               <div className="relative bg-slate-950/80 backdrop-blur-xl border border-amber-900/30 rounded-lg p-3 group-hover:border-amber-500/50 transition-all">
                 <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-amber-500/20 to-yellow-500/20 rounded-lg flex items-center justify-center border border-amber-500/30 group-hover:border-amber-400/50 transition-all">
-                    <span className="text-xl">🎒</span>
+                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-amber-500/20 to-yellow-500/20 rounded-lg flex items-center justify-center border border-amber-500/30 group-hover:border-amber-400/50 transition-all overflow-hidden">
+                    <Image src="/personagens/inventario.png" alt="Inventário" width={40} height={40} className="object-cover" />
                   </div>
                   <div className="flex-1 text-left">
                     <div className="font-bold text-amber-300 text-sm mb-0.5 group-hover:text-amber-200 transition-colors">
