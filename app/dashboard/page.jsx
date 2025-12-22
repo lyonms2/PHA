@@ -657,8 +657,8 @@ export default function DashboardPage() {
 
               <div className="relative bg-slate-950/80 backdrop-blur-xl border border-amber-900/30 rounded-lg p-3 group-hover:border-amber-500/50 transition-all">
                 <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-amber-500/20 to-yellow-500/20 rounded-lg flex items-center justify-center border border-amber-500/30 group-hover:border-amber-400/50 transition-all">
-                    <span className="text-xl">🎒</span>
+                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-amber-500/20 to-yellow-500/20 rounded-lg flex items-center justify-center border border-amber-500/30 group-hover:border-amber-400/50 transition-all overflow-hidden">
+                    <Image src="/personagens/inventario.png" alt="Inventário" width={40} height={40} className="object-cover" />
                   </div>
                   <div className="flex-1 text-left">
                     <div className="font-bold text-amber-300 text-sm mb-0.5 group-hover:text-amber-200 transition-colors">
