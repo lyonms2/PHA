@@ -239,12 +239,12 @@ export default function MergePage() {
         <div className="mb-8 bg-gradient-to-r from-indigo-950/50 to-violet-950/50 rounded-lg p-6 border border-indigo-900/50">
           <div className="flex items-start gap-4">
             <div className="flex-shrink-0">
-              <div className="relative w-52 h-52 rounded-lg overflow-hidden border-2 border-indigo-500/50 bg-indigo-950/30">
+              <div className="relative w-64 h-64 rounded-lg overflow-hidden border-2 border-indigo-500/50 bg-indigo-950/30">
                 <Image
                   src="/personagens/merge.png"
                   alt="Ritual de Fusão"
-                  width={208}
-                  height={208}
+                  width={256}
+                  height={256}
                   className="w-full h-full object-cover"
                 />
               </div>
