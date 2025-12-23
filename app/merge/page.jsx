@@ -241,7 +241,7 @@ export default function MergePage() {
             <div className="flex-shrink-0">
               <div className="relative w-64 h-64 rounded-lg overflow-hidden border-2 border-indigo-500/50 bg-indigo-950/30">
                 <Image
-                  src="/personagens/merge.png"
+                  src="/personagens/merge.jpg"
                   alt="Ritual de Fusão"
                   width={256}
                   height={256}
@@ -946,3 +946,4 @@ export default function MergePage() {
     </div>
   );
 }
+
