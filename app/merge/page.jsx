@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import AvatarSVG from '../components/AvatarSVG';
 import GameNav from '../components/GameNav';
 import { calcularPoderTotal } from '@/lib/gameLogic';
@@ -237,7 +238,17 @@ export default function MergePage() {
         {/* Lore Introduction */}
         <div className="mb-8 bg-gradient-to-r from-indigo-950/50 to-violet-950/50 rounded-lg p-6 border border-indigo-900/50">
           <div className="flex items-start gap-4">
-            <div className="text-5xl">📖</div>
+            <div className="flex-shrink-0">
+              <div className="relative w-52 h-52 rounded-lg overflow-hidden border-2 border-indigo-500/50 bg-indigo-950/30">
+                <Image
+                  src="/personagens/merge.png"
+                  alt="Ritual de Fusão"
+                  width={208}
+                  height={208}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
             <div>
               <h3 className="text-xl font-bold text-indigo-300 mb-2">Sobre o Ritual de Fusão</h3>
               <p className="text-sm text-slate-300 leading-relaxed">
