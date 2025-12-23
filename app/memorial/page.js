@@ -129,23 +129,25 @@ export default function MemorialPage() {
                   <div className="absolute -inset-2 bg-gradient-to-b from-gray-800/20 to-transparent rounded-full blur"></div>
 
                   {/* Moldura com imagem */}
-                  <div className="relative w-28 h-28 bg-gray-950/50 rounded-full border border-gray-800/30 overflow-hidden">
+                  <div className="relative w-84 h-84 bg-gray-950/50 rounded-full border border-gray-800/30 overflow-hidden">
                     <div className="opacity-30 blur-sm absolute inset-0 flex items-center justify-center">
                       <Image
                         src="/personagens/Morte.png"
                         alt="Morte"
-                        width={112}
-                        height={112}
-                        className="w-full h-full object-cover"
+                        width={336}
+                        height={336}
+                        className="w-full h-full object-cover object-center"
+                        style={{ objectPosition: 'center 60%' }}
                       />
                     </div>
                     <div className="relative w-full h-full animate-flicker flex items-center justify-center">
                       <Image
                         src="/personagens/Morte.png"
                         alt="Morte"
-                        width={112}
-                        height={112}
+                        width={336}
+                        height={336}
                         className="w-full h-full object-cover"
+                        style={{ objectPosition: 'center 60%' }}
                       />
                     </div>
                   </div>
