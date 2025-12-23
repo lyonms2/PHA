@@ -125,24 +125,30 @@ export default function MemorialPage() {
             <div className="mb-8 relative">
               <div className="flex justify-center items-end gap-4 mb-6">
                 <div className="w-2 h-32 bg-gradient-to-b from-gray-700 to-gray-900 rounded-t"></div>
-                <div className="relative w-28 h-28">
-                  <div className="opacity-30 blur-sm absolute inset-0 flex items-center justify-center">
-                    <Image
-                      src="/personagens/Morte.png"
-                      alt="Morte"
-                      width={112}
-                      height={112}
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                  <div className="relative animate-flicker">
-                    <Image
-                      src="/personagens/Morte.png"
-                      alt="Morte"
-                      width={112}
-                      height={112}
-                      className="w-full h-full object-contain"
-                    />
+                <div className="relative">
+                  {/* Efeito de blur externo */}
+                  <div className="absolute -inset-2 bg-gradient-to-b from-gray-800/20 to-transparent rounded-full blur"></div>
+
+                  {/* Moldura com imagem */}
+                  <div className="relative p-4 bg-gray-950/50 rounded-full border border-gray-800/30">
+                    <div className="opacity-30 blur-sm absolute inset-0 flex items-center justify-center rounded-full overflow-hidden">
+                      <Image
+                        src="/personagens/Morte.png"
+                        alt="Morte"
+                        width={96}
+                        height={96}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <div className="relative w-24 h-24 animate-flicker">
+                      <Image
+                        src="/personagens/Morte.png"
+                        alt="Morte"
+                        width={96}
+                        height={96}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
                   </div>
                 </div>
                 <div className="w-2 h-32 bg-gradient-to-b from-gray-700 to-gray-900 rounded-t"></div>
@@ -259,7 +265,7 @@ export default function MemorialPage() {
                       <div className="text-center">
                         <p className="text-gray-700 text-xs font-mono italic leading-relaxed flex items-center justify-center gap-1">
                           {getEpitafio(avatar.causa_morte).emoji === "morte_image" ? (
-                            <span className="inline-block w-4 h-4">
+                            <span className="inline-flex items-center justify-center w-5 h-5 p-0.5 bg-gray-950/50 rounded-full border border-gray-800/30">
                               <Image
                                 src="/personagens/Morte.png"
                                 alt="Morte"
