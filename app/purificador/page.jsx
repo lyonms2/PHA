@@ -166,12 +166,12 @@ export default function PurificadorPage() {
               {/* Título */}
               <div className="text-center mb-12">
                 <div className="mb-4 flex justify-center">
-                  <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-cyan-500/50">
+                  <div className="relative w-64 h-64 rounded-full overflow-hidden border-4 border-cyan-500/50">
                     <Image
                       src="/personagens/purificador.png"
                       alt="Seraphine - A Purificadora"
-                      width={128}
-                      height={128}
+                      width={256}
+                      height={256}
                       className="object-cover"
                     />
                   </div>

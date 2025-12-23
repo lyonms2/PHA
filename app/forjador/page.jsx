@@ -158,12 +158,12 @@ export default function ForjadorPage() {
         <div className="bg-gradient-to-r from-slate-900/50 to-indigo-900/50 rounded-xl p-6 mb-8 border border-indigo-500/30">
           <div className="flex flex-col items-center text-center mb-6">
             <div className="mb-4">
-              <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-indigo-500/50 mx-auto">
+              <div className="w-64 h-64 rounded-full overflow-hidden border-4 border-indigo-500/50 mx-auto">
                 <Image
                   src="/personagens/forjador.png"
                   alt="Thorgal - Forjador de Almas"
-                  width={128}
-                  height={128}
+                  width={256}
+                  height={256}
                   className="object-cover"
                 />
               </div>
