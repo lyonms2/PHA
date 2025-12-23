@@ -17,6 +17,9 @@ export default function DashboardPage() {
   const [novoNome, setNovoNome] = useState("");
   const [salvandoNome, setSalvandoNome] = useState(false);
   const [erroNome, setErroNome] = useState("");
+  const [modalEscolherFoto, setModalEscolherFoto] = useState(false);
+  const [fotoSelecionada, setFotoSelecionada] = useState("");
+  const [salvandoFoto, setSalvandoFoto] = useState(false);
 
   // Função para gerar código de caçador
   const gerarCodigoCacador = (userId) => {
@@ -156,9 +159,9 @@ export default function DashboardPage() {
       const response = await fetch("/api/atualizar-nome", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          userId: user.id, 
-          nomeOperacao: novoNome.trim() 
+        body: JSON.stringify({
+          userId: user.id,
+          nomeOperacao: novoNome.trim()
         }),
       });
 
@@ -175,6 +178,42 @@ export default function DashboardPage() {
       setErroNome("Erro ao salvar. Tente novamente.");
     } finally {
       setSalvandoNome(false);
+    }
+  };
+
+  // Função para abrir modal de escolher foto
+  const abrirModalEscolherFoto = () => {
+    setModalEscolherFoto(true);
+  };
+
+  // Função para salvar foto escolhida
+  const salvarFoto = async () => {
+    if (!fotoSelecionada) return;
+
+    setSalvandoFoto(true);
+
+    try {
+      const response = await fetch("/api/atualizar-foto-cacador", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id,
+          fotoCacador: fotoSelecionada
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setStats(data.stats);
+        setModalEscolherFoto(false);
+      } else {
+        console.error("Erro ao salvar foto:", data.message);
+      }
+    } catch (error) {
+      console.error("Erro ao salvar foto:", error);
+    } finally {
+      setSalvandoFoto(false);
     }
   };
 
@@ -292,20 +331,39 @@ export default function DashboardPage() {
 
                 <div className="p-4">
                   <div className="flex gap-4 mb-4">
-                    {/* Logo da Organização */}
+                    {/* Foto do Caçador */}
                     <div className="flex-shrink-0">
-                      <div className="w-24 h-24 bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg flex items-center justify-center border-2 border-red-500/50 relative overflow-hidden">
+                      <button
+                        onClick={abrirModalEscolherFoto}
+                        className="w-24 h-24 bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg flex items-center justify-center border-2 border-red-500/50 relative overflow-hidden hover:border-red-400/70 transition-all cursor-pointer group/foto"
+                        title="Clique para trocar sua foto"
+                      >
                         {/* Efeito de barras diagonais */}
                         <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(239,68,68,0.1)_10px,rgba(239,68,68,0.1)_20px)]"></div>
 
-                        {/* Silhueta e TOP SECRET */}
-                        <div className="relative z-10 text-center">
-                          <div className="text-4xl mb-1 opacity-80 filter grayscale">👤</div>
-                          <div className="text-[9px] font-black text-red-400 tracking-widest bg-red-950/70 px-2 py-0.5 border border-red-500/50 rotate-[-2deg]">
-                            TOP SECRET
+                        {/* Foto do Caçador ou Placeholder */}
+                        {stats?.foto_cacador ? (
+                          <Image
+                            src={stats.foto_cacador}
+                            alt="Foto do Caçador"
+                            width={96}
+                            height={96}
+                            className="relative z-10 w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="relative z-10 text-center">
+                            <div className="text-4xl mb-1 opacity-80 filter grayscale">👤</div>
+                            <div className="text-[9px] font-black text-red-400 tracking-widest bg-red-950/70 px-2 py-0.5 border border-red-500/50 rotate-[-2deg]">
+                              TOP SECRET
+                            </div>
                           </div>
+                        )}
+
+                        {/* Overlay de hover */}
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/foto:opacity-100 transition-opacity z-20 flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">✏️ Trocar</span>
                         </div>
-                      </div>
+                      </button>
                       <div className="mt-2 text-center">
                         <div className="text-[8px] text-cyan-400/70 font-mono font-bold tracking-widest">OCD</div>
                         <div className="text-[7px] text-slate-500 font-mono">Est. 2025</div>
@@ -715,23 +773,23 @@ export default function DashboardPage() {
 
       {/* Modal Editar Nome */}
       {modalEditarNome && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           onClick={() => !salvandoNome && setModalEditarNome(false)}
         >
-          <div 
+          <div
             className="max-w-md w-full"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/30 via-blue-500/30 to-purple-500/30 rounded-lg blur opacity-75"></div>
-              
-              <div className="relative bg-slate-950/95 backdrop-blur-xl border border-cyan-900/30 rounded-lg overflow-hidden">                
+
+              <div className="relative bg-slate-950/95 backdrop-blur-xl border border-cyan-900/30 rounded-lg overflow-hidden">
                 <div className="p-4 text-center font-bold text-lg bg-gradient-to-r from-cyan-600 to-blue-600">
                   ✏️ EDITAR NOME DE OPERAÇÃO
                 </div>
 
-                <div className="p-6">                  
+                <div className="p-6">
                   <div className="mb-4">
                     <label className="block text-cyan-400 text-xs uppercase tracking-widest mb-2 font-mono">
                       Novo Nome
@@ -750,13 +808,13 @@ export default function DashboardPage() {
                       <span className="text-xs text-slate-500">{novoNome.length}/30</span>
                     </div>
                   </div>
-                  
+
                   {erroNome && (
                     <div className="mb-4 p-3 bg-red-950/50 border border-red-500/30 rounded">
                       <p className="text-sm text-red-400">{erroNome}</p>
                     </div>
                   )}
-                  
+
                   <div className="flex gap-3">
                     <button
                       onClick={() => setModalEditarNome(false)}
@@ -774,6 +832,115 @@ export default function DashboardPage() {
                       <div className="relative px-4 py-3 bg-slate-950 rounded border border-cyan-500/50 transition-all">
                         <span className="font-bold text-cyan-400">
                           {salvandoNome ? 'Salvando...' : 'Salvar'}
+                        </span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Escolher Foto */}
+      {modalEscolherFoto && (
+        <div
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => !salvandoFoto && setModalEscolherFoto(false)}
+        >
+          <div
+            className="max-w-2xl w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-red-500/30 via-purple-500/30 to-red-500/30 rounded-lg blur opacity-75"></div>
+
+              <div className="relative bg-slate-950/95 backdrop-blur-xl border border-red-900/30 rounded-lg overflow-hidden">
+                <div className="p-4 text-center font-bold text-lg bg-gradient-to-r from-red-600 to-purple-600">
+                  🖼️ ESCOLHER FOTO DE CAÇADOR
+                </div>
+
+                <div className="p-6">
+                  <p className="text-slate-400 text-sm mb-4 text-center">
+                    Selecione uma foto para seu perfil de caçador
+                  </p>
+
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                    {/* Foto Masculina */}
+                    <button
+                      onClick={() => setFotoSelecionada("/personagens/cacadores/cacador_h_1.png")}
+                      className={`relative group/card aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                        fotoSelecionada === "/personagens/cacadores/cacador_h_1.png"
+                          ? "border-cyan-500 ring-4 ring-cyan-500/30"
+                          : "border-slate-700 hover:border-slate-500"
+                      }`}
+                    >
+                      <Image
+                        src="/personagens/cacadores/cacador_h_1.png"
+                        alt="Caçador Masculino"
+                        width={200}
+                        height={200}
+                        className="w-full h-full object-cover"
+                      />
+                      {fotoSelecionada === "/personagens/cacadores/cacador_h_1.png" && (
+                        <div className="absolute inset-0 bg-cyan-500/20 flex items-center justify-center">
+                          <div className="bg-cyan-500 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl">
+                            ✓
+                          </div>
+                        </div>
+                      )}
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                        <p className="text-white text-xs font-bold text-center">Caçador Masculino</p>
+                      </div>
+                    </button>
+
+                    {/* Foto Feminina */}
+                    <button
+                      onClick={() => setFotoSelecionada("/personagens/cacadores/cacador_m_1.png")}
+                      className={`relative group/card aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                        fotoSelecionada === "/personagens/cacadores/cacador_m_1.png"
+                          ? "border-cyan-500 ring-4 ring-cyan-500/30"
+                          : "border-slate-700 hover:border-slate-500"
+                      }`}
+                    >
+                      <Image
+                        src="/personagens/cacadores/cacador_m_1.png"
+                        alt="Caçadora Feminina"
+                        width={200}
+                        height={200}
+                        className="w-full h-full object-cover"
+                      />
+                      {fotoSelecionada === "/personagens/cacadores/cacador_m_1.png" && (
+                        <div className="absolute inset-0 bg-cyan-500/20 flex items-center justify-center">
+                          <div className="bg-cyan-500 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl">
+                            ✓
+                          </div>
+                        </div>
+                      )}
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                        <p className="text-white text-xs font-bold text-center">Caçadora Feminina</p>
+                      </div>
+                    </button>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setModalEscolherFoto(false)}
+                      disabled={salvandoFoto}
+                      className="flex-1 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded transition-colors disabled:opacity-50"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={salvarFoto}
+                      disabled={salvandoFoto || !fotoSelecionada}
+                      className="flex-1 group/btn relative disabled:opacity-50"
+                    >
+                      <div className="absolute -inset-0.5 bg-gradient-to-r from-red-500 to-purple-500 rounded blur opacity-50 group-hover/btn:opacity-75 transition-all"></div>
+                      <div className="relative px-4 py-3 bg-slate-950 rounded border border-red-500/50 transition-all">
+                        <span className="font-bold text-red-400">
+                          {salvandoFoto ? 'Salvando...' : 'Confirmar'}
                         </span>
                       </div>
                     </button>
