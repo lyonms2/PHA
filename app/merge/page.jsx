@@ -6,6 +6,7 @@ import Image from "next/image";
 import AvatarSVG from '../components/AvatarSVG';
 import GameNav from '../components/GameNav';
 import { calcularPoderTotal } from '@/lib/gameLogic';
+import { getHunterRank } from '@/lib/hunter/hunterRankSystem';
 
 export default function MergePage() {
   const router = useRouter();
@@ -13,6 +14,7 @@ export default function MergePage() {
   const [stats, setStats] = useState(null);
   const [avatares, setAvatares] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hunterRank, setHunterRank] = useState(null);
 
   // Estados do merge
   const [avatarBase, setAvatarBase] = useState(null);
@@ -46,6 +48,10 @@ export default function MergePage() {
       const statsData = await statsRes.json();
       setStats(statsData.stats);
 
+      // Calcular Hunter Rank
+      const rank = getHunterRank(statsData.stats.hunterRankXp || 0);
+      setHunterRank(rank);
+
       // Carregar avatares
       const avataresRes = await fetch(`/api/meus-avatares?userId=${userId}`);
       const avataresData = await avataresRes.json();
@@ -60,42 +66,50 @@ export default function MergePage() {
   };
 
   const calcularCusto = () => {
-    if (!avatarBase || !avatarSacrificio) return { moedas: 0, fragmentos: 0 };
+    if (!avatarBase || !avatarSacrificio) return { moedas: 0, fragmentos: 0, moedasBase: 0, fragmentosBase: 0, desconto: 0 };
 
     const nivelTotal = avatarBase.nivel + avatarSacrificio.nivel;
     const multiplicador = avatarBase.raridade === 'Lendário' ? 2 : avatarBase.raridade === 'Raro' ? 1.5 : 1;
 
+    // Custo base (dobrado - Opção B)
+    const moedasBase = Math.floor(nivelTotal * 100 * multiplicador * 2);
+    const fragmentosBase = Math.floor(nivelTotal * 10 * multiplicador * 2);
+
+    // Aplicar desconto do Hunter Rank
+    const descontoMerge = hunterRank?.descontoMerge || 0;
+    const moedas = Math.floor(moedasBase * (1 - descontoMerge));
+    const fragmentos = Math.floor(fragmentosBase * (1 - descontoMerge));
+
     return {
-      moedas: Math.floor(nivelTotal * 100 * multiplicador),
-      fragmentos: Math.floor(nivelTotal * 10 * multiplicador)
+      moedas,
+      fragmentos,
+      moedasBase,
+      fragmentosBase,
+      desconto: descontoMerge
     };
   };
 
   const calcularGanhos = () => {
     if (!avatarBase || !avatarSacrificio) return null;
 
-    // Ganhos de stats (30% dos stats do sacrificado)
-    const ganhoForca = Math.floor(avatarSacrificio.forca * 0.3);
-    const ganhoAgilidade = Math.floor(avatarSacrificio.agilidade * 0.3);
-    const ganhoResistencia = Math.floor(avatarSacrificio.resistencia * 0.3);
-    const ganhoFoco = Math.floor(avatarSacrificio.foco * 0.3);
-
-    // Chance de ganhar elemento (30% se diferente)
-    const ganhaElemento = avatarBase.elemento !== avatarSacrificio.elemento ? 0.3 : 0;
+    // Ganhos de stats (15% dos stats do sacrificado - Opção B)
+    const ganhoForca = Math.floor(avatarSacrificio.forca * 0.15);
+    const ganhoAgilidade = Math.floor(avatarSacrificio.agilidade * 0.15);
+    const ganhoResistencia = Math.floor(avatarSacrificio.resistencia * 0.15);
+    const ganhoFoco = Math.floor(avatarSacrificio.foco * 0.15);
 
     return {
       forca: ganhoForca,
       agilidade: ganhoAgilidade,
       resistencia: ganhoResistencia,
-      foco: ganhoFoco,
-      chanceElemento: ganhaElemento
+      foco: ganhoFoco
     };
   };
 
   const calcularChanceSucesso = () => {
-    if (!avatarBase) return 100;
+    if (!avatarBase) return 80;
     const mergeCount = avatarBase.merge_count || 0;
-    return Math.max(100 - (mergeCount * 7.5), 40);
+    return Math.max(80 - (mergeCount * 15), 35);
   };
 
   const realizarMerge = async () => {
@@ -197,8 +211,11 @@ export default function MergePage() {
   // Filtrar apenas avatares vivos e não ativos
   const avataresDisponiveis = avatares.filter(av => av.vivo && !av.ativo);
 
-  // Filtrar avatares disponíveis para base (não pode ter 8 merges)
-  const avataresDisponiveisBase = avataresDisponiveis.filter(av => (av.merge_count || 0) < 8);
+  // Filtrar avatares disponíveis para base (não pode ter 3 merges)
+  const avataresDisponiveisBase = avataresDisponiveis.filter(av => (av.merge_count || 0) < 3);
+
+  // Filtrar avatares disponíveis para sacrifício (não pode ter nenhum merge)
+  const avataresDisponiveisSacrificio = avataresDisponiveis.filter(av => (av.merge_count || 0) === 0);
 
   const custo = calcularCusto();
   const ganhos = calcularGanhos();
@@ -252,12 +269,15 @@ export default function MergePage() {
             <div>
               <h3 className="text-xl font-bold text-indigo-300 mb-2">Sobre o Ritual de Fusão</h3>
               <p className="text-sm text-slate-300 leading-relaxed">
-                Na Câmara de Fusão Dimensional, Caçadores experientes podem realizar o antigo ritual de transmutação de almas.
+                Na Câmara de Fusão Dimensional, Caçadores experientes podem realizar o antigo ritual de fusão de almas.
                 <span className="block mt-2 text-indigo-200">
-                  Ao sacrificar um avatar, sua essência é transferida para outro, criando um guerreiro mais poderoso.
+                  Ao sacrificar um avatar, parte de sua essência é transferida para outro, criando um guerreiro mais poderoso.
                 </span>
                 <span className="block mt-2 text-violet-300 font-semibold">
-                  O avatar base absorverá 30% dos atributos do sacrificado e poderá, com sorte, herdar seu elemento dimensional.
+                  O avatar base absorverá 15% dos atributos do sacrificado. Máximo de 3 fusões por avatar.
+                </span>
+                <span className="block mt-2 text-red-300 text-xs font-semibold">
+                  ⚠️ Avatar sacrificado NÃO pode ter sido fundido anteriormente (previne fusão em cadeia).
                 </span>
               </p>
             </div>
@@ -326,7 +346,7 @@ export default function MergePage() {
                       .filter(av => !avatarSacrificio || av.id !== avatarSacrificio.id)
                       .map((avatar) => {
                         const merges = avatar.merge_count || 0;
-                        const chance = Math.max(100 - (merges * 7.5), 40);
+                        const chance = Math.max(80 - (merges * 15), 35); // Opção B
                         return (
                           <button
                             key={avatar.id}
@@ -338,9 +358,9 @@ export default function MergePage() {
                             <div className="text-xs text-slate-400">Nv.{avatar.nivel}</div>
                             {merges > 0 && (
                               <div className={`text-[10px] mt-1 font-bold ${
-                                chance >= 70 ? 'text-green-400' :
+                                chance >= 65 ? 'text-green-400' :
                                 chance >= 50 ? 'text-yellow-400' :
-                                'text-orange-400'
+                                'text-red-400'
                               }`}>
                                 🧬{merges} ({chance}%)
                               </div>
@@ -412,7 +432,7 @@ export default function MergePage() {
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 max-h-96 overflow-y-auto custom-scrollbar">
-                    {avataresDisponiveis
+                    {avataresDisponiveisSacrificio
                       .filter(av => !avatarBase || av.id !== avatarBase.id)
                       .map((avatar) => (
                         <button
@@ -457,14 +477,14 @@ export default function MergePage() {
                   </div>
                   <div className="text-right">
                     <div className="text-xs text-slate-400">Merges realizados</div>
-                    <div className="text-2xl font-bold text-violet-300">{avatarBase.merge_count || 0}/8</div>
+                    <div className="text-2xl font-bold text-violet-300">{avatarBase.merge_count || 0}/3</div>
                   </div>
                 </div>
                 <div className="mt-3 text-xs text-slate-300">
-                  {chanceSucesso < 100 ? (
-                    <span>⚠️ A cada merge, a chance de sucesso diminui 7.5% (mínimo 40%)</span>
+                  {chanceSucesso < 80 ? (
+                    <span>⚠️ A cada merge, a chance de sucesso diminui 15% (mínimo 35%)</span>
                   ) : (
-                    <span>✨ Primeira fusão! 100% de chance de sucesso!</span>
+                    <span>✨ Primeira fusão! 80% de chance de sucesso!</span>
                   )}
                 </div>
               </div>
@@ -476,7 +496,7 @@ export default function MergePage() {
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Stats */}
                 <div>
-                  <h4 className="text-sm font-bold text-slate-400 mb-3">Aumento de Atributos (30%):</h4>
+                  <h4 className="text-sm font-bold text-slate-400 mb-3">Aumento de Atributos (15%):</h4>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between p-2 bg-slate-900/50 rounded">
                       <span className="text-sm text-red-400">Força:</span>
@@ -509,18 +529,6 @@ export default function MergePage() {
                 <div>
                   <h4 className="text-sm font-bold text-slate-400 mb-3">Benefícios Adicionais:</h4>
                   <div className="space-y-2">
-                    {ganhos.chanceElemento > 0 && (
-                      <div className="p-3 bg-violet-950/30 rounded border border-violet-500/30">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span>✨</span>
-                          <span className="font-bold text-violet-300 text-sm">Transmutação Elemental</span>
-                        </div>
-                        <div className="text-xs text-slate-400">
-                          {Math.floor(ganhos.chanceElemento * 100)}% de chance de ganhar o elemento {getEmojiElemento(avatarSacrificio.elemento)} {avatarSacrificio.elemento}
-                        </div>
-                      </div>
-                    )}
-
                     <div className="p-3 bg-purple-950/30 rounded border border-purple-500/30">
                       <div className="flex items-center gap-2 mb-1">
                         <span>💫</span>
@@ -547,15 +555,41 @@ export default function MergePage() {
               {/* Custo */}
               <div className="mt-6 p-4 bg-gradient-to-r from-slate-900/80 to-violet-950/80 rounded-lg border border-violet-500/50">
                 <h4 className="text-sm font-bold text-slate-400 mb-3">Custo do Ritual:</h4>
-                <div className="flex items-center justify-between">
-                  <div className="flex gap-4">
-                    <div>
-                      <span className="text-amber-400 font-bold text-lg">💰 {custo.moedas}</span>
-                      <span className="text-xs text-slate-500 ml-2">moedas</span>
+
+                {custo.desconto > 0 && (
+                  <div className="mb-3 p-2 bg-cyan-950/30 rounded border border-cyan-500/30">
+                    <div className="flex items-center gap-2 text-xs text-cyan-300">
+                      <span>🎖️</span>
+                      <span className="font-bold">Desconto Hunter Rank {hunterRank?.nome}: -{Math.round(custo.desconto * 100)}%</span>
                     </div>
-                    <div>
-                      <span className="text-purple-400 font-bold text-lg">💎 {custo.fragmentos}</span>
-                      <span className="text-xs text-slate-500 ml-2">fragmentos</span>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-4">
+                      <div>
+                        {custo.desconto > 0 ? (
+                          <>
+                            <span className="text-amber-400 font-bold text-lg">💰 {custo.moedas}</span>
+                            <span className="text-xs text-slate-500 line-through ml-2">{custo.moedasBase}</span>
+                          </>
+                        ) : (
+                          <span className="text-amber-400 font-bold text-lg">💰 {custo.moedas}</span>
+                        )}
+                        <span className="text-xs text-slate-500 ml-2">moedas</span>
+                      </div>
+                      <div>
+                        {custo.desconto > 0 ? (
+                          <>
+                            <span className="text-purple-400 font-bold text-lg">💎 {custo.fragmentos}</span>
+                            <span className="text-xs text-slate-500 line-through ml-2">{custo.fragmentosBase}</span>
+                          </>
+                        ) : (
+                          <span className="text-purple-400 font-bold text-lg">💎 {custo.fragmentos}</span>
+                        )}
+                        <span className="text-xs text-slate-500 ml-2">fragmentos</span>
+                      </div>
                     </div>
                   </div>
 
@@ -776,18 +810,6 @@ export default function MergePage() {
                                 </div>
                               </div>
                             </div>
-
-                            {resultado?.mudouElemento && (
-                              <div className="flex items-start gap-2 p-3 bg-violet-950/30 rounded border border-violet-900/50">
-                                <span className="text-xl">✨</span>
-                                <div className="flex-1">
-                                  <div className="font-bold text-violet-300 text-xs">Elemento Transmutado!</div>
-                                  <div className="text-[10px] text-violet-400/80">
-                                    Absorveu o elemento {resultado.elementoOriginal || ''}
-                                  </div>
-                                </div>
-                              </div>
-                            )}
 
                             <div className="flex items-start gap-2 p-3 bg-purple-950/30 rounded border border-purple-900/50">
                               <span className="text-xl">🔮</span>

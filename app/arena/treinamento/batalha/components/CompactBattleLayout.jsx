@@ -6,7 +6,7 @@
 import AvatarDuoDisplay from './AvatarDuoDisplay';
 import SynergyDisplay from './SynergyDisplay';
 import BattleLog from './BattleLog';
-import { getEfeitoEmoji, ehBuff } from '../utils/battleEffects';
+import { getEfeitoEmoji, ehBuff } from '../utils';
 import { atualizarBalanceamentoHabilidade } from '@/lib/combat/battle';
 
 export default function CompactBattleLayout({

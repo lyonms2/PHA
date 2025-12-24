@@ -3,7 +3,7 @@
  */
 
 import AvatarSVG from "@/app/components/AvatarSVG";
-import { getElementoEmoji, getElementoCor } from '../utils/battleEffects';
+import { getElementoEmoji, getElementoCor } from '../utils';
 
 // Mapa de ícones e cores por tipo de efeito
 const EFEITO_INFO = {
