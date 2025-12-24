@@ -64,6 +64,16 @@ export default function DualCardBattleLayout({
   const [opponentCardActive, setOpponentCardActive] = useState('attack');
   const logEndRef = useRef(null);
 
+  // Debug: verificar se sinergias estão sendo recebidas
+  useEffect(() => {
+    if (playerSynergy) {
+      console.log('🔥 SINERGIA JOGADOR DETECTADA:', playerSynergy);
+    }
+    if (opponentSynergy) {
+      console.log('🔥 SINERGIA OPONENTE DETECTADA:', opponentSynergy);
+    }
+  }, [playerSynergy, opponentSynergy]);
+
   // Auto-scroll log
   useEffect(() => {
     if (logEndRef.current) {
@@ -242,7 +252,7 @@ export default function DualCardBattleLayout({
         <h1 className="text-3xl font-bold uppercase tracking-[0.3em] text-purple-400 drop-shadow-[0_0_20px_rgba(168,85,247,0.8)]">
           ⚔ BATALHA DIMENSIONAL ⚔
         </h1>
-        <div className="text-xs text-purple-300 mt-1">TURNO {currentTurn}</div>
+        <div className="text-xs text-purple-300 mt-1">TURNO {currentTurn} • v2.0</div>
       </div>
 
       <div className="flex gap-4 px-4 pb-4 relative z-10 max-h-[calc(100vh-100px)]">
