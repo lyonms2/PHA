@@ -53,7 +53,11 @@ export default function DualCardBattleLayout({
 
   // Nomes
   playerName = 'Você',
-  opponentName = 'Oponente'
+  opponentName = 'Oponente',
+
+  // Sinergias
+  playerSynergy = null,
+  opponentSynergy = null
 }) {
   const [playerCardActive, setPlayerCardActive] = useState('attack'); // 'attack' ou 'support'
   const [opponentCardActive, setOpponentCardActive] = useState('attack');
@@ -74,7 +78,7 @@ export default function DualCardBattleLayout({
     setOpponentCardActive(prev => prev === 'attack' ? 'support' : 'attack');
   };
 
-  const renderAvatarCard = (avatar, type, isActive, hp, hpMax, energy, energyMax, effects, side) => {
+  const renderAvatarCard = (avatar, type, isActive, hp, hpMax, energy, energyMax, effects, side, synergy) => {
     if (!avatar) return null;
 
     const isAttack = type === 'attack';
@@ -86,78 +90,105 @@ export default function DualCardBattleLayout({
       ${isActive && !isAttack ? 'scale-105 shadow-2xl' : ''}
     `;
 
+    // Cores diferentes para ataque e suporte
+    const bgGradient = isAttack
+      ? 'from-slate-900 to-slate-800' // Ataque: fundo escuro
+      : 'from-amber-900/70 to-yellow-900/60'; // Suporte: fundo amarelado
+
     const borderColor = isAttack
-      ? 'border-purple-500/50 hover:border-purple-400'
-      : 'border-green-500/50 hover:border-green-400';
+      ? 'border-rose-600/80 hover:border-rose-500' // Ataque: borda roxo-avermelhado
+      : 'border-amber-500/80 hover:border-amber-400'; // Suporte: borda amarela
 
     return (
       <div className={cardClasses}>
-        <div className={`relative h-full bg-gradient-to-br from-slate-900 to-slate-800 border-3 ${borderColor} rounded-xl shadow-xl`}>
+        <div className={`relative h-full bg-gradient-to-br ${bgGradient} border-3 ${borderColor} rounded-xl shadow-xl`}>
           {/* Textura de fundo */}
-          <div className="absolute inset-0 opacity-5 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(124,58,237,0.1)_10px,rgba(124,58,237,0.1)_20px)]" />
+          <div className={`absolute inset-0 opacity-5 ${isAttack ? 'bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(124,58,237,0.1)_10px,rgba(124,58,237,0.1)_20px)]' : 'bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(251,191,36,0.1)_10px,rgba(251,191,36,0.1)_20px)]'}`} />
 
           {/* Label do card */}
           <div className="absolute top-2 left-2 right-2 text-center z-10">
-            <span className={`text-[10px] uppercase tracking-widest font-bold ${isAttack ? 'text-purple-400' : 'text-green-400'}`}>
+            <span className={`text-[10px] uppercase tracking-widest font-bold ${isAttack ? 'text-rose-400' : 'text-amber-400'}`}>
               {isAttack ? '⚔ ATAQUE' : '✚ SUPORTE'}
             </span>
           </div>
 
           {/* Conteúdo do avatar */}
-          <div className="relative h-full flex flex-col items-center justify-center p-2">
-            {/* Avatar SVG */}
-            <div className={`${isActive ? 'scale-100' : 'scale-75'} transition-transform`}>
-              <AvatarSVG avatar={avatar} tamanho={isActive ? 100 : 60} />
+          <div className="relative h-full flex flex-col items-center p-2 pt-6">
+            {/* Avatar SVG - ajustado para não sobrepor o label */}
+            <div className={`${isActive ? 'scale-100' : 'scale-75'} transition-transform ${!isAttack ? 'mt-1' : 'mt-2'}`}>
+              <AvatarSVG avatar={avatar} tamanho={isAttack ? (isActive ? 100 : 60) : 50} />
             </div>
 
             {/* Info do avatar (só quando ativo) */}
             {isActive && (
               <>
                 {/* Nome */}
-                <div className="text-xs font-bold text-white mt-2 text-center truncate max-w-full px-2">
+                <div className="text-xs font-bold text-white mt-1 text-center truncate max-w-full px-2">
                   {avatar.nome}
                 </div>
 
-                {/* HP Bar */}
-                <div className="w-full px-2 mt-1">
-                  <div className="flex items-center justify-between text-[9px] text-slate-400 mb-0.5">
-                    <span>HP</span>
-                    <span>{hp}/{hpMax}</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-red-500 to-red-400 transition-all duration-300"
-                      style={{ width: `${Math.max(0, (hp / hpMax) * 100)}%` }}
-                    />
-                  </div>
-                </div>
+                {/* Card de ATAQUE: mostrar HP e Energia */}
+                {isAttack && (
+                  <>
+                    {/* HP Bar */}
+                    <div className="w-full px-2 mt-1">
+                      <div className="flex items-center justify-between text-[9px] text-slate-400 mb-0.5">
+                        <span>HP</span>
+                        <span>{hp}/{hpMax}</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-red-500 to-red-400 transition-all duration-300"
+                          style={{ width: `${Math.max(0, (hp / hpMax) * 100)}%` }}
+                        />
+                      </div>
+                    </div>
 
-                {/* Energy Bar */}
-                <div className="w-full px-2 mt-1">
-                  <div className="flex items-center justify-between text-[9px] text-slate-400 mb-0.5">
-                    <span>ENERGIA</span>
-                    <span>{energy}/{energyMax}</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 transition-all duration-300"
-                      style={{ width: `${Math.max(0, (energy / energyMax) * 100)}%` }}
-                    />
-                  </div>
-                </div>
+                    {/* Energy Bar */}
+                    <div className="w-full px-2 mt-1">
+                      <div className="flex items-center justify-between text-[9px] text-slate-400 mb-0.5">
+                        <span>ENERGIA</span>
+                        <span>{energy}/{energyMax}</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 transition-all duration-300"
+                          style={{ width: `${Math.max(0, (energy / energyMax) * 100)}%` }}
+                        />
+                      </div>
+                    </div>
 
-                {/* Efeitos ativos */}
-                {effects.length > 0 && (
-                  <div className="flex gap-0.5 mt-1 flex-wrap justify-center px-2">
-                    {effects.slice(0, 4).map((effect, i) => (
-                      <span
-                        key={i}
-                        className={`text-[10px] ${ehBuff(effect.tipo) ? 'text-green-400' : 'text-red-400'}`}
-                        title={effect.tipo}
-                      >
-                        {getEfeitoEmoji(effect.tipo)}
-                      </span>
-                    ))}
+                    {/* Efeitos ativos */}
+                    {effects.length > 0 && (
+                      <div className="flex gap-0.5 mt-1 flex-wrap justify-center px-2">
+                        {effects.slice(0, 4).map((effect, i) => (
+                          <span
+                            key={i}
+                            className={`text-[10px] ${ehBuff(effect.tipo) ? 'text-green-400' : 'text-red-400'}`}
+                            title={effect.tipo}
+                          >
+                            {getEfeitoEmoji(effect.tipo)}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Card de SUPORTE: mostrar detalhes da sinergia */}
+                {!isAttack && synergy && (
+                  <div className="w-full px-2 mt-1 space-y-0.5">
+                    <div className="text-[9px] text-amber-300 font-bold text-center uppercase tracking-wide">
+                      ✨ {synergy.nome}
+                    </div>
+                    <div className="text-[8px] text-amber-200/80 text-center italic">
+                      {synergy.descricao}
+                    </div>
+                    {synergy.bonus && (
+                      <div className="text-[8px] text-green-300 text-center font-semibold">
+                        +{synergy.bonus}% Bônus
+                      </div>
+                    )}
                   </div>
                 )}
               </>
@@ -209,7 +240,8 @@ export default function DualCardBattleLayout({
                   myEnergy,
                   myEnergyMax,
                   myEffects,
-                  'player'
+                  'player',
+                  null
                 )}
 
                 {/* Card de Suporte */}
@@ -222,7 +254,8 @@ export default function DualCardBattleLayout({
                   myEnergy,
                   myEnergyMax,
                   myEffects,
-                  'player'
+                  'player',
+                  playerSynergy
                 )}
               </div>
             </div>
@@ -252,7 +285,8 @@ export default function DualCardBattleLayout({
                   opponentEnergy,
                   opponentEnergyMax,
                   opponentEffects,
-                  'opponent'
+                  'opponent',
+                  null
                 )}
 
                 {/* Card de Suporte */}
@@ -265,7 +299,8 @@ export default function DualCardBattleLayout({
                   opponentEnergy,
                   opponentEnergyMax,
                   opponentEffects,
-                  'opponent'
+                  'opponent',
+                  opponentSynergy
                 )}
               </div>
             </div>
@@ -309,7 +344,7 @@ export default function DualCardBattleLayout({
                     return (
                       <button
                         key={ability.id || index}
-                        onClick={() => onAbilityUse && onAbilityUse(ability)}
+                        onClick={() => onAbilityUse && onAbilityUse(index)}
                         disabled={!isYourTurn || status !== 'active' || isOnCooldown || !hasEnergy}
                         className="px-2 py-2 bg-gradient-to-br from-indigo-900 to-indigo-800 border-2 border-indigo-500 rounded-lg font-bold uppercase text-[10px] tracking-wider text-indigo-200 hover:from-indigo-800 hover:to-indigo-700 hover:border-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-indigo-500/50 relative"
                         title={ability.nome}
@@ -350,8 +385,6 @@ export default function DualCardBattleLayout({
                 key={index}
                 className="bg-black/40 border-l-3 border-purple-500 rounded p-2 text-xs leading-relaxed animate-[slideIn_0.3s_ease]"
               >
-                <span className="text-purple-400 font-bold">[TURNO {entry.turno || currentTurn}]</span>
-                <br />
                 <span className="text-slate-300">{entry.texto || entry}</span>
               </div>
             ))}

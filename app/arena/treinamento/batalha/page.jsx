@@ -693,6 +693,10 @@ function BatalhaTreinoIAContent() {
         // Nomes
         playerName={meuNome}
         opponentName={iaAvatar?.nome || 'IA Treinador'}
+
+        // Sinergias
+        playerSynergy={sinergiaAtiva}
+        opponentSynergy={sinergiaIA}
       />
     );
   }
