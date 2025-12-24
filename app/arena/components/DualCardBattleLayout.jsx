@@ -8,6 +8,7 @@ import { useState, useEffect, useRef } from 'react';
 import AvatarSVG from '@/app/components/AvatarSVG';
 import { getElementoEmoji, getElementoCor, getEfeitoEmoji, ehBuff } from '@/lib/arena/battleEffects';
 import { calcularPoderTotal } from '@/lib/gameLogic';
+import { formatarVantagensDesvantagens } from '@/lib/combat/synergySystem';
 
 export default function DualCardBattleLayout({
   // Avatares
@@ -84,8 +85,8 @@ export default function DualCardBattleLayout({
     const isAttack = type === 'attack';
     const cardClasses = `
       absolute w-full transition-all duration-400 ease-in-out rounded-xl overflow-hidden cursor-pointer
-      ${isAttack ? 'h-60' : 'h-36'}
-      ${isActive ? 'z-20 top-0' : isAttack ? 'z-10 top-0 opacity-60' : 'z-10 top-28'}
+      ${isAttack ? 'h-[264px]' : 'h-[158px]'}
+      ${isActive ? 'z-20 top-0' : isAttack ? 'z-10 top-0 opacity-60' : 'z-10 top-[123px]'}
       ${!isActive && !isAttack ? 'hover:opacity-80' : ''}
       ${isActive && !isAttack ? 'scale-105 shadow-2xl' : ''}
     `;
@@ -116,7 +117,7 @@ export default function DualCardBattleLayout({
           <div className="relative h-full flex flex-col items-center p-2 pt-6">
             {/* Avatar SVG - ajustado para não sobrepor o label */}
             <div className={`${isActive ? 'scale-100' : 'scale-75'} transition-transform ${!isAttack ? 'mt-1' : 'mt-2'}`}>
-              <AvatarSVG avatar={avatar} tamanho={isAttack ? (isActive ? 100 : 60) : 50} />
+              <AvatarSVG avatar={avatar} tamanho={isAttack ? (isActive ? 110 : 66) : 55} />
             </div>
 
             {/* Info do avatar (só quando ativo) */}
@@ -176,21 +177,50 @@ export default function DualCardBattleLayout({
                 )}
 
                 {/* Card de SUPORTE: mostrar detalhes da sinergia */}
-                {!isAttack && synergy && (
-                  <div className="w-full px-2 mt-1 space-y-0.5">
-                    <div className="text-[9px] text-amber-300 font-bold text-center uppercase tracking-wide">
-                      ✨ {synergy.nome}
-                    </div>
-                    <div className="text-[8px] text-amber-200/80 text-center italic">
-                      {synergy.descricao}
-                    </div>
-                    {synergy.bonus && (
-                      <div className="text-[8px] text-green-300 text-center font-semibold">
-                        +{synergy.bonus}% Bônus
+                {!isAttack && synergy && (() => {
+                  const { vantagens, desvantagens } = formatarVantagensDesvantagens(synergy);
+                  return (
+                    <div className="w-full px-2 mt-0.5 space-y-1">
+                      {/* Nome da Sinergia */}
+                      <div className="text-[10px] text-amber-300 font-bold text-center uppercase tracking-wide">
+                        {synergy.nome}
                       </div>
-                    )}
-                  </div>
-                )}
+
+                      {/* Descrição */}
+                      <div className="text-[8px] text-amber-200/70 text-center italic leading-tight">
+                        {synergy.descricao}
+                      </div>
+
+                      {/* Vantagens */}
+                      {vantagens.length > 0 && (
+                        <div className="space-y-0.5">
+                          <div className="text-[7px] text-green-400 font-bold uppercase tracking-wider">
+                            ✅ VANTAGENS:
+                          </div>
+                          {vantagens.map((v, i) => (
+                            <div key={i} className="text-[8px] text-green-300 leading-tight">
+                              ✨ {v.texto}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Desvantagens */}
+                      {desvantagens.length > 0 && (
+                        <div className="space-y-0.5">
+                          <div className="text-[7px] text-red-400 font-bold uppercase tracking-wider">
+                            ⚠️ DESVANTAGENS:
+                          </div>
+                          {desvantagens.map((d, i) => (
+                            <div key={i} className="text-[8px] text-red-300 leading-tight">
+                              💢 {d.texto}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </>
             )}
           </div>
@@ -227,7 +257,7 @@ export default function DualCardBattleLayout({
               </div>
 
               <div
-                className="relative w-44 h-64 cursor-pointer"
+                className="relative w-[194px] h-[282px] cursor-pointer"
                 onClick={togglePlayerCard}
               >
                 {/* Card de Ataque */}
@@ -272,7 +302,7 @@ export default function DualCardBattleLayout({
               </div>
 
               <div
-                className="relative w-44 h-64 cursor-pointer"
+                className="relative w-[194px] h-[282px] cursor-pointer"
                 onClick={toggleOpponentCard}
               >
                 {/* Card de Ataque */}
@@ -351,8 +381,8 @@ export default function DualCardBattleLayout({
                       >
                         {ability.nome?.substring(0, 6)}
                         {isOnCooldown && (
-                          <span className="absolute -top-1 -right-1 text-[8px] bg-red-500 rounded-full w-4 h-4 flex items-center justify-center">
-                            {playerCooldowns[ability.id]}
+                          <span className="absolute -top-1 -right-1 text-[9px] bg-red-500 rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-lg">
+                            🔒{playerCooldowns[ability.id]}
                           </span>
                         )}
                       </button>
