@@ -84,9 +84,8 @@ export default function DualCardBattleLayout({
     const isAttack = type === 'attack';
     const cardClasses = `
       absolute w-full transition-all duration-400 ease-in-out rounded-xl overflow-hidden cursor-pointer
-      ${isAttack ? 'h-[264px]' : 'h-[240px]'}
-      ${isActive ? 'z-20 top-0' : isAttack ? 'z-10 top-0 opacity-70' : 'z-10 top-[80px]'}
-      ${!isActive && !isAttack ? 'hover:opacity-100' : ''}
+      ${isAttack ? 'h-[264px]' : isActive ? 'h-[240px]' : 'h-[200px]'}
+      ${isActive ? 'z-20 top-0' : isAttack ? 'z-10 top-0' : 'z-10 top-[100px]'}
       ${isActive && !isAttack ? 'scale-105 shadow-2xl' : ''}
     `;
 
@@ -381,7 +380,7 @@ export default function DualCardBattleLayout({
                       >
                         <span className="block truncate">{ability.nome}</span>
                         {isOnCooldown && (
-                          <span className="absolute -top-1 -right-1 text-[10px] bg-red-500 rounded-full w-6 h-6 flex items-center justify-center font-bold shadow-lg z-10">
+                          <span className="absolute top-0.5 right-0.5 text-[10px] bg-red-500 rounded-full w-6 h-6 flex items-center justify-center font-bold shadow-lg z-10">
                             🔒{cooldownValue}
                           </span>
                         )}
