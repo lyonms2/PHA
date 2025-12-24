@@ -8,7 +8,6 @@ import { useState, useEffect, useRef } from 'react';
 import AvatarSVG from '@/app/components/AvatarSVG';
 import { getElementoEmoji, getElementoCor, getEfeitoEmoji, ehBuff } from '@/lib/arena/battleEffects';
 import { calcularPoderTotal } from '@/lib/gameLogic';
-import { formatarVantagensDesvantagens } from '@/lib/combat/synergySystem';
 
 export default function DualCardBattleLayout({
   // Avatares
@@ -63,16 +62,6 @@ export default function DualCardBattleLayout({
   const [playerCardActive, setPlayerCardActive] = useState('attack'); // 'attack' ou 'support'
   const [opponentCardActive, setOpponentCardActive] = useState('attack');
   const logEndRef = useRef(null);
-
-  // Debug: verificar se sinergias estão sendo recebidas
-  useEffect(() => {
-    if (playerSynergy) {
-      console.log('🔥 SINERGIA JOGADOR DETECTADA:', playerSynergy);
-    }
-    if (opponentSynergy) {
-      console.log('🔥 SINERGIA OPONENTE DETECTADA:', opponentSynergy);
-    }
-  }, [playerSynergy, opponentSynergy]);
 
   // Auto-scroll log
   useEffect(() => {
@@ -187,53 +176,47 @@ export default function DualCardBattleLayout({
                 )}
 
                 {/* Card de SUPORTE: mostrar detalhes da sinergia */}
-{!isAttack && synergy && (() => {
-                  console.log('📊 SINERGIA COMPLETA:', JSON.stringify(synergy, null, 2));
-                  const { vantagens, desvantagens } = formatarVantagensDesvantagens(synergy);
-                  console.log('📊 FORMATADO - Vantagens:', vantagens, '| Desvantagens:', desvantagens);
-
-                  return (
-                    <div className="w-full px-2 mt-1 space-y-1.5 overflow-y-auto max-h-[140px]">
-                      {/* Nome da Sinergia */}
-                      <div className="text-[11px] text-amber-300 font-bold text-center uppercase tracking-wide">
-                        {synergy.nome}
-                      </div>
-
-                      {/* Descrição */}
-                      <div className="text-[9px] text-amber-200/70 text-center italic leading-tight">
-                        {synergy.descricao}
-                      </div>
-
-                      {/* Vantagens */}
-                      {vantagens && vantagens.length > 0 && (
-                        <div className="space-y-0.5">
-                          <div className="text-[8px] text-green-400 font-bold uppercase tracking-wider">
-                            ✅ VANTAGENS:
-                          </div>
-                          {vantagens.map((v, i) => (
-                            <div key={i} className="text-[9px] text-green-300 leading-tight">
-                              ✨ {v.texto}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Desvantagens */}
-                      {desvantagens && desvantagens.length > 0 && (
-                        <div className="space-y-0.5">
-                          <div className="text-[8px] text-red-400 font-bold uppercase tracking-wider">
-                            ⚠️ DESVANTAGENS:
-                          </div>
-                          {desvantagens.map((d, i) => (
-                            <div key={i} className="text-[9px] text-red-300 leading-tight">
-                              💢 {d.texto}
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                {!isAttack && synergy && (
+                  <div className="w-full px-2 mt-1 space-y-1.5 overflow-y-auto max-h-[140px]">
+                    {/* Nome da Sinergia */}
+                    <div className="text-[11px] text-amber-300 font-bold text-center uppercase tracking-wide">
+                      {synergy.nome}
                     </div>
-                  );
-                })()}
+
+                    {/* Descrição */}
+                    <div className="text-[9px] text-amber-200/70 text-center italic leading-tight">
+                      {synergy.descricao}
+                    </div>
+
+                    {/* Vantagens - USA ARRAY DIRETO! */}
+                    {synergy.vantagens && synergy.vantagens.length > 0 && (
+                      <div className="space-y-0.5">
+                        <div className="text-[8px] text-green-400 font-bold uppercase tracking-wider">
+                          ✅ VANTAGENS:
+                        </div>
+                        {synergy.vantagens.map((v, i) => (
+                          <div key={i} className="text-[9px] text-green-300 leading-tight">
+                            ✨ {v.texto}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Desvantagens - USA ARRAY DIRETO! */}
+                    {synergy.desvantagens && synergy.desvantagens.length > 0 && (
+                      <div className="space-y-0.5">
+                        <div className="text-[8px] text-red-400 font-bold uppercase tracking-wider">
+                          ⚠️ DESVANTAGENS:
+                        </div>
+                        {synergy.desvantagens.map((d, i) => (
+                          <div key={i} className="text-[9px] text-red-300 leading-tight">
+                            💢 {d.texto}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -255,7 +238,7 @@ export default function DualCardBattleLayout({
         <h1 className="text-3xl font-bold uppercase tracking-[0.3em] text-purple-400 drop-shadow-[0_0_20px_rgba(168,85,247,0.8)]">
           ⚔ BATALHA DIMENSIONAL ⚔
         </h1>
-        <div className="text-xs text-purple-300 mt-1">TURNO {currentTurn} • v5.0 DEBUG</div>
+        <div className="text-xs text-purple-300 mt-1">TURNO {currentTurn}</div>
       </div>
 
       <div className="flex gap-4 px-4 pb-4 relative z-10 max-h-[calc(100vh-100px)]">
@@ -387,8 +370,6 @@ export default function DualCardBattleLayout({
                     const isOnCooldown = cooldownValue > 0;
                     const hasEnergy = myEnergy >= ability.custo_energia;
                     const tooltipText = `${ability.nome}\n${ability.descricao || ''}\n⚡ Custo: ${ability.custo_energia} energia\n🔄 Cooldown: ${ability.cooldown || 0} turnos`;
-
-                    console.log(`🎯 HAB ${index}: ${ability.nome} | ID: ${ability.id} | Key: ${abilityKey} | Cooldown: ${cooldownValue} | isOnCooldown: ${isOnCooldown} | Todos cooldowns:`, playerCooldowns);
 
                     return (
                       <button
