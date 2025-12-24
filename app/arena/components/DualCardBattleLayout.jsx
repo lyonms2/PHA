@@ -96,8 +96,8 @@ export default function DualCardBattleLayout({
     const cardClasses = `
       absolute w-full transition-all duration-400 ease-in-out rounded-xl overflow-hidden cursor-pointer
       ${isAttack ? 'h-[264px]' : 'h-[240px]'}
-      ${isActive ? 'z-20 top-0' : isAttack ? 'z-10 top-0 opacity-60' : 'z-10 top-[80px]'}
-      ${!isActive && !isAttack ? 'hover:opacity-80' : ''}
+      ${isActive ? 'z-20 top-0' : isAttack ? 'z-10 top-0 opacity-80' : 'z-10 top-[80px] opacity-90'}
+      ${!isActive && !isAttack ? 'hover:opacity-100' : ''}
       ${isActive && !isAttack ? 'scale-105 shadow-2xl' : ''}
     `;
 
@@ -187,9 +187,10 @@ export default function DualCardBattleLayout({
                 )}
 
                 {/* Card de SUPORTE: mostrar detalhes da sinergia */}
-                {!isAttack && synergy && (() => {
+{!isAttack && synergy && (() => {
+                  console.log('📊 SINERGIA COMPLETA:', JSON.stringify(synergy, null, 2));
                   const { vantagens, desvantagens } = formatarVantagensDesvantagens(synergy);
-                  console.log('📊 SINERGIA NO CARD:', synergy.nome, '| Vantagens:', vantagens, '| Desvantagens:', desvantagens);
+                  console.log('📊 FORMATADO - Vantagens:', vantagens, '| Desvantagens:', desvantagens);
 
                   return (
                     <div className="w-full px-2 mt-1 space-y-1.5 overflow-y-auto max-h-[140px]">
@@ -254,7 +255,7 @@ export default function DualCardBattleLayout({
         <h1 className="text-3xl font-bold uppercase tracking-[0.3em] text-purple-400 drop-shadow-[0_0_20px_rgba(168,85,247,0.8)]">
           ⚔ BATALHA DIMENSIONAL ⚔
         </h1>
-        <div className="text-xs text-purple-300 mt-1">TURNO {currentTurn} • v4.0 DEBUG</div>
+        <div className="text-xs text-purple-300 mt-1">TURNO {currentTurn} • v5.0 DEBUG</div>
       </div>
 
       <div className="flex gap-4 px-4 pb-4 relative z-10 max-h-[calc(100vh-100px)]">
@@ -380,15 +381,18 @@ export default function DualCardBattleLayout({
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {playerAbilities.map((ability, index) => {
-                    const isOnCooldown = playerCooldowns[ability.id] > 0;
+                    // Usar nome como ID se id não existir
+                    const abilityKey = ability.id || ability.nome || index;
+                    const cooldownValue = playerCooldowns[abilityKey] || playerCooldowns[index] || 0;
+                    const isOnCooldown = cooldownValue > 0;
                     const hasEnergy = myEnergy >= ability.custo_energia;
                     const tooltipText = `${ability.nome}\n${ability.descricao || ''}\n⚡ Custo: ${ability.custo_energia} energia\n🔄 Cooldown: ${ability.cooldown || 0} turnos`;
 
-                    console.log(`🎯 HAB ${index}: ${ability.nome} | ID: ${ability.id} | Cooldown: ${playerCooldowns[ability.id]} | isOnCooldown: ${isOnCooldown}`);
+                    console.log(`🎯 HAB ${index}: ${ability.nome} | ID: ${ability.id} | Key: ${abilityKey} | Cooldown: ${cooldownValue} | isOnCooldown: ${isOnCooldown} | Todos cooldowns:`, playerCooldowns);
 
                     return (
                       <button
-                        key={ability.id || index}
+                        key={abilityKey}
                         onClick={() => onAbilityUse && onAbilityUse(index)}
                         disabled={!isYourTurn || status !== 'active' || isOnCooldown || !hasEnergy}
                         className="px-3 py-2.5 bg-gradient-to-br from-indigo-900 to-indigo-800 border-2 border-indigo-500 rounded-lg font-bold uppercase text-[9px] tracking-wide text-indigo-200 hover:from-indigo-800 hover:to-indigo-700 hover:border-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-indigo-500/50 relative overflow-hidden"
@@ -397,7 +401,7 @@ export default function DualCardBattleLayout({
                         <span className="block truncate">{ability.nome}</span>
                         {isOnCooldown && (
                           <span className="absolute -top-1 -right-1 text-[10px] bg-red-500 rounded-full w-6 h-6 flex items-center justify-center font-bold shadow-lg z-10">
-                            🔒{playerCooldowns[ability.id]}
+                            🔒{cooldownValue}
                           </span>
                         )}
                       </button>
