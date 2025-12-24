@@ -1,0 +1,377 @@
+/**
+ * Layout de batalha estilo Wasteland com cards empilhados
+ * Avatar principal na frente (Ataque) e suporte atrás (Suporte)
+ * Cards podem ser clicados para alternar posição
+ */
+
+import { useState, useEffect, useRef } from 'react';
+import AvatarSVG from '@/app/components/AvatarSVG';
+import { getElementoEmoji, getElementoCor, getEfeitoEmoji, ehBuff } from '@/lib/arena/battleEffects';
+import { calcularPoderTotal } from '@/lib/gameLogic';
+
+export default function DualCardBattleLayout({
+  // Avatares
+  meuAvatar,
+  meuAvatarSuporte,
+  iaAvatar,
+  iaAvatarSuporte,
+
+  // Estados de batalha
+  myHp,
+  myHpMax,
+  myEnergy,
+  myEnergyMax,
+  opponentHp,
+  opponentHpMax,
+  opponentEnergy,
+  opponentEnergyMax,
+
+  // Efeitos
+  myEffects = [],
+  opponentEffects = [],
+
+  // Cooldowns
+  playerCooldowns = {},
+  iaCooldowns = {},
+
+  // Estado do jogo
+  isYourTurn,
+  status,
+  currentTurn = 1,
+
+  // Ações
+  onAttack,
+  onDefend,
+  onAbilityUse,
+  onSurrender,
+
+  // Habilidades disponíveis
+  playerAbilities = [],
+
+  // Log
+  log = [],
+
+  // Nomes
+  playerName = 'Você',
+  opponentName = 'Oponente'
+}) {
+  const [playerCardActive, setPlayerCardActive] = useState('attack'); // 'attack' ou 'support'
+  const [opponentCardActive, setOpponentCardActive] = useState('attack');
+  const logEndRef = useRef(null);
+
+  // Auto-scroll log
+  useEffect(() => {
+    if (logEndRef.current) {
+      logEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [log]);
+
+  const togglePlayerCard = () => {
+    setPlayerCardActive(prev => prev === 'attack' ? 'support' : 'attack');
+  };
+
+  const toggleOpponentCard = () => {
+    setOpponentCardActive(prev => prev === 'attack' ? 'support' : 'attack');
+  };
+
+  const renderAvatarCard = (avatar, type, isActive, hp, hpMax, energy, energyMax, effects, side) => {
+    if (!avatar) return null;
+
+    const isAttack = type === 'attack';
+    const cardClasses = `
+      absolute w-full transition-all duration-400 ease-in-out rounded-xl overflow-hidden cursor-pointer
+      ${isAttack ? 'h-60' : 'h-36'}
+      ${isActive ? 'z-20 top-0' : isAttack ? 'z-10 top-0 opacity-60' : 'z-10 top-28'}
+      ${!isActive && !isAttack ? 'hover:opacity-80' : ''}
+      ${isActive && !isAttack ? 'scale-105 shadow-2xl' : ''}
+    `;
+
+    const borderColor = isAttack
+      ? 'border-purple-500/50 hover:border-purple-400'
+      : 'border-green-500/50 hover:border-green-400';
+
+    return (
+      <div className={cardClasses}>
+        <div className={`relative h-full bg-gradient-to-br from-slate-900 to-slate-800 border-3 ${borderColor} rounded-xl shadow-xl`}>
+          {/* Textura de fundo */}
+          <div className="absolute inset-0 opacity-5 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(124,58,237,0.1)_10px,rgba(124,58,237,0.1)_20px)]" />
+
+          {/* Label do card */}
+          <div className="absolute top-2 left-2 right-2 text-center z-10">
+            <span className={`text-[10px] uppercase tracking-widest font-bold ${isAttack ? 'text-purple-400' : 'text-green-400'}`}>
+              {isAttack ? '⚔ ATAQUE' : '✚ SUPORTE'}
+            </span>
+          </div>
+
+          {/* Conteúdo do avatar */}
+          <div className="relative h-full flex flex-col items-center justify-center p-2">
+            {/* Avatar SVG */}
+            <div className={`${isActive ? 'scale-100' : 'scale-75'} transition-transform`}>
+              <AvatarSVG avatar={avatar} tamanho={isActive ? 100 : 60} />
+            </div>
+
+            {/* Info do avatar (só quando ativo) */}
+            {isActive && (
+              <>
+                {/* Nome */}
+                <div className="text-xs font-bold text-white mt-2 text-center truncate max-w-full px-2">
+                  {avatar.nome}
+                </div>
+
+                {/* HP Bar */}
+                <div className="w-full px-2 mt-1">
+                  <div className="flex items-center justify-between text-[9px] text-slate-400 mb-0.5">
+                    <span>HP</span>
+                    <span>{hp}/{hpMax}</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-red-500 to-red-400 transition-all duration-300"
+                      style={{ width: `${Math.max(0, (hp / hpMax) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Energy Bar */}
+                <div className="w-full px-2 mt-1">
+                  <div className="flex items-center justify-between text-[9px] text-slate-400 mb-0.5">
+                    <span>ENERGIA</span>
+                    <span>{energy}/{energyMax}</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 transition-all duration-300"
+                      style={{ width: `${Math.max(0, (energy / energyMax) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Efeitos ativos */}
+                {effects.length > 0 && (
+                  <div className="flex gap-0.5 mt-1 flex-wrap justify-center px-2">
+                    {effects.slice(0, 4).map((effect, i) => (
+                      <span
+                        key={i}
+                        className={`text-[10px] ${ehBuff(effect.tipo) ? 'text-green-400' : 'text-red-400'}`}
+                        title={effect.tipo}
+                      >
+                        {getEfeitoEmoji(effect.tipo)}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Brilho hover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-white/5 opacity-0 hover:opacity-100 transition-opacity pointer-events-none" />
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-violet-950 text-white overflow-hidden">
+      {/* Efeito de textura de fundo */}
+      <div className="fixed inset-0 opacity-[0.02] bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,rgba(0,0,0,0.3)_2px,rgba(0,0,0,0.3)_4px)] pointer-events-none animate-pulse" />
+
+      {/* Título */}
+      <div className="text-center py-4 relative z-10">
+        <h1 className="text-3xl font-bold uppercase tracking-[0.3em] text-purple-400 drop-shadow-[0_0_20px_rgba(168,85,247,0.8)]">
+          ⚔ BATALHA DIMENSIONAL ⚔
+        </h1>
+        <div className="text-xs text-purple-300 mt-1">TURNO {currentTurn}</div>
+      </div>
+
+      <div className="flex gap-4 px-4 pb-4 relative z-10 max-h-[calc(100vh-100px)]">
+        {/* Painel Esquerdo - Battlefield + Controles */}
+        <div className="flex-1 flex flex-col gap-4">
+          {/* Battlefield */}
+          <div className="flex gap-8 justify-center items-center">
+            {/* Lado do Jogador */}
+            <div className="flex flex-col gap-3 items-center">
+              <div className="text-sm uppercase tracking-widest font-bold text-purple-400 drop-shadow-[0_0_10px_rgba(168,85,247,0.8)]">
+                [ {playerName} ]
+              </div>
+
+              <div
+                className="relative w-44 h-64 cursor-pointer"
+                onClick={togglePlayerCard}
+              >
+                {/* Card de Ataque */}
+                {meuAvatar && renderAvatarCard(
+                  meuAvatar,
+                  'attack',
+                  playerCardActive === 'attack',
+                  myHp,
+                  myHpMax,
+                  myEnergy,
+                  myEnergyMax,
+                  myEffects,
+                  'player'
+                )}
+
+                {/* Card de Suporte */}
+                {meuAvatarSuporte && renderAvatarCard(
+                  meuAvatarSuporte,
+                  'support',
+                  playerCardActive === 'support',
+                  myHp,
+                  myHpMax,
+                  myEnergy,
+                  myEnergyMax,
+                  myEffects,
+                  'player'
+                )}
+              </div>
+            </div>
+
+            {/* VS Divider */}
+            <div className="text-4xl font-bold text-purple-400 drop-shadow-[0_0_20px_rgba(168,85,247,0.8)] animate-pulse">
+              VS
+            </div>
+
+            {/* Lado do Oponente */}
+            <div className="flex flex-col gap-3 items-center">
+              <div className="text-sm uppercase tracking-widest font-bold text-purple-400 drop-shadow-[0_0_10px_rgba(168,85,247,0.8)]">
+                [ {opponentName} ]
+              </div>
+
+              <div
+                className="relative w-44 h-64 cursor-pointer"
+                onClick={toggleOpponentCard}
+              >
+                {/* Card de Ataque */}
+                {iaAvatar && renderAvatarCard(
+                  iaAvatar,
+                  'attack',
+                  opponentCardActive === 'attack',
+                  opponentHp,
+                  opponentHpMax,
+                  opponentEnergy,
+                  opponentEnergyMax,
+                  opponentEffects,
+                  'opponent'
+                )}
+
+                {/* Card de Suporte */}
+                {iaAvatarSuporte && renderAvatarCard(
+                  iaAvatarSuporte,
+                  'support',
+                  opponentCardActive === 'support',
+                  opponentHp,
+                  opponentHpMax,
+                  opponentEnergy,
+                  opponentEnergyMax,
+                  opponentEffects,
+                  'opponent'
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Painel de Controles */}
+          <div className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-2 border-slate-700 rounded-xl p-4 shadow-xl backdrop-blur-sm">
+            <div className="text-center text-purple-400 text-sm font-bold uppercase tracking-wider mb-3">
+              ⚙ Controles de Batalha
+            </div>
+
+            {/* Ações básicas */}
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <button
+                onClick={onAttack}
+                disabled={!isYourTurn || status !== 'active'}
+                className="px-4 py-2.5 bg-gradient-to-br from-purple-900 to-purple-800 border-2 border-purple-500 rounded-lg font-bold uppercase text-xs tracking-wider text-purple-200 hover:from-purple-800 hover:to-purple-700 hover:border-purple-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-purple-500/50 hover:-translate-y-0.5"
+              >
+                ⚔ Atacar
+              </button>
+              <button
+                onClick={onDefend}
+                disabled={!isYourTurn || status !== 'active'}
+                className="px-4 py-2.5 bg-gradient-to-br from-green-900 to-green-800 border-2 border-green-500 rounded-lg font-bold uppercase text-xs tracking-wider text-green-200 hover:from-green-800 hover:to-green-700 hover:border-green-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-green-500/50 hover:-translate-y-0.5"
+              >
+                🛡 Defender
+              </button>
+            </div>
+
+            {/* Habilidades */}
+            {playerAbilities && playerAbilities.length > 0 && (
+              <div className="mb-3">
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-2">
+                  Habilidades Especiais:
+                </div>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {playerAbilities.map((ability, index) => {
+                    const isOnCooldown = playerCooldowns[ability.id] > 0;
+                    const hasEnergy = myEnergy >= ability.custo_energia;
+
+                    return (
+                      <button
+                        key={ability.id || index}
+                        onClick={() => onAbilityUse && onAbilityUse(ability)}
+                        disabled={!isYourTurn || status !== 'active' || isOnCooldown || !hasEnergy}
+                        className="px-2 py-2 bg-gradient-to-br from-indigo-900 to-indigo-800 border-2 border-indigo-500 rounded-lg font-bold uppercase text-[10px] tracking-wider text-indigo-200 hover:from-indigo-800 hover:to-indigo-700 hover:border-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-indigo-500/50 relative"
+                        title={ability.nome}
+                      >
+                        {ability.nome?.substring(0, 6)}
+                        {isOnCooldown && (
+                          <span className="absolute -top-1 -right-1 text-[8px] bg-red-500 rounded-full w-4 h-4 flex items-center justify-center">
+                            {playerCooldowns[ability.id]}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Abandonar */}
+            <button
+              onClick={onSurrender}
+              disabled={status !== 'active'}
+              className="w-full px-4 py-2 bg-gradient-to-br from-red-900 to-red-800 border-2 border-red-500 rounded-lg font-bold uppercase text-xs tracking-wider text-red-200 hover:from-red-800 hover:to-red-700 hover:border-red-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-red-500/50"
+            >
+              ⚠ Abandonar Batalha
+            </button>
+          </div>
+        </div>
+
+        {/* Painel de Log */}
+        <div className="w-80 bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-2 border-slate-700 rounded-xl p-4 shadow-xl backdrop-blur-sm flex flex-col max-h-[calc(100vh-120px)]">
+          <div className="text-center text-purple-400 text-sm font-bold uppercase tracking-wider mb-3 pb-2 border-b-2 border-slate-700">
+            📜 Log de Batalha
+          </div>
+
+          <div className="flex-1 overflow-y-auto pr-2 space-y-2">
+            {log.map((entry, index) => (
+              <div
+                key={index}
+                className="bg-black/40 border-l-3 border-purple-500 rounded p-2 text-xs leading-relaxed animate-[slideIn_0.3s_ease]"
+              >
+                <span className="text-purple-400 font-bold">[TURNO {entry.turno || currentTurn}]</span>
+                <br />
+                <span className="text-slate-300">{entry.texto || entry}</span>
+              </div>
+            ))}
+            <div ref={logEndRef} />
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateX(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
