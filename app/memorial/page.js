@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import AvatarSVG from '../components/AvatarSVG';
 import GameNav, { COMMON_ACTIONS } from '../components/GameNav';
 
@@ -11,7 +12,7 @@ const getEpitafio = (causaMorte) => {
     case 'sacrificio':
       return {
         texto: "Sacrificado pelo próprio mestre,<br/>sua essência alimenta o Vazio Dimensional.",
-        emoji: "🕯️"
+        emoji: "morte_image"
       };
     case 'fusao':
       return {
@@ -122,13 +123,35 @@ export default function MemorialPage() {
           <div className="text-center mb-20">
             {/* Portão do cemitério */}
             <div className="mb-8 relative">
-              <div className="flex justify-center items-end gap-4 mb-6">
-                <div className="w-2 h-32 bg-gradient-to-b from-gray-700 to-gray-900 rounded-t"></div>
+              <div className="flex justify-center items-center mb-6">
                 <div className="relative">
-                  <div className="text-7xl opacity-30 blur-sm absolute inset-0 flex items-center justify-center">🕯️</div>
-                  <div className="text-7xl relative animate-flicker">🕯️</div>
+                  {/* Efeito de blur externo */}
+                  <div className="absolute -inset-2 bg-gradient-to-b from-gray-800/20 to-transparent rounded-full blur"></div>
+
+                  {/* Moldura com imagem */}
+                  <div className="relative w-70 h-70 bg-gray-950/50 rounded-full border border-gray-800/30 overflow-hidden">
+                    <div className="opacity-30 blur-sm absolute inset-0 flex items-center justify-center">
+                      <Image
+                        src="/personagens/Morte.png"
+                        alt="Morte"
+                        width={224}
+                        height={224}
+                        className="w-full h-full object-cover object-center"
+                        style={{ objectPosition: 'center 60%' }}
+                      />
+                    </div>
+                    <div className="relative w-full h-full animate-flicker flex items-center justify-center">
+                      <Image
+                        src="/personagens/Morte.png"
+                        alt="Morte"
+                        width={224}
+                        height={224}
+                        className="w-full h-full object-cover"
+                        style={{ objectPosition: 'center 60%' }}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="w-2 h-32 bg-gradient-to-b from-gray-700 to-gray-900 rounded-t"></div>
               </div>
             </div>
             
@@ -240,8 +263,20 @@ export default function MemorialPage() {
 
                       {/* Epitáfio */}
                       <div className="text-center">
-                        <p className="text-gray-700 text-xs font-mono italic leading-relaxed">
-                          <span className="mr-1">{getEpitafio(avatar.causa_morte).emoji}</span>
+                        <p className="text-gray-700 text-xs font-mono italic leading-relaxed flex items-center justify-center gap-1">
+                          {getEpitafio(avatar.causa_morte).emoji === "morte_image" ? (
+                            <span className="inline-flex items-center justify-center w-5 h-5 bg-gray-950/50 rounded-full border border-gray-800/30 overflow-hidden flex-shrink-0">
+                              <Image
+                                src="/personagens/Morte.png"
+                                alt="Morte"
+                                width={20}
+                                height={20}
+                                className="w-full h-full object-cover"
+                              />
+                            </span>
+                          ) : (
+                            <span>{getEpitafio(avatar.causa_morte).emoji}</span>
+                          )}
                           "<span dangerouslySetInnerHTML={{ __html: getEpitafio(avatar.causa_morte).texto }} />"
                         </p>
                       </div>
