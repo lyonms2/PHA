@@ -13,14 +13,14 @@ export const dynamic = 'force-dynamic';
 /**
  * POST /api/merge-avatares
  *
- * Funde dois avatares: base recebe 30% dos stats do sacrifício.
+ * Funde dois avatares: base recebe 15% dos stats do sacrifício.
  * Avatar sacrificado é destruído permanentemente.
  *
  * Mecânicas:
- * - Chance de sucesso diminui com cada merge (100% → 40% no 8º merge)
- * - 30% chance de transmutação de elemento (se diferentes)
- * - Custo baseado em níveis e raridade
- * - Máximo 8 merges por avatar
+ * - Chance de sucesso diminui com cada merge (80% → 35% no 3º merge)
+ * - Custo baseado em níveis e raridade (2x do valor base)
+ * - Máximo 3 merges por avatar
+ * - Avatar sacrificado NÃO pode ter merge_count > 0 (previne merge em cadeia)
  *
  * Se falhar: Avatar sacrificado é perdido, base permanece intacto
  */
@@ -73,20 +73,29 @@ export async function POST(request) {
       );
     }
 
-    // 3.5. Verificar limite de merges (máximo 8)
-    const mergeCount = avatarBase.merge_count || 0;
-    if (mergeCount >= 8) {
-      return Response.json(
-        { message: "Este avatar atingiu o limite máximo de fusões (8)" },
+    // 3.5. Validar que avatar de sacrifício NÃO tem merges (previne merge em cadeia)
+    const sacrificioMergeCount = avatarSacrificio.merge_count || 0;
+    if (sacrificioMergeCount > 0) {
+      return NextResponse.json(
+        { message: "Avatar de sacrifício não pode ter sido fundido anteriormente (previne merge em cadeia)" },
         { status: 400 }
       );
     }
 
-    // 3.6. Calcular chance de sucesso baseada em merge_count
-    // 0 merges: 100%, 1: 92.5%, 2: 85%, 3: 77.5%, 4: 70%, 5: 62.5%, 6: 55%, 7: 47.5%, 8: 40%
-    const chanceBase = 100;
-    const reducaoPorMerge = 7.5;
-    const chanceMinima = 40;
+    // 3.6. Verificar limite de merges (máximo 3)
+    const mergeCount = avatarBase.merge_count || 0;
+    if (mergeCount >= 3) {
+      return NextResponse.json(
+        { message: "Este avatar atingiu o limite máximo de fusões (3)" },
+        { status: 400 }
+      );
+    }
+
+    // 3.7. Calcular chance de sucesso baseada em merge_count
+    // 0 merges: 80%, 1: 65%, 2: 50%, 3: 35%
+    const chanceBase = 80;
+    const reducaoPorMerge = 15;
+    const chanceMinima = 35;
     const chanceSucesso = Math.max(chanceBase - (mergeCount * reducaoPorMerge), chanceMinima);
 
     // 3.7. Rolar para ver se o merge é bem sucedido
@@ -106,13 +115,13 @@ export async function POST(request) {
     // 4.1 Obter rank do cacador para aplicar desconto
     const hunterRank = getHunterRank(playerStats.hunterRankXp || 0);
 
-    // 4.2 Calcular custo base
+    // 4.2 Calcular custo base (DOBRADO - Opção B)
     const nivelTotal = avatarBase.nivel + avatarSacrificio.nivel;
     const multiplicador = avatarBase.raridade === 'Lendário' ? 2 :
                           avatarBase.raridade === 'Raro' ? 1.5 : 1;
 
-    const custoMoedasBase = Math.floor(nivelTotal * 100 * multiplicador);
-    const custoFragmentosBase = Math.floor(nivelTotal * 10 * multiplicador);
+    const custoMoedasBase = Math.floor(nivelTotal * 100 * multiplicador * 2); // Dobrado
+    const custoFragmentosBase = Math.floor(nivelTotal * 10 * multiplicador * 2); // Dobrado
 
     // 4.3 Aplicar desconto do rank do cacador
     const custoMoedas = aplicarDescontoMerge(custoMoedasBase, hunterRank);
@@ -135,23 +144,11 @@ export async function POST(request) {
       );
     }
 
-    // 7. Calcular ganhos de stats (30% do sacrifício)
-    const ganhoForca = Math.floor(avatarSacrificio.forca * 0.3);
-    const ganhoAgilidade = Math.floor(avatarSacrificio.agilidade * 0.3);
-    const ganhoResistencia = Math.floor(avatarSacrificio.resistencia * 0.3);
-    const ganhoFoco = Math.floor(avatarSacrificio.foco * 0.3);
-
-    // 8. Rolar chance de transmutação de elemento (30% se elementos forem diferentes)
-    let elementoTransmutado = false;
-    let novoElemento = avatarBase.elemento;
-
-    if (avatarBase.elemento !== avatarSacrificio.elemento) {
-      const rollElemento = Math.random();
-      if (rollElemento < 0.3) { // 30% de chance
-        elementoTransmutado = true;
-        novoElemento = avatarSacrificio.elemento;
-      }
-    }
+    // 7. Calcular ganhos de stats (15% do sacrifício - Opção B)
+    const ganhoForca = Math.floor(avatarSacrificio.forca * 0.15);
+    const ganhoAgilidade = Math.floor(avatarSacrificio.agilidade * 0.15);
+    const ganhoResistencia = Math.floor(avatarSacrificio.resistencia * 0.15);
+    const ganhoFoco = Math.floor(avatarSacrificio.foco * 0.15);
 
     // 9. Preparar dados para atualização
     let updateData = {
@@ -171,8 +168,7 @@ export async function POST(request) {
         forca: novaForca,
         agilidade: novaAgilidade,
         resistencia: novaResistencia,
-        foco: novoFoco,
-        elemento: novoElemento
+        foco: novoFoco
       };
     }
 
@@ -226,9 +222,6 @@ export async function POST(request) {
           resistencia: 0,
           foco: 0
         },
-        mudouElemento: mergeSuccessful && elementoTransmutado,
-        elementoOriginal: avatarBase.elemento,
-        elementoNovo: mergeSuccessful ? novoElemento : avatarBase.elemento,
         custos: {
           moedas: custoMoedas,
           fragmentos: custoFragmentos,
