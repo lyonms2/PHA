@@ -14,7 +14,7 @@ import {
 import SynergyDisplay from './components/SynergyDisplay';
 import AvatarDuoDisplay from './components/AvatarDuoDisplay';
 import BattleLog from './components/BattleLog';
-import CompactBattleLayout from './components/CompactBattleLayout';
+import DualCardBattleLayout from '@/app/arena/components/DualCardBattleLayout';
 
 function BatalhaTreinoIAContent() {
   const router = useRouter();
@@ -641,37 +641,63 @@ function BatalhaTreinoIAContent() {
   const hpMeuPercent = myHpMax > 0 ? Math.max(0, Math.min(100, (myHp / myHpMax) * 100)) : 0;
   const hpIAPercent = opponentHpMax > 0 ? Math.max(0, Math.min(100, (opponentHp / opponentHpMax) * 100)) : 0;
 
-  // Se batalha ativa, usar layout compacto
+  // Se batalha ativa, usar layout com cards empilhados
   if (status === 'active') {
     return (
-      <>
-        <CompactBattleLayout
-          meuAvatar={meuAvatar}
-          iaAvatar={iaAvatar}
-          sinergiaPlayer={sinergiaAtiva}
-          sinergiaIA={sinergiaIA}
-          myHp={myHp}
-          myHpMax={myHpMax}
-          opponentHp={opponentHp}
-          opponentHpMax={opponentHpMax}
-          myEnergy={myEnergy}
-          myEnergyMax={myEnergyMax}
-          opponentEnergy={opponentEnergy}
-          opponentEnergyMax={opponentEnergyMax}
-          myEffects={myEffects}
-          opponentEffects={opponentEffects}
-          playerCooldowns={playerCooldowns}
-          iaCooldowns={iaCooldowns}
-          isYourTurn={isYourTurn}
-          currentTurn={currentTurn}
-          log={log}
-          atacar={atacar}
-          defender={defender}
-          usarHabilidade={usarHabilidade}
-          abandonar={() => router.push('/arena/treinamento')}
-          actionInProgress={actionInProgress}
-        />
-      </>
+      <DualCardBattleLayout
+        // Avatares principais
+        meuAvatar={meuAvatar}
+        iaAvatar={iaAvatar}
+
+        // Avatares de suporte (da sinergia se existir)
+        meuAvatarSuporte={sinergiaAtiva?.avatarSuporte || null}
+        iaAvatarSuporte={sinergiaIA?.avatarSuporte || null}
+
+        // Estados de batalha do jogador
+        myHp={myHp}
+        myHpMax={myHpMax}
+        myEnergy={myEnergy}
+        myEnergyMax={myEnergyMax}
+
+        // Estados de batalha do oponente
+        opponentHp={opponentHp}
+        opponentHpMax={opponentHpMax}
+        opponentEnergy={opponentEnergy}
+        opponentEnergyMax={opponentEnergyMax}
+
+        // Efeitos
+        myEffects={myEffects}
+        opponentEffects={opponentEffects}
+
+        // Cooldowns
+        playerCooldowns={playerCooldowns}
+        iaCooldowns={iaCooldowns}
+
+        // Estado do jogo
+        isYourTurn={isYourTurn}
+        status={status}
+        currentTurn={currentTurn}
+
+        // Ações
+        onAttack={atacar}
+        onDefend={defender}
+        onAbilityUse={usarHabilidade}
+        onSurrender={() => router.push('/arena/treinamento')}
+
+        // Habilidades disponíveis
+        playerAbilities={meuAvatar?.habilidades || []}
+
+        // Log
+        log={log}
+
+        // Nomes
+        playerName={meuNome}
+        opponentName={iaAvatar?.nome || 'IA Treinador'}
+
+        // Sinergias
+        playerSynergy={sinergiaAtiva}
+        opponentSynergy={sinergiaIA}
+      />
     );
   }
 
