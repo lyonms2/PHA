@@ -189,8 +189,10 @@ export default function DualCardBattleLayout({
                 {/* Card de SUPORTE: mostrar detalhes da sinergia */}
                 {!isAttack && synergy && (() => {
                   const { vantagens, desvantagens } = formatarVantagensDesvantagens(synergy);
+                  console.log('📊 SINERGIA NO CARD:', synergy.nome, '| Vantagens:', vantagens, '| Desvantagens:', desvantagens);
+
                   return (
-                    <div className="w-full px-2 mt-1 space-y-1.5">
+                    <div className="w-full px-2 mt-1 space-y-1.5 overflow-y-auto max-h-[140px]">
                       {/* Nome da Sinergia */}
                       <div className="text-[11px] text-amber-300 font-bold text-center uppercase tracking-wide">
                         {synergy.nome}
@@ -202,7 +204,7 @@ export default function DualCardBattleLayout({
                       </div>
 
                       {/* Vantagens */}
-                      {vantagens.length > 0 && (
+                      {vantagens && vantagens.length > 0 && (
                         <div className="space-y-0.5">
                           <div className="text-[8px] text-green-400 font-bold uppercase tracking-wider">
                             ✅ VANTAGENS:
@@ -216,7 +218,7 @@ export default function DualCardBattleLayout({
                       )}
 
                       {/* Desvantagens */}
-                      {desvantagens.length > 0 && (
+                      {desvantagens && desvantagens.length > 0 && (
                         <div className="space-y-0.5">
                           <div className="text-[8px] text-red-400 font-bold uppercase tracking-wider">
                             ⚠️ DESVANTAGENS:
@@ -252,7 +254,7 @@ export default function DualCardBattleLayout({
         <h1 className="text-3xl font-bold uppercase tracking-[0.3em] text-purple-400 drop-shadow-[0_0_20px_rgba(168,85,247,0.8)]">
           ⚔ BATALHA DIMENSIONAL ⚔
         </h1>
-        <div className="text-xs text-purple-300 mt-1">TURNO {currentTurn} • v3.0</div>
+        <div className="text-xs text-purple-300 mt-1">TURNO {currentTurn} • v4.0 DEBUG</div>
       </div>
 
       <div className="flex gap-4 px-4 pb-4 relative z-10 max-h-[calc(100vh-100px)]">
@@ -376,23 +378,25 @@ export default function DualCardBattleLayout({
                 <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-2">
                   Habilidades Especiais:
                 </div>
-                <div className="grid grid-cols-3 gap-1.5">
+                <div className="grid grid-cols-2 gap-2">
                   {playerAbilities.map((ability, index) => {
                     const isOnCooldown = playerCooldowns[ability.id] > 0;
                     const hasEnergy = myEnergy >= ability.custo_energia;
                     const tooltipText = `${ability.nome}\n${ability.descricao || ''}\n⚡ Custo: ${ability.custo_energia} energia\n🔄 Cooldown: ${ability.cooldown || 0} turnos`;
+
+                    console.log(`🎯 HAB ${index}: ${ability.nome} | ID: ${ability.id} | Cooldown: ${playerCooldowns[ability.id]} | isOnCooldown: ${isOnCooldown}`);
 
                     return (
                       <button
                         key={ability.id || index}
                         onClick={() => onAbilityUse && onAbilityUse(index)}
                         disabled={!isYourTurn || status !== 'active' || isOnCooldown || !hasEnergy}
-                        className="px-2 py-2 bg-gradient-to-br from-indigo-900 to-indigo-800 border-2 border-indigo-500 rounded-lg font-bold uppercase text-[10px] tracking-wider text-indigo-200 hover:from-indigo-800 hover:to-indigo-700 hover:border-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-indigo-500/50 relative"
+                        className="px-3 py-2.5 bg-gradient-to-br from-indigo-900 to-indigo-800 border-2 border-indigo-500 rounded-lg font-bold uppercase text-[9px] tracking-wide text-indigo-200 hover:from-indigo-800 hover:to-indigo-700 hover:border-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-indigo-500/50 relative overflow-hidden"
                         title={tooltipText}
                       >
-                        {ability.nome?.substring(0, 8)}
+                        <span className="block truncate">{ability.nome}</span>
                         {isOnCooldown && (
-                          <span className="absolute -top-1 -right-1 text-[9px] bg-red-500 rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-lg">
+                          <span className="absolute -top-1 -right-1 text-[10px] bg-red-500 rounded-full w-6 h-6 flex items-center justify-center font-bold shadow-lg z-10">
                             🔒{playerCooldowns[ability.id]}
                           </span>
                         )}
