@@ -85,7 +85,7 @@ export default function DualCardBattleLayout({
     const cardClasses = `
       absolute w-full transition-all duration-400 ease-in-out rounded-xl overflow-hidden cursor-pointer
       ${isAttack ? 'h-[264px]' : isActive ? 'h-[240px]' : 'h-[200px]'}
-      ${isActive ? 'z-20 top-0' : isAttack ? 'z-10 top-0' : 'z-10 top-[100px]'}
+      ${isActive ? 'z-30 top-0' : 'z-10 opacity-0 pointer-events-none'}
       ${isActive && !isAttack ? 'scale-105 shadow-2xl' : ''}
     `;
 
@@ -176,7 +176,7 @@ export default function DualCardBattleLayout({
 
                 {/* Card de SUPORTE: mostrar detalhes da sinergia */}
                 {!isAttack && synergy && (
-                  <div className="w-full px-2 mt-1 space-y-1.5 overflow-y-auto max-h-[140px]">
+                  <div className="w-full px-2 mt-1 space-y-1.5 overflow-y-auto max-h-[140px] custom-scrollbar">
                     {/* Nome da Sinergia */}
                     <div className="text-[11px] text-amber-300 font-bold text-center uppercase tracking-wide">
                       {synergy.nome}
@@ -432,6 +432,32 @@ export default function DualCardBattleLayout({
             opacity: 1;
             transform: translateX(0);
           }
+        }
+
+        /* Scrollbar customizado */
+        :global(.custom-scrollbar::-webkit-scrollbar) {
+          width: 6px;
+        }
+
+        :global(.custom-scrollbar::-webkit-scrollbar-track) {
+          background: rgba(0, 0, 0, 0.3);
+          border-radius: 3px;
+        }
+
+        :global(.custom-scrollbar::-webkit-scrollbar-thumb) {
+          background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+          border-radius: 3px;
+          transition: background 0.3s ease;
+        }
+
+        :global(.custom-scrollbar::-webkit-scrollbar-thumb:hover) {
+          background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
+        }
+
+        /* Firefox */
+        :global(.custom-scrollbar) {
+          scrollbar-width: thin;
+          scrollbar-color: #f59e0b rgba(0, 0, 0, 0.3);
         }
       `}</style>
     </div>
