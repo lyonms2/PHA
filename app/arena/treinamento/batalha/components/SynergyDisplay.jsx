@@ -3,7 +3,7 @@
  * Mostra avatar suporte e modificadores aplicados
  */
 
-import { getElementoEmoji, getElementoCor } from '../utils/battleEffects';
+import { getElementoEmoji, getElementoCor } from '../utils';
 
 export default function SynergyDisplay({ sinergia }) {
   if (!sinergia) return null;
