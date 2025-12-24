@@ -6,13 +6,15 @@
 // Reutilizar função de balanceamento do PVP
 export { atualizarBalanceamentoHabilidade } from '@/app/api/pvp/room/state/utils/balanceUpdater';
 
-// Funções de efeitos visuais e utilidades de batalha
+// Funções de efeitos visuais (centralizadas em /lib/arena)
 export {
   getElementoEmoji,
+  getElementoCor,
   getEfeitoEmoji,
   ehBuff,
-  getNomeSala
-} from './battleEffects';
+  getNomeSala,
+  normalizarEfeito
+} from '@/lib/arena/battleEffects';
 
 // Processador de logs de batalha
 export { processarNovosLogs } from './logProcessor';
