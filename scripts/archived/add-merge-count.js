@@ -32,9 +32,9 @@ async function addMergeCountColumn() {
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         console.log(`
 ALTER TABLE avatares
-ADD COLUMN IF NOT EXISTS merge_count INTEGER DEFAULT 0 CHECK (merge_count >= 0 AND merge_count <= 8);
+ADD COLUMN IF NOT EXISTS merge_count INTEGER DEFAULT 0 CHECK (merge_count >= 0 AND merge_count <= 3);
 
-COMMENT ON COLUMN avatares.merge_count IS 'Quantidade de vezes que este avatar foi usado como base em merge (máximo 8)';
+COMMENT ON COLUMN avatares.merge_count IS 'Quantidade de vezes que este avatar foi usado como base em merge (máximo 3 - Opção B)';
 
 CREATE INDEX IF NOT EXISTS idx_avatares_merge_count ON avatares(merge_count);
 
@@ -75,7 +75,7 @@ UPDATE avatares SET merge_count = 0 WHERE merge_count IS NULL;
     if (comMerge.length > 0) {
       console.log('📄 Avatares com merges:');
       comMerge.forEach(a => {
-        const chance = Math.max(100 - (a.merge_count * 7.5), 40);
+        const chance = Math.max(80 - (a.merge_count * 15), 35); // Opção B
         console.log(`  🧬 ${a.nome}: ${a.merge_count} merges (${chance}% chance de sucesso)`);
       });
       console.log();
@@ -85,7 +85,8 @@ UPDATE avatares SET merge_count = 0 WHERE merge_count IS NULL;
     console.log('✅ VERIFICAÇÃO COMPLETA!');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
     console.log('🎮 O sistema de merge count está pronto para uso!');
-    console.log('💡 Mecânica: A cada merge, a chance de sucesso diminui até 40% (máx 8 merges).\n');
+    console.log('💡 Mecânica (Opção B): A cada merge, a chance de sucesso diminui até 35% (máx 3 merges).');
+    console.log('💡 Fórmula: 80% - (merges × 15%), mínimo 35%. Ganho de 15% dos stats do sacrificado.\n');
 
   } catch (error) {
     console.error('\n❌ ERRO:', error.message);
