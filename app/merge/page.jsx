@@ -6,6 +6,7 @@ import Image from "next/image";
 import AvatarSVG from '../components/AvatarSVG';
 import GameNav from '../components/GameNav';
 import { calcularPoderTotal } from '@/lib/gameLogic';
+import { getHunterRank } from '@/lib/hunter/hunterRankSystem';
 
 export default function MergePage() {
   const router = useRouter();
@@ -13,6 +14,7 @@ export default function MergePage() {
   const [stats, setStats] = useState(null);
   const [avatares, setAvatares] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hunterRank, setHunterRank] = useState(null);
 
   // Estados do merge
   const [avatarBase, setAvatarBase] = useState(null);
@@ -46,6 +48,10 @@ export default function MergePage() {
       const statsData = await statsRes.json();
       setStats(statsData.stats);
 
+      // Calcular Hunter Rank
+      const rank = getHunterRank(statsData.stats.hunterRankXp || 0);
+      setHunterRank(rank);
+
       // Carregar avatares
       const avataresRes = await fetch(`/api/meus-avatares?userId=${userId}`);
       const avataresData = await avataresRes.json();
@@ -60,14 +66,26 @@ export default function MergePage() {
   };
 
   const calcularCusto = () => {
-    if (!avatarBase || !avatarSacrificio) return { moedas: 0, fragmentos: 0 };
+    if (!avatarBase || !avatarSacrificio) return { moedas: 0, fragmentos: 0, moedasBase: 0, fragmentosBase: 0, desconto: 0 };
 
     const nivelTotal = avatarBase.nivel + avatarSacrificio.nivel;
     const multiplicador = avatarBase.raridade === 'Lendário' ? 2 : avatarBase.raridade === 'Raro' ? 1.5 : 1;
 
+    // Custo base (dobrado - Opção B)
+    const moedasBase = Math.floor(nivelTotal * 100 * multiplicador * 2);
+    const fragmentosBase = Math.floor(nivelTotal * 10 * multiplicador * 2);
+
+    // Aplicar desconto do Hunter Rank
+    const descontoMerge = hunterRank?.descontoMerge || 0;
+    const moedas = Math.floor(moedasBase * (1 - descontoMerge));
+    const fragmentos = Math.floor(fragmentosBase * (1 - descontoMerge));
+
     return {
-      moedas: Math.floor(nivelTotal * 100 * multiplicador * 2), // Dobrado - Opção B
-      fragmentos: Math.floor(nivelTotal * 10 * multiplicador * 2) // Dobrado - Opção B
+      moedas,
+      fragmentos,
+      moedasBase,
+      fragmentosBase,
+      desconto: descontoMerge
     };
   };
 
@@ -537,15 +555,41 @@ export default function MergePage() {
               {/* Custo */}
               <div className="mt-6 p-4 bg-gradient-to-r from-slate-900/80 to-violet-950/80 rounded-lg border border-violet-500/50">
                 <h4 className="text-sm font-bold text-slate-400 mb-3">Custo do Ritual:</h4>
-                <div className="flex items-center justify-between">
-                  <div className="flex gap-4">
-                    <div>
-                      <span className="text-amber-400 font-bold text-lg">💰 {custo.moedas}</span>
-                      <span className="text-xs text-slate-500 ml-2">moedas</span>
+
+                {custo.desconto > 0 && (
+                  <div className="mb-3 p-2 bg-cyan-950/30 rounded border border-cyan-500/30">
+                    <div className="flex items-center gap-2 text-xs text-cyan-300">
+                      <span>🎖️</span>
+                      <span className="font-bold">Desconto Hunter Rank {hunterRank?.nome}: -{Math.round(custo.desconto * 100)}%</span>
                     </div>
-                    <div>
-                      <span className="text-purple-400 font-bold text-lg">💎 {custo.fragmentos}</span>
-                      <span className="text-xs text-slate-500 ml-2">fragmentos</span>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-4">
+                      <div>
+                        {custo.desconto > 0 ? (
+                          <>
+                            <span className="text-amber-400 font-bold text-lg">💰 {custo.moedas}</span>
+                            <span className="text-xs text-slate-500 line-through ml-2">{custo.moedasBase}</span>
+                          </>
+                        ) : (
+                          <span className="text-amber-400 font-bold text-lg">💰 {custo.moedas}</span>
+                        )}
+                        <span className="text-xs text-slate-500 ml-2">moedas</span>
+                      </div>
+                      <div>
+                        {custo.desconto > 0 ? (
+                          <>
+                            <span className="text-purple-400 font-bold text-lg">💎 {custo.fragmentos}</span>
+                            <span className="text-xs text-slate-500 line-through ml-2">{custo.fragmentosBase}</span>
+                          </>
+                        ) : (
+                          <span className="text-purple-400 font-bold text-lg">💎 {custo.fragmentos}</span>
+                        )}
+                        <span className="text-xs text-slate-500 ml-2">fragmentos</span>
+                      </div>
                     </div>
                   </div>
 
