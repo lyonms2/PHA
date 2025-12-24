@@ -328,7 +328,7 @@ export default function MergePage() {
                       .filter(av => !avatarSacrificio || av.id !== avatarSacrificio.id)
                       .map((avatar) => {
                         const merges = avatar.merge_count || 0;
-                        const chance = Math.max(100 - (merges * 7.5), 40);
+                        const chance = Math.max(80 - (merges * 15), 35); // Opção B
                         return (
                           <button
                             key={avatar.id}
@@ -340,9 +340,9 @@ export default function MergePage() {
                             <div className="text-xs text-slate-400">Nv.{avatar.nivel}</div>
                             {merges > 0 && (
                               <div className={`text-[10px] mt-1 font-bold ${
-                                chance >= 70 ? 'text-green-400' :
+                                chance >= 65 ? 'text-green-400' :
                                 chance >= 50 ? 'text-yellow-400' :
-                                'text-orange-400'
+                                'text-red-400'
                               }`}>
                                 🧬{merges} ({chance}%)
                               </div>
