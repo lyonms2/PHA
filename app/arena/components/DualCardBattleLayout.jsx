@@ -85,7 +85,7 @@ export default function DualCardBattleLayout({
     const cardClasses = `
       absolute w-full transition-all duration-400 ease-in-out rounded-xl overflow-hidden cursor-pointer
       ${isAttack ? 'h-[264px]' : 'h-[240px]'}
-      ${isActive ? 'z-20 top-0' : isAttack ? 'z-10 top-0 opacity-80' : 'z-10 top-[80px] opacity-90'}
+      ${isActive ? 'z-20 top-0' : isAttack ? 'z-10 top-0 opacity-70' : 'z-10 top-[80px]'}
       ${!isActive && !isAttack ? 'hover:opacity-100' : ''}
       ${isActive && !isAttack ? 'scale-105 shadow-2xl' : ''}
     `;
@@ -96,12 +96,12 @@ export default function DualCardBattleLayout({
       : 'from-amber-900/70 to-yellow-900/60'; // Suporte: fundo amarelado
 
     const borderColor = isAttack
-      ? 'border-rose-600/80 hover:border-rose-500' // Ataque: borda roxo-avermelhado
-      : 'border-amber-500/80 hover:border-amber-400'; // Suporte: borda amarela
+      ? 'border-rose-500 hover:border-rose-400 shadow-rose-500/30' // Ataque: borda roxo-avermelhado
+      : 'border-amber-500 hover:border-amber-400 shadow-amber-500/40'; // Suporte: borda amarela
 
     return (
       <div className={cardClasses}>
-        <div className={`relative h-full bg-gradient-to-br ${bgGradient} border-3 ${borderColor} rounded-xl shadow-xl`}>
+        <div className={`relative h-full bg-gradient-to-br ${bgGradient} border-4 ${borderColor} rounded-xl shadow-2xl`}>
           {/* Textura de fundo */}
           <div className={`absolute inset-0 opacity-5 ${isAttack ? 'bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(124,58,237,0.1)_10px,rgba(124,58,237,0.1)_20px)]' : 'bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(251,191,36,0.1)_10px,rgba(251,191,36,0.1)_20px)]'}`} />
 
@@ -116,7 +116,7 @@ export default function DualCardBattleLayout({
           <div className="relative h-full flex flex-col items-center p-2 pt-6">
             {/* Avatar SVG - ajustado para não sobrepor o label */}
             <div className={`${isActive ? 'scale-100' : 'scale-75'} transition-transform ${!isAttack ? 'mt-1' : 'mt-2'}`}>
-              <AvatarSVG avatar={avatar} tamanho={isAttack ? (isActive ? 110 : 66) : 55} />
+              <AvatarSVG avatar={avatar} tamanho={isAttack ? (isActive ? 110 : 66) : 70} />
             </div>
 
             {/* Info do avatar (só quando ativo) */}
