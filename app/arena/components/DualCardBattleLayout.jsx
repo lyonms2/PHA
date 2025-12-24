@@ -95,8 +95,8 @@ export default function DualCardBattleLayout({
     const isAttack = type === 'attack';
     const cardClasses = `
       absolute w-full transition-all duration-400 ease-in-out rounded-xl overflow-hidden cursor-pointer
-      ${isAttack ? 'h-[264px]' : 'h-[158px]'}
-      ${isActive ? 'z-20 top-0' : isAttack ? 'z-10 top-0 opacity-60' : 'z-10 top-[123px]'}
+      ${isAttack ? 'h-[264px]' : 'h-[240px]'}
+      ${isActive ? 'z-20 top-0' : isAttack ? 'z-10 top-0 opacity-60' : 'z-10 top-[80px]'}
       ${!isActive && !isAttack ? 'hover:opacity-80' : ''}
       ${isActive && !isAttack ? 'scale-105 shadow-2xl' : ''}
     `;
@@ -190,25 +190,25 @@ export default function DualCardBattleLayout({
                 {!isAttack && synergy && (() => {
                   const { vantagens, desvantagens } = formatarVantagensDesvantagens(synergy);
                   return (
-                    <div className="w-full px-2 mt-0.5 space-y-1">
+                    <div className="w-full px-2 mt-1 space-y-1.5">
                       {/* Nome da Sinergia */}
-                      <div className="text-[10px] text-amber-300 font-bold text-center uppercase tracking-wide">
+                      <div className="text-[11px] text-amber-300 font-bold text-center uppercase tracking-wide">
                         {synergy.nome}
                       </div>
 
                       {/* Descrição */}
-                      <div className="text-[8px] text-amber-200/70 text-center italic leading-tight">
+                      <div className="text-[9px] text-amber-200/70 text-center italic leading-tight">
                         {synergy.descricao}
                       </div>
 
                       {/* Vantagens */}
                       {vantagens.length > 0 && (
                         <div className="space-y-0.5">
-                          <div className="text-[7px] text-green-400 font-bold uppercase tracking-wider">
+                          <div className="text-[8px] text-green-400 font-bold uppercase tracking-wider">
                             ✅ VANTAGENS:
                           </div>
                           {vantagens.map((v, i) => (
-                            <div key={i} className="text-[8px] text-green-300 leading-tight">
+                            <div key={i} className="text-[9px] text-green-300 leading-tight">
                               ✨ {v.texto}
                             </div>
                           ))}
@@ -218,11 +218,11 @@ export default function DualCardBattleLayout({
                       {/* Desvantagens */}
                       {desvantagens.length > 0 && (
                         <div className="space-y-0.5">
-                          <div className="text-[7px] text-red-400 font-bold uppercase tracking-wider">
+                          <div className="text-[8px] text-red-400 font-bold uppercase tracking-wider">
                             ⚠️ DESVANTAGENS:
                           </div>
                           {desvantagens.map((d, i) => (
-                            <div key={i} className="text-[8px] text-red-300 leading-tight">
+                            <div key={i} className="text-[9px] text-red-300 leading-tight">
                               💢 {d.texto}
                             </div>
                           ))}
@@ -252,7 +252,7 @@ export default function DualCardBattleLayout({
         <h1 className="text-3xl font-bold uppercase tracking-[0.3em] text-purple-400 drop-shadow-[0_0_20px_rgba(168,85,247,0.8)]">
           ⚔ BATALHA DIMENSIONAL ⚔
         </h1>
-        <div className="text-xs text-purple-300 mt-1">TURNO {currentTurn} • v2.0</div>
+        <div className="text-xs text-purple-300 mt-1">TURNO {currentTurn} • v3.0</div>
       </div>
 
       <div className="flex gap-4 px-4 pb-4 relative z-10 max-h-[calc(100vh-100px)]">
@@ -267,7 +267,7 @@ export default function DualCardBattleLayout({
               </div>
 
               <div
-                className="relative w-[194px] h-[282px] cursor-pointer"
+                className="relative w-[194px] h-[320px] cursor-pointer"
                 onClick={togglePlayerCard}
               >
                 {/* Card de Ataque */}
@@ -312,7 +312,7 @@ export default function DualCardBattleLayout({
               </div>
 
               <div
-                className="relative w-[194px] h-[282px] cursor-pointer"
+                className="relative w-[194px] h-[320px] cursor-pointer"
                 onClick={toggleOpponentCard}
               >
                 {/* Card de Ataque */}
@@ -380,6 +380,7 @@ export default function DualCardBattleLayout({
                   {playerAbilities.map((ability, index) => {
                     const isOnCooldown = playerCooldowns[ability.id] > 0;
                     const hasEnergy = myEnergy >= ability.custo_energia;
+                    const tooltipText = `${ability.nome}\n${ability.descricao || ''}\n⚡ Custo: ${ability.custo_energia} energia\n🔄 Cooldown: ${ability.cooldown || 0} turnos`;
 
                     return (
                       <button
@@ -387,9 +388,9 @@ export default function DualCardBattleLayout({
                         onClick={() => onAbilityUse && onAbilityUse(index)}
                         disabled={!isYourTurn || status !== 'active' || isOnCooldown || !hasEnergy}
                         className="px-2 py-2 bg-gradient-to-br from-indigo-900 to-indigo-800 border-2 border-indigo-500 rounded-lg font-bold uppercase text-[10px] tracking-wider text-indigo-200 hover:from-indigo-800 hover:to-indigo-700 hover:border-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-indigo-500/50 relative"
-                        title={ability.nome}
+                        title={tooltipText}
                       >
-                        {ability.nome?.substring(0, 6)}
+                        {ability.nome?.substring(0, 8)}
                         {isOnCooldown && (
                           <span className="absolute -top-1 -right-1 text-[9px] bg-red-500 rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-lg">
                             🔒{playerCooldowns[ability.id]}
