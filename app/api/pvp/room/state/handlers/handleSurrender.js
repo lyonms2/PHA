@@ -29,6 +29,7 @@ export async function handleSurrender({ room, isHost }) {
   await updateDocument('pvp_duel_rooms', room.id, {
     status: 'finished',
     winner: opponentRole,
+    rendeu: true, // Marcar que foi rendição
     battle_log: battleLog
   });
 

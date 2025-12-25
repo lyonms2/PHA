@@ -61,6 +61,7 @@ export default function DualCardBattleLayout({
 }) {
   const [playerCardActive, setPlayerCardActive] = useState('attack'); // 'attack' ou 'support'
   const [opponentCardActive, setOpponentCardActive] = useState('attack');
+  const [logExpanded, setLogExpanded] = useState(false); // Para mobile drawer
   const logContainerRef = useRef(null);
 
   // Debug: Verificar dados recebidos
@@ -250,26 +251,27 @@ export default function DualCardBattleLayout({
       <div className="fixed inset-0 opacity-[0.02] bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,rgba(0,0,0,0.3)_2px,rgba(0,0,0,0.3)_4px)] pointer-events-none animate-pulse" />
 
       {/* Título */}
-      <div className="text-center py-4 relative z-10">
-        <h1 className="text-3xl font-bold uppercase tracking-[0.3em] text-purple-400 drop-shadow-[0_0_20px_rgba(168,85,247,0.8)]">
+      <div className="text-center py-2 md:py-4 relative z-10">
+        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-purple-400 drop-shadow-[0_0_20px_rgba(168,85,247,0.8)]">
           ⚔ BATALHA DIMENSIONAL ⚔
         </h1>
         <div className="text-xs text-purple-300 mt-1">TURNO {currentTurn}</div>
       </div>
 
-      <div className="flex gap-4 px-4 pb-4 relative z-10 max-h-[calc(100vh-100px)]">
-        {/* Painel Esquerdo - Battlefield + Controles */}
-        <div className="flex-1 flex flex-col gap-4">
+      {/* Layout responsivo: vertical no mobile, horizontal no desktop */}
+      <div className="flex flex-col lg:flex-row gap-2 md:gap-4 px-2 md:px-4 pb-4 relative z-10 max-h-[calc(100vh-80px)] md:max-h-[calc(100vh-100px)]">
+        {/* Painel Principal - Battlefield + Controles */}
+        <div className="flex-1 flex flex-col gap-2 md:gap-4">
           {/* Battlefield */}
-          <div className="flex gap-8 justify-center items-center">
+          <div className="flex gap-2 md:gap-4 lg:gap-8 justify-center items-center">
             {/* Lado do Jogador */}
-            <div className="flex flex-col gap-3 items-center">
-              <div className="text-sm uppercase tracking-widest font-bold text-purple-400 drop-shadow-[0_0_10px_rgba(168,85,247,0.8)]">
+            <div className="flex flex-col gap-1 md:gap-3 items-center">
+              <div className="text-[10px] md:text-xs lg:text-sm uppercase tracking-wider md:tracking-widest font-bold text-purple-400 drop-shadow-[0_0_10px_rgba(168,85,247,0.8)]">
                 [ {playerName} ]
               </div>
 
               <div
-                className="relative w-[194px] h-[320px] cursor-pointer"
+                className="relative w-[120px] h-[200px] md:w-[160px] md:h-[260px] lg:w-[194px] lg:h-[320px] cursor-pointer"
                 onClick={togglePlayerCard}
               >
                 {/* Card de Ataque */}
@@ -303,18 +305,18 @@ export default function DualCardBattleLayout({
             </div>
 
             {/* VS Divider */}
-            <div className="text-4xl font-bold text-purple-400 drop-shadow-[0_0_20px_rgba(168,85,247,0.8)] animate-pulse">
+            <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-purple-400 drop-shadow-[0_0_20px_rgba(168,85,247,0.8)] animate-pulse">
               VS
             </div>
 
             {/* Lado do Oponente */}
-            <div className="flex flex-col gap-3 items-center">
-              <div className="text-sm uppercase tracking-widest font-bold text-purple-400 drop-shadow-[0_0_10px_rgba(168,85,247,0.8)]">
+            <div className="flex flex-col gap-1 md:gap-3 items-center">
+              <div className="text-[10px] md:text-xs lg:text-sm uppercase tracking-wider md:tracking-widest font-bold text-purple-400 drop-shadow-[0_0_10px_rgba(168,85,247,0.8)]">
                 [ {opponentName} ]
               </div>
 
               <div
-                className="relative w-[194px] h-[320px] cursor-pointer"
+                className="relative w-[120px] h-[200px] md:w-[160px] md:h-[260px] lg:w-[194px] lg:h-[320px] cursor-pointer"
                 onClick={toggleOpponentCard}
               >
                 {/* Card de Ataque */}
@@ -349,24 +351,24 @@ export default function DualCardBattleLayout({
           </div>
 
           {/* Painel de Controles */}
-          <div className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-2 border-slate-700 rounded-xl p-4 shadow-xl backdrop-blur-sm">
-            <div className="text-center text-purple-400 text-sm font-bold uppercase tracking-wider mb-3">
+          <div className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-2 border-slate-700 rounded-xl p-2 md:p-4 shadow-xl backdrop-blur-sm">
+            <div className="text-center text-purple-400 text-xs md:text-sm font-bold uppercase tracking-wider mb-2 md:mb-3">
               ⚙ Controles de Batalha
             </div>
 
             {/* Ações básicas */}
-            <div className="grid grid-cols-2 gap-2 mb-3">
+            <div className="grid grid-cols-2 gap-2 mb-2 md:mb-3">
               <button
                 onClick={onAttack}
                 disabled={!isYourTurn || status !== 'active'}
-                className="px-4 py-2.5 bg-gradient-to-br from-purple-900 to-purple-800 border-2 border-purple-500 rounded-lg font-bold uppercase text-xs tracking-wider text-purple-200 hover:from-purple-800 hover:to-purple-700 hover:border-purple-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-purple-500/50 hover:-translate-y-0.5"
+                className="min-h-[44px] px-2 md:px-4 py-2 md:py-2.5 bg-gradient-to-br from-purple-900 to-purple-800 border-2 border-purple-500 rounded-lg font-bold uppercase text-[11px] md:text-xs tracking-wider text-purple-200 hover:from-purple-800 hover:to-purple-700 hover:border-purple-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-purple-500/50 active:scale-95"
               >
                 ⚔ Atacar
               </button>
               <button
                 onClick={onDefend}
                 disabled={!isYourTurn || status !== 'active'}
-                className="px-4 py-2.5 bg-gradient-to-br from-green-900 to-green-800 border-2 border-green-500 rounded-lg font-bold uppercase text-xs tracking-wider text-green-200 hover:from-green-800 hover:to-green-700 hover:border-green-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-green-500/50 hover:-translate-y-0.5"
+                className="min-h-[44px] px-2 md:px-4 py-2 md:py-2.5 bg-gradient-to-br from-green-900 to-green-800 border-2 border-green-500 rounded-lg font-bold uppercase text-[11px] md:text-xs tracking-wider text-green-200 hover:from-green-800 hover:to-green-700 hover:border-green-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-green-500/50 active:scale-95"
               >
                 🛡 Defender
               </button>
@@ -374,8 +376,8 @@ export default function DualCardBattleLayout({
 
             {/* Habilidades */}
             {playerAbilities && playerAbilities.length > 0 && (
-              <div className="mb-3">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-2">
+              <div className="mb-2 md:mb-3">
+                <div className="text-[9px] md:text-[10px] text-slate-400 uppercase tracking-wider mb-1 md:mb-2">
                   Habilidades Especiais:
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -395,12 +397,12 @@ export default function DualCardBattleLayout({
                           if (onAbilityUse) onAbilityUse(index);
                         }}
                         disabled={!isYourTurn || status !== 'active' || isOnCooldown || !hasEnergy}
-                        className="px-3 py-2.5 bg-gradient-to-br from-indigo-900 to-indigo-800 border-2 border-indigo-500 rounded-lg font-bold uppercase text-[9px] tracking-wide text-indigo-200 hover:from-indigo-800 hover:to-indigo-700 hover:border-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-indigo-500/50 relative overflow-hidden"
+                        className="min-h-[44px] px-2 md:px-3 py-2 md:py-2.5 bg-gradient-to-br from-indigo-900 to-indigo-800 border-2 border-indigo-500 rounded-lg font-bold uppercase text-[10px] md:text-[9px] tracking-wide text-indigo-200 hover:from-indigo-800 hover:to-indigo-700 hover:border-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-indigo-500/50 active:scale-95 relative overflow-hidden"
                         title={tooltipText}
                       >
                         <span className="block truncate">{ability.nome}</span>
                         {isOnCooldown && (
-                          <span className="absolute top-0.5 right-0.5 text-[10px] bg-red-500 rounded-full w-6 h-6 flex items-center justify-center font-bold shadow-lg z-10">
+                          <span className="absolute top-0.5 right-0.5 text-[10px] bg-red-500 rounded-full w-5 h-5 md:w-6 md:h-6 flex items-center justify-center font-bold shadow-lg z-10 text-[8px] md:text-[10px]">
                             🔒{cooldownValue}
                           </span>
                         )}
@@ -415,24 +417,46 @@ export default function DualCardBattleLayout({
             <button
               onClick={onSurrender}
               disabled={status !== 'active'}
-              className="w-full px-4 py-2 bg-gradient-to-br from-red-900 to-red-800 border-2 border-red-500 rounded-lg font-bold uppercase text-xs tracking-wider text-red-200 hover:from-red-800 hover:to-red-700 hover:border-red-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-red-500/50"
+              className="w-full min-h-[44px] px-2 md:px-4 py-2 bg-gradient-to-br from-red-900 to-red-800 border-2 border-red-500 rounded-lg font-bold uppercase text-[11px] md:text-xs tracking-wider text-red-200 hover:from-red-800 hover:to-red-700 hover:border-red-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-red-500/50 active:scale-95"
             >
               ⚠ Abandonar Batalha
             </button>
           </div>
         </div>
 
-        {/* Painel de Log */}
-        <div className="w-80 bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-2 border-purple-500 rounded-xl p-4 shadow-xl shadow-purple-500/20 backdrop-blur-sm flex flex-col max-h-[calc(100vh-120px)]">
-          <div className="text-center text-purple-400 text-sm font-bold uppercase tracking-wider mb-3 pb-2 border-b-2 border-purple-500/50">
+        {/* Painel de Log - Desktop: Sidebar / Mobile: Drawer fixo no bottom */}
+        <div className={`
+          lg:w-80 lg:relative
+          fixed bottom-0 left-0 right-0 z-50
+          lg:block
+          bg-gradient-to-br from-slate-900/95 to-slate-800/95 lg:from-slate-900/90 lg:to-slate-800/90
+          border-2 border-purple-500
+          lg:rounded-xl rounded-t-xl lg:rounded-b-xl
+          p-2 md:p-4
+          shadow-xl shadow-purple-500/20
+          backdrop-blur-sm
+          flex flex-col
+          transition-all duration-300
+          ${logExpanded ? 'max-h-[60vh]' : 'max-h-[120px]'}
+          lg:max-h-[calc(100vh-120px)]
+        `}>
+          <button
+            onClick={() => setLogExpanded(!logExpanded)}
+            className="lg:hidden flex items-center justify-between text-purple-400 text-xs md:text-sm font-bold uppercase tracking-wider mb-2 pb-2 border-b-2 border-purple-500/50 active:scale-95 transition-transform"
+          >
+            <span>📜 Log de Batalha ({log.length})</span>
+            <span className="text-xl">{logExpanded ? '▼' : '▲'}</span>
+          </button>
+
+          <div className="hidden lg:block text-center text-purple-400 text-sm font-bold uppercase tracking-wider mb-3 pb-2 border-b-2 border-purple-500/50">
             📜 Log de Batalha
           </div>
 
-          <div ref={logContainerRef} className="flex-1 overflow-y-auto pr-2 space-y-2 log-scrollbar">
+          <div ref={logContainerRef} className="flex-1 overflow-y-auto pr-2 space-y-1 md:space-y-2 log-scrollbar">
             {log.map((entry, index) => (
               <div
                 key={index}
-                className="bg-black/40 border-l-4 border-purple-500 rounded-r p-2.5 text-xs leading-relaxed animate-[slideIn_0.3s_ease] hover:bg-black/60 transition-colors"
+                className="bg-black/40 border-l-4 border-purple-500 rounded-r p-1.5 md:p-2.5 text-[10px] md:text-xs leading-relaxed animate-[slideIn_0.3s_ease] hover:bg-black/60 transition-colors"
               >
                 <span className="text-slate-200">{entry.texto || entry}</span>
               </div>

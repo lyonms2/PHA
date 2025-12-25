@@ -1411,18 +1411,6 @@ function DuelContent() {
                     +{role === 'host' ? rewardsData.host?.recompensas?.exaustao : rewardsData.guest?.recompensas?.exaustao}
                   </span>
                 </div>
-
-                {/* Moedas */}
-                <div className="flex items-center justify-between bg-slate-900/50 rounded p-2">
-                  <span className="text-sm text-slate-300">💰 Moedas</span>
-                  <span className={`font-bold ${
-                    (role === 'host' ? rewardsData.host?.recompensas?.moedas : rewardsData.guest?.recompensas?.moedas) >= 0
-                      ? 'text-yellow-400' : 'text-red-400'
-                  }`}>
-                    {(role === 'host' ? rewardsData.host?.recompensas?.moedas : rewardsData.guest?.recompensas?.moedas) >= 0 ? '+' : ''}
-                    {role === 'host' ? rewardsData.host?.recompensas?.moedas : rewardsData.guest?.recompensas?.moedas}
-                  </span>
-                </div>
               </div>
             </div>
 
