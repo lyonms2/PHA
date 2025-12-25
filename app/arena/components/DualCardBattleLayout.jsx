@@ -261,9 +261,9 @@ export default function DualCardBattleLayout({
       {/* Layout responsivo: vertical no mobile, horizontal no desktop */}
       <div className="flex flex-col lg:flex-row gap-2 md:gap-4 px-2 md:px-4 pb-4 relative z-10 max-h-[calc(100vh-80px)] md:max-h-[calc(100vh-100px)]">
         {/* Painel Principal - Battlefield + Controles */}
-        <div className="flex-1 flex flex-col gap-3 md:gap-4">
+        <div className="flex-1 flex flex-col gap-5 md:gap-4">
           {/* Battlefield */}
-          <div className="flex gap-2 md:gap-4 lg:gap-8 justify-center items-center">
+          <div className="flex gap-2 md:gap-4 lg:gap-8 justify-center items-center pb-3 md:pb-0">
             {/* Lado do Jogador */}
             <div className="flex flex-col gap-1 md:gap-3 items-center">
               <div className="text-[10px] md:text-xs lg:text-sm uppercase tracking-wider md:tracking-widest font-bold text-purple-400 drop-shadow-[0_0_10px_rgba(168,85,247,0.8)]">
@@ -271,7 +271,7 @@ export default function DualCardBattleLayout({
               </div>
 
               <div
-                className="relative w-[110px] h-[180px] md:w-[160px] md:h-[260px] lg:w-[194px] lg:h-[320px] cursor-pointer"
+                className="relative w-[130px] h-[210px] md:w-[160px] md:h-[260px] lg:w-[194px] lg:h-[320px] cursor-pointer"
                 onClick={togglePlayerCard}
               >
                 {/* Card de Ataque */}
@@ -316,7 +316,7 @@ export default function DualCardBattleLayout({
               </div>
 
               <div
-                className="relative w-[110px] h-[180px] md:w-[160px] md:h-[260px] lg:w-[194px] lg:h-[320px] cursor-pointer"
+                className="relative w-[130px] h-[210px] md:w-[160px] md:h-[260px] lg:w-[194px] lg:h-[320px] cursor-pointer"
                 onClick={toggleOpponentCard}
               >
                 {/* Card de Ataque */}
