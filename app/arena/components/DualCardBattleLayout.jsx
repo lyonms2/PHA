@@ -261,7 +261,7 @@ export default function DualCardBattleLayout({
       {/* Layout responsivo: vertical no mobile, horizontal no desktop */}
       <div className="flex flex-col lg:flex-row gap-2 md:gap-4 px-2 md:px-4 pb-4 relative z-10 max-h-[calc(100vh-80px)] md:max-h-[calc(100vh-100px)]">
         {/* Painel Principal - Battlefield + Controles */}
-        <div className="flex-1 flex flex-col gap-2 md:gap-4">
+        <div className="flex-1 flex flex-col gap-3 md:gap-4">
           {/* Battlefield */}
           <div className="flex gap-2 md:gap-4 lg:gap-8 justify-center items-center">
             {/* Lado do Jogador */}
@@ -271,7 +271,7 @@ export default function DualCardBattleLayout({
               </div>
 
               <div
-                className="relative w-[120px] h-[200px] md:w-[160px] md:h-[260px] lg:w-[194px] lg:h-[320px] cursor-pointer"
+                className="relative w-[110px] h-[180px] md:w-[160px] md:h-[260px] lg:w-[194px] lg:h-[320px] cursor-pointer"
                 onClick={togglePlayerCard}
               >
                 {/* Card de Ataque */}
@@ -316,7 +316,7 @@ export default function DualCardBattleLayout({
               </div>
 
               <div
-                className="relative w-[120px] h-[200px] md:w-[160px] md:h-[260px] lg:w-[194px] lg:h-[320px] cursor-pointer"
+                className="relative w-[110px] h-[180px] md:w-[160px] md:h-[260px] lg:w-[194px] lg:h-[320px] cursor-pointer"
                 onClick={toggleOpponentCard}
               >
                 {/* Card de Ataque */}
@@ -361,14 +361,14 @@ export default function DualCardBattleLayout({
               <button
                 onClick={onAttack}
                 disabled={!isYourTurn || status !== 'active'}
-                className="min-h-[44px] px-2 md:px-4 py-2 md:py-2.5 bg-gradient-to-br from-purple-900 to-purple-800 border-2 border-purple-500 rounded-lg font-bold uppercase text-[11px] md:text-xs tracking-wider text-purple-200 hover:from-purple-800 hover:to-purple-700 hover:border-purple-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-purple-500/50 active:scale-95"
+                className="min-h-[40px] md:min-h-[44px] px-2 md:px-4 py-1.5 md:py-2.5 bg-gradient-to-br from-purple-900 to-purple-800 border-2 border-purple-500 rounded-lg font-bold uppercase text-[10px] md:text-xs tracking-wider text-purple-200 hover:from-purple-800 hover:to-purple-700 hover:border-purple-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-purple-500/50 active:scale-95"
               >
                 ⚔ Atacar
               </button>
               <button
                 onClick={onDefend}
                 disabled={!isYourTurn || status !== 'active'}
-                className="min-h-[44px] px-2 md:px-4 py-2 md:py-2.5 bg-gradient-to-br from-green-900 to-green-800 border-2 border-green-500 rounded-lg font-bold uppercase text-[11px] md:text-xs tracking-wider text-green-200 hover:from-green-800 hover:to-green-700 hover:border-green-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-green-500/50 active:scale-95"
+                className="min-h-[40px] md:min-h-[44px] px-2 md:px-4 py-1.5 md:py-2.5 bg-gradient-to-br from-green-900 to-green-800 border-2 border-green-500 rounded-lg font-bold uppercase text-[10px] md:text-xs tracking-wider text-green-200 hover:from-green-800 hover:to-green-700 hover:border-green-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-green-500/50 active:scale-95"
               >
                 🛡 Defender
               </button>
@@ -397,7 +397,7 @@ export default function DualCardBattleLayout({
                           if (onAbilityUse) onAbilityUse(index);
                         }}
                         disabled={!isYourTurn || status !== 'active' || isOnCooldown || !hasEnergy}
-                        className="min-h-[44px] px-2 md:px-3 py-2 md:py-2.5 bg-gradient-to-br from-indigo-900 to-indigo-800 border-2 border-indigo-500 rounded-lg font-bold uppercase text-[10px] md:text-[9px] tracking-wide text-indigo-200 hover:from-indigo-800 hover:to-indigo-700 hover:border-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-indigo-500/50 active:scale-95 relative overflow-hidden"
+                        className="min-h-[40px] md:min-h-[44px] px-2 md:px-3 py-1.5 md:py-2.5 bg-gradient-to-br from-indigo-900 to-indigo-800 border-2 border-indigo-500 rounded-lg font-bold uppercase text-[9px] md:text-[9px] tracking-wide text-indigo-200 hover:from-indigo-800 hover:to-indigo-700 hover:border-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-indigo-500/50 active:scale-95 relative overflow-hidden"
                         title={tooltipText}
                       >
                         <span className="block truncate">{ability.nome}</span>
@@ -417,7 +417,7 @@ export default function DualCardBattleLayout({
             <button
               onClick={onSurrender}
               disabled={status !== 'active'}
-              className="w-full min-h-[44px] px-2 md:px-4 py-2 bg-gradient-to-br from-red-900 to-red-800 border-2 border-red-500 rounded-lg font-bold uppercase text-[11px] md:text-xs tracking-wider text-red-200 hover:from-red-800 hover:to-red-700 hover:border-red-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-red-500/50 active:scale-95"
+              className="w-full min-h-[40px] md:min-h-[44px] px-2 md:px-4 py-1.5 md:py-2 bg-gradient-to-br from-red-900 to-red-800 border-2 border-red-500 rounded-lg font-bold uppercase text-[10px] md:text-xs tracking-wider text-red-200 hover:from-red-800 hover:to-red-700 hover:border-red-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-red-500/50 active:scale-95"
             >
               ⚠ Abandonar Batalha
             </button>
