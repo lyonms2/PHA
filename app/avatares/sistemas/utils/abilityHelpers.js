@@ -17,29 +17,83 @@ export function selecionarHabilidadesIniciais(elemento, raridade) {
     return [];
   }
 
-  // ==================== TESTE: TODOS OS ELEMENTOS RECEBEM TODAS AS 4 HABILIDADES ====================
-  // TODO: Remover após teste e implementar sistema de desbloqueio progressivo
-  console.log(`⚡ [TESTE] Avatar de ${elemento} recebe TODAS as 4 habilidades simplificadas`);
-  // Retorna TODAS as 4 habilidades do novo sistema simplificado
-  return Object.values(habilidadesElemento);
-  // ================================================================================================
+  // ==================== SISTEMA DE HABILIDADES PROGRESSIVO ====================
+  // Comum: 2 habilidades (1 ataque básico + 1 defesa/suporte)
+  // Raro: 3 habilidades (1 básico + 1 defesa/suporte + 1 ataque avançado)
+  // Lendário: 4 habilidades (todas)
 
-  const habilidadesDisponiveis = Object.values(habilidadesElemento)
-    .filter(hab => hab.nivel_minimo === 1 || hab.raridade === RARIDADE_HABILIDADE.BASICA);
+  const todasHabilidades = Object.values(habilidadesElemento);
 
-  let quantidade = 1; // Comum = 1 habilidade
-  if (raridade === 'Raro') quantidade = 2;
-  if (raridade === 'Lendário') quantidade = 3;
+  // Categorizar habilidades por tipo/raridade
+  const habilidadesBasicas = todasHabilidades.filter(
+    hab => hab.raridade === RARIDADE_HABILIDADE.BASICA || hab.tipo === 'Ataque' && hab.nivel_minimo === 1
+  );
+  const habilidadesDefesaSuporte = todasHabilidades.filter(
+    hab => hab.tipo === 'Defesa' || hab.tipo === 'Suporte' || hab.tipo === 'Cura'
+  );
+  const habilidadesAvancadas = todasHabilidades.filter(
+    hab => hab.raridade === RARIDADE_HABILIDADE.AVANCADA ||
+           (hab.tipo === 'Ataque' && hab.nivel_minimo > 1 && hab.raridade !== RARIDADE_HABILIDADE.ULTIMATE)
+  );
+  const habilidadesUltimate = todasHabilidades.filter(
+    hab => hab.raridade === RARIDADE_HABILIDADE.ULTIMATE
+  );
 
-  // Sempre incluir a primeira habilidade (básica)
-  const selecionadas = [habilidadesDisponiveis[0]];
+  const selecionadas = [];
 
-  // Adicionar habilidades aleatórias adicionais
-  const restantes = habilidadesDisponiveis.slice(1);
-  while (selecionadas.length < quantidade && restantes.length > 0) {
-    const index = Math.floor(Math.random() * restantes.length);
-    selecionadas.push(restantes[index]);
-    restantes.splice(index, 1);
+  // Garantir pelo menos uma habilidade básica de ataque
+  if (habilidadesBasicas.length > 0) {
+    selecionadas.push(habilidadesBasicas[0]);
+  }
+
+  // COMUM: 2 habilidades (básico + defesa/suporte)
+  if (raridade === 'Comum') {
+    if (habilidadesDefesaSuporte.length > 0) {
+      const index = Math.floor(Math.random() * habilidadesDefesaSuporte.length);
+      selecionadas.push(habilidadesDefesaSuporte[index]);
+    }
+    console.log(`✅ Avatar ${raridade} de ${elemento} recebeu 2 habilidades (básico + defesa/suporte)`);
+  }
+
+  // RARO: 3 habilidades (básico + defesa/suporte + avançado)
+  else if (raridade === 'Raro') {
+    if (habilidadesDefesaSuporte.length > 0) {
+      const index = Math.floor(Math.random() * habilidadesDefesaSuporte.length);
+      selecionadas.push(habilidadesDefesaSuporte[index]);
+    }
+    if (habilidadesAvancadas.length > 0) {
+      const index = Math.floor(Math.random() * habilidadesAvancadas.length);
+      selecionadas.push(habilidadesAvancadas[index]);
+    }
+    console.log(`✅ Avatar ${raridade} de ${elemento} recebeu 3 habilidades (básico + defesa + avançado)`);
+  }
+
+  // LENDÁRIO: 4 habilidades (todas)
+  else if (raridade === 'Lendário') {
+    if (habilidadesDefesaSuporte.length > 0) {
+      const index = Math.floor(Math.random() * habilidadesDefesaSuporte.length);
+      selecionadas.push(habilidadesDefesaSuporte[index]);
+    }
+    if (habilidadesAvancadas.length > 0) {
+      const index = Math.floor(Math.random() * habilidadesAvancadas.length);
+      selecionadas.push(habilidadesAvancadas[index]);
+    }
+    if (habilidadesUltimate.length > 0) {
+      const index = Math.floor(Math.random() * habilidadesUltimate.length);
+      selecionadas.push(habilidadesUltimate[index]);
+    }
+    console.log(`✅ Avatar ${raridade} de ${elemento} recebeu 4 habilidades (todas as categorias)`);
+  }
+
+  // Se não conseguiu preencher (sistema antigo de 4 habilidades), completar com aleatórias
+  if (selecionadas.length < 2 && raridade === 'Comum') {
+    while (selecionadas.length < 2 && todasHabilidades.length > selecionadas.length) {
+      const disponiveis = todasHabilidades.filter(h => !selecionadas.includes(h));
+      if (disponiveis.length > 0) {
+        const index = Math.floor(Math.random() * disponiveis.length);
+        selecionadas.push(disponiveis[index]);
+      } else break;
+    }
   }
 
   return selecionadas;
