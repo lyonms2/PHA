@@ -293,7 +293,7 @@ function DuelContent() {
   }, [visitorId, inLobby]);
 
   const addLog = (msg) => {
-    setLog(prev => [msg, ...prev]);
+    setLog(prev => [...prev, msg]); // Adicionar no FINAL do array
   };
 
   // Entrar no lobby
