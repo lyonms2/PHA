@@ -73,6 +73,8 @@ export async function handleGetState(request) {
       opponentEnergyMax: isHost ? (room.guest_energy_max || 100) : (room.host_energy_max || 100),
       opponentNome: isHost ? room.guest_nome : room.host_nome,
       opponentAvatar: isHost ? room.guest_avatar : room.host_avatar,
+      opponentAvatarSuporte: isHost ? room.guest_avatar_suporte : room.host_avatar_suporte,
+      opponentSinergia: isHost ? room.guest_sinergia : room.host_sinergia,
       myEffects: isHost ? (room.host_effects || []) : (room.guest_effects || []),
       opponentEffects: isHost ? (room.guest_effects || []) : (room.host_effects || []),
       myCooldowns: isHost ? (room.host_cooldowns || {}) : (room.guest_cooldowns || {}),

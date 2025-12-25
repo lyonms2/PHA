@@ -146,8 +146,10 @@ export async function POST(request) {
         forca: avatar.forca || 10,
         agilidade: avatar.agilidade || 10,
         resistencia: avatar.resistencia || 10,
-        foco: avatar.foco || 10
+        foco: avatar.foco || 10,
+        habilidades: avatar.habilidades || []
       },
+      guest_avatar_suporte: sinergiaInfo.avatarSuporte, // Avatar suporte do guest
       guest_sinergia: sinergiaInfo, // Informações da sinergia do guest
       guest_hp: hpAtual,
       status: 'ready'
