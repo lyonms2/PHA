@@ -152,6 +152,11 @@ export async function POST(request) {
       guest_avatar_suporte: sinergiaInfo.avatarSuporte, // Avatar suporte do guest
       guest_sinergia: sinergiaInfo, // Informações da sinergia do guest
       guest_hp: hpAtual,
+      guest_hp_max: hpMaximo,
+      guest_energy: calcularEnergiaComSinergia(100, resultadoSinergia.modificadores),
+      guest_energy_max: calcularEnergiaComSinergia(100, resultadoSinergia.modificadores),
+      guest_effects: [],
+      guest_cooldowns: {},
       status: 'ready'
     });
 
