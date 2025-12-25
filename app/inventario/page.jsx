@@ -234,9 +234,9 @@ export default function InventarioPage() {
         subtitle="Gerencie seus itens e equipamentos"
       />
 
-      <div className="relative z-10 container mx-auto px-4 py-8">
+      <div className="relative z-10 container mx-auto px-3 md:px-4 py-4 md:py-6 lg:py-8">
         {/* Recursos do jogador */}
-        <div className="flex gap-3 mb-6">
+        <div className="flex flex-wrap gap-3 mb-4 md:mb-6">
           <div className="bg-slate-950/80 backdrop-blur-xl border border-amber-500/30 rounded-lg px-4 py-2">
             <div className="text-xs text-slate-500 uppercase font-mono">Moedas</div>
             <div className="text-xl font-bold text-amber-400">💰 {stats?.moedas || 0}</div>
@@ -249,7 +249,7 @@ export default function InventarioPage() {
 
         {/* Avatar Ativo Info */}
         {avatarAtivo && (
-          <div className="mb-6 relative group">
+          <div className="mb-4 md:mb-6 relative group">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-green-500/20 to-cyan-500/20 rounded-lg blur"></div>
             <div className="relative bg-slate-950/80 backdrop-blur-xl border border-green-500/30 rounded-lg p-4">
               <div className="flex items-center gap-4">
@@ -286,7 +286,7 @@ export default function InventarioPage() {
         )}
 
         {/* Abas */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-4 md:mb-6">
           <button
             onClick={() => setAbaAtiva('inventario')}
             className={`flex-1 py-3 px-6 rounded-lg font-bold transition-all ${
@@ -313,8 +313,8 @@ export default function InventarioPage() {
         {abaAtiva === 'inventario' ? (
           <div>
             {inventario.length === 0 ? (
-              <div className="text-center py-20">
-                <div className="text-6xl mb-4">📦</div>
+              <div className="text-center py-16 md:py-20">
+                <div className="text-4xl md:text-5xl lg:text-6xl mb-4">📦</div>
                 <div className="text-xl text-slate-400 font-bold mb-2">Inventário Vazio</div>
                 <p className="text-slate-500 mb-6">Você ainda não possui nenhum item.</p>
                 <button
@@ -328,7 +328,7 @@ export default function InventarioPage() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
                 {inventario.map((inventoryItem) => {
                   const item = inventoryItem.items;
 
@@ -400,7 +400,7 @@ export default function InventarioPage() {
           </div>
         ) : (
           <div>
-            <div className="mb-6 bg-slate-950/80 backdrop-blur-xl border border-amber-500/30 rounded-lg p-4">
+            <div className="mb-4 md:mb-6 bg-slate-950/80 backdrop-blur-xl border border-amber-500/30 rounded-lg p-3 md:p-4">
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-2xl">🏪</span>
                 <span className="font-bold text-amber-400 text-lg">LOJA DE ITENS</span>
@@ -411,17 +411,17 @@ export default function InventarioPage() {
             </div>
 
             {loadingLoja ? (
-              <div className="text-center py-20">
+              <div className="text-center py-16 md:py-20">
                 <div className="text-cyan-400 font-mono animate-pulse">Carregando loja...</div>
               </div>
             ) : itensLoja.length === 0 ? (
-              <div className="text-center py-20">
-                <div className="text-6xl mb-4">🏪</div>
+              <div className="text-center py-16 md:py-20">
+                <div className="text-4xl md:text-5xl lg:text-6xl mb-4">🏪</div>
                 <div className="text-xl text-slate-400 font-bold mb-2">Loja Vazia</div>
                 <p className="text-slate-500">Nenhum item disponível no momento.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
                 {itensLoja.map((item) => {
                 const itemNoInventario = inventario.find(inv => inv.items.nome === item.nome);
                 const quantidadeAtual = itemNoInventario?.quantidade || 0;

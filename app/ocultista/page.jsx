@@ -134,16 +134,16 @@ export default function OcultistaPage() {
         />
       )}
 
-      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-8">
+      <div className="relative z-10 min-h-screen flex items-center justify-center px-3 md:px-4 py-4 md:py-8">
 
         <div className="max-w-4xl w-full">
           {/* ETAPA 1: INTRODUÇÃO */}
           {etapa === 'introducao' && (
             <div className="space-y-8 animate-fade-in">
               {/* Título */}
-              <div className="text-center mb-8 md:mb-12">
+              <div className="text-center mb-6 md:mb-8 lg:mb-12">
                 <div className="mb-4 flex justify-center">
-                  <div className="relative w-64 h-64 rounded-full overflow-hidden border-4 border-purple-500/50">
+                  <div className="relative w-48 h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 rounded-full overflow-hidden border-4 border-purple-500/50">
                     <Image
                       src="/personagens/ocultista.png"
                       alt="Averon - O Ocultista"
@@ -164,7 +164,7 @@ export default function OcultistaPage() {
               <div className="relative group">
                 <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-cyan-500/20 rounded-lg blur opacity-50"></div>
 
-                <div className="relative bg-slate-950/90 backdrop-blur-xl border border-purple-900/30 rounded-lg p-8">
+                <div className="relative bg-slate-950/90 backdrop-blur-xl border border-purple-900/30 rounded-lg p-4 md:p-6 lg:p-8">
                   <div className="space-y-3 text-slate-300 leading-relaxed mb-6">
                     <p className="font-mono text-sm">
                       "Bem-vindo, caçador. Sinto a marca dos portais em sua alma..."
@@ -181,7 +181,7 @@ export default function OcultistaPage() {
                   <div className="h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent mb-6"></div>
 
                   {/* Info de Custo */}
-                  <div className="bg-slate-900/50 rounded-lg p-4 mb-6">
+                  <div className="bg-slate-900/50 rounded-lg p-3 md:p-4 mb-4 md:mb-6">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-slate-400 text-sm font-mono">Custo da Invocação:</span>
                       <span className="text-lg font-bold">
@@ -211,7 +211,7 @@ export default function OcultistaPage() {
 
                   {/* Aviso Primeira Invocação */}
                   {stats?.primeira_invocacao && (
-                    <div className="bg-purple-950/30 border border-purple-500/30 rounded p-4 mb-6">
+                    <div className="bg-purple-950/30 border border-purple-500/30 rounded p-3 md:p-4 mb-4 md:mb-6">
                       <p className="text-purple-300 text-sm font-mono text-center">
                         ✨ Sua primeira invocação é especial e gratuita. O primeiro Avatar sempre será de raridade Comum.
                       </p>
@@ -219,7 +219,7 @@ export default function OcultistaPage() {
                   )}
 
                   {/* Aviso de Slots */}
-                  <div className="bg-slate-900/50 rounded-lg p-4 mb-6">
+                  <div className="bg-slate-900/50 rounded-lg p-3 md:p-4 mb-4 md:mb-6">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-slate-400 text-sm font-mono">Slots Ocupados:</span>
                       <span className={`font-bold text-lg ${
@@ -248,7 +248,7 @@ export default function OcultistaPage() {
 
                   {/* Aviso Limite Atingido */}
                   {slotsDisponiveis === 0 && (
-                    <div className="bg-red-950/30 border border-red-500/30 rounded p-4 mb-6">
+                    <div className="bg-red-950/30 border border-red-500/30 rounded p-3 md:p-4 mb-4 md:mb-6">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-2xl">🚫</span>
                         <p className="text-red-300 text-sm font-bold">
@@ -267,7 +267,7 @@ export default function OcultistaPage() {
 
                   {/* Aviso Quase Cheio */}
                   {slotsDisponiveis > 0 && slotsDisponiveis <= 3 && (
-                    <div className="bg-orange-950/30 border border-orange-500/30 rounded p-4 mb-6">
+                    <div className="bg-orange-950/30 border border-orange-500/30 rounded p-3 md:p-4 mb-4 md:mb-6">
                       <div className="flex items-center gap-2">
                         <span className="text-xl">⚠️</span>
                         <p className="text-orange-300 text-sm font-mono">
@@ -298,8 +298,8 @@ export default function OcultistaPage() {
 
           {/* ETAPA 2: INVOCANDO */}
           {etapa === 'invocando' && (
-            <div className="text-center space-y-8 animate-fade-in">
-              <div className="text-6xl md:text-8xl animate-spin-slow mb-8">🔮</div>
+            <div className="text-center space-y-6 md:space-y-8 animate-fade-in">
+              <div className="text-5xl md:text-6xl lg:text-8xl animate-spin-slow mb-6 md:mb-8">🔮</div>
 
               <div className="relative group max-w-2xl mx-auto">
                 <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/30 via-pink-500/30 to-cyan-500/30 rounded-lg blur animate-pulse"></div>
@@ -328,8 +328,8 @@ export default function OcultistaPage() {
           {etapa === 'revelacao' && avatarGerado && (
             <div className="space-y-8 animate-fade-in">
               {/* Mensagem do Ocultista */}
-              <div className="text-center mb-8">
-                <div className="text-5xl md:text-6xl mb-4">✨</div>
+              <div className="text-center mb-6 md:mb-8">
+                <div className="text-4xl md:text-5xl lg:text-6xl mb-4">✨</div>
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-black bg-gradient-to-r from-purple-300 to-cyan-300 bg-clip-text text-transparent mb-2">
                   INVOCAÇÃO COMPLETA
                 </h2>
@@ -375,7 +375,7 @@ export default function OcultistaPage() {
                     <div className="h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent mb-6 md:mb-8"></div>
 
                     {/* Stats */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6 lg:mb-8">
                       <div className="bg-slate-900/50 rounded p-3 md:p-4 text-center border border-red-500/20">
                         <div className="text-xs text-slate-500 uppercase mb-1">Força</div>
                         <div className="text-2xl md:text-3xl font-bold text-red-400">{avatarGerado.forca}</div>
@@ -395,7 +395,7 @@ export default function OcultistaPage() {
                     </div>
 
                     {/* Habilidades */}
-                    <div className="space-y-3 mb-8">
+                    <div className="space-y-2 md:space-y-3 mb-6 md:mb-8">
                       <h4 className="text-cyan-400 font-bold text-sm uppercase tracking-wider">Habilidades</h4>
                       {avatarGerado.habilidades.map((hab, index) => (
                         <div key={index} className="bg-slate-900/50 rounded p-3 border border-slate-700/50">

@@ -213,9 +213,9 @@ export default function MercadoPage() {
         subtitle='"Aqui, as almas são moeda e os contratos são eternos..."'
       />
 
-      <div className="relative z-10 container mx-auto px-4 py-6 max-w-7xl">
+      <div className="relative z-10 container mx-auto px-3 md:px-4 py-4 md:py-6 max-w-7xl">
         {/* Carteira do jogador */}
-        <div className="mb-8">
+        <div className="mb-6 md:mb-8">
           <div className="flex gap-3 items-center flex-wrap mb-4">
             <div className="px-4 py-2 bg-slate-900/50 border border-amber-500/30 rounded-lg">
               <span className="text-xs text-slate-500 font-mono">Suas Moedas</span>
@@ -229,7 +229,7 @@ export default function MercadoPage() {
           </div>
 
           {/* Lore Box */}
-          <div className="relative group mb-6">
+          <div className="relative group mb-4 md:mb-6">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 rounded-lg blur opacity-50"></div>
             <div className="relative bg-slate-950/90 backdrop-blur-xl border border-amber-900/30 rounded-lg p-4">
               <p className="text-sm text-slate-300 leading-relaxed italic">
@@ -241,7 +241,7 @@ export default function MercadoPage() {
         </div>
 
         {/* Filtros */}
-        <div className="mb-6 bg-slate-900/50 border border-slate-700/50 rounded-lg p-4">
+        <div className="mb-4 md:mb-6 bg-slate-900/50 border border-slate-700/50 rounded-lg p-3 md:p-4">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {/* Raridade */}
             <select
@@ -315,19 +315,19 @@ export default function MercadoPage() {
 
         {/* Lista de Avatares */}
         {loading ? (
-          <div className="text-center py-20">
+          <div className="text-center py-16 md:py-20">
             <div className="text-cyan-400 animate-pulse text-lg">Buscando avatares...</div>
           </div>
         ) : avataresFiltrados.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="text-6xl mb-4 opacity-20">🔍</div>
+          <div className="text-center py-16 md:py-20">
+            <div className="text-4xl md:text-5xl lg:text-6xl mb-4 opacity-20">🔍</div>
             <h3 className="text-xl font-bold text-slate-400 mb-2">Nenhum avatar encontrado</h3>
             <p className="text-slate-500 text-sm">
               {avatares.length === 0 ? 'O mercado está vazio no momento. Volte mais tarde!' : 'Tente ajustar os filtros para encontrar o avatar ideal!'}
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
             {avataresFiltrados.map((avatar) => (
               <div
                 key={avatar.id}
@@ -435,8 +435,8 @@ export default function MercadoPage() {
                   <div className="bg-gradient-to-r from-amber-900/80 to-yellow-900/80 p-4 text-center relative overflow-hidden">
                     <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-20"></div>
                     <div className="relative">
-                      <div className="text-5xl mb-2">👁️</div>
-                      <h2 className="text-xl font-black uppercase tracking-wider text-amber-200">
+                      <div className="text-3xl md:text-4xl lg:text-5xl mb-2">👁️</div>
+                      <h2 className="text-lg md:text-xl font-black uppercase tracking-wider text-amber-200">
                         Detalhes do Avatar
                       </h2>
                       <p className="text-xs text-amber-300/80 font-mono mt-1">
@@ -453,12 +453,12 @@ export default function MercadoPage() {
                     ✕
                   </button>
 
-                  <div className="p-6">
-                    <div className="grid md:grid-cols-2 gap-6">
+                  <div className="p-4 md:p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                       {/* Coluna Esquerda - Avatar */}
                       <div className="space-y-4">
                         {/* Avatar Preview */}
-                        <div className="bg-slate-900/70 rounded-lg p-6 aspect-square border-2 border-amber-900/50 flex items-center justify-center relative overflow-hidden">
+                        <div className="bg-slate-900/70 rounded-lg p-4 md:p-6 aspect-square border-2 border-amber-900/50 flex items-center justify-center relative overflow-hidden">
                           <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-yellow-500/5"></div>
                           <div className="relative">
                             <div className="absolute -inset-2 bg-gradient-to-r from-amber-500/30 to-yellow-500/30 rounded-full blur"></div>
@@ -470,7 +470,7 @@ export default function MercadoPage() {
 
                         {/* Nome e Info */}
                         <div className="text-center">
-                          <h3 className="text-2xl font-black mb-2 text-white">
+                          <h3 className="text-xl md:text-2xl font-black mb-2 text-white">
                             {modalDetalhes.nome}
                           </h3>
                           <div className="flex items-center justify-center gap-2 flex-wrap">
@@ -487,19 +487,19 @@ export default function MercadoPage() {
                         </div>
 
                         {/* Preço */}
-                        <div className="bg-gradient-to-br from-amber-950/40 to-yellow-950/40 rounded-lg p-4 border border-amber-900/50">
+                        <div className="bg-gradient-to-br from-amber-950/40 to-yellow-950/40 rounded-lg p-3 md:p-4 border border-amber-900/50">
                           <div className="text-xs text-amber-400 font-bold uppercase mb-2 tracking-wider text-center">💰 Preço de Venda</div>
                           <div className="space-y-2">
                             {modalDetalhes.preco_venda > 0 && (
                               <div className="flex justify-between items-center">
                                 <span className="text-sm text-amber-200">Moedas:</span>
-                                <span className="text-2xl font-black text-amber-300">{modalDetalhes.preco_venda} 💰</span>
+                                <span className="text-xl md:text-2xl font-black text-amber-300">{modalDetalhes.preco_venda} 💰</span>
                               </div>
                             )}
                             {modalDetalhes.preco_fragmentos > 0 && (
                               <div className="flex justify-between items-center">
                                 <span className="text-sm text-cyan-200">Fragmentos:</span>
-                                <span className="text-2xl font-black text-cyan-300">{modalDetalhes.preco_fragmentos} 💎</span>
+                                <span className="text-xl md:text-2xl font-black text-cyan-300">{modalDetalhes.preco_fragmentos} 💎</span>
                               </div>
                             )}
                             <div className="pt-2 border-t border-amber-900/50">
@@ -517,30 +517,30 @@ export default function MercadoPage() {
                         <div>
                           <h4 className="text-amber-400 font-bold text-xs uppercase tracking-wider mb-3">Atributos</h4>
                           <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-slate-900/50 rounded-lg p-3 text-center border border-amber-500/30">
+                            <div className="bg-slate-900/50 rounded-lg p-2 md:p-3 text-center border border-amber-500/30">
                               <div className="text-xs text-slate-500 uppercase mb-1">Força</div>
-                              <div className="text-2xl font-bold text-red-400">{modalDetalhes.forca}</div>
+                              <div className="text-xl md:text-2xl font-bold text-red-400">{modalDetalhes.forca}</div>
                             </div>
-                            <div className="bg-slate-900/50 rounded-lg p-3 text-center border border-amber-500/30">
+                            <div className="bg-slate-900/50 rounded-lg p-2 md:p-3 text-center border border-amber-500/30">
                               <div className="text-xs text-slate-500 uppercase mb-1">Agilidade</div>
-                              <div className="text-2xl font-bold text-green-400">{modalDetalhes.agilidade}</div>
+                              <div className="text-xl md:text-2xl font-bold text-green-400">{modalDetalhes.agilidade}</div>
                             </div>
-                            <div className="bg-slate-900/50 rounded-lg p-3 text-center border border-amber-500/30">
+                            <div className="bg-slate-900/50 rounded-lg p-2 md:p-3 text-center border border-amber-500/30">
                               <div className="text-xs text-slate-500 uppercase mb-1">Resistência</div>
-                              <div className="text-2xl font-bold text-blue-400">{modalDetalhes.resistencia}</div>
+                              <div className="text-xl md:text-2xl font-bold text-blue-400">{modalDetalhes.resistencia}</div>
                             </div>
-                            <div className="bg-slate-900/50 rounded-lg p-3 text-center border border-amber-500/30">
+                            <div className="bg-slate-900/50 rounded-lg p-2 md:p-3 text-center border border-amber-500/30">
                               <div className="text-xs text-slate-500 uppercase mb-1">Foco</div>
-                              <div className="text-2xl font-bold text-purple-400">{modalDetalhes.foco}</div>
+                              <div className="text-xl md:text-2xl font-bold text-purple-400">{modalDetalhes.foco}</div>
                             </div>
                           </div>
                         </div>
 
                         {/* Poder Total */}
-                        <div className="bg-gradient-to-r from-amber-950/50 to-yellow-950/50 rounded-lg p-4 border border-amber-600/50">
+                        <div className="bg-gradient-to-r from-amber-950/50 to-yellow-950/50 rounded-lg p-3 md:p-4 border border-amber-600/50">
                           <div className="text-center">
                             <div className="text-xs text-amber-400 uppercase mb-1">Poder Total</div>
-                            <div className="text-3xl font-black text-amber-300">
+                            <div className="text-2xl md:text-3xl font-black text-amber-300">
                               {calcularPoderTotal(modalDetalhes)}
                             </div>
                             <div className="text-[10px] text-amber-500 mt-1">
@@ -576,7 +576,7 @@ export default function MercadoPage() {
                     </div>
 
                     {/* Botão Comprar */}
-                    <div className="mt-6">
+                    <div className="mt-4 md:mt-6">
                       <button
                         onClick={() => {
                           setModalDetalhes(null);
@@ -620,18 +620,18 @@ export default function MercadoPage() {
                   🛒 Confirmar Compra
                 </div>
 
-                <div className="p-6">
-                  <div className="text-center mb-6">
+                <div className="p-4 md:p-6">
+                  <div className="text-center mb-4 md:mb-6">
                     <div className="mb-4">
                       <AvatarSVG avatar={modalCompra} tamanho={120} />
                     </div>
-                    <h3 className="text-2xl font-bold text-white mb-2">{modalCompra.nome}</h3>
+                    <h3 className="text-xl md:text-2xl font-bold text-white mb-2">{modalCompra.nome}</h3>
                     <p className="text-sm text-slate-400 mb-4">
                       {modalCompra.raridade} • {modalCompra.elemento} • Nv.{modalCompra.nivel}
                     </p>
                   </div>
 
-                  <div className="space-y-3 mb-6">
+                  <div className="space-y-3 mb-4 md:mb-6">
                     {/* Preço */}
                     <div className="p-3 bg-slate-900 rounded">
                       <div className="text-slate-400 mb-2 font-bold">💰 Preço:</div>
