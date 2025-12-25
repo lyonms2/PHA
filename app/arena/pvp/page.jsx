@@ -557,7 +557,7 @@ export default function PvPPage() {
                 )}
 
                 {/* Preview de Sinergia */}
-                {sinergiaPreview && (
+                {sinergiaPreview && avatarSuporte && (
                   <div className={`border rounded-lg p-3 ${
                     sinergiaPreview.isSpecial
                       ? 'border-yellow-500 bg-yellow-900/20'
@@ -570,7 +570,7 @@ export default function PvPPage() {
                         {sinergiaPreview.isSpecial && ' ⭐'}
                       </div>
                       <div className="text-xs text-slate-400 mt-0.5">
-                        {avatarAtivo.elemento} × {avatarSuporte.elemento}
+                        {avatarAtivo?.elemento} × {avatarSuporte?.elemento}
                       </div>
                     </div>
 
