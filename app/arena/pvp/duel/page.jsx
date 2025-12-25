@@ -49,6 +49,8 @@ function DuelContent() {
   const [opponentEnergyMax, setOpponentEnergyMax] = useState(100);
   const [opponentNome, setOpponentNome] = useState('');
   const [opponentAvatar, setOpponentAvatar] = useState(null);
+  const [opponentAvatarSuporte, setOpponentAvatarSuporte] = useState(null);
+  const [opponentSinergia, setOpponentSinergia] = useState(null);
   const [myEffects, setMyEffects] = useState([]);
   const [opponentEffects, setOpponentEffects] = useState([]);
   const [myCooldowns, setMyCooldowns] = useState({});
@@ -210,6 +212,8 @@ function DuelContent() {
           setOpponentEnergyMax(data.opponentEnergyMax || 100);
           setOpponentNome(data.opponentNome || 'Oponente');
           setOpponentAvatar(data.opponentAvatar || null);
+          setOpponentAvatarSuporte(data.opponentAvatarSuporte || null);
+          setOpponentSinergia(data.opponentSinergia || null);
           setMyEffects(data.myEffects || []);
           setOpponentEffects(data.opponentEffects || []);
           setMyCooldowns(data.myCooldowns || {});
@@ -1282,58 +1286,158 @@ function DuelContent() {
 
   // Tela de batalha - USAR NOVO LAYOUT
   return (
-    <DualCardBattleLayout
-      // Avatares
-      meuAvatar={meuAvatar}
-      meuAvatarSuporte={meuAvatarSuporte}
-      iaAvatar={opponentAvatar}
-      iaAvatarSuporte={null}
+    <>
+      <DualCardBattleLayout
+        // Avatares
+        meuAvatar={meuAvatar}
+        meuAvatarSuporte={meuAvatarSuporte}
+        iaAvatar={opponentAvatar}
+        iaAvatarSuporte={opponentAvatarSuporte}
 
-      // Estados de batalha do jogador
-      myHp={myHp}
-      myHpMax={myHpMax}
-      myEnergy={myEnergy}
-      myEnergyMax={myEnergyMax}
+        // Estados de batalha do jogador
+        myHp={myHp}
+        myHpMax={myHpMax}
+        myEnergy={myEnergy}
+        myEnergyMax={myEnergyMax}
 
-      // Estados de batalha do oponente
-      opponentHp={opponentHp}
-      opponentHpMax={opponentHpMax}
-      opponentEnergy={opponentEnergy}
-      opponentEnergyMax={opponentEnergyMax}
+        // Estados de batalha do oponente
+        opponentHp={opponentHp}
+        opponentHpMax={opponentHpMax}
+        opponentEnergy={opponentEnergy}
+        opponentEnergyMax={opponentEnergyMax}
 
-      // Efeitos
-      myEffects={myEffects}
-      opponentEffects={opponentEffects}
+        // Efeitos
+        myEffects={myEffects}
+        opponentEffects={opponentEffects}
 
-      // Cooldowns
-      playerCooldowns={myCooldowns}
-      iaCooldowns={opponentCooldowns}
+        // Cooldowns
+        playerCooldowns={myCooldowns}
+        iaCooldowns={opponentCooldowns}
 
-      // Estado do jogo
-      isYourTurn={isYourTurn}
-      status={room?.status || 'active'}
-      currentTurn={room?.currentTurn || 0}
+        // Estado do jogo
+        isYourTurn={isYourTurn}
+        status={room?.status || 'active'}
+        currentTurn={room?.currentTurn || 0}
 
-      // Ações
-      onAttack={atacar}
-      onDefend={defender}
-      onAbilityUse={usarHabilidade}
-      onSurrender={renderSe}
+        // Ações
+        onAttack={atacar}
+        onDefend={defender}
+        onAbilityUse={usarHabilidade}
+        onSurrender={renderSe}
 
-      // Habilidades disponíveis
-      playerAbilities={meuAvatar?.habilidades || []}
+        // Habilidades disponíveis
+        playerAbilities={meuAvatar?.habilidades || []}
 
-      // Log
-      log={log}
+        // Log
+        log={log}
 
-      // Nomes
-      playerName={meuNome}
-      opponentName={opponentNome}
+        // Nomes
+        playerName={meuNome}
+        opponentName={opponentNome}
 
-      // Sinergias
-      playerSynergy={minhaSinergia}
-      opponentSynergy={null}
-    />
+        // Sinergias
+        playerSynergy={minhaSinergia}
+        opponentSynergy={opponentSinergia}
+      />
+
+      {/* Modal de Recompensas */}
+      {showRewardsModal && rewardsData && (
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl border-2 border-purple-500 max-w-lg w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <h2 className={`text-3xl font-black text-center mb-4 ${
+              rewardsData.isWinner
+                ? 'text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-400'
+                : 'text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-slate-400'
+            }`}>
+              {rewardsData.isWinner ? '🏆 VITÓRIA!' : rewardsData.rendeu ? '🏳️ RENDIÇÃO' : '☠️ DERROTA'}
+            </h2>
+
+            {rewardsData.rendeu && (
+              <div className="bg-orange-900/30 border border-orange-500/50 rounded-lg p-3 mb-4 text-center">
+                <p className="text-sm text-orange-300">
+                  Penalidades reduzidas por rendição (50%)
+                </p>
+              </div>
+            )}
+
+            <div className="bg-slate-950/50 rounded-lg p-4 mb-4">
+              <h3 className="text-sm font-bold text-purple-300 mb-3 text-center">📊 RECOMPENSAS</h3>
+
+              <div className="space-y-2">
+                {/* Fama */}
+                <div className="flex items-center justify-between bg-slate-900/50 rounded p-2">
+                  <span className="text-sm text-slate-300">🌟 Fama</span>
+                  <span className={`font-bold ${
+                    (rewardsData.host?.recompensas?.fama || 0) >= 0 ? 'text-green-400' : 'text-red-400'
+                  }`}>
+                    {(rewardsData.host?.recompensas?.fama || rewardsData.guest?.recompensas?.fama || 0) >= 0 ? '+' : ''}
+                    {role === 'host' ? rewardsData.host?.recompensas?.fama : rewardsData.guest?.recompensas?.fama}
+                  </span>
+                </div>
+
+                {/* XP Avatar */}
+                <div className="flex items-center justify-between bg-slate-900/50 rounded p-2">
+                  <span className="text-sm text-slate-300">✨ XP Avatar</span>
+                  <span className="font-bold text-cyan-400">
+                    +{role === 'host' ? rewardsData.host?.recompensas?.xp : rewardsData.guest?.recompensas?.xp}
+                  </span>
+                </div>
+
+                {/* XP Caçador */}
+                <div className="flex items-center justify-between bg-slate-900/50 rounded p-2">
+                  <span className="text-sm text-slate-300">🎯 XP Caçador</span>
+                  <span className="font-bold text-blue-400">
+                    +{role === 'host' ? rewardsData.host?.recompensas?.xpCacador : rewardsData.guest?.recompensas?.xpCacador}
+                  </span>
+                </div>
+
+                {/* Vínculo */}
+                <div className="flex items-center justify-between bg-slate-900/50 rounded p-2">
+                  <span className="text-sm text-slate-300">💕 Vínculo</span>
+                  <span className={`font-bold ${
+                    (role === 'host' ? rewardsData.host?.recompensas?.vinculo : rewardsData.guest?.recompensas?.vinculo) >= 0
+                      ? 'text-pink-400' : 'text-red-400'
+                  }`}>
+                    {(role === 'host' ? rewardsData.host?.recompensas?.vinculo : rewardsData.guest?.recompensas?.vinculo) >= 0 ? '+' : ''}
+                    {role === 'host' ? rewardsData.host?.recompensas?.vinculo : rewardsData.guest?.recompensas?.vinculo}
+                  </span>
+                </div>
+
+                {/* Exaustão */}
+                <div className="flex items-center justify-between bg-slate-900/50 rounded p-2">
+                  <span className="text-sm text-slate-300">😰 Exaustão</span>
+                  <span className="font-bold text-orange-400">
+                    +{role === 'host' ? rewardsData.host?.recompensas?.exaustao : rewardsData.guest?.recompensas?.exaustao}
+                  </span>
+                </div>
+
+                {/* Moedas */}
+                <div className="flex items-center justify-between bg-slate-900/50 rounded p-2">
+                  <span className="text-sm text-slate-300">💰 Moedas</span>
+                  <span className={`font-bold ${
+                    (role === 'host' ? rewardsData.host?.recompensas?.moedas : rewardsData.guest?.recompensas?.moedas) >= 0
+                      ? 'text-yellow-400' : 'text-red-400'
+                  }`}>
+                    {(role === 'host' ? rewardsData.host?.recompensas?.moedas : rewardsData.guest?.recompensas?.moedas) >= 0 ? '+' : ''}
+                    {role === 'host' ? rewardsData.host?.recompensas?.moedas : rewardsData.guest?.recompensas?.moedas}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                setShowRewardsModal(false);
+                router.push('/arena/pvp');
+              }}
+              className="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-lg font-bold text-lg transition-all hover:scale-[1.02] active:scale-95"
+            >
+              🏠 Voltar ao Lobby
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
