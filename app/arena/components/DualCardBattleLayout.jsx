@@ -8,7 +8,6 @@ import { useState, useEffect, useRef } from 'react';
 import AvatarSVG from '@/app/components/AvatarSVG';
 import { getElementoEmoji, getElementoCor, getEfeitoEmoji, ehBuff } from '@/lib/arena/battleEffects';
 import { calcularPoderTotal } from '@/lib/gameLogic';
-import { formatarVantagensDesvantagens } from '@/lib/combat/synergySystem';
 
 export default function DualCardBattleLayout({
   // Avatares
@@ -64,16 +63,6 @@ export default function DualCardBattleLayout({
   const [opponentCardActive, setOpponentCardActive] = useState('attack');
   const logEndRef = useRef(null);
 
-  // Debug: verificar se sinergias estão sendo recebidas
-  useEffect(() => {
-    if (playerSynergy) {
-      console.log('🔥 SINERGIA JOGADOR DETECTADA:', playerSynergy);
-    }
-    if (opponentSynergy) {
-      console.log('🔥 SINERGIA OPONENTE DETECTADA:', opponentSynergy);
-    }
-  }, [playerSynergy, opponentSynergy]);
-
   // Auto-scroll log
   useEffect(() => {
     if (logEndRef.current) {
@@ -95,9 +84,8 @@ export default function DualCardBattleLayout({
     const isAttack = type === 'attack';
     const cardClasses = `
       absolute w-full transition-all duration-400 ease-in-out rounded-xl overflow-hidden cursor-pointer
-      ${isAttack ? 'h-[264px]' : 'h-[158px]'}
-      ${isActive ? 'z-20 top-0' : isAttack ? 'z-10 top-0 opacity-60' : 'z-10 top-[123px]'}
-      ${!isActive && !isAttack ? 'hover:opacity-80' : ''}
+      ${isAttack ? 'h-[264px]' : isActive ? 'h-[240px]' : 'h-[200px]'}
+      ${isActive ? 'z-30 top-0' : 'z-10 opacity-0 pointer-events-none'}
       ${isActive && !isAttack ? 'scale-105 shadow-2xl' : ''}
     `;
 
@@ -107,12 +95,12 @@ export default function DualCardBattleLayout({
       : 'from-amber-900/70 to-yellow-900/60'; // Suporte: fundo amarelado
 
     const borderColor = isAttack
-      ? 'border-rose-600/80 hover:border-rose-500' // Ataque: borda roxo-avermelhado
-      : 'border-amber-500/80 hover:border-amber-400'; // Suporte: borda amarela
+      ? 'border-rose-500 hover:border-rose-400 shadow-rose-500/30' // Ataque: borda roxo-avermelhado
+      : 'border-amber-500 hover:border-amber-400 shadow-amber-500/40'; // Suporte: borda amarela
 
     return (
       <div className={cardClasses}>
-        <div className={`relative h-full bg-gradient-to-br ${bgGradient} border-3 ${borderColor} rounded-xl shadow-xl`}>
+        <div className={`relative h-full bg-gradient-to-br ${bgGradient} border-4 ${borderColor} rounded-xl shadow-2xl`}>
           {/* Textura de fundo */}
           <div className={`absolute inset-0 opacity-5 ${isAttack ? 'bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(124,58,237,0.1)_10px,rgba(124,58,237,0.1)_20px)]' : 'bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(251,191,36,0.1)_10px,rgba(251,191,36,0.1)_20px)]'}`} />
 
@@ -127,7 +115,7 @@ export default function DualCardBattleLayout({
           <div className="relative h-full flex flex-col items-center p-2 pt-6">
             {/* Avatar SVG - ajustado para não sobrepor o label */}
             <div className={`${isActive ? 'scale-100' : 'scale-75'} transition-transform ${!isAttack ? 'mt-1' : 'mt-2'}`}>
-              <AvatarSVG avatar={avatar} tamanho={isAttack ? (isActive ? 110 : 66) : 55} />
+              <AvatarSVG avatar={avatar} tamanho={isAttack ? (isActive ? 110 : 66) : 70} />
             </div>
 
             {/* Info do avatar (só quando ativo) */}
@@ -187,50 +175,47 @@ export default function DualCardBattleLayout({
                 )}
 
                 {/* Card de SUPORTE: mostrar detalhes da sinergia */}
-                {!isAttack && synergy && (() => {
-                  const { vantagens, desvantagens } = formatarVantagensDesvantagens(synergy);
-                  return (
-                    <div className="w-full px-2 mt-0.5 space-y-1">
-                      {/* Nome da Sinergia */}
-                      <div className="text-[10px] text-amber-300 font-bold text-center uppercase tracking-wide">
-                        {synergy.nome}
-                      </div>
-
-                      {/* Descrição */}
-                      <div className="text-[8px] text-amber-200/70 text-center italic leading-tight">
-                        {synergy.descricao}
-                      </div>
-
-                      {/* Vantagens */}
-                      {vantagens.length > 0 && (
-                        <div className="space-y-0.5">
-                          <div className="text-[7px] text-green-400 font-bold uppercase tracking-wider">
-                            ✅ VANTAGENS:
-                          </div>
-                          {vantagens.map((v, i) => (
-                            <div key={i} className="text-[8px] text-green-300 leading-tight">
-                              ✨ {v.texto}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Desvantagens */}
-                      {desvantagens.length > 0 && (
-                        <div className="space-y-0.5">
-                          <div className="text-[7px] text-red-400 font-bold uppercase tracking-wider">
-                            ⚠️ DESVANTAGENS:
-                          </div>
-                          {desvantagens.map((d, i) => (
-                            <div key={i} className="text-[8px] text-red-300 leading-tight">
-                              💢 {d.texto}
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                {!isAttack && synergy && (
+                  <div className="w-full px-2 mt-1 space-y-1.5 overflow-y-auto max-h-[140px] custom-scrollbar">
+                    {/* Nome da Sinergia */}
+                    <div className="text-[11px] text-amber-300 font-bold text-center uppercase tracking-wide">
+                      {synergy.nome}
                     </div>
-                  );
-                })()}
+
+                    {/* Descrição */}
+                    <div className="text-[9px] text-amber-200/70 text-center italic leading-tight">
+                      {synergy.descricao}
+                    </div>
+
+                    {/* Vantagens - USA ARRAY DIRETO! */}
+                    {synergy.vantagens && synergy.vantagens.length > 0 && (
+                      <div className="space-y-0.5">
+                        <div className="text-[8px] text-green-400 font-bold uppercase tracking-wider">
+                          ✅ VANTAGENS:
+                        </div>
+                        {synergy.vantagens.map((v, i) => (
+                          <div key={i} className="text-[9px] text-green-300 leading-tight">
+                            ✨ {v.texto}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Desvantagens - USA ARRAY DIRETO! */}
+                    {synergy.desvantagens && synergy.desvantagens.length > 0 && (
+                      <div className="space-y-0.5">
+                        <div className="text-[8px] text-red-400 font-bold uppercase tracking-wider">
+                          ⚠️ DESVANTAGENS:
+                        </div>
+                        {synergy.desvantagens.map((d, i) => (
+                          <div key={i} className="text-[9px] text-red-300 leading-tight">
+                            💢 {d.texto}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -252,7 +237,7 @@ export default function DualCardBattleLayout({
         <h1 className="text-3xl font-bold uppercase tracking-[0.3em] text-purple-400 drop-shadow-[0_0_20px_rgba(168,85,247,0.8)]">
           ⚔ BATALHA DIMENSIONAL ⚔
         </h1>
-        <div className="text-xs text-purple-300 mt-1">TURNO {currentTurn} • v2.0</div>
+        <div className="text-xs text-purple-300 mt-1">TURNO {currentTurn}</div>
       </div>
 
       <div className="flex gap-4 px-4 pb-4 relative z-10 max-h-[calc(100vh-100px)]">
@@ -267,7 +252,7 @@ export default function DualCardBattleLayout({
               </div>
 
               <div
-                className="relative w-[194px] h-[282px] cursor-pointer"
+                className="relative w-[194px] h-[320px] cursor-pointer"
                 onClick={togglePlayerCard}
               >
                 {/* Card de Ataque */}
@@ -312,7 +297,7 @@ export default function DualCardBattleLayout({
               </div>
 
               <div
-                className="relative w-[194px] h-[282px] cursor-pointer"
+                className="relative w-[194px] h-[320px] cursor-pointer"
                 onClick={toggleOpponentCard}
               >
                 {/* Card de Ataque */}
@@ -376,23 +361,27 @@ export default function DualCardBattleLayout({
                 <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-2">
                   Habilidades Especiais:
                 </div>
-                <div className="grid grid-cols-3 gap-1.5">
+                <div className="grid grid-cols-2 gap-2">
                   {playerAbilities.map((ability, index) => {
-                    const isOnCooldown = playerCooldowns[ability.id] > 0;
+                    // Usar nome como ID se id não existir
+                    const abilityKey = ability.id || ability.nome || index;
+                    const cooldownValue = playerCooldowns[abilityKey] || playerCooldowns[index] || 0;
+                    const isOnCooldown = cooldownValue > 0;
                     const hasEnergy = myEnergy >= ability.custo_energia;
+                    const tooltipText = `${ability.nome}\n${ability.descricao || ''}\n⚡ Custo: ${ability.custo_energia} energia\n🔄 Cooldown: ${ability.cooldown || 0} turnos`;
 
                     return (
                       <button
-                        key={ability.id || index}
+                        key={abilityKey}
                         onClick={() => onAbilityUse && onAbilityUse(index)}
                         disabled={!isYourTurn || status !== 'active' || isOnCooldown || !hasEnergy}
-                        className="px-2 py-2 bg-gradient-to-br from-indigo-900 to-indigo-800 border-2 border-indigo-500 rounded-lg font-bold uppercase text-[10px] tracking-wider text-indigo-200 hover:from-indigo-800 hover:to-indigo-700 hover:border-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-indigo-500/50 relative"
-                        title={ability.nome}
+                        className="px-3 py-2.5 bg-gradient-to-br from-indigo-900 to-indigo-800 border-2 border-indigo-500 rounded-lg font-bold uppercase text-[9px] tracking-wide text-indigo-200 hover:from-indigo-800 hover:to-indigo-700 hover:border-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-indigo-500/50 relative overflow-hidden"
+                        title={tooltipText}
                       >
-                        {ability.nome?.substring(0, 6)}
+                        <span className="block truncate">{ability.nome}</span>
                         {isOnCooldown && (
-                          <span className="absolute -top-1 -right-1 text-[9px] bg-red-500 rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-lg">
-                            🔒{playerCooldowns[ability.id]}
+                          <span className="absolute top-0.5 right-0.5 text-[10px] bg-red-500 rounded-full w-6 h-6 flex items-center justify-center font-bold shadow-lg z-10">
+                            🔒{cooldownValue}
                           </span>
                         )}
                       </button>
@@ -443,6 +432,32 @@ export default function DualCardBattleLayout({
             opacity: 1;
             transform: translateX(0);
           }
+        }
+
+        /* Scrollbar customizado */
+        :global(.custom-scrollbar::-webkit-scrollbar) {
+          width: 6px;
+        }
+
+        :global(.custom-scrollbar::-webkit-scrollbar-track) {
+          background: rgba(0, 0, 0, 0.3);
+          border-radius: 3px;
+        }
+
+        :global(.custom-scrollbar::-webkit-scrollbar-thumb) {
+          background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+          border-radius: 3px;
+          transition: background 0.3s ease;
+        }
+
+        :global(.custom-scrollbar::-webkit-scrollbar-thumb:hover) {
+          background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
+        }
+
+        /* Firefox */
+        :global(.custom-scrollbar) {
+          scrollbar-width: thin;
+          scrollbar-color: #f59e0b rgba(0, 0, 0, 0.3);
         }
       `}</style>
     </div>
