@@ -75,10 +75,10 @@ export default function DualCardBattleLayout({
     });
   }, [meuAvatarSuporte, iaAvatarSuporte, playerSynergy, opponentSynergy, playerAbilities, log]);
 
-  // Auto-scroll log para o TOPO (logs mais recentes primeiro)
+  // Auto-scroll log para o FINAL (logs mais recentes por último)
   useEffect(() => {
     if (logContainerRef.current) {
-      logContainerRef.current.scrollTop = 0;
+      logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
     }
   }, [log]);
 
@@ -423,10 +423,10 @@ export default function DualCardBattleLayout({
             📜 Log de Batalha
           </div>
 
-          <div ref={logContainerRef} className="flex-1 overflow-y-auto pr-2 space-y-2 log-scrollbar flex flex-col-reverse">
-            {[...log].reverse().map((entry, index) => (
+          <div ref={logContainerRef} className="flex-1 overflow-y-auto pr-2 space-y-2 log-scrollbar">
+            {log.map((entry, index) => (
               <div
-                key={log.length - index - 1}
+                key={index}
                 className="bg-black/40 border-l-4 border-purple-500 rounded-r p-2.5 text-xs leading-relaxed animate-[slideIn_0.3s_ease] hover:bg-black/60 transition-colors"
               >
                 <span className="text-slate-200">{entry.texto || entry}</span>
