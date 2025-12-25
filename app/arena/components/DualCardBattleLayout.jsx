@@ -78,7 +78,12 @@ export default function DualCardBattleLayout({
   // Auto-scroll log para o FINAL (logs mais recentes por último)
   useEffect(() => {
     if (logContainerRef.current) {
-      logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
+      // Usar setTimeout para garantir que o DOM foi atualizado
+      setTimeout(() => {
+        if (logContainerRef.current) {
+          logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
+        }
+      }, 0);
     }
   }, [log]);
 
