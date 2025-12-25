@@ -76,7 +76,7 @@ export default function LeaderboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-gray-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-gray-100 p-3 md:p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -87,7 +87,7 @@ export default function LeaderboardPage() {
             ← Voltar para Arena PVP
           </button>
 
-          <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 mb-2">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 mb-2">
             🏆 LEADERBOARD
           </h1>
           <p className="text-gray-400 text-lg">
@@ -99,7 +99,7 @@ export default function LeaderboardPage() {
         {meuRanking && (
           <div className="bg-gradient-to-br from-cyan-900/30 to-slate-900 border-2 border-cyan-500 rounded-lg p-6 mb-6">
             <h2 className="text-xl font-bold text-cyan-400 mb-4">📊 Sua Classificação</h2>
-            <div className="grid md:grid-cols-4 gap-4 text-center">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
               <div>
                 <div className="text-gray-400 text-sm">Posição</div>
                 <div className="text-3xl font-black text-cyan-400">{getRankIcon(meuRanking.posicao)}</div>
@@ -129,7 +129,7 @@ export default function LeaderboardPage() {
         {/* Premiações da Temporada */}
         <div className="bg-slate-900 border border-yellow-500/30 rounded-lg p-6 mb-6">
           <h2 className="text-2xl font-bold text-yellow-400 mb-4">💰 Premiações da Temporada</h2>
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div className="bg-gradient-to-br from-yellow-900/30 to-slate-950 border border-yellow-500 rounded-lg p-4 text-center">
               <div className="text-4xl mb-2">🥇</div>
               <div className="text-yellow-400 font-bold text-lg mb-2">1º Lugar</div>
@@ -149,7 +149,7 @@ export default function LeaderboardPage() {
               <div className="text-xs text-orange-400">Título: "Lutador Raro"</div>
             </div>
           </div>
-          <div className="mt-4 grid md:grid-cols-2 gap-4">
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-slate-950 border border-purple-500/30 rounded p-3 text-center">
               <div className="text-purple-400 font-bold">Top 10</div>
               <div className="text-sm text-gray-400">100 Moedas</div>
@@ -207,7 +207,7 @@ export default function LeaderboardPage() {
                       </div>
 
                       {/* Stats */}
-                      <div className="grid grid-cols-3 gap-4 text-center">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-center">
                         <div>
                           <div className="text-xs text-gray-400">Fama</div>
                           <div className="text-yellow-400 font-bold">{rank.fama}</div>

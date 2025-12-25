@@ -135,7 +135,7 @@ export default function ArenaLobby() {
       <div className="container mx-auto px-3 py-4">
 
         {/* Modos de Jogo */}
-        <div className="grid md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
           {modos.map((modo) => (
             <button
               key={modo.id}
@@ -170,12 +170,12 @@ export default function ArenaLobby() {
 
               <div className="relative p-4">
                 {/* Emoji */}
-                <div className={`text-5xl mb-3 ${modo.disponivel ? 'group-hover:scale-110' : ''} transition-transform duration-300`}>
+                <div className={`text-4xl md:text-5xl mb-3 ${modo.disponivel ? 'group-hover:scale-110' : ''} transition-transform duration-300`}>
                   {modo.emoji}
                 </div>
 
                 {/* Nome */}
-                <h2 className="text-2xl font-black text-white mb-1">
+                <h2 className="text-xl md:text-2xl font-black text-white mb-1">
                   {modo.nome}
                 </h2>
 
@@ -214,7 +214,7 @@ export default function ArenaLobby() {
         </div>
 
         {/* Informações Adicionais */}
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Dicas */}
           <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-800">
             <h3 className="text-base font-bold text-cyan-400 mb-3 flex items-center gap-2">

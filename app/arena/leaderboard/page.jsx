@@ -86,11 +86,11 @@ export default function LeaderboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950 text-gray-100">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="container mx-auto px-3 md:px-4 py-4 md:py-8 max-w-7xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-black bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 bg-clip-text text-transparent mb-2">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-black bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 bg-clip-text text-transparent mb-2">
               🏆 LEADERBOARD
             </h1>
             <p className="text-slate-400 font-mono text-sm">
@@ -106,7 +106,7 @@ export default function LeaderboardPage() {
           </button>
         </div>
 
-        <div className="grid lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
           {/* Coluna Esquerda - Info Jogador */}
           <div className="lg:col-span-1 space-y-6">
             {/* Card Posição do Jogador */}
@@ -254,9 +254,11 @@ export default function LeaderboardPage() {
           {/* Coluna Direita - Leaderboard */}
           <div className="lg:col-span-3">
             <div className="bg-slate-900/50 rounded-xl border border-slate-700/50 overflow-hidden">
-              {/* Header da Tabela */}
-              <div className="bg-gradient-to-r from-yellow-900/30 to-orange-900/30 border-b border-yellow-500/30 p-4">
-                <div className="grid grid-cols-12 gap-2 text-xs font-bold text-yellow-400 uppercase">
+              {/* Scroll horizontal em mobile */}
+              <div className="overflow-x-auto">
+                {/* Header da Tabela */}
+                <div className="bg-gradient-to-r from-yellow-900/30 to-orange-900/30 border-b border-yellow-500/30 p-4 min-w-[600px]">
+                  <div className="grid grid-cols-12 gap-2 text-xs font-bold text-yellow-400 uppercase">
                   <div className="col-span-1 text-center">#</div>
                   <div className="col-span-4">Jogador</div>
                   <div className="col-span-2 text-center">Tier</div>
@@ -266,8 +268,8 @@ export default function LeaderboardPage() {
                 </div>
               </div>
 
-              {/* Lista de Jogadores */}
-              <div className="max-h-[800px] overflow-y-auto">
+                {/* Lista de Jogadores */}
+                <div className="max-h-[800px] overflow-y-auto min-w-[600px]">
                 {jogadoresExibir.length === 0 && (
                   <div className="p-8 text-center text-slate-500">
                     Nenhum jogador encontrado com este filtro.
@@ -357,6 +359,7 @@ export default function LeaderboardPage() {
                     </div>
                   </div>
                 ))}
+                </div>
               </div>
             </div>
 
@@ -366,7 +369,7 @@ export default function LeaderboardPage() {
                 🎁 RECOMPENSAS DE FIM DE TEMPORADA
               </h3>
 
-              <div className="grid md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {/* Top 1 */}
                 <div className="bg-gradient-to-b from-yellow-900/30 to-transparent rounded-lg p-4 border border-yellow-500/50">
                   <div className="text-center mb-3">

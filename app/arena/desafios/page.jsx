@@ -435,7 +435,7 @@ export default function DesafiosPage() {
   const poderTotal = avatarAtivo ? calcularPoderTotal(avatarAtivo) : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950 text-gray-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950 text-gray-100 p-3 md:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -446,7 +446,7 @@ export default function DesafiosPage() {
             ← Voltar para Arena
           </button>
 
-          <h1 className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 mb-2">
+          <h1 className="text-3xl md:text-4xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 mb-2">
             ⚔️ DESAFIOS ÉPICOS
           </h1>
           <p className="text-gray-400 text-lg">
@@ -473,7 +473,7 @@ export default function DesafiosPage() {
             </div>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
             {/* Coluna Esquerda - Avatar */}
             <div className="lg:col-span-1">
               <div className="sticky top-6">
@@ -558,7 +558,7 @@ export default function DesafiosPage() {
                 <h2 className="text-2xl font-bold text-orange-400 mb-4 flex items-center gap-2">
                   <span className="text-3xl">🔱</span> TITÃS ELEMENTAIS
                 </h2>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {bosses.titasElementais.map(boss => {
                     const disponivel = podeDesafiar(boss);
                     const tempoRestante = getTempoRestante(boss.id);
@@ -640,7 +640,7 @@ export default function DesafiosPage() {
                 <h2 className="text-2xl font-bold text-purple-400 mb-4 flex items-center gap-2">
                   <span className="text-3xl">📜</span> LENDAS ANTIGAS
                 </h2>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {bosses.lendasAntigas.map(boss => {
                     const disponivel = podeDesafiar(boss);
                     const tempoRestante = getTempoRestante(boss.id);
