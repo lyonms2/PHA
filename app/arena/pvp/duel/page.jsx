@@ -316,7 +316,8 @@ function DuelContent() {
           action: 'enter',
           minPower,
           maxPower,
-          avatar: meuAvatar
+          avatar: meuAvatar,
+          suporteId: suporteIdParam
         })
       });
       const data = await res.json();
