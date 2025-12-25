@@ -269,6 +269,8 @@ export default function MercadoPage() {
               <option value="Eletricidade">⚡ Eletricidade</option>
               <option value="Sombra">🌑 Sombra</option>
               <option value="Luz">✨ Luz</option>
+              <option value="Void">🌌 Void</option>
+              <option value="Aether">✨ Aether</option>
             </select>
 
             {/* Preço Máximo */}

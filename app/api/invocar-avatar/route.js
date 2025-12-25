@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { getDocument, getDocuments, createDocument, updateDocument } from "@/lib/firebase/firestore";
 import { validateRequest } from '@/lib/api/middleware';
 import { trackMissionProgress } from '@/lib/missions/missionTracker';
-import admin from 'firebase-admin';
 
 // Importar sistemas
 import { ELEMENTOS, aplicarBonusElemental } from '../../avatares/sistemas/elementalSystem';

@@ -19,6 +19,7 @@ import {
   calcularSlots
 } from './utils';
 import { calcularXPNecessario } from './sistemas/progressionSystem';
+import { getLimiteAvatares, getHunterRank } from '@/lib/hunter/hunterRankSystem';
 import {
   useAvatarOperations,
   useAvatarModals,
@@ -128,8 +129,9 @@ export default function AvatarsPage() {
   // Contar avatares caídos (para o botão memorial)
   const avataresCaidos = contarAvataresCaidos(avatares);
 
-  // Sistema de limite de avatares
-  const LIMITE_AVATARES = 15;
+  // Sistema de limite de avatares (dinâmico por Hunter Rank)
+  const hunterRankAtual = user?.hunterRankXp !== undefined ? getHunterRank(user.hunterRankXp) : { rank: 'F', nome: 'F' };
+  const LIMITE_AVATARES = getLimiteAvatares(hunterRankAtual);
   const { usados: slotsUsados, disponiveis: slotsDisponiveis, percentual: percentualOcupado } = calcularSlots(avatares, LIMITE_AVATARES);
 
   if (loading) {
@@ -183,6 +185,9 @@ export default function AvatarsPage() {
               'text-cyan-400'
             }`}>
               📦 Slots: {slotsUsados}/{LIMITE_AVATARES}
+            </span>
+            <span className="text-[10px] text-slate-500 font-mono">
+              (Rank {hunterRankAtual.rank})
             </span>
             {slotsDisponiveis > 0 && slotsDisponiveis <= 3 && (
               <span className="text-[10px] text-orange-400 font-bold animate-pulse">
@@ -391,6 +396,8 @@ export default function AvatarsPage() {
               <option value="Eletricidade">⚡ Eletricidade</option>
               <option value="Sombra">🌑 Sombra</option>
               <option value="Luz">✨ Luz</option>
+              <option value="Void">🌌 Void</option>
+              <option value="Aether">✨ Aether</option>
             </select>
 
             {/* Status */}
