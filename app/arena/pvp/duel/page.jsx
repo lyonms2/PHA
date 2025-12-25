@@ -7,6 +7,7 @@ import { calcularPoderTotal } from "@/lib/gameLogic";
 import { HABILIDADES_POR_ELEMENTO } from "@/app/avatares/sistemas/abilitiesSystem";
 import { aplicarSinergia } from "@/lib/combat/synergyApplicator";
 import SynergyDisplay from "../../treinamento/batalha/components/SynergyDisplay";
+import DualCardBattleLayout from '@/app/arena/components/DualCardBattleLayout';
 import {
   atualizarBalanceamentoHabilidade,
   getElementoEmoji,
@@ -1279,20 +1280,77 @@ function DuelContent() {
     );
   }
 
-  // Tela de batalha
+  // Tela de batalha - USAR NOVO LAYOUT
+  return (
+    <DualCardBattleLayout
+      // Avatares
+      meuAvatar={meuAvatar}
+      meuAvatarSuporte={meuAvatarSuporte}
+      iaAvatar={opponentAvatar}
+      iaAvatarSuporte={null}
+
+      // Estados de batalha do jogador
+      myHp={myHp}
+      myHpMax={myHpMax}
+      myEnergy={myEnergy}
+      myEnergyMax={myEnergyMax}
+
+      // Estados de batalha do oponente
+      opponentHp={opponentHp}
+      opponentHpMax={opponentHpMax}
+      opponentEnergy={opponentEnergy}
+      opponentEnergyMax={opponentEnergyMax}
+
+      // Efeitos
+      myEffects={myEffects}
+      opponentEffects={opponentEffects}
+
+      // Cooldowns
+      playerCooldowns={myCooldowns}
+      iaCooldowns={opponentCooldowns}
+
+      // Estado do jogo
+      isYourTurn={isYourTurn}
+      status={room?.status || 'active'}
+      currentTurn={room?.currentTurn || 0}
+
+      // Ações
+      onAttack={atacar}
+      onDefend={defender}
+      onAbilityUse={usarHabilidade}
+      onSurrender={renderSe}
+
+      // Habilidades disponíveis
+      playerAbilities={meuAvatar?.habilidades || []}
+
+      // Log
+      log={log}
+
+      // Nomes
+      playerName={meuNome}
+      opponentName={opponentNome}
+
+      // Sinergias
+      playerSynergy={minhaSinergia}
+      opponentSynergy={null}
+    />
+  );
+
+  // OLD CODE - WRAPPED IN SINGLE COMMENT BLOCK
+  /*
   return (
     <div className="min-h-screen overflow-auto bg-gradient-to-br from-slate-950 via-slate-900 to-red-950">
       <div className="min-h-full text-gray-100 p-3" style={{ zoom: '1.2', minHeight: 'calc(100vh / 1.2)' }}>
       <div className="max-w-xl mx-auto">
 
-        {/* Header com título */}
+        {/* Header com título * /}
         <div className="text-center mb-3">
           <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400">
             ⚔️ BATALHA PVP
           </h1>
         </div>
 
-        {/* Indicador de Turno */}
+        {/* Indicador de Turno * /}
         <div className={`text-center py-1.5 px-3 rounded-lg mb-3 font-bold text-sm ${
           room?.status === 'finished'
             ? 'bg-gradient-to-r from-purple-900/80 to-pink-900/80 border border-purple-500'
