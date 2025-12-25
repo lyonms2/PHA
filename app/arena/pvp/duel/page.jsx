@@ -263,7 +263,7 @@ function DuelContent() {
             clearInterval(pollingRef.current);
 
             // Buscar e exibir recompensas
-            buscarRecompensas(data.room);
+            buscarRecompensas(data.room, data.role);
           }
         }
       } catch (err) {
@@ -637,7 +637,7 @@ function DuelContent() {
   };
 
   // Buscar recompensas ao fim da batalha
-  const buscarRecompensas = async (roomData) => {
+  const buscarRecompensas = async (roomData, playerRole) => {
     if (!roomData || !visitorId) return;
 
     try {
@@ -653,7 +653,7 @@ function DuelContent() {
       const data = await res.json();
 
       if (data.success) {
-        const isWinner = roomData.winner === role;
+        const isWinner = roomData.winner === playerRole;
         setRewardsData({
           ...data,
           isWinner,
