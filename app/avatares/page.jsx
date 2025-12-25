@@ -173,7 +173,7 @@ export default function AvatarsPage() {
         ]}
       />
 
-      <div className="relative z-10 container mx-auto px-4 py-6 max-w-7xl">
+      <div className="relative z-10 container mx-auto px-3 md:px-4 py-4 md:py-6 max-w-7xl">
         {/* Contador de Slots */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-1">
@@ -227,7 +227,7 @@ export default function AvatarsPage() {
                 </div>
 
                 {/* Info Compacta */}
-                <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                   <div>
                     <div className="text-xs text-slate-500 mb-1">AVATAR ATIVO</div>
                     <div className="font-bold text-cyan-300 text-lg">{avatarAtivo.nome}</div>
@@ -278,8 +278,8 @@ export default function AvatarsPage() {
         )}
 
         {/* Filtros */}
-        <div className="mb-6 bg-slate-900/50 border border-slate-700/50 rounded-lg p-4">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="mb-6 bg-slate-900/50 border border-slate-700/50 rounded-lg p-3 md:p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-3">
             {/* Raridade */}
             <select
               value={filtroRaridade}

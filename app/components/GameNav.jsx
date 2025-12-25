@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 /**
  * GameNav - Componente de navegação padronizado para todas as páginas do jogo
@@ -22,7 +21,6 @@ export default function GameNav({
   compact = false
 }) {
   const router = useRouter();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Cores padrão para cada tipo de ação
   const getActionStyle = (color) => {
@@ -43,22 +41,22 @@ export default function GameNav({
     <div className="relative z-20">
       {/* Barra de navegação */}
       <div className="bg-slate-950/80 backdrop-blur-xl border-b border-cyan-900/20">
-        <div className="container mx-auto px-4 py-3 max-w-7xl">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-            {/* Lado esquerdo - Título e voltar */}
-            <div className="flex items-center gap-4">
+        <div className="container mx-auto px-3 md:px-4 py-3 max-w-7xl">
+          <div className="flex flex-col gap-3">
+            {/* Linha superior - Botão Voltar e Título */}
+            <div className="flex items-center justify-between gap-4">
               {/* Botão Voltar */}
               <button
                 onClick={() => router.push(backTo)}
-                className="group flex items-center gap-2 px-3 py-2 bg-slate-900/50 hover:bg-slate-800/50 border border-slate-700/50 rounded-lg transition-all text-sm font-mono"
+                className="group flex items-center gap-2 px-3 py-2 bg-slate-900/50 hover:bg-slate-800/50 border border-slate-700/50 rounded-lg transition-all text-sm font-mono flex-shrink-0"
               >
                 <span className="text-cyan-400 group-hover:-translate-x-1 transition-transform">←</span>
                 <span className="text-slate-400 group-hover:text-slate-300">{backLabel}</span>
               </button>
 
-              {/* Título da página */}
+              {/* Título da página (Desktop) */}
               {title && (
-                <div className="hidden md:block">
+                <div className="hidden md:block flex-1">
                   <h1 className="text-xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent">
                     {title}
                   </h1>
@@ -69,84 +67,44 @@ export default function GameNav({
               )}
             </div>
 
-            {/* Lado direito - Ações */}
+            {/* Título Mobile */}
+            {title && (
+              <div className="md:hidden">
+                <h1 className="text-lg font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent">
+                  {title}
+                </h1>
+                {subtitle && (
+                  <p className="text-xs text-slate-500 font-mono">{subtitle}</p>
+                )}
+              </div>
+            )}
+
+            {/* Ações - Scroll horizontal no mobile, flex-wrap no desktop */}
             {actions.length > 0 && (
-              <div className="relative">
-                {/* Menu Desktop - Horizontal */}
-                <div className="hidden md:flex gap-1.5 flex-wrap">
+              <div className="overflow-x-auto -mx-3 px-3 md:mx-0 md:px-0">
+                <div className="flex md:flex-wrap gap-1.5 md:gap-2 min-w-max md:min-w-0">
                   {actions.map((action, index) => (
                     <button
                       key={index}
                       onClick={() => router.push(action.href)}
-                      className={`${compact ? 'px-2 py-1.5 text-xs gap-1' : 'px-3 py-1.5 text-xs gap-1.5'} bg-gradient-to-r ${getActionStyle(action.color)} border rounded-lg transition-all flex items-center font-semibold`}
+                      className={`
+                        ${compact ? 'px-2 py-1.5 text-xs gap-1' : 'px-3 py-2 text-xs gap-1.5'}
+                        bg-gradient-to-r ${getActionStyle(action.color)}
+                        border rounded-lg transition-all
+                        flex items-center font-semibold
+                        whitespace-nowrap
+                        active:scale-95
+                        hover:scale-105
+                      `}
                     >
                       {action.icon && <span className={compact ? 'text-sm' : ''}>{action.icon}</span>}
                       <span>{action.label}</span>
                     </button>
                   ))}
                 </div>
-
-                {/* Menu Mobile - Hamburger */}
-                <div className="md:hidden">
-                  <button
-                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    className="px-3 py-2 bg-slate-900/50 hover:bg-slate-800/50 border border-slate-700/50 rounded-lg transition-all text-sm font-mono flex items-center gap-2"
-                  >
-                    <span className="text-cyan-400 text-lg">☰</span>
-                    <span className="text-slate-400">MENU</span>
-                  </button>
-
-                  {/* Overlay para fechar menu */}
-                  {mobileMenuOpen && (
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setMobileMenuOpen(false)}
-                    />
-                  )}
-
-                  {/* Dropdown Mobile */}
-                  {mobileMenuOpen && (
-                    <div className="absolute right-0 top-12 bg-slate-950/95 backdrop-blur-xl border border-cyan-900/30 rounded-lg shadow-2xl w-[200px] max-w-[90vw] z-50 max-h-[70vh] overflow-y-auto">
-                      {actions.map((action, index) => (
-                        <button
-                          key={index}
-                          onClick={() => {
-                            router.push(action.href);
-                            setMobileMenuOpen(false);
-                          }}
-                          className={`w-full px-4 py-3 flex items-center gap-3 text-sm font-semibold border-b border-slate-800/50 last:border-b-0 transition-all ${
-                            action.color === 'red' ? 'text-red-400 hover:bg-red-900/20' :
-                            action.color === 'amber' ? 'text-amber-400 hover:bg-amber-900/20' :
-                            action.color === 'cyan' ? 'text-cyan-400 hover:bg-cyan-900/20' :
-                            action.color === 'purple' ? 'text-purple-400 hover:bg-purple-900/20' :
-                            action.color === 'indigo' ? 'text-indigo-400 hover:bg-indigo-900/20' :
-                            action.color === 'green' ? 'text-green-400 hover:bg-green-900/20' :
-                            action.color === 'gray' ? 'text-gray-400 hover:bg-gray-900/20' :
-                            'text-slate-400 hover:bg-slate-800/50'
-                          }`}
-                        >
-                          {action.icon && <span className="text-lg">{action.icon}</span>}
-                          <span>{action.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
               </div>
             )}
           </div>
-
-          {/* Título mobile */}
-          {title && (
-            <div className="md:hidden mt-3 pt-3 border-t border-slate-800/50">
-              <h1 className="text-lg font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent">
-                {title}
-              </h1>
-              {subtitle && (
-                <p className="text-xs text-slate-500 font-mono">{subtitle}</p>
-              )}
-            </div>
-          )}
         </div>
       </div>
 
