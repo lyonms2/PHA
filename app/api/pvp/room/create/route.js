@@ -156,6 +156,16 @@ export async function POST(request) {
       expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minutos
     });
 
+    console.log('✨ Sala PVP criada via CÓDIGO com sinergia:', {
+      roomId,
+      roomCode,
+      host: {
+        nome: avatar.nome,
+        suporte: sinergiaInfo.avatarSuporte?.nome || 'Nenhum',
+        sinergia: sinergiaInfo.nome || 'Nenhuma'
+      }
+    });
+
     return NextResponse.json({
       success: true,
       roomId,
