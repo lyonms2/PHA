@@ -249,14 +249,14 @@ export default function MergePage() {
         subtitle={`💰 ${stats?.moedas || 0} Moedas • 💎 ${stats?.fragmentos || 0} Fragmentos`}
       />
 
-      <div className="relative z-10 container mx-auto px-4 py-8">
+      <div className="relative z-10 container mx-auto px-3 md:px-4 py-4 md:py-6 lg:py-8">
 
 
         {/* Lore Introduction */}
-        <div className="mb-8 bg-gradient-to-r from-indigo-950/50 to-violet-950/50 rounded-lg p-6 border border-indigo-900/50">
-          <div className="flex items-start gap-4">
-            <div className="flex-shrink-0">
-              <div className="relative w-64 h-64 rounded-lg overflow-hidden border-2 border-indigo-500/50 bg-indigo-950/30">
+        <div className="mb-6 md:mb-8 bg-gradient-to-r from-indigo-950/50 to-violet-950/50 rounded-lg p-4 md:p-6 border border-indigo-900/50">
+          <div className="flex flex-col md:flex-row items-start gap-4">
+            <div className="flex-shrink-0 w-full md:w-auto">
+              <div className="relative w-full md:w-48 lg:w-64 h-48 md:h-48 lg:h-64 rounded-lg overflow-hidden border-2 border-indigo-500/50 bg-indigo-950/30">
                 <Image
                   src="/personagens/merge.jpg"
                   alt="Ritual de Fusão"
@@ -285,12 +285,12 @@ export default function MergePage() {
         </div>
 
         {/* Seleção de Avatares */}
-        <div className="grid lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
           {/* Avatar Base */}
           <div className="relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg blur opacity-50"></div>
 
-            <div className="relative bg-slate-950/80 backdrop-blur-xl border border-cyan-900/50 rounded-lg p-6">
+            <div className="relative bg-slate-950/80 backdrop-blur-xl border border-cyan-900/50 rounded-lg p-4 md:p-6">
               <h3 className="text-cyan-400 font-bold text-lg mb-3 flex items-center gap-2">
                 <span>🎯</span> Avatar Base (Receberá os Poderes)
               </h3>
@@ -336,12 +336,12 @@ export default function MergePage() {
                 </div>
               ) : (
                 <div>
-                  <div className="mb-4 p-6 bg-cyan-950/20 rounded-lg border border-cyan-900/30 text-center">
+                  <div className="mb-4 p-4 md:p-6 bg-cyan-950/20 rounded-lg border border-cyan-900/30 text-center">
                     <div className="text-4xl mb-2">🧬</div>
                     <div className="text-sm text-cyan-400">Selecione o avatar que receberá os poderes</div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 max-h-96 overflow-y-auto custom-scrollbar">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-96 overflow-y-auto custom-scrollbar">
                     {avataresDisponiveisBase
                       .filter(av => !avatarSacrificio || av.id !== avatarSacrificio.id)
                       .map((avatar) => {
@@ -378,7 +378,7 @@ export default function MergePage() {
           <div className="relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-red-500/20 to-orange-500/20 rounded-lg blur opacity-50"></div>
 
-            <div className="relative bg-slate-950/80 backdrop-blur-xl border border-red-900/50 rounded-lg p-6">
+            <div className="relative bg-slate-950/80 backdrop-blur-xl border border-red-900/50 rounded-lg p-4 md:p-6">
               <h3 className="text-red-400 font-bold text-lg mb-3 flex items-center gap-2">
                 <span>⚰️</span> Avatar Sacrifício (Será Consumido)
               </h3>
@@ -426,12 +426,12 @@ export default function MergePage() {
                 </div>
               ) : (
                 <div>
-                  <div className="mb-4 p-6 bg-red-950/20 rounded-lg border border-red-900/30 text-center">
+                  <div className="mb-4 p-4 md:p-6 bg-red-950/20 rounded-lg border border-red-900/30 text-center">
                     <div className="text-4xl mb-2">💀</div>
                     <div className="text-sm text-red-400">Selecione o avatar que será sacrificado</div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 max-h-96 overflow-y-auto custom-scrollbar">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-96 overflow-y-auto custom-scrollbar">
                     {avataresDisponiveisSacrificio
                       .filter(av => !avatarBase || av.id !== avatarBase.id)
                       .map((avatar) => (
@@ -454,10 +454,10 @@ export default function MergePage() {
 
         {/* Preview de Ganhos */}
         {avatarBase && avatarSacrificio && ganhos && (
-          <div className="mb-8 relative group">
+          <div className="mb-6 md:mb-8 relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-violet-500/20 to-purple-500/20 rounded-lg blur opacity-50"></div>
 
-            <div className="relative bg-slate-950/80 backdrop-blur-xl border border-violet-900/50 rounded-lg p-6">
+            <div className="relative bg-slate-950/80 backdrop-blur-xl border border-violet-900/50 rounded-lg p-4 md:p-6">
               {/* Chance de Sucesso */}
               <div className={`mb-4 p-4 rounded-lg border-2 ${
                 chanceSucesso >= 70 ? 'bg-green-950/30 border-green-500/50' :
@@ -493,7 +493,7 @@ export default function MergePage() {
                 <span>📊</span> Preview dos Ganhos
               </h3>
 
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 {/* Stats */}
                 <div>
                   <h4 className="text-sm font-bold text-slate-400 mb-3">Aumento de Atributos (15%):</h4>
@@ -608,8 +608,8 @@ export default function MergePage() {
 
         {/* Empty State */}
         {avataresDisponiveis.length < 2 && (
-          <div className="text-center py-20">
-            <div className="text-6xl mb-4 opacity-20">😔</div>
+          <div className="text-center py-16 md:py-20">
+            <div className="text-4xl md:text-5xl lg:text-6xl mb-4 opacity-20">😔</div>
             <h3 className="text-xl font-bold text-slate-400 mb-2">Avatares Insuficientes</h3>
             <p className="text-slate-500 text-sm">
               Você precisa de pelo menos 2 avatares vivos e inativos para realizar a fusão.

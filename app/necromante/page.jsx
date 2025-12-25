@@ -156,16 +156,16 @@ export default function NecromantePage() {
         />
       )}
 
-      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-8">
+      <div className="relative z-10 min-h-screen flex items-center justify-center px-3 md:px-4 py-4 md:py-8">
 
         <div className="max-w-5xl w-full">
           {/* ETAPA 1: INTRODUÇÃO */}
           {etapa === 'introducao' && (
             <div className="space-y-8 animate-fade-in">
               {/* Título */}
-              <div className="text-center mb-12">
+              <div className="text-center mb-8 md:mb-10 lg:mb-12">
                 <div className="mb-4 flex justify-center">
-                  <div className="relative w-64 h-64 rounded-full overflow-hidden border-4 border-purple-500/50">
+                  <div className="relative w-48 h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 rounded-full overflow-hidden border-4 border-purple-500/50">
                     <Image
                       src="/personagens/necromante.png"
                       alt="Ulthar - O Necromante"
@@ -175,7 +175,7 @@ export default function NecromantePage() {
                     />
                   </div>
                 </div>
-                <h1 className="text-5xl font-black bg-gradient-to-r from-purple-300 via-red-300 to-purple-300 bg-clip-text text-transparent mb-4">
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-black bg-gradient-to-r from-purple-300 via-red-300 to-purple-300 bg-clip-text text-transparent mb-4">
                   ULTHAR - O NECROMANTE
                 </h1>
                 <div className="h-px w-64 mx-auto bg-gradient-to-r from-transparent via-purple-500 to-transparent mb-4"></div>
@@ -193,10 +193,10 @@ export default function NecromantePage() {
               </div>
 
               {/* Diálogo do Necromante */}
-              <div className="relative group mb-12">
+              <div className="relative group mb-8 md:mb-10 lg:mb-12">
                 <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 via-red-500/20 to-purple-500/20 rounded-lg blur opacity-50"></div>
 
-                <div className="relative bg-slate-950/90 backdrop-blur-xl border border-purple-900/30 rounded-lg p-8">
+                <div className="relative bg-slate-950/90 backdrop-blur-xl border border-purple-900/30 rounded-lg p-4 md:p-6 lg:p-8">
                   <div className="space-y-3 text-slate-300 leading-relaxed mb-6">
                     <p className="font-mono text-sm">
                       "Ah... sinto o peso da perda em sua alma. Você vem buscar aqueles que cruzaram o véu..."
@@ -213,11 +213,11 @@ export default function NecromantePage() {
                   <div className="h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent mb-6"></div>
 
                   {/* Tabela de Custos */}
-                  <div className="bg-slate-900/50 rounded-lg p-4">
+                  <div className="bg-slate-900/50 rounded-lg p-3 md:p-4">
                     <h4 className="text-purple-400 font-bold text-sm uppercase tracking-wider mb-3 text-center">
                       Custos do Ritual
                     </h4>
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-3 gap-2 md:gap-3 lg:gap-4">
                       <div className="text-center p-3 bg-slate-800/50 rounded border border-slate-700/50">
                         <div className="text-slate-400 text-xs mb-2">COMUM</div>
                         <div className="text-amber-400 font-bold text-sm">500 💰</div>
@@ -240,8 +240,8 @@ export default function NecromantePage() {
 
               {/* Almas Perdidas */}
               {avataresMortos.length === 0 ? (
-                <div className="text-center py-16">
-                  <div className="text-6xl mb-4 opacity-30">☠️</div>
+                <div className="text-center py-12 md:py-16">
+                  <div className="text-4xl md:text-5xl lg:text-6xl mb-4 opacity-30">☠️</div>
                   <h3 className="text-xl font-bold text-slate-400 mb-2">Nenhuma Alma Disponível</h3>
                   <p className="text-slate-500 text-sm mb-6">
                     Todos os seus avatares estão vivos ou já carregam a Marca da Morte...
@@ -255,11 +255,11 @@ export default function NecromantePage() {
                 </div>
               ) : (
                 <div>
-                  <h3 className="text-center text-purple-400 font-bold text-xl mb-6 uppercase tracking-wider">
+                  <h3 className="text-center text-purple-400 font-bold text-lg md:text-xl mb-4 md:mb-6 uppercase tracking-wider">
                     ☠️ Almas Aguardando o Ritual ☠️
                   </h3>
-                  
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                     {avataresMortos.map((avatar) => {
                       const custo = custos[avatar.raridade];
                       const podeRessuscitar = stats?.moedas >= custo.moedas && stats?.fragmentos >= custo.fragmentos;
@@ -339,10 +339,10 @@ export default function NecromantePage() {
 
           {/* ETAPA 2: CONFIRMAÇÃO */}
           {etapa === 'selecionando' && avatarSelecionado && (
-            <div className="space-y-8 animate-fade-in">
-              <div className="text-center mb-8">
-                <div className="text-6xl mb-4">⚰️</div>
-                <h2 className="text-4xl font-black bg-gradient-to-r from-purple-300 to-red-300 bg-clip-text text-transparent mb-2">
+            <div className="space-y-6 md:space-y-8 animate-fade-in">
+              <div className="text-center mb-6 md:mb-8">
+                <div className="text-4xl md:text-5xl lg:text-6xl mb-4">⚰️</div>
+                <h2 className="text-2xl md:text-3xl lg:text-4xl font-black bg-gradient-to-r from-purple-300 to-red-300 bg-clip-text text-transparent mb-2">
                   CONFIRMAR RITUAL
                 </h2>
                 <p className="text-slate-400 font-mono text-sm">O ritual de necromancia é irreversível</p>
@@ -350,17 +350,17 @@ export default function NecromantePage() {
 
               <div className="relative group max-w-2xl mx-auto">
                 <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/30 to-red-500/30 rounded-lg blur opacity-75"></div>
-                
+
                 <div className="relative bg-slate-950/90 backdrop-blur-xl border border-purple-900/30 rounded-lg overflow-hidden">
                   {/* Avatar Preview */}
-                  <div className="flex justify-center py-6 bg-slate-900/30">
+                  <div className="flex justify-center py-4 md:py-6 bg-slate-900/30">
                     <div className="opacity-50 grayscale-[70%]">
                       <AvatarSVG avatar={avatarSelecionado} tamanho={200} />
                     </div>
                   </div>
 
-                  <div className="p-8">
-                    <h3 className="text-2xl font-bold text-center mb-4 text-purple-300">
+                  <div className="p-4 md:p-6 lg:p-8">
+                    <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-center mb-4 text-purple-300">
                       {avatarSelecionado.nome}
                     </h3>
 
@@ -434,8 +434,8 @@ export default function NecromantePage() {
 
           {/* ETAPA 3: RITUAL */}
           {etapa === 'ritual' && (
-            <div className="text-center space-y-8 animate-fade-in">
-              <div className="text-8xl animate-pulse-ritual mb-8">⚰️</div>
+            <div className="text-center space-y-6 md:space-y-8 animate-fade-in">
+              <div className="text-6xl md:text-7xl lg:text-8xl animate-pulse-ritual mb-6 md:mb-8">⚰️</div>
               
               <div className="relative group max-w-2xl mx-auto">
                 <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/50 via-red-500/50 to-purple-500/50 rounded-lg blur animate-pulse"></div>
@@ -472,10 +472,10 @@ export default function NecromantePage() {
 
           {/* ETAPA 4: REVELAÇÃO CORRIGIDA */}
           {etapa === 'revelacao' && avatarSelecionado && resultadoRitual && (
-            <div className="space-y-8 animate-fade-in">
-              <div className="text-center mb-8">
-                <div className="text-6xl mb-4 animate-bounce-slow">✨</div>
-                <h2 className="text-4xl font-black bg-gradient-to-r from-purple-300 via-red-300 to-purple-300 bg-clip-text text-transparent mb-2">
+            <div className="space-y-6 md:space-y-8 animate-fade-in">
+              <div className="text-center mb-6 md:mb-8">
+                <div className="text-4xl md:text-5xl lg:text-6xl mb-4 animate-bounce-slow">✨</div>
+                <h2 className="text-2xl md:text-3xl lg:text-4xl font-black bg-gradient-to-r from-purple-300 via-red-300 to-purple-300 bg-clip-text text-transparent mb-2">
                   RITUAL COMPLETO
                 </h2>
                 <p className="text-slate-400 font-mono text-sm">O avatar retornou do além...</p>
@@ -493,8 +493,8 @@ export default function NecromantePage() {
                     <span className="font-bold text-lg">☠️ RESSUSCITADO ☠️</span>
                   </div>
 
-                  <div className="p-8">
-                    <h3 className="text-3xl font-black text-center mb-4 text-purple-300">
+                  <div className="p-4 md:p-6 lg:p-8">
+                    <h3 className="text-xl md:text-2xl lg:text-3xl font-black text-center mb-4 text-purple-300">
                       {avatarSelecionado.nome}
                     </h3>
 
@@ -524,7 +524,7 @@ export default function NecromantePage() {
                     <div className="h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent mb-6"></div>
 
                     {/* Stats atualizados */}
-                    <div className="grid grid-cols-4 gap-3 mb-6 text-center text-sm">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-3 mb-4 md:mb-6 text-center text-sm">
                       <div className="bg-slate-900/50 rounded p-3">
                         <div className="text-slate-500 text-xs mb-1">Força</div>
                         <div className="text-red-400 font-bold">{avatarSelecionado.forca}</div>

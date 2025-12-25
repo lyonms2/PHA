@@ -153,12 +153,12 @@ export default function ForjadorPage() {
         ]}
       />
 
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto px-3 md:px-4 py-4 md:py-6 lg:py-8 max-w-6xl">
         {/* Header do Forjador */}
-        <div className="bg-gradient-to-r from-slate-900/50 to-indigo-900/50 rounded-xl p-6 mb-8 border border-indigo-500/30">
-          <div className="flex flex-col items-center text-center mb-6">
+        <div className="bg-gradient-to-r from-slate-900/50 to-indigo-900/50 rounded-xl p-4 md:p-6 mb-6 md:mb-8 border border-indigo-500/30">
+          <div className="flex flex-col items-center text-center mb-4 md:mb-6">
             <div className="mb-4">
-              <div className="w-64 h-64 rounded-full overflow-hidden border-4 border-indigo-500/50 mx-auto">
+              <div className="w-48 h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 rounded-full overflow-hidden border-4 border-indigo-500/50 mx-auto">
                 <Image
                   src="/personagens/forjador.png"
                   alt="Thorgal - Forjador de Almas"
@@ -169,7 +169,7 @@ export default function ForjadorPage() {
               </div>
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-cyan-300">
+              <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-cyan-300">
                 THORGAL - FORJADOR DE ALMAS
               </h1>
               <p className="text-slate-300 mt-1">
@@ -192,7 +192,7 @@ export default function ForjadorPage() {
           </div>
 
           {/* Tabela de custos */}
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
             <div className="bg-black/30 rounded-lg p-4">
               <h3 className="font-semibold text-cyan-300 mb-2">Comum → Raro</h3>
               <div className="text-sm space-y-1 text-slate-300">
@@ -216,7 +216,7 @@ export default function ForjadorPage() {
 
         {/* Recursos do jogador */}
         {stats && (
-          <div className="bg-slate-800/50 rounded-lg p-4 mb-6 flex gap-6 items-center border border-slate-700">
+          <div className="bg-slate-800/50 rounded-lg p-3 md:p-4 mb-4 md:mb-6 flex flex-wrap gap-3 md:gap-6 items-center border border-slate-700">
             <div className="flex items-center gap-2">
               <span className="text-2xl">💰</span>
               <div>
@@ -252,19 +252,19 @@ export default function ForjadorPage() {
         )}
 
         {/* Grid de avatares */}
-        <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
+        <div className="bg-slate-800/50 rounded-xl p-4 md:p-6 border border-slate-700">
           <h2 className="text-xl font-bold text-white mb-4">
             Selecione um Avatar para Evoluir
           </h2>
 
           {avatares.length === 0 ? (
             <div className="text-center py-12 text-slate-400">
-              <div className="text-6xl mb-4">🔮</div>
+              <div className="text-4xl md:text-5xl lg:text-6xl mb-4">🔮</div>
               <p>Você não possui avatares que possam evoluir</p>
               <p className="text-sm mt-2">Avatares Lendários já estão no nível máximo</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
               {avatares.map((avatar) => {
                 const info = obterInfoEvolucao(avatar);
                 const selecionado = avatarSelecionado?.id === avatar.id;
@@ -318,7 +318,7 @@ export default function ForjadorPage() {
 
         {/* Painel de evolução */}
         {avatarSelecionado && info && (
-          <div className="mt-6 bg-gradient-to-r from-slate-900/50 to-indigo-900/50 rounded-xl p-6 border border-indigo-500/30">
+          <div className="mt-4 md:mt-6 bg-gradient-to-r from-slate-900/50 to-indigo-900/50 rounded-xl p-4 md:p-6 border border-indigo-500/30">
             <h2 className="text-xl font-bold text-slate-300 mb-4">
               Detalhes da Evolução
             </h2>
@@ -353,7 +353,7 @@ export default function ForjadorPage() {
                 </div>
 
                 {/* Informações */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                   <div className="bg-black/30 rounded-lg p-4">
                     <h3 className="font-semibold text-indigo-300 mb-2">💰 Custo</h3>
                     <div className="text-sm space-y-1 text-slate-300">
