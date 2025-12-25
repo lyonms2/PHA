@@ -8,7 +8,7 @@ import { ELEMENTOS, aplicarBonusElemental } from '../../avatares/sistemas/elemen
 import { gerarStatsBalanceados } from '../../avatares/sistemas/statsSystem';
 import { selecionarHabilidadesIniciais } from '../../avatares/sistemas/abilitiesSystem';
 import { gerarNomeCompleto, gerarDescricaoNarrativa } from '../../avatares/sistemas/loreSystem';
-import { getHunterRank, aplicarBonusInvocacao, calcularXpFeito, verificarPromocao } from '@/lib/hunter/hunterRankSystem';
+import { getHunterRank, aplicarBonusInvocacao, calcularXpFeito, verificarPromocao, getLimiteAvatares } from '@/lib/hunter/hunterRankSystem';
 
 // ==================== FUNÇÕES DE GERAÇÃO ====================
 
@@ -17,56 +17,76 @@ function escolherAleatorio(array) {
 }
 
 /**
- * Escolhe elemento baseado na raridade
- * Void e Aether são EXTREMAMENTE RAROS - apenas em invocações Lendárias
- * E mesmo em Lendárias, têm apenas 1% de chance cada
+ * Escolhe elemento INDEPENDENTE da raridade
+ * Void e Aether são EXTREMAMENTE RAROS:
+ * - 0.5% chance de Void (em QUALQUER raridade)
+ * - 0.5% chance de Aether (em QUALQUER raridade)
+ * - 99% chance de elementos comuns
  */
 function escolherElemento(raridade) {
-  // Se NÃO for Lendário, Void/Aether são impossíveis
-  if (raridade !== 'Lendário') {
-    const elementosComuns = [
-      ELEMENTOS.FOGO,
-      ELEMENTOS.AGUA,
-      ELEMENTOS.TERRA,
-      ELEMENTOS.VENTO,
-      ELEMENTOS.ELETRICIDADE,
-      ELEMENTOS.SOMBRA,
-      ELEMENTOS.LUZ
-    ];
-    return escolherAleatorio(elementosComuns);
-  }
-
-  // Se for Lendário: 1% Void, 1% Aether, 98% elementos normais
+  // ==================== VOID/AETHER AJUSTADO ====================
+  // INDEPENDENTE da raridade, Void/Aether têm chance fixa de 0.5% cada
   const rand = Math.random();
 
-  if (rand < 0.01) {
-    return ELEMENTOS.VOID;  // 1% chance
-  } else if (rand < 0.02) {
-    return ELEMENTOS.AETHER; // 1% chance
-  } else {
-    // 98% chance de elemento normal
-    const elementosComuns = [
-      ELEMENTOS.FOGO,
-      ELEMENTOS.AGUA,
-      ELEMENTOS.TERRA,
-      ELEMENTOS.VENTO,
-      ELEMENTOS.ELETRICIDADE,
-      ELEMENTOS.SOMBRA,
-      ELEMENTOS.LUZ
-    ];
-    return escolherAleatorio(elementosComuns);
+  if (rand < 0.005) {
+    console.log(`🕳️ [VOID] Elemento raro VOID obtido! (0.5% de chance)`);
+    return ELEMENTOS.VOID;  // 0.5% chance
   }
+
+  if (rand < 0.01) {
+    console.log(`✨ [AETHER] Elemento raro AETHER obtido! (0.5% de chance)`);
+    return ELEMENTOS.AETHER; // 0.5% chance
+  }
+
+  // 99% chance de elemento comum
+  const elementosComuns = [
+    ELEMENTOS.FOGO,
+    ELEMENTOS.AGUA,
+    ELEMENTOS.TERRA,
+    ELEMENTOS.VENTO,
+    ELEMENTOS.ELETRICIDADE,
+    ELEMENTOS.SOMBRA,
+    ELEMENTOS.LUZ
+  ];
+
+  return escolherAleatorio(elementosComuns);
+  // ==============================================================
 }
 
 /**
  * Determina raridade baseado em probabilidades balanceadas
  * Primeira invocação sempre é Comum
  * Aplica bônus do rank do caçador
+ * PITY SYSTEM:
+ * - 30 invocações sem Raro = Raro garantido
+ * - 100 invocações sem Lendário = Lendário garantido
  */
-function determinarRaridade(primeiraInvocacao = false, hunterRank = null) {
+function determinarRaridade(primeiraInvocacao = false, hunterRank = null, pityStats = null) {
   if (primeiraInvocacao) {
     return 'Comum';
   }
+
+  // ==================== PITY SYSTEM ====================
+  // Verificar pity antes do RNG
+  if (pityStats) {
+    const semRaro = pityStats.invocacoes_sem_raro || 0;
+    const semLendario = pityStats.invocacoes_sem_lendario || 0;
+
+    console.log(`🎲 [PITY] Invocações sem Raro: ${semRaro}/30 | Sem Lendário: ${semLendario}/100`);
+
+    // PITY LENDÁRIO (prioridade máxima - 100 invocações)
+    if (semLendario >= 100) {
+      console.log(`🌟 [PITY] LENDÁRIO GARANTIDO! (100+ invocações sem lendário)`);
+      return 'Lendário';
+    }
+
+    // PITY RARO (30 invocações)
+    if (semRaro >= 30) {
+      console.log(`✨ [PITY] RARO GARANTIDO! (30+ invocações sem raro)`);
+      return 'Raro';
+    }
+  }
+  // =====================================================
 
   // Chances base: 70% Comum, 28% Raro, 2% Lendário
   let chancesBase = {
@@ -91,11 +111,11 @@ function determinarRaridade(primeiraInvocacao = false, hunterRank = null) {
 /**
  * Gera um avatar completo usando todos os sistemas
  */
-function gerarAvatarCompleto(primeiraInvocacao = false, hunterRank = null) {
+function gerarAvatarCompleto(primeiraInvocacao = false, hunterRank = null, pityStats = null) {
   console.log("=== GERANDO AVATAR COM NOVOS SISTEMAS ===");
 
-  // 1. DETERMINAR RARIDADE (com bônus do rank)
-  const raridade = determinarRaridade(primeiraInvocacao, hunterRank);
+  // 1. DETERMINAR RARIDADE (com bônus do rank + pity system)
+  const raridade = determinarRaridade(primeiraInvocacao, hunterRank, pityStats);
   console.log(`Raridade: ${raridade}`);
   
   // 2. ESCOLHER ELEMENTO (com raridade para Void e Aether)
@@ -181,6 +201,31 @@ function gerarAvatarCompleto(primeiraInvocacao = false, hunterRank = null) {
 
 // ==================== API ROUTE ====================
 
+// ==================== TRANSAÇÕES ATÔMICAS ====================
+// TODO: Implementar versão com runTransaction para garantir atomicidade completa
+//
+// ESTRUTURA RECOMENDADA:
+// const db = admin.firestore();
+// await db.runTransaction(async (transaction) => {
+//   // 1. LER dados do jogador
+//   const statsRef = db.collection('player_stats').doc(userId);
+//   const statsDoc = await transaction.get(statsRef);
+//
+//   // 2. VALIDAR recursos
+//   // 3. GERAR avatar (lógica pura, sem DB)
+//   // 4. CRIAR avatar
+//   const avatarRef = db.collection('avatares').doc();
+//   transaction.set(avatarRef, avatarData);
+//
+//   // 5. ATUALIZAR stats do jogador
+//   transaction.update(statsRef, { moedas, fragmentos, etc });
+//
+//   // TUDO OU NADA - rollback automático em erro
+// });
+//
+// IMPORTANTE: Dentro de transações, todas as LEITURAS devem vir ANTES das ESCRITAS
+// ================================================================
+
 export async function POST(request) {
   console.log("=== INICIANDO INVOCAÇÃO COM SISTEMAS INTEGRADOS ===");
 
@@ -191,6 +236,7 @@ export async function POST(request) {
 
     const { userId } = validation.body;
     console.log("Buscando stats do jogador:", userId);
+    console.log("⚠️ [TRANSAÇÃO] Sistema ainda não usa transações atômicas - implementação futura");
 
     // Buscar stats do jogador do Firestore
     const stats = await getDocument('player_stats', userId);
@@ -205,16 +251,27 @@ export async function POST(request) {
 
     console.log("Stats encontrados:", stats);
 
-    // Verificar se é primeira invocação
+    // ==================== VERIFICAR PRIMEIRA INVOCAÇÃO GRATUITA ====================
     const ehPrimeiraInvocacao = stats.primeira_invocacao;
     const custoMoedas = ehPrimeiraInvocacao ? 0 : 250;
     const custoFragmentos = ehPrimeiraInvocacao ? 0 : 5;
 
-    console.log("Primeira invocação?", ehPrimeiraInvocacao);
-    console.log("Custo:", custoMoedas, "moedas");
+    console.log("🎁 [PRIMEIRA_INVOCACAO] Flag primeira_invocacao:", ehPrimeiraInvocacao);
+    console.log("💰 [PRIMEIRA_INVOCACAO] Custo Moedas:", custoMoedas, "(normal: 250)");
+    console.log("💎 [PRIMEIRA_INVOCACAO] Custo Fragmentos:", custoFragmentos, "(normal: 5)");
+
+    if (ehPrimeiraInvocacao) {
+      console.log("✅ [PRIMEIRA_INVOCACAO] INVOCAÇÃO GRATUITA! Custos zerados.");
+    } else {
+      console.log("💵 [PRIMEIRA_INVOCACAO] Invocação paga. Recursos atuais:", {
+        moedas: stats.moedas,
+        fragmentos: stats.fragmentos
+      });
+    }
 
     // Verificar recursos (lógica customizada porque é condicional)
     if (!ehPrimeiraInvocacao && (stats.moedas < custoMoedas || stats.fragmentos < custoFragmentos)) {
+      console.log("❌ [PRIMEIRA_INVOCACAO] Recursos insuficientes!");
       return NextResponse.json(
         {
           message: stats.moedas < custoMoedas
@@ -226,6 +283,13 @@ export async function POST(request) {
         { status: 400 }
       );
     }
+    // ===============================================================================
+
+    // ==================== LIMITE PROGRESSIVO POR HUNTER RANK ====================
+    // Obter rank do caçador primeiro para determinar limite de avatares
+    const hunterRankAtual = getHunterRank(stats.hunterRankXp || 0);
+    const LIMITE_AVATARES = getLimiteAvatares(hunterRankAtual);
+    console.log(`📊 [LIMITE] Hunter Rank ${hunterRankAtual.nome}: limite de ${LIMITE_AVATARES} avatares`);
 
     // Verificar limite de avatares (avatares no memorial não contam)
     console.log("Verificando limite de avatares...");
@@ -242,7 +306,6 @@ export async function POST(request) {
     }
 
     // Contar apenas avatares que não estão no memorial (vivos OU mortos sem marca_morte)
-    const LIMITE_AVATARES = 15;
     const avataresConta = avatares.filter(av => !(av.marca_morte && !av.vivo)).length;
 
     console.log(`Avatares contados: ${avataresConta}/${LIMITE_AVATARES}`);
@@ -251,14 +314,16 @@ export async function POST(request) {
       console.log("❌ Limite de avatares atingido!");
       return Response.json(
         {
-          message: "Você atingiu o limite de 15 avatares! Sacrifique avatares inativos ou espere que morram em combate para liberar espaço.",
+          message: `Você atingiu o limite de ${LIMITE_AVATARES} avatares para seu Hunter Rank ${hunterRankAtual.nome}! Suba de rank para aumentar o limite, ou sacrifique avatares inativos.`,
           limite: LIMITE_AVATARES,
           avatares_atuais: avataresConta,
-          slots_disponiveis: 0
+          slots_disponiveis: 0,
+          hunter_rank: hunterRankAtual.nome
         },
         { status: 400 }
       );
     }
+    // ============================================================================
 
     console.log("Gerando avatar com sistemas integrados...");
 
@@ -266,8 +331,14 @@ export async function POST(request) {
     const hunterRank = getHunterRank(stats.hunterRankXp || 0);
     console.log(`Hunter Rank: ${hunterRank.nome} (${stats.hunterRankXp || 0} XP)`);
 
-    // GERAR AVATAR COM TODOS OS SISTEMAS
-    const avatarGerado = gerarAvatarCompleto(ehPrimeiraInvocacao, hunterRank);
+    // Preparar pity stats
+    const pityStats = {
+      invocacoes_sem_raro: stats.invocacoes_sem_raro || 0,
+      invocacoes_sem_lendario: stats.invocacoes_sem_lendario || 0
+    };
+
+    // GERAR AVATAR COM TODOS OS SISTEMAS (incluindo pity system)
+    const avatarGerado = gerarAvatarCompleto(ehPrimeiraInvocacao, hunterRank, pityStats);
     avatarGerado.user_id = userId;
     // ❌ REMOVIDO: avatarGerado.data_invocacao (coluna não existe no banco)
 
@@ -311,13 +382,39 @@ export async function POST(request) {
     // Verificar promoção de rank
     const promocao = verificarPromocao(xpAnterior, novoHunterRankXp);
 
+    // ==================== ATUALIZAR CONTADORES DE PITY ====================
+    let novoContadorRaro = (stats.invocacoes_sem_raro || 0);
+    let novoContadorLendario = (stats.invocacoes_sem_lendario || 0);
+
+    if (avatar.raridade === 'Lendário') {
+      // Reset AMBOS os contadores (Lendário também é Raro+)
+      novoContadorRaro = 0;
+      novoContadorLendario = 0;
+      console.log(`🎲 [PITY] Contadores resetados (obteve Lendário)`);
+    } else if (avatar.raridade === 'Raro') {
+      // Reset contador de Raro, incrementa Lendário
+      novoContadorRaro = 0;
+      novoContadorLendario += 1;
+      console.log(`🎲 [PITY] Contador Raro resetado | Lendário: ${novoContadorLendario}`);
+    } else {
+      // Comum: incrementa AMBOS
+      novoContadorRaro += 1;
+      novoContadorLendario += 1;
+      console.log(`🎲 [PITY] Contadores incrementados | Raro: ${novoContadorRaro} | Lendário: ${novoContadorLendario}`);
+    }
+    // =====================================================================
+
     try {
       await updateDocument('player_stats', userId, {
         moedas: novosMoedas,
         fragmentos: novosFragmentos,
         hunterRankXp: novoHunterRankXp,
-        primeira_invocacao: false
+        primeira_invocacao: false,
+        invocacoes_sem_raro: novoContadorRaro,
+        invocacoes_sem_lendario: novoContadorLendario
       });
+
+      console.log("✅ [PRIMEIRA_INVOCACAO] Flag primeira_invocacao setada para FALSE após invocação");
     } catch (updateError) {
       console.error("Erro ao atualizar stats:", updateError);
       // Não retornar erro aqui, avatar já foi criado
