@@ -194,7 +194,7 @@ export default function TreinamentoAIPage() {
 
   if (!avatarAtivo) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-gray-100 p-6">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-gray-100 p-3 md:p-6">
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
             <button
@@ -204,7 +204,7 @@ export default function TreinamentoAIPage() {
               ← Voltar para Arena
             </button>
 
-            <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 mb-2">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 mb-2">
               🤖 TREINO COM IA
             </h1>
           </div>
@@ -255,7 +255,7 @@ export default function TreinamentoAIPage() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Coluna Esquerda - Avatar e Info */}
           <div className="lg:col-span-1 space-y-6">
             {/* Seu Avatar Resumido */}
@@ -356,7 +356,7 @@ export default function TreinamentoAIPage() {
                         <div className="text-xs text-slate-400 mb-2">
                           {avatarSuporte.elemento} • Nv.{avatarSuporte.nivel}
                         </div>
-                        <div className="grid grid-cols-4 gap-1 text-[10px]">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 text-[10px]">
                           <div className="bg-slate-900/50 rounded px-1.5 py-0.5">
                             <div className="text-slate-500">FOR</div>
                             <div className="font-bold text-red-400">{avatarSuporte.forca}</div>
@@ -392,7 +392,7 @@ export default function TreinamentoAIPage() {
                     <div className="text-[10px] text-cyan-400">Selecione um avatar suporte</div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-1.5 max-h-64 overflow-y-auto custom-scrollbar">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-64 overflow-y-auto custom-scrollbar">
                     {todosAvatares.map((avatar) => (
                       <button
                         key={avatar.id}
@@ -496,7 +496,7 @@ export default function TreinamentoAIPage() {
                   </div>
 
                   {/* Opções de Dificuldade */}
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <button
                       onClick={() => iniciarTreinoIA(0, 39, 'facil')}
                       disabled={poderTotal < 0 || poderTotal > 39 || iniciandoBatalha}
@@ -546,7 +546,7 @@ export default function TreinamentoAIPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <button
                       onClick={() => iniciarTreinoIA(40, 60, 'facil')}
                       disabled={poderTotal < 40 || poderTotal > 60 || iniciandoBatalha}
@@ -596,7 +596,7 @@ export default function TreinamentoAIPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <button
                       onClick={() => iniciarTreinoIA(61, 90, 'facil')}
                       disabled={poderTotal < 61 || poderTotal > 90 || iniciandoBatalha}
@@ -646,7 +646,7 @@ export default function TreinamentoAIPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <button
                       onClick={() => iniciarTreinoIA(91, 999, 'facil')}
                       disabled={poderTotal <= 90 || iniciandoBatalha}

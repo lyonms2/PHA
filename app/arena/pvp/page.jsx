@@ -308,7 +308,7 @@ export default function PvPPage() {
 
   if (!avatarAtivo) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-gray-100 p-6">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-gray-100 p-3 md:p-6">
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
             <button
@@ -318,7 +318,7 @@ export default function PvPPage() {
               ← Voltar para Arena
             </button>
 
-            <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 mb-2">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 mb-2">
               ⚔️ ARENA PVP
             </h1>
           </div>
@@ -349,7 +349,7 @@ export default function PvPPage() {
   const tierInfo = getTierInfo(rankingData?.fama || 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-gray-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-gray-100 p-3 md:p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -397,7 +397,7 @@ export default function PvPPage() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Coluna Esquerda - Avatar e Salas */}
           <div className="lg:col-span-2 space-y-6">
             {/* Seu Avatar Resumido */}
@@ -502,7 +502,7 @@ export default function PvPPage() {
                           <div className="text-xs text-slate-400 mb-2">
                             {avatarSuporte.elemento} • Nv.{avatarSuporte.nivel}
                           </div>
-                          <div className="grid grid-cols-4 gap-1 text-[10px]">
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 text-[10px]">
                             <div className="bg-slate-900/50 rounded px-1.5 py-0.5">
                               <div className="text-slate-500">FOR</div>
                               <div className="font-bold text-red-400">{avatarSuporte.forca}</div>
@@ -538,7 +538,7 @@ export default function PvPPage() {
                       <div className="text-[10px] text-purple-400">Selecione um avatar suporte</div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-1.5 max-h-64 overflow-y-auto custom-scrollbar">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-64 overflow-y-auto custom-scrollbar">
                       {todosAvatares
                         .filter(av => av.id !== avatarAtivo?.id)
                         .map((avatar) => (
