@@ -37,9 +37,10 @@ export async function POST(request) {
       );
     }
 
-    if (room.status === 'finished') {
+    // Verificar se recompensas já foram processadas (finished_at existe)
+    if (room.finished_at) {
       return NextResponse.json(
-        { error: 'Batalha já foi finalizada' },
+        { error: 'Recompensas já foram processadas para esta batalha' },
         { status: 400 }
       );
     }
@@ -132,6 +133,21 @@ export async function POST(request) {
     } else {
       trackMissionProgress(room.guest_user_id, 'VITORIA_PVP', 1);
     }
+
+    console.log('🏆 Recompensas PVP aplicadas:', {
+      roomId,
+      winner: hostWon ? 'host' : 'guest',
+      host: {
+        fama: hostRecompensas.fama,
+        xpCacador: hostRecompensas.xpCacador,
+        xpAvatar: hostRecompensas.xp
+      },
+      guest: {
+        fama: guestRecompensas.fama,
+        xpCacador: guestRecompensas.xpCacador,
+        xpAvatar: guestRecompensas.xp
+      }
+    });
 
     return NextResponse.json({
       success: true,
