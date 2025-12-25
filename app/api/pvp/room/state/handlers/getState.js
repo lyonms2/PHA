@@ -44,6 +44,18 @@ export async function handleGetState(request) {
     const role = isHost ? 'host' : 'guest';
     const isYourTurn = room.current_turn === role;
 
+    // DEBUG: Log completo dos dados da sala
+    console.log('🔍 DEBUG getState - Dados da sala:', {
+      roomId: room.id,
+      role,
+      host_avatar_suporte: room.host_avatar_suporte ? { nome: room.host_avatar_suporte.nome } : null,
+      host_sinergia: room.host_sinergia ? { nome: room.host_sinergia.nome } : null,
+      guest_avatar_suporte: room.guest_avatar_suporte ? { nome: room.guest_avatar_suporte.nome } : null,
+      guest_sinergia: room.guest_sinergia ? { nome: room.guest_sinergia.nome } : null,
+      opponentAvatarSuporte: isHost ? room.guest_avatar_suporte : room.host_avatar_suporte,
+      opponentSinergia: isHost ? room.guest_sinergia : room.host_sinergia
+    });
+
     return NextResponse.json({
       success: true,
       room: {

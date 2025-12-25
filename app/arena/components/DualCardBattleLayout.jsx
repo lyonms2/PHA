@@ -61,12 +61,29 @@ export default function DualCardBattleLayout({
 }) {
   const [playerCardActive, setPlayerCardActive] = useState('attack'); // 'attack' ou 'support'
   const [opponentCardActive, setOpponentCardActive] = useState('attack');
-  const logEndRef = useRef(null);
+  const logContainerRef = useRef(null);
 
-  // Auto-scroll log
+  // Debug: Verificar dados recebidos
   useEffect(() => {
-    if (logEndRef.current) {
-      logEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    console.log('🔍 DualCardBattleLayout - Dados recebidos:', {
+      meuAvatarSuporte: meuAvatarSuporte ? { nome: meuAvatarSuporte.nome, elemento: meuAvatarSuporte.elemento } : null,
+      iaAvatarSuporte: iaAvatarSuporte ? { nome: iaAvatarSuporte.nome, elemento: iaAvatarSuporte.elemento } : null,
+      playerSynergy: playerSynergy ? { nome: playerSynergy.nome, vantagens: playerSynergy.vantagens?.length, desvantagens: playerSynergy.desvantagens?.length } : null,
+      opponentSynergy: opponentSynergy ? { nome: opponentSynergy.nome, vantagens: opponentSynergy.vantagens?.length, desvantagens: opponentSynergy.desvantagens?.length } : null,
+      playerAbilities: playerAbilities?.length || 0,
+      logCount: log.length
+    });
+  }, [meuAvatarSuporte, iaAvatarSuporte, playerSynergy, opponentSynergy, playerAbilities, log]);
+
+  // Auto-scroll log para o FINAL (logs mais recentes por último)
+  useEffect(() => {
+    if (logContainerRef.current) {
+      // Usar setTimeout para garantir que o DOM foi atualizado
+      setTimeout(() => {
+        if (logContainerRef.current) {
+          logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
+        }
+      }, 0);
     }
   }, [log]);
 
@@ -373,7 +390,10 @@ export default function DualCardBattleLayout({
                     return (
                       <button
                         key={abilityKey}
-                        onClick={() => onAbilityUse && onAbilityUse(index)}
+                        onClick={() => {
+                          console.log('🎯 Habilidade clicada:', { index, ability: ability.nome, onAbilityUse: !!onAbilityUse });
+                          if (onAbilityUse) onAbilityUse(index);
+                        }}
                         disabled={!isYourTurn || status !== 'active' || isOnCooldown || !hasEnergy}
                         className="px-3 py-2.5 bg-gradient-to-br from-indigo-900 to-indigo-800 border-2 border-indigo-500 rounded-lg font-bold uppercase text-[9px] tracking-wide text-indigo-200 hover:from-indigo-800 hover:to-indigo-700 hover:border-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-indigo-500/50 relative overflow-hidden"
                         title={tooltipText}
@@ -403,21 +423,20 @@ export default function DualCardBattleLayout({
         </div>
 
         {/* Painel de Log */}
-        <div className="w-80 bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-2 border-slate-700 rounded-xl p-4 shadow-xl backdrop-blur-sm flex flex-col max-h-[calc(100vh-120px)]">
-          <div className="text-center text-purple-400 text-sm font-bold uppercase tracking-wider mb-3 pb-2 border-b-2 border-slate-700">
+        <div className="w-80 bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-2 border-purple-500 rounded-xl p-4 shadow-xl shadow-purple-500/20 backdrop-blur-sm flex flex-col max-h-[calc(100vh-120px)]">
+          <div className="text-center text-purple-400 text-sm font-bold uppercase tracking-wider mb-3 pb-2 border-b-2 border-purple-500/50">
             📜 Log de Batalha
           </div>
 
-          <div className="flex-1 overflow-y-auto pr-2 space-y-2">
+          <div ref={logContainerRef} className="flex-1 overflow-y-auto pr-2 space-y-2 log-scrollbar">
             {log.map((entry, index) => (
               <div
                 key={index}
-                className="bg-black/40 border-l-3 border-purple-500 rounded p-2 text-xs leading-relaxed animate-[slideIn_0.3s_ease]"
+                className="bg-black/40 border-l-4 border-purple-500 rounded-r p-2.5 text-xs leading-relaxed animate-[slideIn_0.3s_ease] hover:bg-black/60 transition-colors"
               >
-                <span className="text-slate-300">{entry.texto || entry}</span>
+                <span className="text-slate-200">{entry.texto || entry}</span>
               </div>
             ))}
-            <div ref={logEndRef} />
           </div>
         </div>
       </div>
@@ -434,7 +453,7 @@ export default function DualCardBattleLayout({
           }
         }
 
-        /* Scrollbar customizado */
+        /* Scrollbar customizado - Card de Suporte (Amber/Gold) */
         :global(.custom-scrollbar::-webkit-scrollbar) {
           width: 6px;
         }
@@ -458,6 +477,35 @@ export default function DualCardBattleLayout({
         :global(.custom-scrollbar) {
           scrollbar-width: thin;
           scrollbar-color: #f59e0b rgba(0, 0, 0, 0.3);
+        }
+
+        /* Scrollbar do Log - Tema Purple/Violet */
+        :global(.log-scrollbar::-webkit-scrollbar) {
+          width: 8px;
+        }
+
+        :global(.log-scrollbar::-webkit-scrollbar-track) {
+          background: rgba(0, 0, 0, 0.4);
+          border-radius: 4px;
+          border: 1px solid rgba(168, 85, 247, 0.2);
+        }
+
+        :global(.log-scrollbar::-webkit-scrollbar-thumb) {
+          background: linear-gradient(180deg, #a855f7 0%, #7c3aed 50%, #6366f1 100%);
+          border-radius: 4px;
+          border: 1px solid rgba(168, 85, 247, 0.4);
+          transition: all 0.3s ease;
+        }
+
+        :global(.log-scrollbar::-webkit-scrollbar-thumb:hover) {
+          background: linear-gradient(180deg, #c084fc 0%, #a855f7 50%, #8b5cf6 100%);
+          box-shadow: 0 0 10px rgba(168, 85, 247, 0.6);
+        }
+
+        /* Firefox */
+        :global(.log-scrollbar) {
+          scrollbar-width: thin;
+          scrollbar-color: #a855f7 rgba(0, 0, 0, 0.4);
         }
       `}</style>
     </div>

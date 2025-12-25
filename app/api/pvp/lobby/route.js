@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createDocument, getDocuments, deleteDocument, getDocument, updateDocument } from '@/lib/firebase/firestore';
+import { aplicarSinergia, calcularHPComSinergia, calcularEnergiaComSinergia } from '@/lib/combat/synergyApplicator';
+import { calcularHPMaximoCompleto } from '@/lib/combat/statsCalculator';
 
 export const dynamic = 'force-dynamic';
 
@@ -105,7 +107,7 @@ export async function GET(request) {
  */
 export async function POST(request) {
   try {
-    const { visitorId, action, targetId, minPower, maxPower, avatar } = await request.json();
+    const { visitorId, action, targetId, minPower, maxPower, avatar, suporteId } = await request.json();
 
     if (!visitorId || !action) {
       return NextResponse.json(
@@ -128,6 +130,7 @@ export async function POST(request) {
           minPower: minPower || 0,
           maxPower: maxPower || 999,
           avatar: avatar || null,
+          suporte_id: suporteId || null,
           poder: avatar ? (avatar.forca + avatar.agilidade + avatar.resistencia + avatar.foco) : 0,
           hp_atual: avatar?.hp_atual || hpMax,
           hp_maximo: hpMax,
@@ -149,6 +152,7 @@ export async function POST(request) {
         minPower: minPower || 0,
         maxPower: maxPower || 999,
         avatar: avatar || null,
+        suporte_id: suporteId || null,
         poder: avatar ? (avatar.forca + avatar.agilidade + avatar.resistencia + avatar.foco) : 0,
         hp_atual: avatar?.hp_atual || hpMax,
         hp_maximo: hpMax,
@@ -236,36 +240,143 @@ export async function POST(request) {
       });
       const myEntry = myEntries && myEntries.length > 0 ? myEntries[0] : null;
 
-      // Criar sala de duelo com avatares e energia
-      // Usar HP real dos avatares (calculado corretamente)
-      const hostHpMax = challenge.hp_maximo || calcularHpMaximo(challenge.avatar);
-      const hostHpAtual = challenge.hp_atual || hostHpMax;
-      const hostExaustao = challenge.exaustao || 0;
-      const guestHpMax = myEntry?.hp_maximo || calcularHpMaximo(myEntry?.avatar);
-      const guestHpAtual = myEntry?.hp_atual || guestHpMax;
-      const guestExaustao = myEntry?.exaustao || 0;
+      // ====== BUSCAR E APLICAR SINERGIA DO HOST (desafiante) ======
+      let hostSinergiaInfo = null;
+      let hostAvatarSuporte = null;
+      let hostHpMax = calcularHpMaximo(challenge.avatar);
+      let hostEnergy = 100;
+      let hostEnergyMax = 100;
 
+      if (challenge.suporte_id) {
+        hostAvatarSuporte = await getDocument('avatares', challenge.suporte_id);
+
+        if (hostAvatarSuporte && challenge.avatar) {
+          const resultadoSinergia = aplicarSinergia(challenge.avatar, hostAvatarSuporte);
+
+          hostSinergiaInfo = {
+            ...resultadoSinergia.sinergiaAtiva,
+            modificadores: resultadoSinergia.modificadores,
+            logTexto: resultadoSinergia.logTexto,
+            avatarSuporte: {
+              id: hostAvatarSuporte.id,
+              nome: hostAvatarSuporte.nome,
+              elemento: hostAvatarSuporte.elemento,
+              nivel: hostAvatarSuporte.nivel,
+              raridade: hostAvatarSuporte.raridade,
+              marca_morte: hostAvatarSuporte.marca_morte || false,
+              forca: hostAvatarSuporte.forca,
+              agilidade: hostAvatarSuporte.agilidade,
+              resistencia: hostAvatarSuporte.resistencia,
+              foco: hostAvatarSuporte.foco
+            }
+          };
+
+          // Recalcular HP e Energia com modificadores de sinergia
+          const hpMaximoBase = calcularHPMaximoCompleto(challenge.avatar);
+          hostHpMax = calcularHPComSinergia(hpMaximoBase, resultadoSinergia.modificadores);
+          hostEnergy = calcularEnergiaComSinergia(100, resultadoSinergia.modificadores);
+          hostEnergyMax = hostEnergy;
+        }
+      }
+
+      const hostHpAtual = Math.min(challenge.hp_atual || hostHpMax, hostHpMax);
+
+      // ====== BUSCAR E APLICAR SINERGIA DO GUEST (aceitante) ======
+      let guestSinergiaInfo = null;
+      let guestAvatarSuporte = null;
+      let guestHpMax = calcularHpMaximo(myEntry?.avatar);
+      let guestEnergy = 100;
+      let guestEnergyMax = 100;
+
+      if (myEntry?.suporte_id) {
+        guestAvatarSuporte = await getDocument('avatares', myEntry.suporte_id);
+
+        if (guestAvatarSuporte && myEntry.avatar) {
+          const resultadoSinergia = aplicarSinergia(myEntry.avatar, guestAvatarSuporte);
+
+          guestSinergiaInfo = {
+            ...resultadoSinergia.sinergiaAtiva,
+            modificadores: resultadoSinergia.modificadores,
+            logTexto: resultadoSinergia.logTexto,
+            avatarSuporte: {
+              id: guestAvatarSuporte.id,
+              nome: guestAvatarSuporte.nome,
+              elemento: guestAvatarSuporte.elemento,
+              nivel: guestAvatarSuporte.nivel,
+              raridade: guestAvatarSuporte.raridade,
+              marca_morte: guestAvatarSuporte.marca_morte || false,
+              forca: guestAvatarSuporte.forca,
+              agilidade: guestAvatarSuporte.agilidade,
+              resistencia: guestAvatarSuporte.resistencia,
+              foco: guestAvatarSuporte.foco
+            }
+          };
+
+          // Recalcular HP e Energia com modificadores de sinergia
+          const hpMaximoBase = calcularHPMaximoCompleto(myEntry.avatar);
+          guestHpMax = calcularHPComSinergia(hpMaximoBase, resultadoSinergia.modificadores);
+          guestEnergy = calcularEnergiaComSinergia(100, resultadoSinergia.modificadores);
+          guestEnergyMax = guestEnergy;
+        }
+      }
+
+      const guestHpAtual = Math.min(myEntry?.hp_atual || guestHpMax, guestHpMax);
+
+      // ====== CRIAR SALA COM DADOS COMPLETOS ======
       const roomId = await createDocument('pvp_duel_rooms', {
         code: null,
         host_user_id: challengerId,
         host_nome: challengerStats?.nome_operacao || 'Jogador 1',
-        host_avatar: challenge.avatar || null,
+        host_avatar: {
+          ...challenge.avatar,
+          hp_maximo: hostHpMax,
+          hp_atual: hostHpAtual,
+          habilidades: challenge.avatar?.habilidades || []
+        },
+        host_avatar_suporte: hostSinergiaInfo?.avatarSuporte || null,
+        host_sinergia: hostSinergiaInfo || null,
         host_hp: hostHpAtual,
         host_hp_max: hostHpMax,
-        host_exaustao: hostExaustao,
+        host_energy: hostEnergy,
+        host_energy_max: hostEnergyMax,
+        host_effects: [],
+        host_cooldowns: {},
         guest_user_id: visitorId,
         guest_nome: targetStats?.nome_operacao || 'Jogador 2',
-        guest_avatar: myEntry?.avatar || null,
+        guest_avatar: {
+          ...myEntry?.avatar,
+          hp_maximo: guestHpMax,
+          hp_atual: guestHpAtual,
+          habilidades: myEntry?.avatar?.habilidades || []
+        },
+        guest_avatar_suporte: guestSinergiaInfo?.avatarSuporte || null,
+        guest_sinergia: guestSinergiaInfo || null,
         guest_hp: guestHpAtual,
         guest_hp_max: guestHpMax,
-        guest_exaustao: guestExaustao,
+        guest_energy: guestEnergy,
+        guest_energy_max: guestEnergyMax,
+        guest_effects: [],
+        guest_cooldowns: {},
         status: 'active',
         host_ready: true,
         guest_ready: true,
-        host_energy: 100,
-        guest_energy: 100,
         current_turn: 'host',
+        battle_log: [],
         created_at: new Date().toISOString()
+      });
+
+      console.log('✨ Sala PVP criada via lobby com sinergias:', {
+        roomId,
+        host: {
+          nome: challenge.avatar?.nome,
+          suporte: hostSinergiaInfo?.avatarSuporte?.nome || 'Nenhum',
+          sinergia: hostSinergiaInfo?.nome || 'Nenhuma'
+        },
+        guest: {
+          nome: myEntry?.avatar?.nome,
+          suporte: guestSinergiaInfo?.avatarSuporte?.nome || 'Nenhum',
+          sinergia: guestSinergiaInfo?.nome || 'Nenhuma'
+        }
       });
 
       // Atualizar entrada do desafiante com o roomId

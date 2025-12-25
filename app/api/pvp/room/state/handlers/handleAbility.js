@@ -71,6 +71,7 @@ export async function handleAbility({ room, role, isHost, abilityIndex }) {
   const resistenciaOponente = opponentAvatar?.resistencia ?? 10;
   const meuElemento = myAvatar?.elemento || 'Neutro';
   const elementoOponente = opponentAvatar?.elemento || 'Neutro';
+  const myExaustao = 0; // Sem penalidades de exaustão no PVP
 
   let dano = 0;
   let cura = 0;

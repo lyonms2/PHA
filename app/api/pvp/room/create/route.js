@@ -130,19 +130,40 @@ export async function POST(request) {
       },
       host_avatar_suporte: sinergiaInfo.avatarSuporte, // Avatar suporte do host
       host_sinergia: sinergiaInfo, // Informações da sinergia do host
+      host_hp: hpAtual,
+      host_hp_max: hpMaximo,
+      host_energy: calcularEnergiaComSinergia(100, resultadoSinergia.modificadores),
+      host_energy_max: calcularEnergiaComSinergia(100, resultadoSinergia.modificadores),
+      host_effects: [],
+      host_cooldowns: {},
       guest_user_id: null,
       guest_nome: null,
       guest_avatar: null,
       guest_avatar_suporte: null,
       guest_sinergia: null,
+      guest_hp: 0,
+      guest_hp_max: 100,
+      guest_energy: 100,
+      guest_energy_max: 100,
+      guest_effects: [],
+      guest_cooldowns: {},
       status: 'waiting', // waiting, ready, active, finished
       host_ready: false,
       guest_ready: false,
-      host_hp: hpAtual,
-      guest_hp: 0,
       current_turn: 'host', // host ou guest
+      battle_log: [],
       created_at: new Date().toISOString(),
       expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minutos
+    });
+
+    console.log('✨ Sala PVP criada via CÓDIGO com sinergia:', {
+      roomId,
+      roomCode,
+      host: {
+        nome: avatar.nome,
+        suporte: sinergiaInfo.avatarSuporte?.nome || 'Nenhum',
+        sinergia: sinergiaInfo.nome || 'Nenhuma'
+      }
     });
 
     return NextResponse.json({

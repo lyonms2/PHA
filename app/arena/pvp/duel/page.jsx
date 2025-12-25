@@ -114,7 +114,7 @@ function DuelContent() {
             // Aplicar sinergia
             const resultadoSinergia = aplicarSinergia(ativo, suporte);
             const sinergiaInfo = {
-              ...resultadoSinergia.synergy,
+              ...resultadoSinergia.sinergiaAtiva,
               modificadores: resultadoSinergia.modificadores,
               avatarSuporte: {
                 id: suporte.id,
@@ -316,7 +316,8 @@ function DuelContent() {
           action: 'enter',
           minPower,
           maxPower,
-          avatar: meuAvatar
+          avatar: meuAvatar,
+          suporteId: suporteIdParam
         })
       });
       const data = await res.json();
