@@ -63,6 +63,18 @@ export default function DualCardBattleLayout({
   const [opponentCardActive, setOpponentCardActive] = useState('attack');
   const logContainerRef = useRef(null);
 
+  // Debug: Verificar dados recebidos
+  useEffect(() => {
+    console.log('🔍 DualCardBattleLayout - Dados recebidos:', {
+      meuAvatarSuporte: meuAvatarSuporte ? { nome: meuAvatarSuporte.nome, elemento: meuAvatarSuporte.elemento } : null,
+      iaAvatarSuporte: iaAvatarSuporte ? { nome: iaAvatarSuporte.nome, elemento: iaAvatarSuporte.elemento } : null,
+      playerSynergy: playerSynergy ? { nome: playerSynergy.nome, vantagens: playerSynergy.vantagens?.length, desvantagens: playerSynergy.desvantagens?.length } : null,
+      opponentSynergy: opponentSynergy ? { nome: opponentSynergy.nome, vantagens: opponentSynergy.vantagens?.length, desvantagens: opponentSynergy.desvantagens?.length } : null,
+      playerAbilities: playerAbilities?.length || 0,
+      logCount: log.length
+    });
+  }, [meuAvatarSuporte, iaAvatarSuporte, playerSynergy, opponentSynergy, playerAbilities, log]);
+
   // Auto-scroll log para o TOPO (logs mais recentes primeiro)
   useEffect(() => {
     if (logContainerRef.current) {
@@ -373,7 +385,10 @@ export default function DualCardBattleLayout({
                     return (
                       <button
                         key={abilityKey}
-                        onClick={() => onAbilityUse && onAbilityUse(index)}
+                        onClick={() => {
+                          console.log('🎯 Habilidade clicada:', { index, ability: ability.nome, onAbilityUse: !!onAbilityUse });
+                          if (onAbilityUse) onAbilityUse(index);
+                        }}
                         disabled={!isYourTurn || status !== 'active' || isOnCooldown || !hasEnergy}
                         className="px-3 py-2.5 bg-gradient-to-br from-indigo-900 to-indigo-800 border-2 border-indigo-500 rounded-lg font-bold uppercase text-[9px] tracking-wide text-indigo-200 hover:from-indigo-800 hover:to-indigo-700 hover:border-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-indigo-500/50 relative overflow-hidden"
                         title={tooltipText}
