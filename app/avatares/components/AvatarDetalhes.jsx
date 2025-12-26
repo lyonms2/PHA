@@ -179,7 +179,7 @@ export default function AvatarDetalhes({
                     <div className={`bg-slate-900/70 rounded-lg p-4 aspect-square border-2 ${getCorBorda(avatar.raridade)} relative overflow-hidden flex items-center justify-center`}>
                       <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-purple-500/5"></div>
                       <div className="relative w-full h-full flex items-center justify-center">
-                        <AvatarSVG avatar={avatar} tamanho={240} className="max-w-full max-h-full" />
+                        <AvatarSVG avatar={avatar} tamanho={240} />
                       </div>
                     </div>
     
