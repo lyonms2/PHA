@@ -40,13 +40,18 @@ export async function POST(request) {
     }
 
     // Sacrificar avatar: marcar como morto COM marca da morte (vai pro memorial)
+    const timestamp = new Date().toISOString();
     await updateDocument('avatares', avatarId, {
       vivo: false,
       hp_atual: 0,
-      marca_morte: true, // Marca da morte - vai pro memorial
+      // 🆕 AUDIT LOG - Marca da morte com metadados
+      marca_morte: true,
+      marca_morte_aplicada_em: timestamp,
+      marca_morte_causa: 'sacrificio',
+      marca_morte_sacrificado_por: userId,
       causa_morte: 'sacrificio', // Para epitáfio personalizado no memorial
       ativo: false,
-      updated_at: new Date().toISOString()
+      updated_at: timestamp
     });
 
     return Response.json({

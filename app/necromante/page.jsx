@@ -255,73 +255,182 @@ export default function NecromantePage() {
                 </div>
               ) : (
                 <div>
-                  <h3 className="text-center text-purple-400 font-bold text-lg md:text-xl mb-4 md:mb-6 uppercase tracking-wider">
-                    ☠️ Almas Aguardando o Ritual ☠️
-                  </h3>
+                  {/* Separar avatares em dois grupos */}
+                  {(() => {
+                    const prontos = avataresMortos.filter(av => {
+                      const custo = custos[av.raridade];
+                      return stats?.moedas >= custo.moedas && stats?.fragmentos >= custo.fragmentos;
+                    });
+                    const aguardando = avataresMortos.filter(av => {
+                      const custo = custos[av.raridade];
+                      return !(stats?.moedas >= custo.moedas && stats?.fragmentos >= custo.fragmentos);
+                    });
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                    {avataresMortos.map((avatar) => {
-                      const custo = custos[avatar.raridade];
-                      const podeRessuscitar = stats?.moedas >= custo.moedas && stats?.fragmentos >= custo.fragmentos;
+                    return (
+                      <>
+                        {/* SEÇÃO 1: Prontos para Ressuscitar */}
+                        {prontos.length > 0 && (
+                          <div className="mb-8 md:mb-10">
+                            <h3 className="text-center text-purple-400 font-bold text-lg md:text-xl mb-4 md:mb-6 uppercase tracking-wider">
+                              ⚰️ Prontos para Ressuscitar ⚰️
+                            </h3>
 
-                      return (
-                        <div key={avatar.id} className="relative group">
-                          <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 to-red-500/20 rounded-lg blur opacity-50 group-hover:opacity-75 transition-all"></div>
-                          
-                          <div className="relative bg-slate-950/90 backdrop-blur-xl border border-purple-900/50 rounded-lg overflow-hidden hover:border-purple-500/50 transition-all">
-                            {/* Badge */}
-                            <div className={`px-4 py-2 text-center font-bold text-sm ${
-                              avatar.raridade === 'Lendário' ? 'bg-gradient-to-r from-amber-600 to-yellow-500' :
-                              avatar.raridade === 'Raro' ? 'bg-gradient-to-r from-purple-600 to-pink-600' :
-                              'bg-gradient-to-r from-slate-700 to-slate-600'
-                            }`}>
-                              {avatar.raridade.toUpperCase()} ☠️
-                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                              {prontos.map((avatar) => {
+                                const custo = custos[avatar.raridade];
+                                const podeRessuscitar = true; // Já filtrados
 
-                            <div className="p-4">
-                              {/* Avatar */}
-                              <div className="mb-4 opacity-40 grayscale-[80%] hover:grayscale-[50%] transition-all flex justify-center">
-                                <AvatarSVG avatar={avatar} tamanho={150} />
-                              </div>
+                                return (
+                                  <div key={avatar.id} className="relative group">
+                                    <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 to-red-500/20 rounded-lg blur opacity-50 group-hover:opacity-75 transition-all"></div>
 
-                              {/* Info */}
-                              <div className="text-center mb-4">
-                                <h3 className="text-lg font-bold text-slate-300 mb-1">{avatar.nome}</h3>
-                                <p className="text-xs text-slate-500">{avatar.elemento} • Nível {avatar.nivel}</p>
-                              </div>
+                                    <div className="relative bg-slate-950/90 backdrop-blur-xl border border-purple-900/50 rounded-lg overflow-hidden hover:border-purple-500/50 transition-all">
+                                      {/* Badge */}
+                                      <div className={`px-4 py-2 text-center font-bold text-sm ${
+                                        avatar.raridade === 'Lendário' ? 'bg-gradient-to-r from-amber-600 to-yellow-500' :
+                                        avatar.raridade === 'Raro' ? 'bg-gradient-to-r from-purple-600 to-pink-600' :
+                                        'bg-gradient-to-r from-slate-700 to-slate-600'
+                                      }`}>
+                                        {avatar.raridade.toUpperCase()} ☠️
+                                      </div>
 
-                              {/* Custo */}
-                              <div className="bg-slate-900/50 rounded p-3 mb-3 border border-slate-800/50">
-                                <div className="text-xs text-slate-500 mb-2 text-center">Custo:</div>
-                                <div className="flex justify-center gap-4">
-                                  <span className={`text-sm font-bold ${stats?.moedas >= custo.moedas ? 'text-amber-400' : 'text-red-400'}`}>
-                                    💰 {custo.moedas}
-                                  </span>
-                                  <span className={`text-sm font-bold ${stats?.fragmentos >= custo.fragmentos ? 'text-purple-400' : 'text-red-400'}`}>
-                                    💎 {custo.fragmentos}
-                                  </span>
-                                </div>
-                              </div>
+                                      <div className="p-4">
+                                        {/* Avatar */}
+                                        <div className="mb-4 opacity-40 grayscale-[80%] hover:grayscale-[50%] transition-all flex justify-center">
+                                          <AvatarSVG avatar={avatar} tamanho={150} />
+                                        </div>
 
-                              {/* Botão */}
-                              <button
-                                onClick={() => selecionarAvatar(avatar)}
-                                disabled={!podeRessuscitar}
-                                className={`w-full group/btn relative ${!podeRessuscitar ? 'opacity-50 cursor-not-allowed' : ''}`}
-                              >
-                                <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-red-500 rounded blur opacity-50 group-hover/btn:opacity-75 transition-all"></div>
-                                <div className="relative px-4 py-3 bg-slate-950 rounded border border-purple-500/50 transition-all">
-                                  <span className="font-bold text-sm text-purple-300">
-                                    {podeRessuscitar ? '⚰️ INICIAR RITUAL' : '❌ SEM RECURSOS'}
-                                  </span>
-                                </div>
-                              </button>
+                                        {/* Info */}
+                                        <div className="text-center mb-4">
+                                          <h3 className="text-lg font-bold text-slate-300 mb-1">{avatar.nome}</h3>
+                                          <p className="text-xs text-slate-500">{avatar.elemento} • Nível {avatar.nivel}</p>
+                                        </div>
+
+                                        {/* Custo */}
+                                        <div className="bg-slate-900/50 rounded p-3 mb-3 border border-slate-800/50">
+                                          <div className="text-xs text-slate-500 mb-2 text-center">Custo:</div>
+                                          <div className="flex justify-center gap-4">
+                                            <span className="text-sm font-bold text-amber-400">
+                                              💰 {custo.moedas}
+                                            </span>
+                                            <span className="text-sm font-bold text-purple-400">
+                                              💎 {custo.fragmentos}
+                                            </span>
+                                          </div>
+                                        </div>
+
+                                        {/* Botão */}
+                                        <button
+                                          onClick={() => selecionarAvatar(avatar)}
+                                          className="w-full group/btn relative"
+                                        >
+                                          <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-red-500 rounded blur opacity-50 group-hover/btn:opacity-75 transition-all"></div>
+                                          <div className="relative px-4 py-3 bg-slate-950 rounded border border-purple-500/50 transition-all">
+                                            <span className="font-bold text-sm text-purple-300">
+                                              ⚰️ INICIAR RITUAL
+                                            </span>
+                                          </div>
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                        )}
+
+                        {/* SEÇÃO 2: Aguardando Recursos */}
+                        {aguardando.length > 0 && (
+                          <div>
+                            <h3 className="text-center text-orange-400 font-bold text-lg md:text-xl mb-2 md:mb-3 uppercase tracking-wider">
+                              ⏳ Aguardando Recursos ⏳
+                            </h3>
+                            <p className="text-center text-slate-500 text-xs md:text-sm mb-4 md:mb-6 font-mono">
+                              Almas que aguardam até você reunir os recursos necessários...
+                            </p>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                              {aguardando.map((avatar) => {
+                                const custo = custos[avatar.raridade];
+                                const faltaMoedas = Math.max(0, custo.moedas - (stats?.moedas || 0));
+                                const faltaFragmentos = Math.max(0, custo.fragmentos - (stats?.fragmentos || 0));
+
+                                return (
+                                  <div key={avatar.id} className="relative group opacity-70">
+                                    <div className="absolute -inset-1 bg-gradient-to-r from-orange-500/10 to-slate-500/10 rounded-lg blur"></div>
+
+                                    <div className="relative bg-slate-950/90 backdrop-blur-xl border border-orange-900/30 rounded-lg overflow-hidden">
+                                      {/* Badge */}
+                                      <div className={`px-4 py-2 text-center font-bold text-sm ${
+                                        avatar.raridade === 'Lendário' ? 'bg-gradient-to-r from-amber-600/50 to-yellow-500/50' :
+                                        avatar.raridade === 'Raro' ? 'bg-gradient-to-r from-purple-600/50 to-pink-600/50' :
+                                        'bg-gradient-to-r from-slate-700/50 to-slate-600/50'
+                                      }`}>
+                                        {avatar.raridade.toUpperCase()} ⏳
+                                      </div>
+
+                                      <div className="p-4">
+                                        {/* Avatar */}
+                                        <div className="mb-4 opacity-20 grayscale flex justify-center">
+                                          <AvatarSVG avatar={avatar} tamanho={150} />
+                                        </div>
+
+                                        {/* Info */}
+                                        <div className="text-center mb-4">
+                                          <h3 className="text-lg font-bold text-slate-400 mb-1">{avatar.nome}</h3>
+                                          <p className="text-xs text-slate-600">{avatar.elemento} • Nível {avatar.nivel}</p>
+                                        </div>
+
+                                        {/* Falta de Recursos */}
+                                        <div className="bg-orange-950/20 border border-orange-900/30 rounded p-3 mb-3">
+                                          <div className="text-xs text-orange-500 mb-2 text-center font-bold">Falta:</div>
+                                          <div className="space-y-1">
+                                            {faltaMoedas > 0 && (
+                                              <div className="flex justify-between items-center text-xs">
+                                                <span className="text-slate-500">💰 Moedas:</span>
+                                                <span className="text-red-400 font-bold">-{faltaMoedas}</span>
+                                              </div>
+                                            )}
+                                            {faltaFragmentos > 0 && (
+                                              <div className="flex justify-between items-center text-xs">
+                                                <span className="text-slate-500">💎 Fragmentos:</span>
+                                                <span className="text-red-400 font-bold">-{faltaFragmentos}</span>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+
+                                        {/* Custo Total */}
+                                        <div className="bg-slate-900/50 rounded p-3 mb-3 border border-slate-800/50">
+                                          <div className="text-xs text-slate-600 mb-2 text-center">Custo Total:</div>
+                                          <div className="flex justify-center gap-4">
+                                            <span className="text-sm font-bold text-slate-500">
+                                              💰 {custo.moedas}
+                                            </span>
+                                            <span className="text-sm font-bold text-slate-500">
+                                              💎 {custo.fragmentos}
+                                            </span>
+                                          </div>
+                                        </div>
+
+                                        {/* Botão Desabilitado */}
+                                        <div className="relative px-4 py-3 bg-slate-900/50 rounded border border-slate-700/30">
+                                          <span className="font-bold text-sm text-slate-600">
+                                            ❌ RECURSOS INSUFICIENTES
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               )}
 
