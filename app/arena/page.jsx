@@ -100,7 +100,7 @@ export default function ArenaLobby() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-gray-100 scrollbar-fire">
       {/* Navegação padronizada */}
       <GameNav
         backTo="/dashboard"

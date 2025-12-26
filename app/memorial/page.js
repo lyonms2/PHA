@@ -122,7 +122,7 @@ export default function MemorialPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 text-gray-100 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 text-gray-100 relative overflow-hidden scrollbar-dark">
       {/* Névoa densa */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute w-[1000px] h-[1000px] bg-gray-900/10 rounded-full blur-[150px] top-0 left-0 animate-float-slow"></div>
