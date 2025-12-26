@@ -14,6 +14,7 @@ export default function MissoesDiariasPage() {
   const [streakInfo, setStreakInfo] = useState({ atual: 0, proximo_marco: 3, progresso: 0 });
   const [coletando, setColetando] = useState(false);
   const [todasConcluidas, setTodasConcluidas] = useState(false);
+  const [modalRecompensas, setModalRecompensas] = useState(null);
 
   useEffect(() => {
     const init = async () => {
@@ -86,8 +87,8 @@ export default function MissoesDiariasPage() {
         await carregarMissoes(user.id);
         await carregarPlayerStats(user.id);
 
-        // Mostrar notificação de sucesso
-        alert(`Recompensas coletadas!\n\n💰 Moedas: +${data.recompensas.moedas}\n💎 Fragmentos: +${data.recompensas.fragmentos}\n⭐ XP Caçador: +${data.recompensas.xpCacador}\n\n${data.streak ? `🔥 Streak: ${data.streak.dias_consecutivos} dias!` : ''}`);
+        // Mostrar modal de recompensas
+        setModalRecompensas(data);
       } else {
         alert(`Erro: ${data.error}`);
       }
@@ -120,7 +121,38 @@ export default function MissoesDiariasPage() {
   const progressoPercentual = totalMissoes > 0 ? (missoesConcluidas / totalMissoes) * 100 : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-gray-100 relative overflow-hidden">
+    <>
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes scaleIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        .animate-fadeIn {
+          animation: fadeIn 0.2s ease-out;
+        }
+
+        .animate-scaleIn {
+          animation: scaleIn 0.3s ease-out;
+        }
+      `}</style>
+
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-gray-100 relative overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl top-20 -left-48 animate-pulse"></div>
@@ -337,6 +369,137 @@ export default function MissoesDiariasPage() {
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Modal de Recompensas */}
+      {modalRecompensas && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => setModalRecompensas(null)}
+          ></div>
+
+          {/* Modal Content */}
+          <div className="relative z-10 w-full max-w-lg animate-scaleIn">
+            {/* Glow effect */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-green-500 via-emerald-500 to-cyan-500 rounded-2xl blur-xl opacity-75 animate-pulse"></div>
+
+            <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl border-2 border-green-500/50 p-8 shadow-2xl">
+              {/* Header */}
+              <div className="text-center mb-6">
+                <div className="text-6xl mb-4 animate-bounce">🎉</div>
+                <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400 mb-2">
+                  Recompensas Coletadas!
+                </h2>
+                <div className="text-cyan-400 font-mono text-sm">
+                  {modalRecompensas.missoes_coletadas} {modalRecompensas.missoes_coletadas === 1 ? 'missão concluída' : 'missões concluídas'}
+                </div>
+              </div>
+
+              {/* Recompensas */}
+              <div className="space-y-3 mb-6">
+                {/* Moedas */}
+                <div className="relative group">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-500/20 to-amber-500/20 rounded-lg blur opacity-75"></div>
+                  <div className="relative bg-slate-800/80 backdrop-blur-xl rounded-lg p-4 border border-yellow-600/30">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-3xl">💰</span>
+                        <div>
+                          <div className="text-xs text-slate-400">Moedas</div>
+                          <div className="text-2xl font-bold text-yellow-400">
+                            +{modalRecompensas.recompensas.moedas.toLocaleString()}
+                          </div>
+                        </div>
+                      </div>
+                      {modalRecompensas.bonus_hunter_rank?.percentual > 0 && (
+                        <div className="text-xs text-amber-400/70 bg-amber-900/20 px-2 py-1 rounded">
+                          +{modalRecompensas.bonus_hunter_rank.percentual}% rank
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Fragmentos */}
+                {modalRecompensas.recompensas.fragmentos > 0 && (
+                  <div className="relative group">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-lg blur opacity-75"></div>
+                    <div className="relative bg-slate-800/80 backdrop-blur-xl rounded-lg p-4 border border-blue-600/30">
+                      <div className="flex items-center gap-3">
+                        <span className="text-3xl">💎</span>
+                        <div>
+                          <div className="text-xs text-slate-400">Fragmentos</div>
+                          <div className="text-2xl font-bold text-blue-400">
+                            +{modalRecompensas.recompensas.fragmentos}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* XP Caçador */}
+                <div className="relative group">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-lg blur opacity-75"></div>
+                  <div className="relative bg-slate-800/80 backdrop-blur-xl rounded-lg p-4 border border-purple-600/30">
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">⭐</span>
+                      <div>
+                        <div className="text-xs text-slate-400">XP de Caçador</div>
+                        <div className="text-2xl font-bold text-purple-400">
+                          +{modalRecompensas.recompensas.xpCacador}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Streak Bonus */}
+                {modalRecompensas.streak && (
+                  <div className="relative group">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-500/30 to-red-500/30 rounded-lg blur opacity-75 animate-pulse"></div>
+                    <div className="relative bg-gradient-to-r from-orange-900/40 to-red-900/40 backdrop-blur-xl rounded-lg p-4 border-2 border-orange-500">
+                      <div className="text-center">
+                        <div className="text-3xl mb-2">🔥</div>
+                        <div className="text-orange-400 font-bold text-lg">
+                          Streak de {modalRecompensas.streak.dias_consecutivos} dias!
+                        </div>
+                        {modalRecompensas.streak.recompensa_extra && (
+                          <div className="text-sm text-orange-300 mt-2">
+                            {modalRecompensas.streak.recompensa_extra.mensagem}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Hunter Rank Info */}
+                {modalRecompensas.bonus_hunter_rank && (
+                  <div className="bg-amber-900/20 border border-amber-600/30 rounded-lg p-3 text-center">
+                    <div className="text-xs text-amber-400">
+                      Bônus de Hunter Rank: <span className="font-bold">{modalRecompensas.bonus_hunter_rank.rank}</span>
+                      {modalRecompensas.bonus_hunter_rank.percentual > 0 && (
+                        <span> (+{modalRecompensas.bonus_hunter_rank.percentual}%)</span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Botão Fechar */}
+              <button
+                onClick={() => setModalRecompensas(null)}
+                className="w-full px-6 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg font-bold text-lg transition-all transform hover:scale-105 shadow-lg"
+              >
+                Continuar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      </div>
+    </>
   );
 }
