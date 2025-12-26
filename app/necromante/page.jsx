@@ -151,7 +151,8 @@ export default function NecromantePage() {
           backTo="/avatares"
           backLabel="AVATARES"
           actions={[
-            { href: "/dashboard", label: "DASHBOARD", icon: "🏠", color: "slate" }
+            { href: "/dashboard", label: "DASHBOARD", icon: "🏠", color: "slate" },
+            { href: "/memorial", label: "MEMORIAL", icon: "🪦", color: "gray" }
           ]}
         />
       )}

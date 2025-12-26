@@ -6,31 +6,53 @@ import Image from "next/image";
 import AvatarSVG from '../components/AvatarSVG';
 import GameNav, { COMMON_ACTIONS } from '../components/GameNav';
 
-// Função para gerar epitáfio baseado na causa da morte
-const getEpitafio = (causaMorte) => {
-  switch (causaMorte) {
-    case 'sacrificio':
-      return {
-        texto: "Sacrificado pelo próprio mestre,<br/>sua essência alimenta o Vazio Dimensional.",
-        emoji: "morte_image"
-      };
-    case 'fusao':
-      return {
-        texto: "Sua essência foi absorvida em uma fusão,<br/>vive agora através de outro guerreiro.",
-        emoji: "🧬"
-      };
-    case 'combate':
-      return {
-        texto: "Tombou em combate honrado,<br/>um verdadeiro guerreiro até o fim.",
-        emoji: "⚔️"
-      };
-    default:
-      // Fallback para avatares antigos sem causa_morte
-      return {
-        texto: "Tombou em combate honrado,<br/>um verdadeiro guerreiro até o fim.",
-        emoji: "⚔️"
-      };
+// Função para formatar data do audit log
+const formatarDataMorte = (timestamp) => {
+  if (!timestamp) return null;
+  try {
+    const data = new Date(timestamp);
+    return data.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch {
+    return null;
   }
+};
+
+// Função para gerar epitáfio baseado na causa da morte com audit log
+const getEpitafio = (avatar) => {
+  const causaMorte = avatar.marca_morte_causa || avatar.causa_morte;
+  const timestamp = avatar.marca_morte_aplicada_em;
+  const dataFormatada = formatarDataMorte(timestamp);
+
+  const epitafios = {
+    'ressurreicao': {
+      texto: "Ressuscitado do além pelo Necromante,<br/>mas retornou permanentemente à escuridão.",
+      emoji: "☠️",
+      auditLog: timestamp ? `Ressuscitado em ${dataFormatada}` : null
+    },
+    'sacrificio': {
+      texto: "Sacrificado pelo próprio mestre,<br/>sua essência alimenta o Vazio Dimensional.",
+      emoji: "morte_image",
+      auditLog: timestamp ? `Sacrificado em ${dataFormatada}` : null
+    },
+    'fusao': {
+      texto: "Sua essência foi absorvida em uma fusão,<br/>vive agora através de outro guerreiro.",
+      emoji: "🧬",
+      auditLog: timestamp ? `Fundido em ${dataFormatada}` : null
+    },
+    'combate': {
+      texto: "Tombou em combate honrado,<br/>um verdadeiro guerreiro até o fim.",
+      emoji: "⚔️",
+      auditLog: timestamp ? `Caído em ${dataFormatada}` : null
+    }
+  };
+
+  return epitafios[causaMorte] || epitafios['combate'];
 };
 
 export default function MemorialPage() {
@@ -39,6 +61,7 @@ export default function MemorialPage() {
   const [avataresMarcados, setAvataresMarcados] = useState([]);
   const [loading, setLoading] = useState(true);
   const [avatarSelecionado, setAvatarSelecionado] = useState(null);
+  const [filtroAtivo, setFiltroAtivo] = useState('todos'); // 'todos', 'ressurreicao', 'sacrificio', 'fusao', 'combate'
 
   useEffect(() => {
     const init = async () => {
@@ -72,6 +95,22 @@ export default function MemorialPage() {
 
   const voltarParaAvatares = () => {
     router.push("/avatares");
+  };
+
+  // Filtrar avatares por causa da morte
+  const avataresFiltrados = avataresMarcados.filter(avatar => {
+    if (filtroAtivo === 'todos') return true;
+    const causa = avatar.marca_morte_causa || avatar.causa_morte;
+    return causa === filtroAtivo;
+  });
+
+  // Contar avatares por causa
+  const contadores = {
+    todos: avataresMarcados.length,
+    ressurreicao: avataresMarcados.filter(av => (av.marca_morte_causa || av.causa_morte) === 'ressurreicao').length,
+    sacrificio: avataresMarcados.filter(av => (av.marca_morte_causa || av.causa_morte) === 'sacrificio').length,
+    fusao: avataresMarcados.filter(av => (av.marca_morte_causa || av.causa_morte) === 'fusao').length,
+    combate: avataresMarcados.filter(av => (av.marca_morte_causa || av.causa_morte) === 'combate').length
   };
 
   if (loading) {
@@ -181,6 +220,76 @@ export default function MemorialPage() {
             )}
           </div>
 
+          {/* Filtros por Causa da Morte */}
+          {avataresMarcados.length > 0 && (
+            <div className="mb-12">
+              <div className="flex flex-wrap justify-center gap-3">
+                <button
+                  onClick={() => setFiltroAtivo('todos')}
+                  className={`px-6 py-3 rounded-lg font-mono text-sm transition-all duration-300 ${
+                    filtroAtivo === 'todos'
+                      ? 'bg-gray-800/80 border-2 border-gray-600 text-gray-300 shadow-lg scale-105'
+                      : 'bg-gray-950/50 border border-gray-800/50 text-gray-600 hover:border-gray-700/70 hover:text-gray-500'
+                  }`}
+                >
+                  🪦 Todos ({contadores.todos})
+                </button>
+
+                {contadores.ressurreicao > 0 && (
+                  <button
+                    onClick={() => setFiltroAtivo('ressurreicao')}
+                    className={`px-6 py-3 rounded-lg font-mono text-sm transition-all duration-300 ${
+                      filtroAtivo === 'ressurreicao'
+                        ? 'bg-purple-950/80 border-2 border-purple-700 text-purple-300 shadow-lg scale-105'
+                        : 'bg-gray-950/50 border border-gray-800/50 text-gray-600 hover:border-purple-800/70 hover:text-purple-500/70'
+                    }`}
+                  >
+                    ☠️ Ressuscitados ({contadores.ressurreicao})
+                  </button>
+                )}
+
+                {contadores.sacrificio > 0 && (
+                  <button
+                    onClick={() => setFiltroAtivo('sacrificio')}
+                    className={`px-6 py-3 rounded-lg font-mono text-sm transition-all duration-300 ${
+                      filtroAtivo === 'sacrificio'
+                        ? 'bg-red-950/80 border-2 border-red-700 text-red-300 shadow-lg scale-105'
+                        : 'bg-gray-950/50 border border-gray-800/50 text-gray-600 hover:border-red-800/70 hover:text-red-500/70'
+                    }`}
+                  >
+                    💀 Sacrificados ({contadores.sacrificio})
+                  </button>
+                )}
+
+                {contadores.fusao > 0 && (
+                  <button
+                    onClick={() => setFiltroAtivo('fusao')}
+                    className={`px-6 py-3 rounded-lg font-mono text-sm transition-all duration-300 ${
+                      filtroAtivo === 'fusao'
+                        ? 'bg-blue-950/80 border-2 border-blue-700 text-blue-300 shadow-lg scale-105'
+                        : 'bg-gray-950/50 border border-gray-800/50 text-gray-600 hover:border-blue-800/70 hover:text-blue-500/70'
+                    }`}
+                  >
+                    🧬 Fundidos ({contadores.fusao})
+                  </button>
+                )}
+
+                {contadores.combate > 0 && (
+                  <button
+                    onClick={() => setFiltroAtivo('combate')}
+                    className={`px-6 py-3 rounded-lg font-mono text-sm transition-all duration-300 ${
+                      filtroAtivo === 'combate'
+                        ? 'bg-orange-950/80 border-2 border-orange-700 text-orange-300 shadow-lg scale-105'
+                        : 'bg-gray-950/50 border border-gray-800/50 text-gray-600 hover:border-orange-800/70 hover:text-orange-500/70'
+                    }`}
+                  >
+                    ⚔️ Combate ({contadores.combate})
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Lista de Avatares Marcados */}
           {avataresMarcados.length === 0 ? (
             <div className="text-center py-32">
@@ -200,9 +309,23 @@ export default function MemorialPage() {
                 Retornar aos Avatares
               </button>
             </div>
+          ) : avataresFiltrados.length === 0 ? (
+            <div className="text-center py-20">
+              <div className="text-6xl opacity-20 mb-4">🔍</div>
+              <h3 className="text-2xl font-bold text-gray-700 mb-3">Nenhum resultado</h3>
+              <p className="text-gray-700 text-sm mb-8">
+                Nenhum avatar encontrado com este filtro.
+              </p>
+              <button
+                onClick={() => setFiltroAtivo('todos')}
+                className="text-gray-600 hover:text-gray-500 transition-colors font-mono text-sm px-6 py-3 border border-gray-800/30 rounded hover:border-gray-700/50"
+              >
+                Ver Todos
+              </button>
+            </div>
           ) : (
             <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
-              {avataresMarcados.map((avatar) => (
+              {avataresFiltrados.map((avatar) => (
                 <div 
                   key={avatar.id} 
                   className="relative group transform hover:scale-105 transition-all duration-500"
@@ -263,8 +386,8 @@ export default function MemorialPage() {
 
                       {/* Epitáfio */}
                       <div className="text-center">
-                        <p className="text-gray-700 text-xs font-mono italic leading-relaxed flex items-center justify-center gap-1">
-                          {getEpitafio(avatar.causa_morte).emoji === "morte_image" ? (
+                        <p className="text-gray-700 text-xs font-mono italic leading-relaxed flex items-center justify-center gap-1 mb-3">
+                          {getEpitafio(avatar).emoji === "morte_image" ? (
                             <span className="inline-flex items-center justify-center w-5 h-5 bg-gray-950/50 rounded-full border border-gray-800/30 overflow-hidden flex-shrink-0">
                               <Image
                                 src="/personagens/Morte.png"
@@ -275,10 +398,17 @@ export default function MemorialPage() {
                               />
                             </span>
                           ) : (
-                            <span>{getEpitafio(avatar.causa_morte).emoji}</span>
+                            <span>{getEpitafio(avatar).emoji}</span>
                           )}
-                          "<span dangerouslySetInnerHTML={{ __html: getEpitafio(avatar.causa_morte).texto }} />"
+                          "<span dangerouslySetInnerHTML={{ __html: getEpitafio(avatar).texto }} />"
                         </p>
+
+                        {/* Audit Log - Data da morte */}
+                        {getEpitafio(avatar).auditLog && (
+                          <div className="text-gray-800 text-xs font-mono pt-3 border-t border-gray-800/20">
+                            {getEpitafio(avatar).auditLog}
+                          </div>
+                        )}
                       </div>
                     </div>
 
