@@ -141,7 +141,7 @@ export default function AvatarSVG({ avatar, tamanho = 200, className = "", isEne
       const numEspinhos = avatar.raridade === 'Lendário' ? random(0, 4) : avatar.raridade === 'Raro' ? random(0, 2) : 0;
       const bocaTipo = random(1, 8);
       
-      let svgContent = `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      let svgContent = `<svg viewBox="0 0 200 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
         <defs>
           <filter id="glow${seed}">
             <feGaussianBlur stdDeviation="${avatar.raridade === 'Lendário' ? '6' : '4'}" result="coloredBlur"/>
@@ -664,10 +664,7 @@ export default function AvatarSVG({ avatar, tamanho = 200, className = "", isEne
       className={`avatar-svg-container ${className}`}
       style={{
         width: tamanho,
-        height: tamanho,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
+        height: tamanho
       }}
       dangerouslySetInnerHTML={{ __html: svg }}
     />
