@@ -193,14 +193,21 @@ export default function MissoesDiariasPage() {
         <div className="space-y-4 mb-6">
           {missoes.map((missao) => {
             const progresso = missao.progresso || 0;
-            const meta = missao.objetivo.quantidade;
+            const meta = missao.objetivo.quantidade || missao.objetivo.valor || missao.meta;
             const percentual = Math.min((progresso / meta) * 100, 100);
-            const cor = missao.dificuldade === 'facil' ? 'green' :
-                        missao.dificuldade === 'media' ? 'yellow' : 'red';
+
+            // Classes Tailwind completas (não dinâmicas)
+            const corGlow = missao.dificuldade === 'facil' ? 'bg-gradient-to-r from-green-500/20 to-green-600/20' :
+                           missao.dificuldade === 'media' ? 'bg-gradient-to-r from-yellow-500/20 to-yellow-600/20' :
+                           'bg-gradient-to-r from-red-500/20 to-red-600/20';
+
+            const corBarra = missao.dificuldade === 'facil' ? 'bg-gradient-to-r from-green-500 to-green-600' :
+                            missao.dificuldade === 'media' ? 'bg-gradient-to-r from-yellow-500 to-yellow-600' :
+                            'bg-gradient-to-r from-red-500 to-red-600';
 
             return (
               <div key={missao.id_unico} className="relative group">
-                <div className={`absolute -inset-0.5 bg-gradient-to-r from-${cor}-500/20 to-${cor}-600/20 rounded-lg blur opacity-50 group-hover:opacity-75 transition-opacity`}></div>
+                <div className={`absolute -inset-0.5 ${corGlow} rounded-lg blur opacity-50 group-hover:opacity-75 transition-opacity`}></div>
                 <div className="relative bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-lg p-5">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
@@ -229,7 +236,7 @@ export default function MissoesDiariasPage() {
                     </div>
                     <div className="w-full bg-slate-800 rounded-full h-3">
                       <div
-                        className={`bg-gradient-to-r from-${cor}-500 to-${cor}-600 h-3 rounded-full transition-all duration-500 flex items-center justify-end pr-2`}
+                        className={`${corBarra} h-3 rounded-full transition-all duration-500 flex items-center justify-end pr-2`}
                         style={{ width: `${percentual}%` }}
                       >
                         {missao.concluida && (
