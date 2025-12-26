@@ -265,146 +265,6 @@ export default function AvatarsPage() {
           </p>
         </div>
 
-        {/* Avatar Ativo (COMPACTO) */}
-        {avatarAtivo && (
-          <div className="mb-6">
-            {/* Layout Mobile */}
-            <div className="md:hidden">
-              {/* Avatar e Nome Centralizados */}
-              <div className="flex flex-col items-center mb-4">
-                <div className="flex items-center justify-center mb-3">
-                  <AvatarSVG avatar={avatarAtivo} tamanho={104} />
-                </div>
-                <div className="text-center">
-                  <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Avatar Ativo</div>
-                  <div className="font-bold text-cyan-300 text-xl mb-1">{avatarAtivo.nome}</div>
-                  <div className="text-sm text-slate-400">{avatarAtivo.elemento} • Nv.{avatarAtivo.nivel}</div>
-                </div>
-              </div>
-
-                {/* XP Bar (Destaque) */}
-                <div className="mb-4 bg-slate-900/50 rounded-lg p-3 border border-slate-700/50">
-                  <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-                    <span className="font-semibold text-cyan-400">EXPERIÊNCIA</span>
-                    <span>{avatarAtivo.experiencia || 0}/{calcularXPNecessario(avatarAtivo.nivel)}</span>
-                  </div>
-                  <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-500"
-                      style={{ width: `${Math.min(((avatarAtivo.experiencia || 0) / calcularXPNecessario(avatarAtivo.nivel)) * 100, 100)}%` }}
-                    />
-                  </div>
-                </div>
-
-                {/* Stats Grid 2x2 */}
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  {/* HP */}
-                  <div className="bg-slate-900/50 rounded-lg p-3 border border-slate-700/50">
-                    <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">HP</div>
-                    <div className="text-lg font-bold text-green-400">
-                      {avatarAtivo.hp_atual || 0}
-                    </div>
-                    <div className="text-xs text-slate-400">
-                      / {(avatarAtivo.resistencia * 20) + (avatarAtivo.nivel * 10) + (avatarAtivo.raridade === 'Lendário' ? 200 : avatarAtivo.raridade === 'Raro' ? 100 : 0)}
-                    </div>
-                  </div>
-
-                  {/* Vínculo */}
-                  <div className="bg-slate-900/50 rounded-lg p-3 border border-slate-700/50">
-                    <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Vínculo</div>
-                    <div className="text-lg font-bold text-purple-400">{avatarAtivo.vinculo}%</div>
-                    <div className="h-1.5 bg-slate-700/50 rounded-full overflow-hidden mt-2">
-                      <div
-                        className="h-full bg-gradient-to-r from-purple-500 to-pink-500"
-                        style={{ width: `${avatarAtivo.vinculo}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Exaustão */}
-                  <div className="bg-slate-900/50 rounded-lg p-3 border border-slate-700/50">
-                    <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Exaustão</div>
-                    <div className={`text-lg font-bold ${getNivelExaustao(avatarAtivo.exaustao || 0).cor}`}>
-                      {avatarAtivo.exaustao || 0}
-                    </div>
-                    <div className="text-xs text-slate-400">/ 100</div>
-                  </div>
-
-                  {/* Poder */}
-                  <div className="bg-slate-900/50 rounded-lg p-3 border border-slate-700/50">
-                    <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Poder</div>
-                    <div className="text-lg font-bold text-yellow-400">
-                      {calcularPoderTotal(avatarAtivo)}
-                    </div>
-                    <div className="text-xs text-slate-400">total</div>
-                  </div>
-                </div>
-
-                {/* Botão Detalhes (Full Width) */}
-                <button
-                  onClick={() => setAvatarSelecionado(avatarAtivo)}
-                  className="w-full px-4 py-3 bg-gradient-to-r from-cyan-900/40 to-blue-900/40 hover:from-cyan-800/50 hover:to-blue-800/50 border border-cyan-500/40 rounded-lg transition-all text-sm font-bold text-cyan-300 active:scale-95"
-                >
-                  VER DETALHES COMPLETOS
-                </button>
-              </div>
-
-              {/* Layout Desktop */}
-              <div className="hidden md:flex items-center gap-6">
-                {/* Avatar */}
-                <div className="flex-shrink-0 flex items-center justify-center">
-                  <AvatarSVG avatar={avatarAtivo} tamanho={104} />
-                </div>
-
-                {/* Info Compacta */}
-                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                  <div>
-                    <div className="text-xs text-slate-500 mb-1">AVATAR ATIVO</div>
-                    <div className="font-bold text-cyan-300 text-lg">{avatarAtivo.nome}</div>
-                    <div className="text-xs text-slate-400 mb-1">{avatarAtivo.elemento} • Nv.{avatarAtivo.nivel}</div>
-                    {/* Barra de XP */}
-                    <div className="mt-1">
-                      <div className="flex items-center gap-2 text-[10px] text-slate-400 mb-1">
-                        <span>XP: {avatarAtivo.experiencia || 0}/{calcularXPNecessario(avatarAtivo.nivel)}</span>
-                      </div>
-                      <div className="h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-500"
-                          style={{ width: `${Math.min(((avatarAtivo.experiencia || 0) / calcularXPNecessario(avatarAtivo.nivel)) * 100, 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="text-xs text-slate-500 mb-1">HP</div>
-                    <div className="text-sm font-semibold text-green-400">
-                      {avatarAtivo.hp_atual || 0} / {(avatarAtivo.resistencia * 20) + (avatarAtivo.nivel * 10) + (avatarAtivo.raridade === 'Lendário' ? 200 : avatarAtivo.raridade === 'Raro' ? 100 : 0)}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="text-xs text-slate-500 mb-1">VÍNCULO</div>
-                    <div className="text-sm font-semibold text-purple-400">{avatarAtivo.vinculo}%</div>
-                  </div>
-
-                  <div>
-                    <div className="text-xs text-slate-500 mb-1">EXAUSTÃO</div>
-                    <div className={`text-sm font-semibold ${getNivelExaustao(avatarAtivo.exaustao || 0).cor}`}>
-                      {avatarAtivo.exaustao || 0}/100
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => setAvatarSelecionado(avatarAtivo)}
-                  className="flex-shrink-0 px-4 py-2 bg-cyan-900/30 hover:bg-cyan-800/40 border border-cyan-500/30 rounded-lg transition-all text-sm font-semibold text-cyan-400"
-                >
-                  DETALHES
-                </button>
-              </div>
-          </div>
-        )}
 
         {/* Filtros */}
         <div className="mb-6 bg-slate-900/50 border border-slate-700/50 rounded-lg p-3 md:p-4">
@@ -524,9 +384,18 @@ export default function AvatarsPage() {
                 key={avatar.id}
                 className="group relative"
               >
-                <div className={`absolute -inset-0.5 bg-gradient-to-r ${getCorRaridade(avatar.raridade)} rounded-lg blur opacity-20 group-hover:opacity-40 transition-all ${estaSelecionado ? 'opacity-60' : ''}`}></div>
+                <div className={`absolute -inset-0.5 bg-gradient-to-r ${getCorRaridade(avatar.raridade)} rounded-lg blur opacity-20 group-hover:opacity-40 transition-all ${estaSelecionado ? 'opacity-60' : ''} ${avatar.ativo && avatar.vivo ? 'opacity-60 blur-md' : ''}`}></div>
 
-                <div className={`relative bg-slate-900/80 backdrop-blur-xl border ${getCorBorda(avatar.raridade)} rounded-lg overflow-hidden group-hover:border-opacity-100 transition-all ${estaSelecionado ? 'ring-2 ring-cyan-500 ring-offset-2 ring-offset-slate-900' : ''}`}>
+                <div className={`relative bg-slate-900/80 backdrop-blur-xl border ${avatar.ativo && avatar.vivo ? 'border-green-500 border-2' : getCorBorda(avatar.raridade)} rounded-lg overflow-hidden group-hover:border-opacity-100 transition-all ${estaSelecionado ? 'ring-2 ring-cyan-500 ring-offset-2 ring-offset-slate-900' : ''}`}>
+                  {/* Badge ATIVO */}
+                  {avatar.ativo && avatar.vivo && (
+                    <div className="absolute top-2 left-2 z-10">
+                      <div className="px-2 py-1 bg-green-500 text-white text-[10px] font-bold rounded flex items-center gap-1 shadow-lg">
+                        <span>✓</span>
+                        <span>ATIVO</span>
+                      </div>
+                    </div>
+                  )}
                   {/* Checkbox de Comparação */}
                   <div className="absolute top-2 right-2 z-10">
                     <button
