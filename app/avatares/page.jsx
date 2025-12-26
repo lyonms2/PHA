@@ -172,9 +172,6 @@ export default function AvatarsPage() {
   // Aplicar ordenação
   avataresFiltrados = ordenarAvatares(avataresFiltrados, ordenacao);
 
-  // Separar ativo dos inativos
-  const avataresInativos = avataresFiltrados.filter(av => !av.ativo || !av.vivo);
-
   // Contar avatares caídos (para o botão memorial)
   const avataresCaidos = contarAvataresCaidos(avatares);
 
@@ -341,7 +338,7 @@ export default function AvatarsPage() {
 
           <div className="mt-3 flex items-center justify-between">
             <div className="text-xs text-slate-500 font-mono">
-              Mostrando {avataresInativos.length} {avataresInativos.length === 1 ? 'avatar' : 'avatares'}
+              Mostrando {avataresFiltrados.length} {avataresFiltrados.length === 1 ? 'avatar' : 'avatares'}
             </div>
             {avataresParaComparar.length > 0 && (
               <div className="flex items-center gap-2">
@@ -368,7 +365,7 @@ export default function AvatarsPage() {
         </div>
 
         {/* Lista de Avatares */}
-        {avataresInativos.length === 0 ? (
+        {avataresFiltrados.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-6xl mb-4 opacity-20">🔍</div>
             <h3 className="text-xl font-bold text-slate-400 mb-2">Nenhum avatar encontrado</h3>
@@ -376,7 +373,7 @@ export default function AvatarsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {avataresInativos.map((avatar) => {
+            {avataresFiltrados.map((avatar) => {
               const estaSelecionado = avataresParaComparar.find(av => av.id === avatar.id);
 
               return (
