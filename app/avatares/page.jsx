@@ -273,13 +273,8 @@ export default function AvatarsPage() {
               <div className="md:hidden">
                 {/* Avatar e Nome Centralizados */}
                 <div className="flex flex-col items-center mb-4">
-                  <div className="relative w-28 h-28 mb-3">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-full blur"></div>
-                    <div className="relative bg-slate-900/50 rounded-full p-1 border border-cyan-500/30 w-full h-full flex items-center justify-center overflow-hidden">
-                      <div className="w-full h-full flex items-center justify-center">
-                        <AvatarSVG avatar={avatarAtivo} tamanho={104} />
-                      </div>
-                    </div>
+                  <div className="flex items-center justify-center mb-3">
+                    <AvatarSVG avatar={avatarAtivo} tamanho={104} />
                   </div>
                   <div className="text-center">
                     <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Avatar Ativo</div>
@@ -357,16 +352,9 @@ export default function AvatarsPage() {
 
               {/* Layout Desktop */}
               <div className="hidden md:flex items-center gap-6">
-                {/* Avatar - EXATAMENTE IGUAL AO MOBILE */}
-                <div className="flex-shrink-0">
-                  <div className="relative w-28 h-28">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-full blur"></div>
-                    <div className="relative bg-slate-900/50 rounded-full p-1 border border-cyan-500/30 w-full h-full flex items-center justify-center overflow-hidden">
-                      <div className="w-full h-full flex items-center justify-center">
-                        <AvatarSVG avatar={avatarAtivo} tamanho={104} />
-                      </div>
-                    </div>
-                  </div>
+                {/* Avatar */}
+                <div className="flex-shrink-0 flex items-center justify-center">
+                  <AvatarSVG avatar={avatarAtivo} tamanho={104} />
                 </div>
 
                 {/* Info Compacta */}

@@ -176,11 +176,8 @@ export default function AvatarDetalhes({
                   {/* Coluna Esquerda - Imagem + Lore */}
                   <div className="space-y-4">
                     {/* Avatar em destaque */}
-                    <div className={`bg-slate-900/70 rounded-lg p-4 aspect-square border-2 ${getCorBorda(avatar.raridade)} relative overflow-hidden flex items-center justify-center`}>
-                      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-purple-500/5"></div>
-                      <div className="relative w-full h-full flex items-center justify-center">
-                        <AvatarSVG avatar={avatar} tamanho={240} />
-                      </div>
+                    <div className={`bg-slate-900/70 rounded-lg p-4 border-2 ${getCorBorda(avatar.raridade)} flex items-center justify-center`}>
+                      <AvatarSVG avatar={avatar} tamanho={240} />
                     </div>
     
                     {/* Nome e Elemento */}
