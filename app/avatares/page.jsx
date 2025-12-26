@@ -187,7 +187,7 @@ export default function AvatarsPage() {
               📦 Slots: {slotsUsados}/{LIMITE_AVATARES}
             </span>
             <span className="text-[10px] text-slate-500 font-mono">
-              (Rank {hunterRankAtual.rank})
+              (Rank {hunterRankAtual.nome})
             </span>
             {slotsDisponiveis > 0 && slotsDisponiveis <= 3 && (
               <span className="text-[10px] text-orange-400 font-bold animate-pulse">
