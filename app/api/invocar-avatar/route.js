@@ -142,8 +142,9 @@ function gerarAvatarCompleto(primeiraInvocacao = false, hunterRank = null, pityS
   console.log(`Habilidades selecionadas: ${habilidades.length}`);
   
   // 8. MONTAR AVATAR COMPLETO
-  // Calcular HP máximo baseado em resistência e nível
-  const hpMaximo = (stats.resistencia * 10) + (1 * 5); // nivel = 1 no início
+  // Calcular HP máximo baseado em resistência, nível e raridade
+  const bonusRaridade = raridade === 'Lendário' ? 200 : raridade === 'Raro' ? 100 : 0;
+  const hpMaximo = (stats.resistencia * 20) + (1 * 10) + bonusRaridade; // nivel = 1 no início
 
   const avatar = {
     nome,

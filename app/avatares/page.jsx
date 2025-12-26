@@ -273,10 +273,10 @@ export default function AvatarsPage() {
               <div className="md:hidden">
                 {/* Avatar e Nome Centralizados */}
                 <div className="flex flex-col items-center mb-4">
-                  <div className="relative mb-3">
+                  <div className="relative w-28 h-28 mb-3">
                     <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-full blur"></div>
-                    <div className="relative bg-slate-900/50 rounded-full p-2 border border-cyan-500/30">
-                      <AvatarSVG avatar={avatarAtivo} tamanho={100} />
+                    <div className="relative bg-slate-900/50 rounded-full p-1 border border-cyan-500/30 w-full h-full flex items-center justify-center">
+                      <AvatarSVG avatar={avatarAtivo} tamanho={104} />
                     </div>
                   </div>
                   <div className="text-center">
@@ -357,10 +357,10 @@ export default function AvatarsPage() {
               <div className="hidden md:flex items-center gap-6">
                 {/* Avatar SVG pequeno */}
                 <div className="flex-shrink-0">
-                  <div className="relative">
+                  <div className="relative w-20 h-20">
                     <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-full blur"></div>
-                    <div className="relative bg-slate-900/50 rounded-full p-2 border border-cyan-500/30">
-                      <AvatarSVG avatar={avatarAtivo} tamanho={80} />
+                    <div className="relative bg-slate-900/50 rounded-full p-1 border border-cyan-500/30 w-full h-full flex items-center justify-center">
+                      <AvatarSVG avatar={avatarAtivo} tamanho={72} />
                     </div>
                   </div>
                 </div>
