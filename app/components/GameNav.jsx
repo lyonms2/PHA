@@ -86,7 +86,13 @@ export default function GameNav({
                   {actions.map((action, index) => (
                     <button
                       key={index}
-                      onClick={() => router.push(action.href)}
+                      onClick={() => {
+                        if (action.action) {
+                          action.action();
+                        } else if (action.href) {
+                          router.push(action.href);
+                        }
+                      }}
                       className={`
                         ${compact ? 'px-2 py-1.5 text-xs gap-1' : 'px-3 py-2 text-xs gap-1.5'}
                         bg-gradient-to-r ${getActionStyle(action.color)}
