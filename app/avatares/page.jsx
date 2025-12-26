@@ -18,7 +18,6 @@ import {
   contarAvataresCaidos,
   calcularSlots
 } from './utils';
-import { calcularXPNecessario } from './sistemas/progressionSystem';
 import { getLimiteAvatares, getHunterRank } from '@/lib/hunter/hunterRankSystem';
 import {
   useAvatarOperations,
@@ -129,8 +128,6 @@ export default function AvatarsPage() {
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
-
-  const avatarAtivo = avatares.find(av => av.ativo && av.vivo);
 
   // Funções de comparação
   const toggleAvatarParaComparar = (avatar) => {
