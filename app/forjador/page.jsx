@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import AvatarSVG from '../components/AvatarSVG';
-import HunterRankBadge from '../components/HunterRankBadge';
 import {
   verificarEvolucaoPossivel,
   calcularChanceSucesso,
@@ -263,9 +262,6 @@ export default function ForjadorPage() {
                   {(stats.fragmentos || 0).toLocaleString()}
                 </div>
               </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <HunterRankBadge stats={stats} />
             </div>
           </div>
         )}

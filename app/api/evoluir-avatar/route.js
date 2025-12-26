@@ -92,10 +92,29 @@ export async function POST(request) {
 
     if (!resultado.sucesso) {
       // Evolução falhou! Descontar recursos mas não evoluir
-      await updateDocument('player_stats', userId, {
-        moedas: moedasJogador - config.custoMoedas,
-        fragmentos: fragmentosJogador - config.custoFragmentos,
-        updated_at: new Date().toISOString()
+      const timestamp = new Date().toISOString();
+
+      await Promise.all([
+        // Descontar recursos
+        updateDocument('player_stats', userId, {
+          moedas: moedasJogador - config.custoMoedas,
+          fragmentos: fragmentosJogador - config.custoFragmentos,
+          updated_at: timestamp
+        }),
+        // 🆕 AUDIT LOG - Registrar tentativa falha
+        updateDocument('avatares', avatarId, {
+          tentativas_evolucao_falhas: (avatar.tentativas_evolucao_falhas || 0) + 1,
+          ultima_tentativa_evolucao: timestamp,
+          ultima_tentativa_tipo: tipoEvolucao,
+          updated_at: timestamp
+        })
+      ]);
+
+      console.log('❌ [EVOLUÇÃO] Falha na evolução:', {
+        avatar: avatar.nome,
+        tipo: tipoEvolucao,
+        chance: resultado.chanceSucesso,
+        tentativasFalhas: (avatar.tentativas_evolucao_falhas || 0) + 1
       });
 
       return NextResponse.json({
@@ -103,6 +122,7 @@ export async function POST(request) {
         falhou: true,
         mensagem: resultado.mensagem,
         chanceSucesso: resultado.chanceSucesso,
+        tentativasFalhas: (avatar.tentativas_evolucao_falhas || 0) + 1,
         recursosGastos: {
           moedas: config.custoMoedas,
           fragmentos: config.custoFragmentos
@@ -124,24 +144,92 @@ export async function POST(request) {
       raridade: novaRaridade
     });
 
-    await Promise.all([
-      // Atualizar avatar
-      updateDocument('avatares', avatarId, {
+    // ==================== TRANSAÇÃO ATÔMICA (Simulada com Rollback) ====================
+    let avatarAtualizado = false;
+    let recursosAtualizados = false;
+    const timestamp = new Date().toISOString();
+
+    try {
+      // Passo 1: Atualizar avatar (evolução)
+      console.log('🔨 [EVOLUÇÃO] Aplicando evolução ao avatar...');
+      await updateDocument('avatares', avatarId, {
         raridade: novaRaridade,
         forca: statsNovos.forca,
         agilidade: statsNovos.agilidade,
         resistencia: statsNovos.resistencia,
         foco: statsNovos.foco,
         hp_atual: hpMaximoCompleto, // Restaurar HP ao evoluir
-        updated_at: new Date().toISOString()
-      }),
-      // Descontar recursos do jogador
-      updateDocument('player_stats', userId, {
+
+        // 🆕 AUDIT LOG - Registro de evolução
+        evoluido: true,
+        evoluido_em: timestamp,
+        evoluido_de: avatar.raridade, // Raridade anterior
+        evoluido_para: novaRaridade,
+        evolucoes_totais: (avatar.evolucoes_totais || 0) + 1,
+        stats_pre_evolucao: {
+          forca: avatar.forca,
+          agilidade: avatar.agilidade,
+          resistencia: avatar.resistencia,
+          foco: avatar.foco
+        },
+
+        updated_at: timestamp
+      });
+      avatarAtualizado = true;
+      console.log('✅ [EVOLUÇÃO] Avatar evoluído!');
+
+      // Passo 2: Descontar recursos do jogador (se falhar, reverte avatar)
+      console.log('💰 [EVOLUÇÃO] Deduzindo recursos...');
+      await updateDocument('player_stats', userId, {
         moedas: moedasJogador - config.custoMoedas,
         fragmentos: fragmentosJogador - config.custoFragmentos,
-        updated_at: new Date().toISOString()
-      })
-    ]);
+        updated_at: timestamp
+      });
+      recursosAtualizados = true;
+      console.log('✅ [EVOLUÇÃO] Recursos deduzidos!');
+
+    } catch (transactionError) {
+      // ROLLBACK: Se recursos falharam mas avatar foi atualizado, reverter avatar
+      if (avatarAtualizado && !recursosAtualizados) {
+        console.log("🔄 ROLLBACK: Revertendo evolução do avatar...");
+        try {
+          await updateDocument('avatares', avatarId, {
+            // Reverter raridade
+            raridade: avatar.raridade,
+
+            // Reverter stats
+            forca: avatar.forca,
+            agilidade: avatar.agilidade,
+            resistencia: avatar.resistencia,
+            foco: avatar.foco,
+            hp_atual: avatar.hp_atual,
+
+            // Remover audit log
+            evoluido: false,
+            evoluido_em: null,
+            evoluido_de: null,
+            evoluido_para: null,
+            stats_pre_evolucao: null,
+
+            updated_at: timestamp
+          });
+          console.log("✅ ROLLBACK completo - avatar revertido ao estado original");
+        } catch (rollbackError) {
+          console.error("💥 ERRO CRÍTICO: Falha no rollback!", rollbackError);
+          console.error("⚠️ ESTADO INCONSISTENTE: Avatar evoluído mas recursos não deduzidos");
+          console.error("Avatar ID:", avatarId);
+          console.error("User ID:", userId);
+          console.error("Raridade Original:", avatar.raridade, "→ Nova:", novaRaridade);
+        }
+
+        return NextResponse.json(
+          { error: "Falha ao deduzir recursos. Evolução revertida." },
+          { status: 500 }
+        );
+      }
+
+      throw transactionError;
+    }
 
     console.log('✅ Avatar evoluído com sucesso:', {
       avatar: avatar.nome,

@@ -27,21 +27,25 @@ export const EVOLUCAO_CONFIG = {
 /**
  * Multiplicadores de conversão de stats por raridade
  * Quando avatar evolui, stats são multiplicados
+ *
+ * AJUSTADO para garantir que stats evoluídos atinjam o mínimo da próxima raridade:
+ * - Comum (min 5) x 2.0 = 10 (mínimo de Raro)
+ * - Raro (min 10) x 1.6 = 16 (mínimo de Lendário)
  */
 export const MULTIPLICADORES_STATS = {
   'Comum→Raro': {
-    forca: 1.5,
-    agilidade: 1.5,
-    resistencia: 1.5,
-    foco: 1.5,
-    descricao: '+50% em todos os stats'
+    forca: 2.0,       // Dobra (+100%)
+    agilidade: 2.0,
+    resistencia: 2.0,
+    foco: 2.0,
+    descricao: '+100% em todos os stats (dobra)'
   },
   'Raro→Lendário': {
-    forca: 1.5,
-    agilidade: 1.5,
-    resistencia: 1.5,
-    foco: 1.5,
-    descricao: '+50% em todos os stats'
+    forca: 1.6,       // +60%
+    agilidade: 1.6,
+    resistencia: 1.6,
+    foco: 1.6,
+    descricao: '+60% em todos os stats'
   }
 };
 
