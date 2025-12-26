@@ -361,8 +361,10 @@ export default function AvatarsPage() {
                 <div className="flex-shrink-0">
                   <div className="relative w-24 h-24">
                     <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-full blur"></div>
-                    <div className="relative bg-slate-900/50 rounded-full p-2 border border-cyan-500/30" style={{ width: '96px', height: '96px' }}>
-                      <AvatarSVG avatar={avatarAtivo} tamanho={80} />
+                    <div className="relative bg-slate-900/50 rounded-full p-1 border border-cyan-500/30 w-full h-full flex items-center justify-center overflow-hidden">
+                      <div className="w-full h-full flex items-center justify-center">
+                        <AvatarSVG avatar={avatarAtivo} tamanho={88} className="max-w-full max-h-full" />
+                      </div>
                     </div>
                   </div>
                 </div>
