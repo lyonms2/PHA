@@ -29,6 +29,7 @@ import {
 export default function AvatarsPage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
+  const [stats, setStats] = useState(null);
   const [avatarSelecionado, setAvatarSelecionado] = useState(null);
   const [avataresParaComparar, setAvataresParaComparar] = useState([]);
   const [modalComparacao, setModalComparacao] = useState(false);
@@ -82,6 +83,25 @@ export default function AvatarsPage() {
 
     const parsedUser = JSON.parse(userData);
     setUser(parsedUser);
+
+    // Buscar stats do servidor (incluindo hunterRankXp correto)
+    const carregarDados = async () => {
+      try {
+        const response = await fetch("/api/inicializar-jogador", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: parsedUser.id }),
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setStats(data.stats);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar stats:", error);
+      }
+    };
+
+    carregarDados();
     carregarAvatares(parsedUser.id);
 
     // Recarregar avatares quando a página volta a ficar visível
@@ -159,7 +179,7 @@ export default function AvatarsPage() {
   const avataresCaidos = contarAvataresCaidos(avatares);
 
   // Sistema de limite de avatares (dinâmico por Hunter Rank)
-  const hunterRankAtual = user?.hunterRankXp !== undefined ? getHunterRank(user.hunterRankXp) : { rank: 'F', nome: 'F' };
+  const hunterRankAtual = stats?.hunterRankXp !== undefined ? getHunterRank(stats.hunterRankXp) : { rank: 'F', nome: 'F' };
   const LIMITE_AVATARES = getLimiteAvatares(hunterRankAtual);
   const { usados: slotsUsados, disponiveis: slotsDisponiveis, percentual: percentualOcupado } = calcularSlots(avatares, LIMITE_AVATARES);
 

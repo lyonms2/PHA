@@ -660,9 +660,15 @@ export default function AvatarSVG({ avatar, tamanho = 200, className = "", isEne
   }
 
   return (
-    <div 
+    <div
       className={`avatar-svg-container ${className}`}
-      style={{ width: tamanho, height: tamanho }}
+      style={{
+        width: tamanho,
+        height: tamanho,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
       dangerouslySetInnerHTML={{ __html: svg }}
     />
   );
