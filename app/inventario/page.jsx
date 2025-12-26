@@ -6,6 +6,7 @@ import BackgroundEffects from "@/components/BackgroundEffects";
 import GameNav, { COMMON_ACTIONS } from '../components/GameNav';
 import AvatarSVG from '../components/AvatarSVG';
 import { calcularHPMaximoCompleto } from '@/lib/combat/statsCalculator';
+import { formatarEfeitoItem, getCorExaustao, getHPAtual } from './utils';
 
 export default function InventarioPage() {
   const router = useRouter();
@@ -263,20 +264,12 @@ export default function InventarioPage() {
                 <div className="text-right">
                   <div className="text-xs text-slate-500 uppercase font-mono mb-1">HP</div>
                   <div className="text-lg font-bold text-green-400">
-                    {avatarAtivo.hp_atual !== null && avatarAtivo.hp_atual !== undefined
-                      ? avatarAtivo.hp_atual
-                      : calcularHPMaximoCompleto(avatarAtivo)
-                    } / {calcularHPMaximoCompleto(avatarAtivo)}
+                    {getHPAtual(avatarAtivo, calcularHPMaximoCompleto(avatarAtivo))} / {calcularHPMaximoCompleto(avatarAtivo)}
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="text-xs text-slate-500 uppercase font-mono mb-1">Exaustão</div>
-                  <div className={`text-lg font-bold ${
-                    (avatarAtivo.exaustao || 0) >= 60 ? 'text-red-400' :
-                    (avatarAtivo.exaustao || 0) >= 40 ? 'text-orange-400' :
-                    (avatarAtivo.exaustao || 0) >= 20 ? 'text-yellow-400' :
-                    'text-green-400'
-                  }`}>
+                  <div className={`text-lg font-bold ${getCorExaustao(avatarAtivo.exaustao)}`}>
                     {avatarAtivo.exaustao || 0} / 100
                   </div>
                 </div>
@@ -363,13 +356,7 @@ export default function InventarioPage() {
                             <div className="flex justify-between text-xs">
                               <span className="text-slate-500">Efeito:</span>
                               <span className="text-green-400 font-bold">
-                                {item.efeito === 'cura_hp' || item.efeito === 'hp'
-                                  ? `+${item.valor_efeito} HP`
-                                  : item.efeito === 'exaustao' || item.efeito === 'cura_exaustao'
-                                    ? `${item.valor_efeito} Exaustão`
-                                    : item.efeito === 'ambos'
-                                      ? `+${item.valor_hp || item.valor_efeito} HP / ${item.valor_exaustao} Exaustão`
-                                      : item.efeito}
+                                {formatarEfeitoItem(item)}
                               </span>
                             </div>
                             <div className="flex justify-between text-xs">
@@ -457,13 +444,7 @@ export default function InventarioPage() {
                           <div className="flex justify-between text-xs">
                             <span className="text-slate-500">Efeito:</span>
                             <span className="text-green-400 font-bold">
-                              {item.efeito === 'cura_hp' || item.efeito === 'hp'
-                                ? `+${item.valor_efeito} HP`
-                                : item.efeito === 'exaustao' || item.efeito === 'cura_exaustao'
-                                  ? `${item.valor_efeito} Exaustão`
-                                  : item.efeito === 'ambos'
-                                    ? `+${item.valor_hp || item.valor_efeito} HP / ${item.valor_exaustao} Exaustão`
-                                    : item.efeito}
+                              {formatarEfeitoItem(item)}
                             </span>
                           </div>
                           <div className="flex justify-between text-xs">
@@ -504,19 +485,6 @@ export default function InventarioPage() {
             )}
           </div>
         )}
-
-        {/* Botão Voltar */}
-        <div className="mt-8">
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="group relative"
-          >
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-slate-500/30 to-slate-600/30 rounded blur opacity-50 group-hover:opacity-75 transition-all"></div>
-            <div className="relative px-6 py-3 bg-slate-950 rounded border border-slate-500/50 group-hover:border-slate-400 transition-all">
-              <span className="font-bold text-slate-400 group-hover:text-slate-300">← Voltar ao Dashboard</span>
-            </div>
-          </button>
-        </div>
       </div>
 
       {/* Modal Confirmar Uso */}
@@ -550,17 +518,9 @@ export default function InventarioPage() {
                       <div className="text-center">
                         <div className="font-bold text-cyan-400">{avatarAtivo.nome}</div>
                         <div className="text-sm text-green-400 mt-1">
-                          HP: {avatarAtivo.hp_atual !== null && avatarAtivo.hp_atual !== undefined
-                            ? avatarAtivo.hp_atual
-                            : calcularHPMaximoCompleto(avatarAtivo)
-                          } / {calcularHPMaximoCompleto(avatarAtivo)}
+                          HP: {getHPAtual(avatarAtivo, calcularHPMaximoCompleto(avatarAtivo))} / {calcularHPMaximoCompleto(avatarAtivo)}
                         </div>
-                        <div className={`text-sm mt-1 ${
-                          (avatarAtivo.exaustao || 0) >= 60 ? 'text-red-400' :
-                          (avatarAtivo.exaustao || 0) >= 40 ? 'text-orange-400' :
-                          (avatarAtivo.exaustao || 0) >= 20 ? 'text-yellow-400' :
-                          'text-green-400'
-                        }`}>
+                        <div className={`text-sm mt-1 ${getCorExaustao(avatarAtivo.exaustao)}`}>
                           Exaustão: {avatarAtivo.exaustao || 0} / 100
                         </div>
                       </div>
