@@ -205,16 +205,16 @@ export default function MemorialPage() {
             </div>
             
             <p className="text-gray-600 font-mono text-base max-w-3xl mx-auto leading-relaxed mb-6">
-              "Aqui repousam os guerreiros que tombaram em combate honrado.<br/>
-              Heróis que lutaram até o último suspiro, defendendo o que era certo.<br/>
-              Não poderão mais ressurgir, mas jamais serão esquecidos."
+              "Aqui repousam aqueles que partiram para além do véu.<br/>
+              Sacrificados, fundidos, caídos ou perdidos para sempre.<br/>
+              Suas jornadas terminaram, mas suas histórias permanecem."
             </p>
 
             {avataresMarcados.length > 0 && (
               <div className="inline-flex items-center gap-3 px-6 py-3 bg-gray-950/50 border border-gray-800/50 rounded-full">
-                <span className="text-amber-900/50">⚔️</span>
+                <span className="text-amber-900/50">🪦</span>
                 <span className="text-gray-600 font-mono text-sm">
-                  {avataresMarcados.length} {avataresMarcados.length === 1 ? 'herói caído' : 'heróis caídos'} em batalha
+                  {avataresMarcados.length} {avataresMarcados.length === 1 ? 'alma descansa aqui' : 'almas descansam aqui'}
                 </span>
               </div>
             )}
