@@ -289,12 +289,29 @@ export async function POST(request) {
     if (playerEffectsResult.finished) {
       battle.status = 'finished';
       battle.winner = 'ia';
+
+      // Calcular recompensas (derrota por efeitos)
+      const recompensas = calcularRecompensasTreino(
+        battle.poderOponente,
+        battle.dificuldade,
+        false // derrota
+      );
+
+      console.log('💰 [RECOMPENSAS] Player morreu por efeitos - Calculadas:', recompensas);
+      battle.rewardsApplied = true;
       battleSessions.set(battleId, battle);
+
+      // Rastrear progresso de missões (não bloqueia se falhar)
+      const userId = battle.playerAvatarOriginal?.user_id;
+      if (userId) {
+        trackMissionProgress(userId, 'TREINO_COMPLETO', 1);
+      }
 
       return NextResponse.json({
         success: true,
         finished: true,
         winner: 'ia',
+        recompensas,
         message: 'Você foi derrotado por efeitos de status!'
       });
     }
