@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import GameNav from '../components/GameNav';
+import { getTierIcon } from './utils';
 
 export default function RecompensasPage() {
   const router = useRouter();
@@ -80,16 +81,6 @@ export default function RecompensasPage() {
     } finally {
       setColetando(null);
     }
-  };
-
-  const getTierIcon = (posicao) => {
-    if (posicao === 1) return "👑";
-    if (posicao === 2) return "🥈";
-    if (posicao === 3) return "🥉";
-    if (posicao <= 10) return "⭐";
-    if (posicao <= 50) return "🏆";
-    if (posicao <= 100) return "🎖️";
-    return "📊";
   };
 
   if (loading) {
@@ -231,19 +222,29 @@ export default function RecompensasPage() {
                 </h2>
 
                 <div className="space-y-3 mb-6">
-                  {modalSucesso.recompensa.moedas > 0 && (
+                  {modalSucesso.recompensa.moedas_total > 0 && (
                     <div className="bg-yellow-900/30 rounded p-3 border border-yellow-600">
                       <div className="text-yellow-400 font-bold">
-                        +{modalSucesso.recompensa.moedas.toLocaleString()} Moedas
+                        +{modalSucesso.recompensa.moedas_total.toLocaleString()} Moedas
                       </div>
+                      {modalSucesso.bonus_hunter_rank?.bonus_moedas > 0 && (
+                        <div className="text-xs text-yellow-300 mt-1">
+                          (incluindo bônus de +{modalSucesso.bonus_hunter_rank.bonus_moedas.toLocaleString()})
+                        </div>
+                      )}
                     </div>
                   )}
 
-                  {modalSucesso.recompensa.fragmentos > 0 && (
+                  {modalSucesso.recompensa.fragmentos_total > 0 && (
                     <div className="bg-purple-900/30 rounded p-3 border border-purple-600">
                       <div className="text-purple-400 font-bold">
-                        +{modalSucesso.recompensa.fragmentos} Fragmentos
+                        +{modalSucesso.recompensa.fragmentos_total} Fragmentos
                       </div>
+                      {modalSucesso.bonus_hunter_rank?.bonus_fragmentos > 0 && (
+                        <div className="text-xs text-purple-300 mt-1">
+                          (incluindo bônus de +{modalSucesso.bonus_hunter_rank.bonus_fragmentos})
+                        </div>
+                      )}
                     </div>
                   )}
 
