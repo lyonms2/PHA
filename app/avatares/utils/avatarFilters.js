@@ -2,6 +2,8 @@
  * Funções auxiliares para filtrar e ordenar avatares
  */
 
+import { calcularPoderTotal } from '@/lib/gameLogic';
+
 /**
  * Filtra avatares excluindo os que estão no memorial
  * @param {Array} avatares - Lista de avatares
@@ -69,6 +71,10 @@ export function ordenarAvatares(avatares, ordenacao) {
         const raridadeOrder = { 'Lendário': 3, 'Raro': 2, 'Comum': 1 };
         return (raridadeOrder[b.raridade] || 0) - (raridadeOrder[a.raridade] || 0);
       }
+      case 'poder_desc':
+        return calcularPoderTotal(b) - calcularPoderTotal(a);
+      case 'poder_asc':
+        return calcularPoderTotal(a) - calcularPoderTotal(b);
       default:
         return 0;
     }
