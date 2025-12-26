@@ -268,20 +268,19 @@ export default function AvatarsPage() {
         {/* Avatar Ativo (COMPACTO) */}
         {avatarAtivo && (
           <div className="mb-6">
-            <div className="bg-gradient-to-r from-cyan-900/20 to-purple-900/20 border border-cyan-500/30 rounded-lg p-3 md:p-4">
-              {/* Layout Mobile */}
-              <div className="md:hidden">
-                {/* Avatar e Nome Centralizados */}
-                <div className="flex flex-col items-center mb-4">
-                  <div className="flex items-center justify-center mb-3">
-                    <AvatarSVG avatar={avatarAtivo} tamanho={104} />
-                  </div>
-                  <div className="text-center">
-                    <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Avatar Ativo</div>
-                    <div className="font-bold text-cyan-300 text-xl mb-1">{avatarAtivo.nome}</div>
-                    <div className="text-sm text-slate-400">{avatarAtivo.elemento} • Nv.{avatarAtivo.nivel}</div>
-                  </div>
+            {/* Layout Mobile */}
+            <div className="md:hidden">
+              {/* Avatar e Nome Centralizados */}
+              <div className="flex flex-col items-center mb-4">
+                <div className="flex items-center justify-center mb-3">
+                  <AvatarSVG avatar={avatarAtivo} tamanho={104} />
                 </div>
+                <div className="text-center">
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Avatar Ativo</div>
+                  <div className="font-bold text-cyan-300 text-xl mb-1">{avatarAtivo.nome}</div>
+                  <div className="text-sm text-slate-400">{avatarAtivo.elemento} • Nv.{avatarAtivo.nivel}</div>
+                </div>
+              </div>
 
                 {/* XP Bar (Destaque) */}
                 <div className="mb-4 bg-slate-900/50 rounded-lg p-3 border border-slate-700/50">
@@ -404,7 +403,6 @@ export default function AvatarsPage() {
                   DETALHES
                 </button>
               </div>
-            </div>
           </div>
         )}
 
