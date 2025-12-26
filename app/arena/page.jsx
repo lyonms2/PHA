@@ -73,14 +73,14 @@ export default function ArenaLobby() {
       id: 'pvp',
       nome: 'Arena PvP',
       emoji: '⚔️',
-      descricao: 'Batalhe contra avatares de outros jogadores controlados por IA',
-      detalhes: 'Sistema de IA inteligente que simula batalhas realistas contra avatares reais. Ganhe ou perca Fama em combates estratégicos!',
+      descricao: 'Enfrente outros jogadores em duelos táticos',
+      detalhes: 'Combates PvP assíncronos contra avatares reais de outros jogadores. Ganhe ou perca Fama em batalhas estratégicas!',
       recursos: [
-        'IA com 5 personalidades diferentes',
+        'Salas divididas por poder total',
         'Avatares reais de outros jogadores',
         'Sistema de Fama e Rankings',
         '🧪 MODO TESTE - Sem morte permanente',
-        'Mecânicas de Render e Fuga'
+        'Sistema de Sinergias entre avatares'
       ],
       cor: 'from-red-600 to-red-800',
       corBorda: 'border-red-500',

@@ -195,7 +195,7 @@ export default function PvPPage() {
             ⚔️ ARENA PVP
           </h1>
           <p className="text-gray-400 text-lg">
-            Batalhe contra avatares de outros jogadores controlados por IA
+            Enfrente outros caçadores em duelos táticos por fama e glória
           </p>
         </div>
 
@@ -625,8 +625,8 @@ export default function PvPPage() {
             <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-6">
               <h3 className="text-lg font-bold text-cyan-400 mb-3">Sistema de Combate</h3>
               <ul className="text-gray-400 text-sm space-y-2">
-                <li>• Pareamento por poder similar (salas)</li>
-                <li>• Batalhas contra IA inteligente</li>
+                <li>• Salas divididas por poder total</li>
+                <li>• Combates PvP assíncronos</li>
                 <li>• Sistema 1d20 + Foco para acertos</li>
                 <li>• Vantagens elementais e sinergias</li>
                 <li>• 🧪 Modo teste - sem morte permanente</li>
