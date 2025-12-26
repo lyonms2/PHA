@@ -176,13 +176,19 @@ export async function POST(request) {
     await updateDocument('avatares', avatarBaseId, updateData);
 
     // 12. Marcar avatar de sacrifício como morto no Firestore
+    const timestamp = new Date().toISOString();
     await updateDocument('avatares', avatarSacrificioId, {
       vivo: false,
       hp_atual: 0,
+      // 🆕 AUDIT LOG - Marca da morte com metadados
       marca_morte: true,
+      marca_morte_aplicada_em: timestamp,
+      marca_morte_causa: 'fusao',
+      marca_morte_fundido_com: avatarBaseId, // ID do avatar que recebeu a fusão
+      marca_morte_fundido_por: userId,
       causa_morte: 'fusao', // Para epitáfio personalizado no memorial
       ativo: false,
-      updated_at: new Date().toISOString()
+      updated_at: timestamp
     });
 
     // 13. Calcular XP de rank ganho por merge

@@ -125,35 +125,86 @@ export async function POST(request) {
     const novaExaustao = 30;
     console.log(`Exaustão: ${avatar.exaustao || 0} → ${novaExaustao} (CANSADO)`);
 
-    // 5. Aplicar purificação no Firestore
-    console.log("Aplicando ritual de purificação...");
-    await updateDocument('avatares', avatarId, {
-      // Stats restaurados
-      forca: statsRestaurados.forca,
-      agilidade: statsRestaurados.agilidade,
-      resistencia: statsRestaurados.resistencia,
-      foco: statsRestaurados.foco,
+    // ==================== TRANSAÇÃO ATÔMICA (Simulada com Rollback) ====================
+    let avatarAtualizado = false;
+    let recursosAtualizados = false;
+    const timestamp = new Date().toISOString();
 
-      // Melhorias
-      vinculo: novoVinculo,
-      exaustao: novaExaustao,
+    try {
+      // Passo 1: Atualizar avatar
+      console.log("Aplicando ritual de purificação...");
+      await updateDocument('avatares', avatarId, {
+        // Stats restaurados
+        forca: statsRestaurados.forca,
+        agilidade: statsRestaurados.agilidade,
+        resistencia: statsRestaurados.resistencia,
+        foco: statsRestaurados.foco,
 
-      // Remover marca da morte (PODE SER RESSUSCITADO NOVAMENTE!)
-      marca_morte: false,
-      updated_at: new Date().toISOString()
-    });
+        // Melhorias
+        vinculo: novoVinculo,
+        exaustao: novaExaustao,
 
-    console.log("✅ Avatar purificado!");
+        // Remover marca da morte (PODE SER RESSUSCITADO NOVAMENTE!)
+        marca_morte: false,
 
-    // 6. Deduzir recursos do jogador no Firestore
-    console.log("Deduzindo recursos do jogador...");
-    await updateDocument('player_stats', userId, {
-      moedas: stats.moedas - custo.moedas,
-      fragmentos: stats.fragmentos - custo.fragmentos,
-      updated_at: new Date().toISOString()
-    });
+        // 🆕 AUDIT LOG - Registro de purificação
+        purificado: true,
+        purificado_em: timestamp,
+        purificado_por: userId,
+        purificacoes_totais: (avatar.purificacoes_totais || 0) + 1,
 
-    console.log("✅ Recursos deduzidos!");
+        updated_at: timestamp
+      });
+      avatarAtualizado = true;
+      console.log("✅ Avatar purificado!");
+
+      // Passo 2: Deduzir recursos (se falhar, reverte avatar)
+      console.log("Deduzindo recursos do jogador...");
+      await updateDocument('player_stats', userId, {
+        moedas: stats.moedas - custo.moedas,
+        fragmentos: stats.fragmentos - custo.fragmentos,
+        updated_at: timestamp
+      });
+      recursosAtualizados = true;
+      console.log("✅ Recursos deduzidos!");
+
+    } catch (transactionError) {
+      // ROLLBACK: Se recursos falharam mas avatar foi atualizado, reverter avatar
+      if (avatarAtualizado && !recursosAtualizados) {
+        console.log("🔄 ROLLBACK: Revertendo purificação do avatar...");
+        try {
+          await updateDocument('avatares', avatarId, {
+            // Reverter stats
+            forca: avatar.forca,
+            agilidade: avatar.agilidade,
+            resistencia: avatar.resistencia,
+            foco: avatar.foco,
+
+            // Reverter status
+            vinculo: avatar.vinculo,
+            exaustao: avatar.exaustao,
+            marca_morte: true, // Recolocar marca
+
+            // Remover audit log
+            purificado: false,
+            purificado_em: null,
+            purificado_por: null,
+
+            updated_at: timestamp
+          });
+          console.log("✅ ROLLBACK completo - avatar revertido ao estado original");
+        } catch (rollbackError) {
+          console.error("💥 ERRO CRÍTICO: Falha no rollback!", rollbackError);
+          console.error("⚠️ ESTADO INCONSISTENTE: Avatar purificado mas recursos não deduzidos");
+          console.error("Avatar ID:", avatarId);
+          console.error("User ID:", userId);
+        }
+
+        throw new Error("Falha ao deduzir recursos. Transação revertida.");
+      }
+
+      throw transactionError;
+    }
 
     // 7. Buscar dados atualizados
     console.log("Buscando dados atualizados...");

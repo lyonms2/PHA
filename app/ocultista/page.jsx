@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import AvatarSVG from '../components/AvatarSVG';
-import GameNav, { COMMON_ACTIONS } from '../components/GameNav';
+import { getLimiteAvatares, getHunterRank } from '@/lib/hunter/hunterRankSystem';
 
 export default function OcultistaPage() {
   const router = useRouter();
@@ -15,7 +15,8 @@ export default function OcultistaPage() {
   const [avatarGerado, setAvatarGerado] = useState(null);
   const [invocando, setInvocando] = useState(false);
   const [totalAvatares, setTotalAvatares] = useState(0);
-  const [slotsDisponiveis, setSlotsDisponiveis] = useState(15);
+  const [limiteAvatares, setLimiteAvatares] = useState(10); // Padrão rank F
+  const [slotsDisponiveis, setSlotsDisponiveis] = useState(10);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -40,11 +41,15 @@ export default function OcultistaPage() {
       const data = await response.json();
       setStats(data.stats);
 
+      // Calcular limite dinâmico baseado no Hunter Rank
+      const hunterRankAtual = getHunterRank(data.stats.hunterRankXp || 0);
+      const LIMITE_AVATARES = getLimiteAvatares(hunterRankAtual);
+      setLimiteAvatares(LIMITE_AVATARES);
+
       // Carregar avatares para verificar limite
       const avatarResponse = await fetch(`/api/meus-avatares?userId=${userId}`);
       const avatarData = await avatarResponse.json();
       if (avatarResponse.ok) {
-        const LIMITE_AVATARES = 15;
         // Contar apenas avatares que não estão no memorial
         const avataresConta = avatarData.avatares.filter(av => !(av.marca_morte && !av.vivo)).length;
         setTotalAvatares(avataresConta);
@@ -78,8 +83,14 @@ export default function OcultistaPage() {
             ...prev,
             moedas: data.recursos_restantes.moedas,
             fragmentos: data.recursos_restantes.fragmentos,
-            primeira_invocacao: false
+            primeira_invocacao: false,
+            hunterRankXp: data.hunterRank?.xpTotal || prev.hunterRankXp
           }));
+
+          // Atualizar contagem de avatares
+          setTotalAvatares(prev => prev + 1);
+          setSlotsDisponiveis(prev => prev - 1);
+
           setEtapa('revelacao');
           setInvocando(false);
         }, 3000);
@@ -125,13 +136,28 @@ export default function OcultistaPage() {
 
       {/* Navegação padronizada - apenas na introdução */}
       {etapa === 'introducao' && (
-        <GameNav
-          backTo="/avatares"
-          backLabel="AVATARES"
-          actions={[
-            { href: "/dashboard", label: "DASHBOARD", icon: "🏠", color: "slate" }
-          ]}
-        />
+        <div className="relative z-20">
+          <div className="bg-slate-950/80 backdrop-blur-xl border-b border-cyan-900/20">
+            <div className="container mx-auto px-3 md:px-4 py-3 max-w-7xl">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => router.push("/avatares")}
+                  className="px-3 py-2 text-xs gap-1.5 bg-gradient-to-r from-indigo-900/30 to-violet-900/30 hover:from-indigo-800/40 hover:to-violet-800/40 border border-indigo-500/30 text-indigo-400 rounded-lg transition-all flex items-center font-semibold whitespace-nowrap active:scale-95 hover:scale-105"
+                >
+                  <span>👥</span>
+                  <span>AVATARES</span>
+                </button>
+                <button
+                  onClick={() => router.push("/dashboard")}
+                  className="px-3 py-2 text-xs gap-1.5 bg-slate-900/50 hover:bg-slate-800/50 border border-slate-700/50 text-cyan-400 rounded-lg transition-all flex items-center font-semibold whitespace-nowrap active:scale-95 hover:scale-105"
+                >
+                  <span>🏠</span>
+                  <span>DASHBOARD</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       <div className="relative z-10 min-h-screen flex items-center justify-center px-3 md:px-4 py-4 md:py-8">
@@ -221,13 +247,18 @@ export default function OcultistaPage() {
                   {/* Aviso de Slots */}
                   <div className="bg-slate-900/50 rounded-lg p-3 md:p-4 mb-4 md:mb-6">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-slate-400 text-sm font-mono">Slots Ocupados:</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-slate-400 text-sm font-mono">Slots Ocupados:</span>
+                        <span className="text-[10px] text-slate-500 font-mono">
+                          (Rank {stats?.hunterRankXp !== undefined ? getHunterRank(stats.hunterRankXp).rank : 'F'})
+                        </span>
+                      </div>
                       <span className={`font-bold text-lg ${
                         slotsDisponiveis === 0 ? 'text-red-400' :
                         slotsDisponiveis <= 3 ? 'text-orange-400' :
                         'text-cyan-400'
                       }`}>
-                        {totalAvatares}/15
+                        {totalAvatares}/{limiteAvatares}
                       </span>
                     </div>
                     <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden mb-2">
@@ -238,7 +269,7 @@ export default function OcultistaPage() {
                           slotsDisponiveis <= 7 ? 'bg-yellow-500' :
                           'bg-cyan-500'
                         }`}
-                        style={{ width: `${(totalAvatares / 15) * 100}%` }}
+                        style={{ width: `${limiteAvatares > 0 ? (totalAvatares / limiteAvatares) * 100 : 0}%` }}
                       ></div>
                     </div>
                     <p className="text-[10px] text-slate-500 font-mono text-center">
@@ -256,10 +287,11 @@ export default function OcultistaPage() {
                         </p>
                       </div>
                       <p className="text-red-400/80 text-xs font-mono leading-relaxed">
-                        Você atingiu o limite de 15 avatares. Para invocar novos, você precisa liberar espaço:
+                        Você atingiu o limite de {limiteAvatares} avatares (Rank {stats?.hunterRankXp !== undefined ? getHunterRank(stats.hunterRankXp).rank : 'F'}). Para invocar novos, você pode:
                       </p>
                       <ul className="text-xs text-red-400/80 mt-2 space-y-1 ml-4">
-                        <li>• Sacrifique avatares inativos (os envia ao Memorial)</li>
+                        <li>• Subir de Hunter Rank para aumentar o limite</li>
+                        <li>• Sacrificar avatares inativos (os envia ao Memorial)</li>
                         <li>• Avatares que morrem em combate vão para o Memorial automaticamente</li>
                       </ul>
                     </div>

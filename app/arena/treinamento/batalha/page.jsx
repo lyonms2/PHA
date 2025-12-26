@@ -625,7 +625,7 @@ function BatalhaTreinoIAContent() {
 
   if (!meuAvatar || !iaAvatar || !battleId) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950 text-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950 text-gray-100 flex items-center justify-center scrollbar-fire">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-500 mx-auto mb-4"></div>
           <p className="text-lg">Preparando batalha...</p>
@@ -703,7 +703,7 @@ function BatalhaTreinoIAContent() {
 
   // Se batalha finalizada, mostrar recompensas
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950 text-gray-100 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950 text-gray-100 p-4 scrollbar-fire">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-4">

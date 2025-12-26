@@ -29,7 +29,10 @@ import {
 export default function AvatarsPage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
+  const [stats, setStats] = useState(null);
   const [avatarSelecionado, setAvatarSelecionado] = useState(null);
+  const [avataresParaComparar, setAvataresParaComparar] = useState([]);
+  const [modalComparacao, setModalComparacao] = useState(false);
 
   // Hooks customizados
   const {
@@ -80,6 +83,25 @@ export default function AvatarsPage() {
 
     const parsedUser = JSON.parse(userData);
     setUser(parsedUser);
+
+    // Buscar stats do servidor (incluindo hunterRankXp correto)
+    const carregarDados = async () => {
+      try {
+        const response = await fetch("/api/inicializar-jogador", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: parsedUser.id }),
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setStats(data.stats);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar stats:", error);
+      }
+    };
+
+    carregarDados();
     carregarAvatares(parsedUser.id);
 
     // Recarregar avatares quando a página volta a ficar visível
@@ -110,6 +132,33 @@ export default function AvatarsPage() {
 
   const avatarAtivo = avatares.find(av => av.ativo && av.vivo);
 
+  // Funções de comparação
+  const toggleAvatarParaComparar = (avatar) => {
+    setAvataresParaComparar(prev => {
+      const jaEstaEm = prev.find(av => av.id === avatar.id);
+      if (jaEstaEm) {
+        return prev.filter(av => av.id !== avatar.id);
+      } else {
+        if (prev.length >= 2) {
+          // Substitui o primeiro se já tem 2
+          return [prev[1], avatar];
+        }
+        return [...prev, avatar];
+      }
+    });
+  };
+
+  const abrirComparacao = () => {
+    if (avataresParaComparar.length === 2) {
+      setModalComparacao(true);
+    }
+  };
+
+  const limparComparacao = () => {
+    setAvataresParaComparar([]);
+    setModalComparacao(false);
+  };
+
   // Filtrar avatares (EXCLUINDO mortos com marca_morte que estão no memorial)
   let avataresFiltrados = filtrarAvataresSemMemorial(avatares);
 
@@ -130,7 +179,7 @@ export default function AvatarsPage() {
   const avataresCaidos = contarAvataresCaidos(avatares);
 
   // Sistema de limite de avatares (dinâmico por Hunter Rank)
-  const hunterRankAtual = user?.hunterRankXp !== undefined ? getHunterRank(user.hunterRankXp) : { rank: 'F', nome: 'F' };
+  const hunterRankAtual = stats?.hunterRankXp !== undefined ? getHunterRank(stats.hunterRankXp) : { rank: 'F', nome: 'F' };
   const LIMITE_AVATARES = getLimiteAvatares(hunterRankAtual);
   const { usados: slotsUsados, disponiveis: slotsDisponiveis, percentual: percentualOcupado } = calcularSlots(avatares, LIMITE_AVATARES);
 
@@ -143,7 +192,7 @@ export default function AvatarsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-gray-100 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-gray-100 relative overflow-hidden scrollbar-dark">
       {/* Partículas de fundo */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl top-20 -left-48 animate-pulse"></div>
@@ -187,7 +236,7 @@ export default function AvatarsPage() {
               📦 Slots: {slotsUsados}/{LIMITE_AVATARES}
             </span>
             <span className="text-[10px] text-slate-500 font-mono">
-              (Rank {hunterRankAtual.rank})
+              (Rank {hunterRankAtual.nome})
             </span>
             {slotsDisponiveis > 0 && slotsDisponiveis <= 3 && (
               <span className="text-[10px] text-orange-400 font-bold animate-pulse">
@@ -224,10 +273,12 @@ export default function AvatarsPage() {
               <div className="md:hidden">
                 {/* Avatar e Nome Centralizados */}
                 <div className="flex flex-col items-center mb-4">
-                  <div className="relative mb-3">
+                  <div className="relative w-28 h-28 mb-3">
                     <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-full blur"></div>
-                    <div className="relative bg-slate-900/50 rounded-full p-2 border border-cyan-500/30">
-                      <AvatarSVG avatar={avatarAtivo} tamanho={100} />
+                    <div className="relative bg-slate-900/50 rounded-full p-1 border border-cyan-500/30 w-full h-full flex items-center justify-center overflow-hidden">
+                      <div className="w-full h-full flex items-center justify-center">
+                        <AvatarSVG avatar={avatarAtivo} tamanho={104} className="max-w-full max-h-full" />
+                      </div>
                     </div>
                   </div>
                   <div className="text-center">
@@ -308,10 +359,12 @@ export default function AvatarsPage() {
               <div className="hidden md:flex items-center gap-6">
                 {/* Avatar SVG pequeno */}
                 <div className="flex-shrink-0">
-                  <div className="relative">
+                  <div className="relative w-24 h-24">
                     <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-full blur"></div>
-                    <div className="relative bg-slate-900/50 rounded-full p-2 border border-cyan-500/30">
-                      <AvatarSVG avatar={avatarAtivo} tamanho={80} />
+                    <div className="relative bg-slate-900/50 rounded-full p-1 border border-cyan-500/30 w-full h-full flex items-center justify-center overflow-hidden">
+                      <div className="w-full h-full flex items-center justify-center">
+                        <AvatarSVG avatar={avatarAtivo} tamanho={88} className="max-w-full max-h-full" />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -420,6 +473,8 @@ export default function AvatarsPage() {
             >
               <option value="nivel_desc">Nível (Maior→Menor)</option>
               <option value="nivel_asc">Nível (Menor→Maior)</option>
+              <option value="poder_desc">⚔️ Poder (Maior→Menor)</option>
+              <option value="poder_asc">⚔️ Poder (Menor→Maior)</option>
               <option value="nome_asc">Nome (A→Z)</option>
               <option value="raridade">Raridade</option>
             </select>
@@ -438,8 +493,31 @@ export default function AvatarsPage() {
             </button>
           </div>
 
-          <div className="mt-3 text-xs text-slate-500 font-mono">
-            Mostrando {avataresInativos.length} {avataresInativos.length === 1 ? 'avatar' : 'avatares'}
+          <div className="mt-3 flex items-center justify-between">
+            <div className="text-xs text-slate-500 font-mono">
+              Mostrando {avataresInativos.length} {avataresInativos.length === 1 ? 'avatar' : 'avatares'}
+            </div>
+            {avataresParaComparar.length > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-cyan-400 font-mono">
+                  {avataresParaComparar.length}/2 selecionados
+                </span>
+                {avataresParaComparar.length === 2 && (
+                  <button
+                    onClick={abrirComparacao}
+                    className="px-3 py-1.5 bg-gradient-to-r from-cyan-900/40 to-blue-900/40 hover:from-cyan-800/50 hover:to-blue-800/50 border border-cyan-500/40 rounded text-xs font-bold text-cyan-300 transition-all active:scale-95"
+                  >
+                    ⚖️ Comparar
+                  </button>
+                )}
+                <button
+                  onClick={limparComparacao}
+                  className="px-3 py-1.5 bg-red-900/30 hover:bg-red-800/40 border border-red-500/30 rounded text-xs font-semibold text-red-400 transition-all"
+                >
+                  Limpar
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -452,14 +530,35 @@ export default function AvatarsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {avataresInativos.map((avatar) => (
+            {avataresInativos.map((avatar) => {
+              const estaSelecionado = avataresParaComparar.find(av => av.id === avatar.id);
+
+              return (
               <div
                 key={avatar.id}
                 className="group relative"
               >
-                <div className={`absolute -inset-0.5 bg-gradient-to-r ${getCorRaridade(avatar.raridade)} rounded-lg blur opacity-20 group-hover:opacity-40 transition-all`}></div>
+                <div className={`absolute -inset-0.5 bg-gradient-to-r ${getCorRaridade(avatar.raridade)} rounded-lg blur opacity-20 group-hover:opacity-40 transition-all ${estaSelecionado ? 'opacity-60' : ''}`}></div>
 
-                <div className={`relative bg-slate-900/80 backdrop-blur-xl border ${getCorBorda(avatar.raridade)} rounded-lg overflow-hidden group-hover:border-opacity-100 transition-all`}>
+                <div className={`relative bg-slate-900/80 backdrop-blur-xl border ${getCorBorda(avatar.raridade)} rounded-lg overflow-hidden group-hover:border-opacity-100 transition-all ${estaSelecionado ? 'ring-2 ring-cyan-500 ring-offset-2 ring-offset-slate-900' : ''}`}>
+                  {/* Checkbox de Comparação */}
+                  <div className="absolute top-2 right-2 z-10">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleAvatarParaComparar(avatar);
+                      }}
+                      className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
+                        estaSelecionado
+                          ? 'bg-cyan-500 border-cyan-400'
+                          : 'bg-slate-900/80 border-slate-600 hover:border-cyan-500'
+                      }`}
+                    >
+                      {estaSelecionado && (
+                        <span className="text-white text-xs">✓</span>
+                      )}
+                    </button>
+                  </div>
                   {/* Badge Raridade */}
                   <div className={`px-3 py-1.5 text-center font-bold text-xs bg-gradient-to-r ${getCorRaridade(avatar.raridade)}`}>
                     {avatar.raridade.toUpperCase()}
@@ -579,7 +678,8 @@ export default function AvatarsPage() {
                   </div>
                 </div>
               </div>
-            ))}
+            );
+            })}
           </div>
         )}
       </div>
@@ -996,6 +1096,237 @@ export default function AvatarsPage() {
               >
                 🎊 Continuar
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Comparação */}
+      {modalComparacao && avataresParaComparar.length === 2 && (
+        <div
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 overflow-y-auto p-4"
+          onClick={() => setModalComparacao(false)}
+        >
+          <div className="min-h-full flex items-center justify-center py-8">
+            <div
+              className="max-w-6xl w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-cyan-600/40 via-blue-600/40 to-cyan-600/40 rounded-lg blur opacity-75"></div>
+
+                <div className="relative bg-slate-950/95 backdrop-blur-xl border-2 border-cyan-900/50 rounded-lg overflow-hidden">
+                  {/* Header */}
+                  <div className="bg-gradient-to-r from-cyan-900/80 to-blue-900/80 p-4 text-center relative overflow-hidden">
+                    <div className="relative">
+                      <div className="text-4xl mb-2">⚖️</div>
+                      <h2 className="text-2xl font-black uppercase tracking-wider text-cyan-200">
+                        Comparação de Avatares
+                      </h2>
+                      <p className="text-xs text-cyan-300/80 font-mono mt-1">
+                        Análise Comparativa Detalhada
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Botão Fechar */}
+                  <button
+                    onClick={() => setModalComparacao(false)}
+                    className="absolute top-3 right-3 w-8 h-8 bg-slate-900/80 hover:bg-cyan-900/80 rounded-full flex items-center justify-center text-slate-400 hover:text-white transition-all z-20 border border-slate-700/50 hover:border-cyan-500/50"
+                  >
+                    ✕
+                  </button>
+
+                  <div className="p-6">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      {/* Avatar 1 */}
+                      <div className="space-y-4">
+                        <div className="bg-slate-900/70 rounded-lg p-6 border-2 border-cyan-900/50">
+                          <div className="flex flex-col items-center mb-4">
+                            <AvatarSVG avatar={avataresParaComparar[0]} tamanho={120} />
+                            <h3 className="text-xl font-bold text-white mt-4">{avataresParaComparar[0].nome}</h3>
+                            <div className="flex gap-2 mt-2">
+                              <span className={`px-2 py-1 rounded text-xs font-bold ${getCorRaridade(avataresParaComparar[0].raridade)}`}>
+                                {avataresParaComparar[0].raridade}
+                              </span>
+                              <span className="px-2 py-1 bg-slate-800 rounded text-xs">
+                                {getEmojiElemento(avataresParaComparar[0].elemento)} {avataresParaComparar[0].elemento}
+                              </span>
+                              <span className="px-2 py-1 bg-slate-800 rounded text-xs">
+                                Nv.{avataresParaComparar[0].nivel}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Stats */}
+                          <div className="space-y-3">
+                            <div className="bg-slate-950/50 rounded p-3">
+                              <div className="text-xs text-slate-500 mb-1">⚔️ PODER TOTAL</div>
+                              <div className="text-2xl font-black text-yellow-400">{calcularPoderTotal(avataresParaComparar[0])}</div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="bg-slate-950/50 rounded p-2 text-center">
+                                <div className="text-xs text-slate-500">Força</div>
+                                <div className="text-lg font-bold text-red-400">{avataresParaComparar[0].forca}</div>
+                              </div>
+                              <div className="bg-slate-950/50 rounded p-2 text-center">
+                                <div className="text-xs text-slate-500">Agilidade</div>
+                                <div className="text-lg font-bold text-green-400">{avataresParaComparar[0].agilidade}</div>
+                              </div>
+                              <div className="bg-slate-950/50 rounded p-2 text-center">
+                                <div className="text-xs text-slate-500">Resistência</div>
+                                <div className="text-lg font-bold text-blue-400">{avataresParaComparar[0].resistencia}</div>
+                              </div>
+                              <div className="bg-slate-950/50 rounded p-2 text-center">
+                                <div className="text-xs text-slate-500">Foco</div>
+                                <div className="text-lg font-bold text-purple-400">{avataresParaComparar[0].foco}</div>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="bg-slate-950/50 rounded p-2">
+                                <div className="text-xs text-slate-500">HP</div>
+                                <div className="text-sm font-bold text-green-400">
+                                  {avataresParaComparar[0].hp_atual || 0}/{(avataresParaComparar[0].resistencia * 20) + (avataresParaComparar[0].nivel * 10) + (avataresParaComparar[0].raridade === 'Lendário' ? 200 : avataresParaComparar[0].raridade === 'Raro' ? 100 : 0)}
+                                </div>
+                              </div>
+                              <div className="bg-slate-950/50 rounded p-2">
+                                <div className="text-xs text-slate-500">Vínculo</div>
+                                <div className="text-sm font-bold text-purple-400">{avataresParaComparar[0].vinculo}%</div>
+                              </div>
+                              <div className="bg-slate-950/50 rounded p-2">
+                                <div className="text-xs text-slate-500">Exaustão</div>
+                                <div className={`text-sm font-bold ${getNivelExaustao(avataresParaComparar[0].exaustao || 0).cor}`}>
+                                  {avataresParaComparar[0].exaustao || 0}%
+                                </div>
+                              </div>
+                              <div className="bg-slate-950/50 rounded p-2">
+                                <div className="text-xs text-slate-500">XP</div>
+                                <div className="text-sm font-bold text-cyan-400">{avataresParaComparar[0].experiencia || 0}</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Avatar 2 */}
+                      <div className="space-y-4">
+                        <div className="bg-slate-900/70 rounded-lg p-6 border-2 border-blue-900/50">
+                          <div className="flex flex-col items-center mb-4">
+                            <AvatarSVG avatar={avataresParaComparar[1]} tamanho={120} />
+                            <h3 className="text-xl font-bold text-white mt-4">{avataresParaComparar[1].nome}</h3>
+                            <div className="flex gap-2 mt-2">
+                              <span className={`px-2 py-1 rounded text-xs font-bold ${getCorRaridade(avataresParaComparar[1].raridade)}`}>
+                                {avataresParaComparar[1].raridade}
+                              </span>
+                              <span className="px-2 py-1 bg-slate-800 rounded text-xs">
+                                {getEmojiElemento(avataresParaComparar[1].elemento)} {avataresParaComparar[1].elemento}
+                              </span>
+                              <span className="px-2 py-1 bg-slate-800 rounded text-xs">
+                                Nv.{avataresParaComparar[1].nivel}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Stats */}
+                          <div className="space-y-3">
+                            <div className="bg-slate-950/50 rounded p-3">
+                              <div className="text-xs text-slate-500 mb-1">⚔️ PODER TOTAL</div>
+                              <div className="text-2xl font-black text-yellow-400">{calcularPoderTotal(avataresParaComparar[1])}</div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="bg-slate-950/50 rounded p-2 text-center">
+                                <div className="text-xs text-slate-500">Força</div>
+                                <div className="text-lg font-bold text-red-400">{avataresParaComparar[1].forca}</div>
+                              </div>
+                              <div className="bg-slate-950/50 rounded p-2 text-center">
+                                <div className="text-xs text-slate-500">Agilidade</div>
+                                <div className="text-lg font-bold text-green-400">{avataresParaComparar[1].agilidade}</div>
+                              </div>
+                              <div className="bg-slate-950/50 rounded p-2 text-center">
+                                <div className="text-xs text-slate-500">Resistência</div>
+                                <div className="text-lg font-bold text-blue-400">{avataresParaComparar[1].resistencia}</div>
+                              </div>
+                              <div className="bg-slate-950/50 rounded p-2 text-center">
+                                <div className="text-xs text-slate-500">Foco</div>
+                                <div className="text-lg font-bold text-purple-400">{avataresParaComparar[1].foco}</div>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="bg-slate-950/50 rounded p-2">
+                                <div className="text-xs text-slate-500">HP</div>
+                                <div className="text-sm font-bold text-green-400">
+                                  {avataresParaComparar[1].hp_atual || 0}/{(avataresParaComparar[1].resistencia * 20) + (avataresParaComparar[1].nivel * 10) + (avataresParaComparar[1].raridade === 'Lendário' ? 200 : avataresParaComparar[1].raridade === 'Raro' ? 100 : 0)}
+                                </div>
+                              </div>
+                              <div className="bg-slate-950/50 rounded p-2">
+                                <div className="text-xs text-slate-500">Vínculo</div>
+                                <div className="text-sm font-bold text-purple-400">{avataresParaComparar[1].vinculo}%</div>
+                              </div>
+                              <div className="bg-slate-950/50 rounded p-2">
+                                <div className="text-xs text-slate-500">Exaustão</div>
+                                <div className={`text-sm font-bold ${getNivelExaustao(avataresParaComparar[1].exaustao || 0).cor}`}>
+                                  {avataresParaComparar[1].exaustao || 0}%
+                                </div>
+                              </div>
+                              <div className="bg-slate-950/50 rounded p-2">
+                                <div className="text-xs text-slate-500">XP</div>
+                                <div className="text-sm font-bold text-cyan-400">{avataresParaComparar[1].experiencia || 0}</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Resumo Comparativo */}
+                    <div className="mt-6 bg-gradient-to-r from-slate-900/80 to-cyan-950/80 rounded-lg p-4 border border-cyan-900/50">
+                      <h4 className="text-center font-bold text-cyan-300 mb-3">📊 Análise Comparativa</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-sm">
+                        <div>
+                          <div className="text-xs text-slate-500">Mais Forte</div>
+                          <div className="text-cyan-300 font-bold">
+                            {avataresParaComparar[0].forca > avataresParaComparar[1].forca ? avataresParaComparar[0].nome :
+                             avataresParaComparar[1].forca > avataresParaComparar[0].forca ? avataresParaComparar[1].nome : 'Empate'}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-slate-500">Mais Ágil</div>
+                          <div className="text-cyan-300 font-bold">
+                            {avataresParaComparar[0].agilidade > avataresParaComparar[1].agilidade ? avataresParaComparar[0].nome :
+                             avataresParaComparar[1].agilidade > avataresParaComparar[0].agilidade ? avataresParaComparar[1].nome : 'Empate'}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-slate-500">Mais Resistente</div>
+                          <div className="text-cyan-300 font-bold">
+                            {avataresParaComparar[0].resistencia > avataresParaComparar[1].resistencia ? avataresParaComparar[0].nome :
+                             avataresParaComparar[1].resistencia > avataresParaComparar[0].resistencia ? avataresParaComparar[1].nome : 'Empate'}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-slate-500">Mais Poder</div>
+                          <div className="text-yellow-300 font-bold">
+                            {calcularPoderTotal(avataresParaComparar[0]) > calcularPoderTotal(avataresParaComparar[1]) ? avataresParaComparar[0].nome :
+                             calcularPoderTotal(avataresParaComparar[1]) > calcularPoderTotal(avataresParaComparar[0]) ? avataresParaComparar[1].nome : 'Empate'}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Botão Fechar */}
+                    <button
+                      onClick={() => setModalComparacao(false)}
+                      className="w-full mt-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold rounded-lg transition-all transform hover:scale-[1.02] active:scale-95"
+                    >
+                      Fechar Comparação
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

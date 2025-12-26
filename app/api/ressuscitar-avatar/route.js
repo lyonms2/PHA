@@ -138,40 +138,89 @@ export async function POST(request) {
     const novaExaustao = 60;
     console.log(`Exaustão: ${avatar.exaustao || 0} → ${novaExaustao} (EXAUSTO)`);
 
-    // 5. Aplicar ressurreição no Firestore
+    // 5. Aplicar ressurreição no Firestore COM ROLLBACK
     console.log("Aplicando ritual de ressurreição...");
-    await updateDocument('avatares', avatarId, {
-      // Status
-      vivo: true,
-      ativo: false, // Não ativa automaticamente
 
-      // Stats reduzidos
-      forca: statsReduzidos.forca,
-      agilidade: statsReduzidos.agilidade,
-      resistencia: statsReduzidos.resistencia,
-      foco: statsReduzidos.foco,
+    // ==================== TRANSAÇÃO ATÔMICA (Simulada com Rollback) ====================
+    let avatarAtualizado = false;
+    let recursosAtualizados = false;
+    const timestamp = new Date().toISOString();
 
-      // Penalidades
-      vinculo: novoVinculo,
-      experiencia: novaXP,
-      exaustao: novaExaustao,
+    try {
+      // Passo 1: Atualizar avatar
+      await updateDocument('avatares', avatarId, {
+        // Status
+        vivo: true,
+        ativo: false, // Não ativa automaticamente
 
-      // Marca permanente
-      marca_morte: true,
-      updated_at: new Date().toISOString()
-    });
+        // Stats reduzidos
+        forca: statsReduzidos.forca,
+        agilidade: statsReduzidos.agilidade,
+        resistencia: statsReduzidos.resistencia,
+        foco: statsReduzidos.foco,
 
-    console.log("✅ Avatar ressuscitado!");
+        // Penalidades
+        vinculo: novoVinculo,
+        experiencia: novaXP,
+        exaustao: novaExaustao,
 
-    // 6. Deduzir recursos do jogador no Firestore
-    console.log("Deduzindo recursos do jogador...");
-    await updateDocument('player_stats', userId, {
-      moedas: stats.moedas - custo.moedas,
-      fragmentos: stats.fragmentos - custo.fragmentos,
-      updated_at: new Date().toISOString()
-    });
+        // 🆕 AUDIT LOG - Marca permanente com metadados
+        marca_morte: true,
+        marca_morte_aplicada_em: timestamp,
+        marca_morte_causa: 'ressurreicao',
+        marca_morte_ressuscitado_por: userId,
+        updated_at: timestamp
+      });
+      avatarAtualizado = true;
+      console.log("✅ Avatar ressuscitado!");
 
-    console.log("✅ Recursos deduzidos!");
+      // Passo 2: Deduzir recursos (se falhar, reverte avatar)
+      console.log("Deduzindo recursos do jogador...");
+      await updateDocument('player_stats', userId, {
+        moedas: stats.moedas - custo.moedas,
+        fragmentos: stats.fragmentos - custo.fragmentos,
+        updated_at: timestamp
+      });
+      recursosAtualizados = true;
+      console.log("✅ Recursos deduzidos!");
+
+    } catch (transactionError) {
+      console.error("❌ ERRO NA TRANSAÇÃO:", transactionError);
+
+      // ROLLBACK: Se recursos falharam mas avatar foi atualizado, reverter avatar
+      if (avatarAtualizado && !recursosAtualizados) {
+        console.log("🔄 ROLLBACK: Revertendo ressurreição do avatar...");
+        try {
+          await updateDocument('avatares', avatarId, {
+            vivo: false,
+            marca_morte: false,
+            marca_morte_aplicada_em: null,
+            marca_morte_causa: null,
+            marca_morte_ressuscitado_por: null,
+            forca: avatar.forca,
+            agilidade: avatar.agilidade,
+            resistencia: avatar.resistencia,
+            foco: avatar.foco,
+            vinculo: avatar.vinculo,
+            experiencia: avatar.experiencia,
+            exaustao: avatar.exaustao,
+            updated_at: timestamp
+          });
+          console.log("✅ ROLLBACK completo - avatar revertido ao estado original");
+        } catch (rollbackError) {
+          console.error("💥 ERRO CRÍTICO: Falha no rollback!", rollbackError);
+          // Log para auditoria - estado inconsistente
+          console.error("⚠️ ESTADO INCONSISTENTE: Avatar ressuscitado mas recursos não deduzidos");
+          console.error("Avatar ID:", avatarId);
+          console.error("User ID:", userId);
+        }
+
+        throw new Error("Falha ao deduzir recursos. Transação revertida.");
+      }
+
+      throw transactionError;
+    }
+    // ==================================================================================
 
     // 7. Buscar dados atualizados
     console.log("Buscando dados atualizados...");
