@@ -5,6 +5,13 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import BackgroundEffects from "@/components/BackgroundEffects";
 import HunterRankBadge from "@/app/components/HunterRankBadge";
+import {
+  gerarCodigoCacador,
+  gerarNomeCacadorPadrao,
+  getEmojiElemento,
+  calcularDiasRegistro,
+  formatarDataRegistro
+} from './utils';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -21,21 +28,6 @@ export default function DashboardPage() {
   const [fotoSelecionada, setFotoSelecionada] = useState("");
   const [salvandoFoto, setSalvandoFoto] = useState(false);
 
-  // Função para gerar código de caçador
-  const gerarCodigoCacador = (userId) => {
-    if (!userId) return "HNT-000-000";
-    const prefixo = userId.slice(0, 3).toUpperCase();
-    const sufixo = userId.slice(-3).toUpperCase();
-    return `HNT-${prefixo}-${sufixo}`;
-  };
-
-  // Função para gerar nome de caçador padrão (fallback)
-  const gerarNomeCacadorPadrao = (email) => {
-    if (!email) return "Caçador";
-    const username = email.split('@')[0];
-    return username.charAt(0).toUpperCase() + username.slice(1);
-  };
-
   // Função para pegar nome de operação (customizado ou padrão)
   const getNomeOperacao = () => {
     return stats?.nome_operacao || gerarNomeCacadorPadrao(user?.email);
@@ -44,86 +36,7 @@ export default function DashboardPage() {
   // Função para pegar emoji do elemento do avatar ativo
   const getEmojiAvatarAtivo = () => {
     const avatarAtivo = avatares.find(av => av.ativo && av.vivo);
-    
-    if (!avatarAtivo) return '🛡️'; // Padrão se não tiver avatar ativo
-    
-    const emojis = {
-      'Fogo': '🔥',
-      'Água': '💧',
-      'Terra': '🪨',
-      'Vento': '💨',
-      'Eletricidade': '⚡',
-      'Sombra': '🌑',
-      'Luz': '✨'
-    };
-    
-    return emojis[avatarAtivo.elemento] || '🛡️';
-  };
-
-  // Função para calcular dias desde o registro
-  const calcularDiasRegistro = () => {
-    if (!stats?.created_at) return 0;
-
-    try {
-      let dataRegistro;
-
-      // Firestore Timestamp tem método toDate()
-      if (stats.created_at.toDate) {
-        dataRegistro = stats.created_at.toDate();
-      }
-      // Firestore Timestamp pode vir como objeto com seconds
-      else if (stats.created_at.seconds) {
-        dataRegistro = new Date(stats.created_at.seconds * 1000);
-      }
-      // ISO string ou timestamp number
-      else {
-        dataRegistro = new Date(stats.created_at);
-      }
-
-      if (isNaN(dataRegistro.getTime())) return 0;
-
-      const hoje = new Date();
-      const diferencaMs = hoje - dataRegistro;
-      const dias = Math.floor(diferencaMs / (1000 * 60 * 60 * 24));
-
-      return dias === 0 ? 1 : dias;
-    } catch (error) {
-      console.error('Erro ao calcular dias de registro:', error);
-      return 0;
-    }
-  };
-
-  // Função para formatar data de registro
-  const formatarDataRegistro = () => {
-    if (!stats?.created_at) return "Data não disponível";
-
-    try {
-      let data;
-
-      // Firestore Timestamp tem método toDate()
-      if (stats.created_at.toDate) {
-        data = stats.created_at.toDate();
-      }
-      // Firestore Timestamp pode vir como objeto com seconds
-      else if (stats.created_at.seconds) {
-        data = new Date(stats.created_at.seconds * 1000);
-      }
-      // ISO string ou timestamp number
-      else {
-        data = new Date(stats.created_at);
-      }
-
-      if (isNaN(data.getTime())) return "Data inválida";
-
-      const dia = String(data.getDate()).padStart(2, '0');
-      const mes = String(data.getMonth() + 1).padStart(2, '0');
-      const ano = data.getFullYear();
-
-      return `${dia}/${mes}/${ano}`;
-    } catch (error) {
-      console.error('Erro ao formatar data:', error);
-      return "Erro na data";
-    }
+    return avatarAtivo ? getEmojiElemento(avatarAtivo.elemento) : '🛡️';
   };
 
 
@@ -401,7 +314,7 @@ export default function DashboardPage() {
                         </div>
                         <div>
                           <div className="text-[10px] text-slate-500 uppercase font-mono mb-1 tracking-wider">Tempo de Serviço</div>
-                          <div className="text-base font-bold text-slate-300">{calcularDiasRegistro()} dias</div>
+                          <div className="text-base font-bold text-slate-300">{calcularDiasRegistro(stats?.created_at)} dias</div>
                         </div>
                       </div>
                     </div>
@@ -436,7 +349,7 @@ export default function DashboardPage() {
                       <div className="w-6 h-6 bg-cyan-500/20 rounded-full border border-cyan-500/50 flex items-center justify-center">
                         <span className="text-cyan-400 text-xs">✓</span>
                       </div>
-                      <span className="text-[10px] text-slate-500 font-mono">Membro desde: {formatarDataRegistro()}</span>
+                      <span className="text-[10px] text-slate-500 font-mono">Membro desde: {formatarDataRegistro(stats?.created_at)}</span>
                     </div>
                     <div className="text-[10px] text-slate-600 font-mono">OCD-2025</div>
                   </div>

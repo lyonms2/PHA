@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   calcularPoderTotal,
@@ -8,6 +8,11 @@ import {
 } from "@/lib/gameLogic";
 import AvatarSVG from "../../components/AvatarSVG";
 import { previewSinergia } from "@/lib/combat/synergyApplicator";
+import {
+  getTierInfo,
+  getElementoColor,
+  getElementoEmoji
+} from './utils';
 
 export default function PvPPage() {
   const router = useRouter();
@@ -25,13 +30,6 @@ export default function PvPPage() {
   const [rankingData, setRankingData] = useState(null);
   const [temporadaAtual, setTemporadaAtual] = useState(null);
 
-  // Estados de matchmaking
-  const [buscandoPartida, setBuscandoPartida] = useState(false);
-  const [tempoEspera, setTempoEspera] = useState(0);
-  const [partidaEncontrada, setPartidaEncontrada] = useState(null);
-  const intervalRef = useRef(null);
-  const pollingRef = useRef(null);
-
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (!userData) {
@@ -44,11 +42,6 @@ export default function PvPPage() {
     carregarAvatarAtivo(parsedUser.id);
     carregarRanking(parsedUser.id);
     carregarTemporada();
-
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      if (pollingRef.current) clearInterval(pollingRef.current);
-    };
   }, [router]);
 
   // Preview de Sinergia em tempo real
@@ -104,197 +97,6 @@ export default function PvPPage() {
     }
   };
 
-  const iniciarMatchmaking = async () => {
-    if (!avatarAtivo) return;
-
-    if (!avatarAtivo.vivo) {
-      setModalAlerta({
-        titulo: '💀 Avatar Morto',
-        mensagem: 'Seu avatar está morto! Visite o Necromante para ressuscitá-lo.'
-      });
-      return;
-    }
-
-    if (avatarAtivo.exaustao >= 99) {
-      setModalAlerta({
-        titulo: '💀 Avatar em Colapso',
-        mensagem: 'Seu avatar está completamente exausto e não pode lutar! Deixe-o descansar.'
-      });
-      return;
-    }
-
-    if (avatarAtivo.exaustao >= 60) {
-      setModalAlerta({
-        titulo: '😰 Avatar Muito Exausto',
-        mensagem: 'Seu avatar está muito exausto! Deixe-o descansar antes de batalhar.'
-      });
-      return;
-    }
-
-    setBuscandoPartida(true);
-    setTempoEspera(0);
-
-    intervalRef.current = setInterval(() => {
-      setTempoEspera(prev => prev + 1);
-    }, 1000);
-
-    try {
-      const poderTotal = calcularPoderTotal(avatarAtivo);
-
-      const response = await fetch('/api/pvp/queue/join', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          avatarId: avatarAtivo.id,
-          nivel: avatarAtivo.nivel || 1,
-          poderTotal,
-          fama: rankingData?.fama || 0
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao entrar na fila');
-      }
-
-      const data = await response.json();
-
-      if (data.matched && data.matchId) {
-        clearInterval(intervalRef.current);
-
-        const oponenteNome = data.opponent?.nome || 'Oponente';
-        setPartidaEncontrada({
-          matchId: data.matchId,
-          oponente: { nome: oponenteNome }
-        });
-
-        const dadosPartida = {
-          tipo: 'pvp',
-          pvpAoVivo: true,
-          matchId: data.matchId,
-          avatarJogador: {
-            ...avatarAtivo,
-            habilidades: avatarAtivo.habilidades || []
-          },
-          avatarOponente: data.opponent?.avatar || null,
-          nomeOponente: oponenteNome,
-          morteReal: true
-        };
-
-        sessionStorage.setItem('batalha_pvp_dados', JSON.stringify(dadosPartida));
-
-        setTimeout(() => {
-          router.push('/arena/batalha?modo=pvp');
-        }, 3000);
-        return;
-      }
-
-      pollingRef.current = setInterval(async () => {
-        try {
-          const checkResponse = await fetch(`/api/pvp/queue/check?userId=${user.id}`);
-          const checkData = await checkResponse.json();
-
-          if (checkData.matched && checkData.matchId) {
-            clearInterval(intervalRef.current);
-            clearInterval(pollingRef.current);
-
-            const oponenteNome = checkData.opponent?.nome || 'Oponente encontrado';
-            setPartidaEncontrada({
-              matchId: checkData.matchId,
-              oponente: { nome: oponenteNome }
-            });
-
-            const dadosPartida = {
-              tipo: 'pvp',
-              pvpAoVivo: true,
-              matchId: checkData.matchId,
-              avatarJogador: {
-                ...avatarAtivo,
-                habilidades: avatarAtivo.habilidades || []
-              },
-              avatarOponente: checkData.opponent?.avatar || null,
-              nomeOponente: oponenteNome,
-              morteReal: true
-            };
-
-            sessionStorage.setItem('batalha_pvp_dados', JSON.stringify(dadosPartida));
-
-            setTimeout(() => {
-              router.push('/arena/batalha?modo=pvp');
-            }, 3000);
-          }
-        } catch (error) {
-          console.error('Erro ao verificar match:', error);
-        }
-      }, 2000);
-
-    } catch (error) {
-      console.error('Erro no matchmaking:', error);
-      cancelarMatchmaking();
-      setModalAlerta({
-        titulo: '❌ Erro',
-        mensagem: 'Erro ao buscar partida. Tente novamente.'
-      });
-    }
-  };
-
-  const cancelarMatchmaking = async () => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    if (pollingRef.current) clearInterval(pollingRef.current);
-
-    setBuscandoPartida(false);
-    setTempoEspera(0);
-
-    try {
-      await fetch('/api/pvp/queue/leave', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user?.id })
-      });
-    } catch (error) {
-      console.error('Erro ao sair da fila:', error);
-    }
-  };
-
-  const formatarTempo = (segundos) => {
-    const min = Math.floor(segundos / 60);
-    const sec = segundos % 60;
-    return `${min}:${sec.toString().padStart(2, '0')}`;
-  };
-
-  const getTierInfo = (fama) => {
-    if (fama >= 5000) return { nome: 'Lendário', cor: 'text-red-400', icone: '👑', bg: 'from-red-900/30' };
-    if (fama >= 4000) return { nome: 'Diamante', cor: 'text-cyan-300', icone: '💎', bg: 'from-cyan-900/30' };
-    if (fama >= 3000) return { nome: 'Platina', cor: 'text-purple-300', icone: '🔮', bg: 'from-purple-900/30' };
-    if (fama >= 2000) return { nome: 'Ouro', cor: 'text-yellow-400', icone: '🥇', bg: 'from-yellow-900/30' };
-    if (fama >= 1000) return { nome: 'Prata', cor: 'text-gray-300', icone: '🥈', bg: 'from-gray-700/30' };
-    return { nome: 'Bronze', cor: 'text-orange-400', icone: '🥉', bg: 'from-orange-900/30' };
-  };
-
-  const getElementoColor = (elemento) => {
-    const cores = {
-      'Fogo': 'text-red-400',
-      'Água': 'text-blue-400',
-      'Terra': 'text-amber-600',
-      'Vento': 'text-cyan-300',
-      'Luz': 'text-yellow-300',
-      'Sombra': 'text-purple-400',
-      'Eletricidade': 'text-yellow-400'
-    };
-    return cores[elemento] || 'text-gray-400';
-  };
-
-  const getRaridadeColor = (raridade) => {
-    const cores = {
-      'Comum': 'text-gray-400',
-      'Incomum': 'text-green-400',
-      'Raro': 'text-blue-400',
-      'Épico': 'text-purple-400',
-      'Lendário': 'text-orange-400',
-      'Mítico': 'text-red-400'
-    };
-    return cores[raridade] || 'text-gray-400';
-  };
 
   if (loading) {
     return (
@@ -393,7 +195,7 @@ export default function PvPPage() {
             ⚔️ ARENA PVP
           </h1>
           <p className="text-gray-400 text-lg">
-            Batalhe contra outros caçadores em tempo real
+            Enfrente outros caçadores em duelos táticos por fama e glória
           </p>
         </div>
 
@@ -429,14 +231,7 @@ export default function PvPPage() {
                   {/* Elemento e Nível */}
                   <div className="flex items-center justify-between text-xs">
                     <span className={getElementoColor(avatarAtivo.elemento)}>
-                      {avatarAtivo.elemento === 'Fogo' && '🔥'}
-                      {avatarAtivo.elemento === 'Água' && '💧'}
-                      {avatarAtivo.elemento === 'Terra' && '🪨'}
-                      {avatarAtivo.elemento === 'Vento' && '💨'}
-                      {avatarAtivo.elemento === 'Eletricidade' && '⚡'}
-                      {avatarAtivo.elemento === 'Luz' && '✨'}
-                      {avatarAtivo.elemento === 'Sombra' && '🌑'}
-                      {' '}{avatarAtivo.elemento}
+                      {getElementoEmoji(avatarAtivo.elemento)} {avatarAtivo.elemento}
                     </span>
                     <span className="text-cyan-400">Nv.{avatarAtivo.nivel}</span>
                   </div>
@@ -830,10 +625,11 @@ export default function PvPPage() {
             <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-6">
               <h3 className="text-lg font-bold text-cyan-400 mb-3">Sistema de Combate</h3>
               <ul className="text-gray-400 text-sm space-y-2">
-                <li>• Pareamento por poder similar (±30%)</li>
-                <li>• Batalhas em tempo real</li>
+                <li>• Salas divididas por poder total</li>
+                <li>• Combates PvP assíncronos</li>
                 <li>• Sistema 1d20 + Foco para acertos</li>
-                <li>• Vantagens elementais aplicadas</li>
+                <li>• Vantagens elementais e sinergias</li>
+                <li>• 🧪 Modo teste - sem morte permanente</li>
               </ul>
             </div>
           </div>

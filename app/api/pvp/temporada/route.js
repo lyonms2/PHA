@@ -1,20 +1,43 @@
 import { NextResponse } from 'next/server';
-import { getDocuments } from '@/lib/firebase/firestore';
+import { getDocuments, createDocument } from '@/lib/firebase/firestore';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/pvp/temporada
  * Busca informações da temporada ativa
+ * Se não existir nenhuma, cria uma automaticamente
  */
 export async function GET(request) {
   try {
-    const temporadas = await getDocuments('pvp_temporadas', {
+    let temporadas = await getDocuments('pvp_temporadas', {
       where: [['ativa', '==', true]]
     });
 
+    // Se não existe temporada ativa, criar uma
     if (!temporadas || temporadas.length === 0) {
-      return NextResponse.json({ error: 'Nenhuma temporada ativa encontrada' }, { status: 404 });
+      const agora = new Date();
+      const dataInicio = new Date(agora);
+      const dataFim = new Date(agora);
+      dataFim.setDate(dataFim.getDate() + 30); // Temporada de 30 dias
+
+      const temporadaId = `temporada_${Date.now()}`;
+      const novaTemporada = {
+        temporada_id: temporadaId,
+        numero: 1,
+        nome: 'Temporada 1',
+        data_inicio: dataInicio.toISOString(),
+        data_fim: dataFim.toISOString(),
+        ativa: true,
+        created_at: new Date().toISOString()
+      };
+
+      await createDocument('pvp_temporadas', novaTemporada, temporadaId);
+
+      // Recarregar temporadas
+      temporadas = await getDocuments('pvp_temporadas', {
+        where: [['ativa', '==', true]]
+      });
     }
 
     const temporada = temporadas[0];
@@ -28,6 +51,7 @@ export async function GET(request) {
       success: true,
       temporada: {
         id: temporada.temporada_id,
+        numero: temporada.numero,
         nome: temporada.nome,
         dataInicio: temporada.data_inicio,
         dataFim: temporada.data_fim,

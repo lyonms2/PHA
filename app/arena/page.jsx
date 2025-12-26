@@ -73,14 +73,14 @@ export default function ArenaLobby() {
       id: 'pvp',
       nome: 'Arena PvP',
       emoji: '⚔️',
-      descricao: 'Batalhe contra avatares de outros jogadores controlados por IA',
-      detalhes: 'Sistema de IA inteligente que simula batalhas realistas contra avatares reais. Ganhe ou perca Fama, com risco de morte permanente!',
+      descricao: 'Enfrente outros jogadores em duelos táticos',
+      detalhes: 'Combates PvP assíncronos contra avatares reais de outros jogadores. Ganhe ou perca Fama em batalhas estratégicas!',
       recursos: [
-        'IA com 5 personalidades diferentes',
+        'Salas divididas por poder total',
         'Avatares reais de outros jogadores',
         'Sistema de Fama e Rankings',
-        '💀 MORTE REAL - Batalhe com cautela!',
-        'Mecânicas de Render e Fuga'
+        '🧪 MODO TESTE - Sem morte permanente',
+        'Sistema de Sinergias entre avatares'
       ],
       cor: 'from-red-600 to-red-800',
       corBorda: 'border-red-500',
@@ -152,22 +152,6 @@ export default function ArenaLobby() {
                 <div className={`absolute inset-0 bg-gradient-to-br ${modo.cor} opacity-0 group-hover:opacity-20 transition-opacity duration-300`}></div>
               )}
 
-              {/* Badge "Em Breve" ou "BETA" */}
-              {modo.emBreve && (
-                <div className="absolute top-3 right-3 z-10">
-                  <div className="bg-yellow-500 text-slate-900 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
-                    Em Breve
-                  </div>
-                </div>
-              )}
-              {modo.beta && (
-                <div className="absolute top-3 right-3 z-10">
-                  <div className="bg-orange-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse">
-                    BETA
-                  </div>
-                </div>
-              )}
-
               <div className="relative p-4">
                 {/* Emoji */}
                 <div className={`text-4xl md:text-5xl mb-3 ${modo.disponivel ? 'group-hover:scale-110' : ''} transition-transform duration-300`}>
@@ -213,9 +197,8 @@ export default function ArenaLobby() {
           ))}
         </div>
 
-        {/* Informações Adicionais */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Dicas */}
+        {/* Dicas de Combate */}
+        <div className="max-w-3xl mx-auto">
           <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-800">
             <h3 className="text-base font-bold text-cyan-400 mb-3 flex items-center gap-2">
               <span>💡</span> Dicas de Combate
@@ -223,45 +206,29 @@ export default function ArenaLobby() {
             <ul className="space-y-1.5 text-xs text-slate-300">
               <li className="flex items-start gap-1.5">
                 <span className="text-cyan-400 mt-0.5">▸</span>
-                <span><strong>Gerencie energia:</strong> Use "Esperar" (+30) ou "Defender" (+15 + buff).</span>
+                <span><strong>Gestão de Energia:</strong> "Esperar" restaura +30 energia, "Defender" +15 e reduz dano recebido em 40%.</span>
               </li>
               <li className="flex items-start gap-1.5">
                 <span className="text-cyan-400 mt-0.5">▸</span>
-                <span><strong>Vantagem elemental:</strong> Fogo &gt; Terra &gt; Vento &gt; Água &gt; Fogo.</span>
+                <span><strong>Vantagem Elemental:</strong> Fogo &gt; Terra &gt; Vento &gt; Água &gt; Fogo. Eletricidade/Luz/Sombra são neutros.</span>
               </li>
               <li className="flex items-start gap-1.5">
                 <span className="text-cyan-400 mt-0.5">▸</span>
-                <span><strong>Buffs/debuffs:</strong> Ícones mostram efeitos ativos.</span>
+                <span><strong>Habilidades:</strong> Cada avatar tem 3 habilidades únicas baseadas em seu elemento e raridade.</span>
               </li>
               <li className="flex items-start gap-1.5">
                 <span className="text-cyan-400 mt-0.5">▸</span>
-                <span><strong>Exaustão:</strong> Avatares cansados têm stats reduzidos.</span>
+                <span><strong>Exaustão:</strong> Acima de 60% reduz Força/Resistência em 30%. Acima de 80% reduz em 50%!</span>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <span className="text-cyan-400 mt-0.5">▸</span>
+                <span><strong>No PvP:</strong> Use "Render-se" para fugir quando HP &lt; 30% e evitar penalidades maiores.</span>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <span className="text-cyan-400 mt-0.5">▸</span>
+                <span><strong>Treinamento:</strong> Comece em "Fácil" para aprender mecânicas, depois suba a dificuldade.</span>
               </li>
             </ul>
-          </div>
-
-          {/* Estatísticas */}
-          <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-800">
-            <h3 className="text-base font-bold text-purple-400 mb-3 flex items-center gap-2">
-              <span>📊</span> Suas Estatísticas
-            </h3>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center p-2 bg-slate-950/50 rounded-lg">
-                <span className="text-xs text-slate-400">Vitórias em Treinamento</span>
-                <span className="text-lg font-bold text-green-400">-</span>
-              </div>
-              <div className="flex justify-between items-center p-2 bg-slate-950/50 rounded-lg">
-                <span className="text-xs text-slate-400">Ranking PvP</span>
-                <span className="text-lg font-bold text-red-400">-</span>
-              </div>
-              <div className="flex justify-between items-center p-2 bg-slate-950/50 rounded-lg">
-                <span className="text-xs text-slate-400">Recorde Sobrevivência</span>
-                <span className="text-lg font-bold text-purple-400">-</span>
-              </div>
-            </div>
-            <p className="text-[10px] text-slate-500 mt-3 text-center">
-              * Estatísticas serão implementadas em breve
-            </p>
           </div>
         </div>
       </div>

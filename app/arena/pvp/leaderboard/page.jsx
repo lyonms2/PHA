@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import AvatarSVG from "../../../components/AvatarSVG";
+import { getPremiacaoTier, getRankIcon, getPosicaoColor } from './utils';
 
 export default function LeaderboardPage() {
   const router = useRouter();
@@ -10,7 +10,7 @@ export default function LeaderboardPage() {
   const [rankings, setRankings] = useState([]);
   const [meuRanking, setMeuRanking] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [temporadaAtual, setTemporadaAtual] = useState(1);
+  const [temporadaInfo, setTemporadaInfo] = useState(null);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -22,23 +22,46 @@ export default function LeaderboardPage() {
     const parsedUser = JSON.parse(userData);
     setUser(parsedUser);
 
+    carregarTemporada();
     carregarRankings(parsedUser.id);
   }, [router]);
 
+  const carregarTemporada = async () => {
+    try {
+      const response = await fetch('/api/pvp/temporada');
+      const data = await response.json();
+
+      if (response.ok && data.temporada) {
+        setTemporadaInfo(data.temporada);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar temporada:", error);
+    }
+  };
+
   const carregarRankings = async (userId) => {
     try {
-      const response = await fetch('/api/pvp/ia/leaderboard');
+      const response = await fetch(`/api/pvp/leaderboard?userId=${userId}&limit=100`);
       const data = await response.json();
 
       if (response.ok) {
-        setRankings(data.rankings || []);
+        setRankings(data.leaderboard || []);
 
-        // Encontrar posição do usuário
-        const minhaPos = data.rankings?.findIndex(r => r.user_id === userId);
-        if (minhaPos !== -1) {
+        // Verificar se usuário está no top retornado
+        if (data.jogadorNoTop) {
+          const meuDados = data.leaderboard?.find(r => r.user_id === userId);
+          if (meuDados) {
+            setMeuRanking(meuDados);
+          }
+        } else if (data.posicaoJogador) {
+          // Usuário não está no top, mas temos sua posição
           setMeuRanking({
-            ...data.rankings[minhaPos],
-            posicao: minhaPos + 1
+            posicao: data.posicaoJogador,
+            user_id: userId,
+            fama: 0, // Dados básicos - não está no top 100
+            vitorias: 0,
+            derrotas: 0,
+            streak: 0
           });
         }
       }
@@ -47,22 +70,6 @@ export default function LeaderboardPage() {
       console.error("Erro ao carregar rankings:", error);
       setLoading(false);
     }
-  };
-
-  const getPremiacaoTier = (posicao) => {
-    if (posicao === 1) return { tier: 'Ouro', cor: 'text-yellow-400', premio: '1000 Moedas + Título Lendário' };
-    if (posicao === 2) return { tier: 'Prata', cor: 'text-gray-300', premio: '500 Moedas + Título Épico' };
-    if (posicao === 3) return { tier: 'Bronze', cor: 'text-orange-600', premio: '250 Moedas + Título Raro' };
-    if (posicao <= 10) return { tier: 'Top 10', cor: 'text-purple-400', premio: '100 Moedas' };
-    if (posicao <= 50) return { tier: 'Top 50', cor: 'text-blue-400', premio: '50 Moedas' };
-    return { tier: 'Participante', cor: 'text-gray-400', premio: '10 Moedas' };
-  };
-
-  const getRankIcon = (posicao) => {
-    if (posicao === 1) return '🥇';
-    if (posicao === 2) return '🥈';
-    if (posicao === 3) return '🥉';
-    return `#${posicao}`;
   };
 
   if (loading) {
@@ -91,8 +98,13 @@ export default function LeaderboardPage() {
             🏆 LEADERBOARD
           </h1>
           <p className="text-gray-400 text-lg">
-            Rankings da Temporada {temporadaAtual}
+            {temporadaInfo ? temporadaInfo.nome : 'Rankings da Temporada Atual'}
           </p>
+          {temporadaInfo && temporadaInfo.diasRestantes !== undefined && (
+            <p className="text-slate-500 text-sm mt-1">
+              Encerra em {temporadaInfo.diasRestantes} dias
+            </p>
+          )}
         </div>
 
         {/* Meu Ranking */}
@@ -189,11 +201,7 @@ export default function LeaderboardPage() {
                   >
                     <div className="flex items-center gap-4">
                       {/* Posição */}
-                      <div className={`text-2xl font-black w-16 text-center ${
-                        posicao === 1 ? 'text-yellow-400' :
-                        posicao === 2 ? 'text-gray-300' :
-                        posicao === 3 ? 'text-orange-600' : 'text-gray-500'
-                      }`}>
+                      <div className={`text-2xl font-black w-16 text-center ${getPosicaoColor(posicao)}`}>
                         {getRankIcon(posicao)}
                       </div>
 
@@ -207,7 +215,7 @@ export default function LeaderboardPage() {
                       </div>
 
                       {/* Stats */}
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-center">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
                         <div>
                           <div className="text-xs text-gray-400">Fama</div>
                           <div className="text-yellow-400 font-bold">{rank.fama}</div>
@@ -218,6 +226,12 @@ export default function LeaderboardPage() {
                             <span className="text-green-400">{rank.vitorias}</span>
                             <span className="text-gray-500">/</span>
                             <span className="text-red-400">{rank.derrotas}</span>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-gray-400">Win Rate</div>
+                          <div className="text-cyan-400 font-bold text-sm">
+                            {rank.win_rate ? `${rank.win_rate}%` : '0%'}
                           </div>
                         </div>
                         <div>
