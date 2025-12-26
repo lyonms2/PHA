@@ -152,7 +152,8 @@ export default function PurificadorPage() {
           backTo="/avatares"
           backLabel="AVATARES"
           actions={[
-            { href: "/dashboard", label: "DASHBOARD", icon: "🏠", color: "slate" }
+            { href: "/dashboard", label: "DASHBOARD", icon: "🏠", color: "slate" },
+            { href: "/memorial", label: "MEMORIAL", icon: "🪦", color: "gray" }
           ]}
         />
       )}
