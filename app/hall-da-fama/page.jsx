@@ -102,7 +102,7 @@ export default function HallDaFamaPage() {
         title="🏛️ Hall da Fama"
         actions={[
           COMMON_ACTIONS.avatares,
-          COMMON_ACTIONS.dashboard
+          { href: "/dashboard", label: "DASHBOARD", icon: "🏠", color: "blue" }
         ]}
       />
 
