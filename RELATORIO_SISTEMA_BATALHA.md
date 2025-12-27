@@ -2,7 +2,7 @@
 
 **Última atualização:** 2025-12-27
 **Arquivo principal:** `/lib/arena/batalhaEngine.js`
-**Versão:** 2.0 - **INCLUI SINERGIAS 9×9**
+**Versão:** 2.1 - **SISTEMA DE ENERGIA SIMPLIFICADO**
 
 ---
 
@@ -28,9 +28,9 @@
 
 ```javascript
 ENERGIA_INICIAL: 100
-ENERGIA_MAXIMA: 100
-ENERGIA_POR_RECARREGAR: 35
+ENERGIA_MAXIMA: 100 (sempre fixo)
 ENERGIA_POR_DEFENDER: 20
+CUSTO_ATAQUE_BASICO: 10
 RODADAS_MAXIMAS: 20
 CHANCE_CRITICO_BASE: 0.05 (5%)
 MULTIPLICADOR_CRITICO: 2.0
@@ -65,32 +65,24 @@ HP = 600
 
 ## ⚡ SISTEMA DE ENERGIA
 
-### Energia Inicial
-- **Jogador:** 100 (ou menos se afetado por exaustão)
+### Energia Inicial e Máxima
+- **Sempre 100** - Não há penalidades ou reduções
+- **Jogador:** 100
 - **Inimigo:** 100
 
 ### Regeneração de Energia
 **IMPORTANTE:** Energia **NÃO regenera automaticamente** por turno!
 
-Energia só é recuperada através de **ações específicas**:
+A única forma de recuperar energia é através de **DEFENDER**:
 
 | Ação | Energia Recuperada |
 |------|-------------------|
-| **Ataque Básico** | 0 (não recupera) |
 | **Defender** | +20 |
-| **Esperar/Recarregar** | +35 |
 
 ### Custo de Energia
 - **Habilidades:** Varia por habilidade (geralmente 20-60)
-- **Ataque Básico:** 0
-- **Defender:** 0
-- **Esperar:** 0
-
-### Penalidade de Exaustão
-Se avatar tiver exaustão >= 60:
-```
-Energia Máxima reduzida em 20-40%
-```
+- **Ataque Básico:** -10 energia
+- **Defender:** 0 (recupera +20)
 
 ---
 
@@ -901,22 +893,9 @@ Dano contínuo -7% HP/turno
   - Duração: 1 turno (apenas próximo ataque)
 
 **Quando usar:**
-- Quando com pouca energia
+- Quando com pouca energia (é a ÚNICA forma de recuperar)
 - Quando espera receber ataque forte
 - Para recuperar energia defensivamente
-
----
-
-### 4. Esperar/Recarregar ⚡
-
-**Efeitos:**
-- Custo: 0 energia
-- Recupera: +35 energia
-- Sem buffs/efeitos
-
-**Quando usar:**
-- Quando sem energia para habilidades
-- Quando quer preparar combo de habilidades
 
 ---
 
