@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getDocument, updateDocument } from '@/lib/firebase/firestore';
+import { getDocument, getDocuments, updateDocument, createDocument } from '@/lib/firebase/firestore';
 import { calcularRecompensasPVP } from '@/lib/pvp/pvpRewardsSystem';
 import { trackMissionProgress } from '@/lib/missions/missionTracker';
 
@@ -131,6 +131,129 @@ export async function POST(request) {
       fama: novoGuestFama,
       hunterRankXp: novoGuestHunterXP
     });
+
+    // === ATUALIZAR PVP RANKINGS (LEADERBOARD) ===
+    // Buscar temporada ativa
+    let temporadas = await getDocuments('pvp_temporadas', {
+      where: [['ativa', '==', true]]
+    });
+
+    // Se não existe temporada ativa, criar uma automaticamente
+    if (!temporadas || temporadas.length === 0) {
+      console.log('⚠️ [PVP RANKING] Nenhuma temporada ativa encontrada. Criando temporada automaticamente...');
+
+      const agora = new Date();
+      const dataInicio = new Date(agora);
+      const dataFim = new Date(agora);
+      dataFim.setDate(dataFim.getDate() + 30); // Temporada de 30 dias
+
+      const temporadaId = `temporada_${Date.now()}`;
+      const novaTemporada = {
+        temporada_id: temporadaId,
+        numero: 1,
+        nome: 'Temporada 1',
+        data_inicio: dataInicio.toISOString(),
+        data_fim: dataFim.toISOString(),
+        ativa: true,
+        created_at: new Date().toISOString()
+      };
+
+      await createDocument('pvp_temporadas', novaTemporada, temporadaId);
+
+      // Recarregar temporadas
+      temporadas = await getDocuments('pvp_temporadas', {
+        where: [['ativa', '==', true]]
+      });
+
+      console.log('✅ [PVP RANKING] Temporada criada:', temporadaId);
+    }
+
+    if (temporadas && temporadas.length > 0) {
+      const temporadaAtiva = temporadas[0];
+      console.log('📊 [PVP RANKING] Temporada ativa:', temporadaAtiva.temporada_id);
+
+      // Atualizar ranking do HOST
+      const hostRankingId = `${room.host_user_id}_${temporadaAtiva.temporada_id}`;
+      const hostRankingAtual = await getDocument('pvp_rankings', hostRankingId);
+
+      if (hostRankingAtual) {
+        // Atualizar existente
+        const novasHostVitorias = hostWon ? hostRankingAtual.vitorias + 1 : hostRankingAtual.vitorias;
+        const novasHostDerrotas = !hostWon ? hostRankingAtual.derrotas + 1 : hostRankingAtual.derrotas;
+        const novoHostStreak = hostWon ? (hostRankingAtual.streak || 0) + 1 : 0;
+
+        await updateDocument('pvp_rankings', hostRankingId, {
+          fama: novoHostFama,
+          vitorias: novasHostVitorias,
+          derrotas: novasHostDerrotas,
+          streak: novoHostStreak,
+          streak_maximo: Math.max(hostRankingAtual.streak_maximo || 0, novoHostStreak),
+          ultima_batalha: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+
+        console.log('✅ [PVP RANKING] Host atualizado:', { novoHostFama, novasHostVitorias, novasHostDerrotas, novoHostStreak });
+      } else {
+        // Criar novo registro
+        await createDocument('pvp_rankings', {
+          user_id: room.host_user_id,
+          temporada_id: temporadaAtiva.temporada_id,
+          fama: novoHostFama,
+          vitorias: hostWon ? 1 : 0,
+          derrotas: hostWon ? 0 : 1,
+          streak: hostWon ? 1 : 0,
+          streak_maximo: hostWon ? 1 : 0,
+          ultima_batalha: new Date().toISOString(),
+          recompensas_recebidas: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }, hostRankingId);
+
+        console.log('✅ [PVP RANKING] Host criado:', hostRankingId);
+      }
+
+      // Atualizar ranking do GUEST
+      const guestRankingId = `${room.guest_user_id}_${temporadaAtiva.temporada_id}`;
+      const guestRankingAtual = await getDocument('pvp_rankings', guestRankingId);
+
+      if (guestRankingAtual) {
+        // Atualizar existente
+        const novasGuestVitorias = !hostWon ? guestRankingAtual.vitorias + 1 : guestRankingAtual.vitorias;
+        const novasGuestDerrotas = hostWon ? guestRankingAtual.derrotas + 1 : guestRankingAtual.derrotas;
+        const novoGuestStreak = !hostWon ? (guestRankingAtual.streak || 0) + 1 : 0;
+
+        await updateDocument('pvp_rankings', guestRankingId, {
+          fama: novoGuestFama,
+          vitorias: novasGuestVitorias,
+          derrotas: novasGuestDerrotas,
+          streak: novoGuestStreak,
+          streak_maximo: Math.max(guestRankingAtual.streak_maximo || 0, novoGuestStreak),
+          ultima_batalha: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+
+        console.log('✅ [PVP RANKING] Guest atualizado:', { novoGuestFama, novasGuestVitorias, novasGuestDerrotas, novoGuestStreak });
+      } else {
+        // Criar novo registro
+        await createDocument('pvp_rankings', {
+          user_id: room.guest_user_id,
+          temporada_id: temporadaAtiva.temporada_id,
+          fama: novoGuestFama,
+          vitorias: !hostWon ? 1 : 0,
+          derrotas: hostWon ? 0 : 1,
+          streak: !hostWon ? 1 : 0,
+          streak_maximo: !hostWon ? 1 : 0,
+          ultima_batalha: new Date().toISOString(),
+          recompensas_recebidas: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }, guestRankingId);
+
+        console.log('✅ [PVP RANKING] Guest criado:', guestRankingId);
+      }
+    } else {
+      console.warn('⚠️ [PVP RANKING] Nenhuma temporada ativa encontrada!');
+    }
 
     // Marcar sala como finalizada
     await updateDocument('pvp_duel_rooms', roomId, {
