@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getDocument, updateDocument } from '@/lib/firebase/firestore';
+import { getDocument } from '@/lib/firebase/firestore';
 import { calcularProgressoColecoes } from '@/lib/collections/collectionProgress';
 
 export const dynamic = 'force-dynamic';
@@ -14,31 +14,30 @@ export async function GET(request) {
     const userId = searchParams.get('userId');
 
     if (!userId) {
-      return NextResponse.json({ error: 'userId é obrigatório' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'userId é obrigatório' },
+        { status: 400 }
+      );
     }
 
-    // Buscar stats do jogador (contém coleções completadas)
+    // Buscar stats do jogador
     const stats = await getDocument('player_stats', userId);
 
     if (!stats) {
       return NextResponse.json({ error: 'Player stats não encontrado' }, { status: 404 });
     }
 
-    // Buscar avatares do jogador
     const avatares = stats.avatars || [];
-    const colecoesCompletadas = stats.colecoes_completadas || [];
 
     // Calcular progresso de todas as coleções
-    const progressoColecoes = calcularProgressoColecoes(avatares, colecoesCompletadas);
+    const progressoColecoes = calcularProgressoColecoes(avatares);
 
-    // Contar coleções completadas mas não resgatadas
-    const colecoesParaResgatar = progressoColecoes.filter(c => c.podeResgatar).length;
+    // Contar coleções ativas (que dão bônus)
+    const colecoesAtivas = progressoColecoes.filter(c => c.ativa).length;
 
     return NextResponse.json({
-      success: true,
       colecoes: progressoColecoes,
-      colecoes_completadas: colecoesCompletadas.length,
-      colecoes_para_resgatar: colecoesParaResgatar
+      colecoes_ativas: colecoesAtivas
     });
 
   } catch (error) {

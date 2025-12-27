@@ -210,7 +210,6 @@ export default function AvatarsPage() {
         compact={true}
         actions={[
           { label: '📚 COLEÇÕES', action: () => setModalColecoes(true) },
-          { label: '🏛️ HALL DA FAMA', href: '/hall-da-fama' },
           COMMON_ACTIONS.arena,
           COMMON_ACTIONS.mercado,
           COMMON_ACTIONS.inventario,
