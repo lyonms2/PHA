@@ -31,7 +31,6 @@ ENERGIA_INICIAL: 100
 ENERGIA_MAXIMA: 100
 ENERGIA_POR_RECARREGAR: 35
 ENERGIA_POR_DEFENDER: 20
-ENERGIA_POR_ATAQUE_BASICO: 10
 RODADAS_MAXIMAS: 20
 CHANCE_CRITICO_BASE: 0.05 (5%)
 MULTIPLICADOR_CRITICO: 2.0
@@ -77,7 +76,7 @@ Energia só é recuperada através de **ações específicas**:
 
 | Ação | Energia Recuperada |
 |------|-------------------|
-| **Ataque Básico** | +10 |
+| **Ataque Básico** | 0 (não recupera) |
 | **Defender** | +20 |
 | **Esperar/Recarregar** | +35 |
 
