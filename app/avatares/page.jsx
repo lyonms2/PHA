@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AvatarSVG from '../components/AvatarSVG';
 import AvatarDetalhes from "./components/AvatarDetalhes";
+import ModalColecoes from "./components/ModalColecoes";
 import GameNav, { COMMON_ACTIONS } from '../components/GameNav';
 import { calcularPoderTotal } from '@/lib/gameLogic';
 import {
@@ -32,6 +33,7 @@ export default function AvatarsPage() {
   const [avatarSelecionado, setAvatarSelecionado] = useState(null);
   const [avataresParaComparar, setAvataresParaComparar] = useState([]);
   const [modalComparacao, setModalComparacao] = useState(false);
+  const [modalColecoes, setModalColecoes] = useState(false);
 
   // Hooks customizados
   const {
@@ -207,10 +209,12 @@ export default function AvatarsPage() {
         subtitle={`${avatares.length} Avatares | ${avatares.filter(a => a.vivo).length} Vivos`}
         compact={true}
         actions={[
+          { label: '📚 COLEÇÕES', action: () => setModalColecoes(true) },
           COMMON_ACTIONS.arena,
           COMMON_ACTIONS.mercado,
           COMMON_ACTIONS.inventario,
           COMMON_ACTIONS.fusao,
+          COMMON_ACTIONS.forjador,
           COMMON_ACTIONS.invocar,
           COMMON_ACTIONS.necromante,
           COMMON_ACTIONS.purificador,
@@ -1197,6 +1201,13 @@ export default function AvatarsPage() {
           </div>
         </div>
       )}
+
+      {/* Modal de Coleções */}
+      <ModalColecoes
+        isOpen={modalColecoes}
+        onClose={() => setModalColecoes(false)}
+        userId={user?.id}
+      />
 
       <style jsx>{`
         @keyframes fade-in {
