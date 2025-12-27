@@ -134,9 +134,39 @@ export async function POST(request) {
 
     // === ATUALIZAR PVP RANKINGS (LEADERBOARD) ===
     // Buscar temporada ativa
-    const temporadas = await getDocuments('pvp_temporadas', {
+    let temporadas = await getDocuments('pvp_temporadas', {
       where: [['ativa', '==', true]]
     });
+
+    // Se não existe temporada ativa, criar uma automaticamente
+    if (!temporadas || temporadas.length === 0) {
+      console.log('⚠️ [PVP RANKING] Nenhuma temporada ativa encontrada. Criando temporada automaticamente...');
+
+      const agora = new Date();
+      const dataInicio = new Date(agora);
+      const dataFim = new Date(agora);
+      dataFim.setDate(dataFim.getDate() + 30); // Temporada de 30 dias
+
+      const temporadaId = `temporada_${Date.now()}`;
+      const novaTemporada = {
+        temporada_id: temporadaId,
+        numero: 1,
+        nome: 'Temporada 1',
+        data_inicio: dataInicio.toISOString(),
+        data_fim: dataFim.toISOString(),
+        ativa: true,
+        created_at: new Date().toISOString()
+      };
+
+      await createDocument('pvp_temporadas', novaTemporada, temporadaId);
+
+      // Recarregar temporadas
+      temporadas = await getDocuments('pvp_temporadas', {
+        where: [['ativa', '==', true]]
+      });
+
+      console.log('✅ [PVP RANKING] Temporada criada:', temporadaId);
+    }
 
     if (temporadas && temporadas.length > 0) {
       const temporadaAtiva = temporadas[0];
