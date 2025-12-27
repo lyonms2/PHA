@@ -12,19 +12,26 @@ export async function GET(request) {
       return NextResponse.json({ error: 'userId é obrigatório' }, { status: 400 });
     }
 
-    // Buscar dados do jogador
-    const jogador = await getDocument('users', userId);
+    // Buscar stats do jogador da collection player_stats
+    const stats = await getDocument('player_stats', userId);
 
-    if (!jogador) {
-      return NextResponse.json({ error: 'Jogador não encontrado' }, { status: 404 });
+    if (!stats) {
+      return NextResponse.json({ error: 'Stats do jogador não encontrados' }, { status: 404 });
     }
 
-    // Retornar stats do jogador
+    // Retornar stats completos do jogador
     return NextResponse.json({
-      nivel: jogador.nivel || 1,
-      moedas: jogador.moedas || 0,
-      fragmentos: jogador.fragmentos || 0,
-      xp: jogador.xp || 0
+      stats: {
+        nivel: stats.nivel || 1,
+        moedas: stats.moedas || 0,
+        fragmentos: stats.fragmentos || 0,
+        xp: stats.xp || 0,
+        hunterRankXp: stats.hunterRankXp || 0,
+        avatars: stats.avatars || [],
+        titulos: stats.titulos || [],
+        colecoes_completadas: stats.colecoes_completadas || [],
+        avatares_hall_da_fama: stats.avatares_hall_da_fama || []
+      }
     });
   } catch (error) {
     console.error('Erro ao buscar stats do jogador:', error);
