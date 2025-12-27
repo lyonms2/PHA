@@ -2,6 +2,7 @@
 
 **Última atualização:** 2025-12-27
 **Arquivo principal:** `/lib/arena/batalhaEngine.js`
+**Versão:** 2.0 - **INCLUI SINERGIAS 9×9**
 
 ---
 
@@ -14,11 +15,12 @@
 5. [Sistema de Acerto/Evasão](#sistema-de-acertoevasão)
 6. [Críticos](#críticos)
 7. [Vantagem Elemental](#vantagem-elemental)
-8. [Buffs e Debuffs](#buffs-e-debuffs)
-9. [Vínculo e Exaustão](#vínculo-e-exaustão)
-10. [Efeitos de Status](#efeitos-de-status)
-11. [Tipos de Ações](#tipos-de-ações)
-12. [Condições de Vitória](#condições-de-vitória)
+8. **[SINERGIAS 9×9](#sinergias-9×9)** ⭐ **NOVO**
+9. [Buffs e Debuffs](#buffs-e-debuffs)
+10. [Vínculo e Exaustão](#vínculo-e-exaustão)
+11. [Efeitos de Status](#efeitos-de-status)
+12. [Tipos de Ações](#tipos-de-ações)
+13. [Condições de Vitória](#condições-de-vitória)
 
 ---
 
@@ -279,6 +281,398 @@ DANO_CRITICO = DANO_NORMAL × 2.0
 - **Luz** → Forte vs **Void**
 - **Void** → Forte vs **Luz** e **Sombra** | Fraco vs **Aether**
 - **Aether** → Forte vs **Void**
+
+---
+
+## ✨ SINERGIAS 9×9
+
+**Arquivos:** `/lib/combat/synergySystem.js` + `/lib/combat/synergyApplicator.js`
+
+### O que são Sinergias?
+
+No PVP (e opcionalmente no Treinamento), você escolhe **2 avatares**:
+- **Avatar Principal:** Quem entra em batalha
+- **Avatar Suporte:** Fica fora, mas dá bônus ao Principal
+
+A **sinergia** é a combinação dos **elementos** desses dois avatares.
+
+**Matriz:** 9 elementos × 9 elementos = **81 sinergias únicas**!
+
+---
+
+### Estrutura de uma Sinergia
+
+Cada sinergia possui:
+
+```javascript
+{
+  nome: "Nome da Sinergia",
+  vantagem1: { tipo, valor },      // Primeiro bônus
+  vantagem2: { tipo, valor },      // Segundo bônus
+  desvantagem: { tipo, valor },    // Penalidade (ou null)
+  descricao: "Descrição temática"
+}
+```
+
+**Sinergias Perfeitas:** Algumas combinações **não têm desvantagem** (desvantagem: null)!
+
+---
+
+### Multiplicador de Raridade
+
+Os valores da sinergia são **amplificados** pela raridade do Avatar Principal:
+
+| Raridade | Multiplicador | Efeito |
+|----------|---------------|--------|
+| **Comum** | ×1.0 | Valores base da sinergia |
+| **Raro** | ×1.2 | +20% nos bônus E penalidades |
+| **Lendário** | ×1.4 | +40% nos bônus E penalidades |
+
+**Exemplo:**
+```
+Sinergia: Combustão Intensa (Fogo + Fogo)
+- Vantagem1: +25% Dano
+- Avatar Comum: +25% Dano
+- Avatar Raro: +30% Dano (25% × 1.2)
+- Avatar Lendário: +35% Dano (25% × 1.4)
+```
+
+---
+
+### Tipos de Modificadores
+
+#### Modificadores do Jogador (Positivos):
+
+| Tipo | Efeito | Exemplo |
+|------|--------|---------|
+| **dano** | +% Dano causado | +25% Dano |
+| **hp** | +% HP Máximo | +20% HP Máx |
+| **energia** | +% Energia Máxima | +15% Energia |
+| **resistencia** | +% Resistência/Defesa | +30% Resistência |
+| **evasao** | +% Evasão | +25% Evasão |
+| **roubo_vida** | +% Roubo de Vida | +20% Roubo Vida |
+| **cura** | +% Cura recebida | +30% Cura |
+
+#### Modificadores do Inimigo (Negativos):
+
+| Tipo | Efeito | Exemplo |
+|------|--------|---------|
+| **dano_inimigo** | -% Dano do inimigo | -10% Dano Inimigo |
+| **resistencia_inimigo** | -% Resistência inimiga | -15% Resist. Inimiga |
+| **evasao_inimigo** | -% Evasão inimiga | -20% Evasão Inimiga |
+| **energia_inimigo** | -% Energia inicial inimiga | -25% Energia Inimiga |
+
+**Observação:** Modificadores do inimigo são aplicados NO INÍCIO da batalha!
+
+---
+
+### Exemplos de Sinergias
+
+#### 🔥 Combustão Intensa (Fogo + Fogo)
+```
+Vantagens:
+  +25% Dano
+  +15% Resistência
+Desvantagem:
+  -20% Energia Máxima
+
+Descrição: Chamas se alimentam de chamas
+```
+
+#### 💧 Fonte da Vida (Água + Aether)
+```
+Vantagens:
+  +35% Cura
+  +15% HP Máximo
+Desvantagem:
+  -20% Dano
+
+Descrição: Água primordial restauradora
+```
+
+#### ⚡ Sobrecarga (Eletricidade + Eletricidade)
+```
+Vantagens:
+  +30% Dano
+  +25% Energia Máxima
+Desvantagem:
+  -10% HP Máximo
+
+Descrição: Poder elétrico extremo
+```
+
+#### 🌟 Radiância Suprema (Luz + Luz) - **PERFEITA**
+```
+Vantagens:
+  +20% Dano
+  +30% Cura
+Desvantagem:
+  NENHUMA
+
+Descrição: Luz absoluta purificadora
+```
+
+#### 🌑 Eclipse Total (Luz + Sombra)
+```
+Vantagens:
+  +40% Dano
+  -30% Resistência Inimiga
+Desvantagem:
+  -25% Resistência
+
+Descrição: Opostos em conflito caótico
+```
+
+#### 💀 Colapso do Vazio (Void + Void)
+```
+Vantagens:
+  +45% Dano
+  -40% Resistência Inimiga
+Desvantagem:
+  -35% HP Máximo
+
+Descrição: Vazio consumindo vazio
+```
+
+#### 🌈 Paradoxo Dimensional (Void + Aether) - **MAIS FORTE**
+```
+Vantagens:
+  +50% Dano
+  -40% Resistência Inimiga
+Desvantagem:
+  -40% HP Máximo
+
+Descrição: Opostos dimensionais
+```
+
+---
+
+### Sinergias Perfeitas (Sem Desvantagem)
+
+Lista de combinações que **NÃO têm penalidade**:
+
+1. **Fogo + Luz** → Chama Solar
+2. **Fogo + Aether** → Chama Primordial
+3. **Água + Vento** → Tempestade Gélida
+4. **Vento + Água** → Ciclone Úmido
+5. **Vento + Aether** → Sopro Primordial
+6. **Eletricidade + Luz** → Raio Divino
+7. **Eletricidade + Aether** → Corrente Primordial
+8. **Luz + Fogo** → Chama Sagrada
+9. **Luz + Eletricidade** → Julgamento Divino
+10. **Luz + Luz** → Radiância Suprema
+11. **Luz + Aether** → Luz da Criação
+12. **Aether + Fogo** → Chama da Criação
+13. **Aether + Vento** → Sopro da Vida
+14. **Aether + Eletricidade** → Faísca Divina
+15. **Aether + Luz** → Gênese Radiante
+16. **Aether + Aether** → Transcendência
+
+---
+
+### Como Sinergias Afetam os Cálculos
+
+#### 1. HP Máximo
+```javascript
+HP_COM_SINERGIA = HP_BASE × (1 + hp_mult)
+
+Exemplo:
+HP Base: 600
+Sinergia: +20% HP
+HP Final: 600 × 1.2 = 720
+```
+
+#### 2. Energia Máxima
+```javascript
+ENERGIA_COM_SINERGIA = ENERGIA_BASE × (1 + energia_mult)
+
+Exemplo:
+Energia Base: 100
+Sinergia: +25% Energia
+Energia Final: 100 × 1.25 = 125
+```
+
+#### 3. Dano
+```javascript
+DANO_COM_SINERGIA = DANO_BASE × (1 + dano_mult)
+
+Exemplo:
+Dano Base: 80
+Sinergia: +30% Dano
+Dano Final: 80 × 1.3 = 104
+```
+
+#### 4. Resistência
+```javascript
+// Jogador
+RESISTENCIA_JOGADOR = RESISTENCIA_BASE × (1 + resistencia_mult)
+
+// Inimigo
+RESISTENCIA_INIMIGO = RESISTENCIA_BASE × (1 - resistencia_inimigo_reducao)
+
+Exemplo:
+Resistência Inimigo: 50
+Sinergia: -15% Resist. Inimiga
+Resistência Final: 50 × 0.85 = 42.5 → 42
+```
+
+#### 5. Evasão
+```javascript
+// Jogador
+EVASAO_JOGADOR = EVASAO_BASE × (1 + evasao_mult)
+
+// Inimigo
+EVASAO_INIMIGO = EVASAO_BASE × (1 - evasao_inimigo_reducao)
+```
+
+#### 6. Roubo de Vida
+```javascript
+ROUBO = DANO_CAUSADO × roubo_vida_percent
+
+Exemplo:
+Dano: 100
+Sinergia: +20% Roubo Vida
+Roubo: 100 × 0.20 = 20 HP recuperados
+```
+
+#### 7. Cura
+```javascript
+CURA_COM_SINERGIA = CURA_BASE × (1 + cura_mult)
+
+Exemplo:
+Cura Base: 50
+Sinergia: +35% Cura
+Cura Final: 50 × 1.35 = 67.5 → 67
+```
+
+#### 8. Energia Inicial do Inimigo
+```javascript
+ENERGIA_INIMIGO = 100 × (1 - energia_inimigo_reducao)
+
+Exemplo:
+Energia Base: 100
+Sinergia: -25% Energia Inimiga
+Energia Inicial Inimigo: 100 × 0.75 = 75
+```
+
+---
+
+### Ordem de Aplicação (Importante!)
+
+```
+1. Stats Base do Avatar
+2. Bônus de Vínculo
+3. Penalidades de Exaustão
+4. SINERGIAS ← Aplicadas aqui
+5. Buffs/Debuffs de combate
+6. Cálculos finais de dano/acerto
+```
+
+**Exemplo Completo:**
+```
+Avatar Fogo Lendário + Suporte Fogo
+Stats Base: 50 Força, 600 HP
+Vínculo 80: +15% stats = 57.5 Força
+Exaustão 20: sem penalidade
+Sinergia (Combustão Intensa ×1.4):
+  - +35% Dano (25% × 1.4)
+  - +21% Resistência (15% × 1.4)
+  - -28% Energia (20% × 1.4)
+
+HP: 600 (sem mod de sinergia)
+Energia: 100 × 0.72 = 72
+Dano: calculado com +35% no final
+```
+
+---
+
+### Estratégias de Sinergia
+
+#### 1. **Ataque Puro** (Alto Dano)
+- Void + Void: +45% Dano, -40% Resist. Inimiga
+- Void + Aether: +50% Dano, -40% Resist. Inimiga
+- Luz + Sombra: +40% Dano, -30% Resist. Inimiga
+
+**Trade-off:** Perda significativa de HP (-30% a -40%)
+
+---
+
+#### 2. **Tank/Defesa** (Alto HP/Resistência)
+- Terra + Terra: +30% Resistência, +20% HP
+- Terra + Aether: +30% Resistência, +30% HP
+- Luz + Terra: +25% Resistência, +20% HP (com cura)
+
+**Trade-off:** Baixa evasão (-15% a -20%)
+
+---
+
+#### 3. **Suporte/Cura**
+- Água + Aether: +35% Cura, +15% HP
+- Luz + Luz: +20% Dano, +30% Cura (SEM desvantagem!)
+- Luz + Água: +30% Cura, +20% Resistência
+
+**Trade-off:** Dano reduzido (-20% a -25%)
+
+---
+
+#### 4. **Evasão/Velocidade**
+- Vento + Vento: +20% Dano, +30% Evasão
+- Vento + Aether: +35% Evasão, +25% Energia (SEM desvantagem!)
+- Sombra + Vento: +30% Evasão, +20% Roubo Vida
+
+**Trade-off:** Resistência reduzida (-15% a -20%)
+
+---
+
+#### 5. **Drenagem/Roubo de Vida**
+- Sombra + Sombra: +25% Dano, +35% Roubo Vida
+- Sombra + Void: +35% Dano, +40% Roubo Vida
+- Sombra + Água: +12% Dano, +25% Roubo Vida
+
+**Trade-off:** HP ou Energia reduzidos (-15% a -30%)
+
+---
+
+#### 6. **Controle/Debuff Inimigo**
+- Água + Void: +20% Dano, -30% Energia Inimiga
+- Eletricidade + Void: +32% Dano, -35% Energia Inimiga
+- Terra + Void: +28% Dano, -30% Evasão Inimiga
+
+**Trade-off:** Evasão própria reduzida (-30% a -35%)
+
+---
+
+### Matriz Completa (Resumo)
+
+**81 combinações únicas** - Aqui estão as mais notáveis:
+
+| Principal | Suporte | Nome | Destaque |
+|-----------|---------|------|----------|
+| Void | Aether | Paradoxo Dimensional | Maior dano (+50%) |
+| Void | Void | Colapso do Vazio | +45% Dano |
+| Luz | Sombra | Eclipse Total | +40% Dano |
+| Sombra | Luz | Crepúsculo Caótico | +45% Dano |
+| Sombra | Void | Abismo das Almas | +35% Dano, +40% Roubo |
+| Água | Aether | Fonte da Vida | +35% Cura |
+| Terra | Aether | Fundação Primordial | +30% Resist, +30% HP |
+| Vento | Aether | Sopro Primordial | +35% Evasão (Perfeita) |
+| Luz | Luz | Radiância Suprema | +30% Cura (Perfeita) |
+
+---
+
+### Verificação em Combate
+
+No início da batalha, você vê no log:
+
+```
+✨ Combustão Intensa (+35% Dano, +21% Resistência | -28% Energia Máxima)
+```
+
+**Onde:**
+- ✨ = Sinergia ativa
+- Nome da sinergia
+- Vantagens listadas
+- Desvantagem (se houver) após "|"
 
 ---
 
@@ -756,16 +1150,17 @@ Energia Jogador: 45 - 40 = 5
 2. ✅ **Stats do Avatar** (Força, Agilidade, Resistência, Foco)
 3. ✅ **Nível do Avatar**
 4. ✅ **Vantagem Elemental** (0.5x a 2.0x)
-5. ✅ **Crítico** (5% base + bônus de Foco + bônus de Vínculo)
-6. ✅ **Resistência do Defensor** (reduz até 50% do dano)
-7. ✅ **Buffs de Ataque** (Benção, Sobrecarga, etc)
-8. ✅ **Buffs de Defesa** (Defesa Aumentada, Postura Defensiva)
-9. ✅ **Debuffs** (Enfraquecido, Terror, Lentidão)
-10. ✅ **Vínculo** (+0% a +20% dano, +0% a +15% stats)
-11. ✅ **Exaustão** (-0% a -50% dano, -0% a -40% stats)
-12. ✅ **Efeitos Especiais** (Perfuração, Execução, Dano Massivo)
-13. ✅ **Múltiplos Golpes** (algumas habilidades)
-14. ✅ **Roubo de Vida** (cura baseada no dano causado)
+5. ✅ **SINERGIAS** (+0% a +50% dano, modificadores diversos) ⭐
+6. ✅ **Crítico** (5% base + bônus de Foco + bônus de Vínculo)
+7. ✅ **Resistência do Defensor** (reduz até 50% do dano, modificada por sinergias)
+8. ✅ **Buffs de Ataque** (Benção, Sobrecarga, etc)
+9. ✅ **Buffs de Defesa** (Defesa Aumentada, Postura Defensiva)
+10. ✅ **Debuffs** (Enfraquecido, Terror, Lentidão)
+11. ✅ **Vínculo** (+0% a +20% dano, +0% a +15% stats)
+12. ✅ **Exaustão** (-0% a -50% dano, -0% a -40% stats)
+13. ✅ **Efeitos Especiais** (Perfuração, Execução, Dano Massivo)
+14. ✅ **Múltiplos Golpes** (algumas habilidades)
+15. ✅ **Roubo de Vida** (cura baseada no dano + bônus de sinergia)
 
 ### Ao Determinar Acerto, o sistema considera:
 
@@ -787,28 +1182,55 @@ Energia Jogador: 45 - 40 = 5
 
 ## 🎯 CONSIDERAÇÕES FINAIS
 
-### Sim, o sistema é complexo!
+### Sim, o sistema é MUITO complexo!
 
-O sistema de batalha considera **14 fatores principais** ao calcular dano e **6 fatores** para acerto/evasão.
+O sistema de batalha considera:
+- **15 fatores** ao calcular dano
+- **6 fatores** para acerto/evasão
+- **81 sinergias únicas** (9×9 elementos)
+- **30+ efeitos de status** (buffs/debuffs)
+- **16 sinergias perfeitas** (sem desvantagem)
 
 ### Por que tanta complexidade?
 
-1. **Profundidade Estratégica:** Múltiplas formas de vencer (dano bruto, sinergias, controle, atrito)
-2. **Variabilidade:** Cada batalha é única devido à combinação de elementos/stats/vínculo/exaustão
-3. **Progressão Significativa:** Stats, vínculo e exaustão fazem diferença real
-4. **Escolhas Táticas:** Gerenciamento de energia, timing de buffs, combos
+1. **Profundidade Estratégica:** Múltiplas formas de vencer
+   - Dano bruto (Void + Aether: +50%)
+   - Tank/Defesa (Terra + Aether: +30% HP, +30% Resist)
+   - Evasão (Vento + Aether: +35% Evasão)
+   - Roubo de Vida (Sombra + Void: +40% Roubo)
+   - Controle de Energia (Eletricidade + Void: -35% Energia Inimiga)
+
+2. **Variabilidade:** Cada batalha é única
+   - 81 combinações de sinergia
+   - Vínculo (0-100) e Exaustão (0-100)
+   - Vantagem elemental (×0.5 a ×2.0)
+   - Raridade (Comum/Raro/Lendário)
+
+3. **Progressão Significativa:**
+   - Stats, vínculo e exaustão fazem diferença real
+   - Raridade amplifica sinergias (×1.0 a ×1.4)
+   - Cada nível aumenta HP (+10) e dano (+2)
+
+4. **Escolhas Táticas:**
+   - Escolha de dupla (Principal + Suporte)
+   - Gerenciamento de energia
+   - Timing de buffs/habilidades
+   - Trade-offs de sinergia (vantagem vs desvantagem)
 
 ### Pontos de Simplificação Possíveis:
 
 Se quiser reduzir complexidade, aqui estão os **principais candidatos**:
 
-1. **Remover sistema d20** → Usar chance % simples de acerto
-2. **Simplificar efeitos de status** → Reduzir de 30+ para 10-15 essenciais
-3. **Unificar bônus de vínculo** → Aplicar apenas em stats OU dano, não ambos
-4. **Remover críticos** → Ou tornar fixo (sempre 5%, sem modificadores)
-5. **Simplificar defesa** → Usar % fixo ao invés de cálculo com resistência
+1. **Reduzir matriz de sinergias** → 9×9 (81) para 5×5 (25) - apenas elementos básicos
+2. **Remover multiplicador de raridade** → Todas as sinergias com valores fixos
+3. **Remover sistema d20** → Usar chance % simples de acerto
+4. **Simplificar efeitos de status** → Reduzir de 30+ para 10-15 essenciais
+5. **Unificar bônus de vínculo** → Aplicar apenas em stats OU dano, não ambos
+6. **Remover críticos** → Ou tornar fixo (sempre 5%, sem modificadores)
+7. **Simplificar defesa** → Usar % fixo ao invés de cálculo com resistência
+8. **Limitar sinergias perfeitas** → Máximo 5-6 combinações sem desvantagem
 
 ---
 
 **Arquivo gerado automaticamente pelo sistema PHA**
-**Versão:** 1.0
+**Versão:** 2.0 - Agora com Sistema de Sinergias 9×9 completo!
