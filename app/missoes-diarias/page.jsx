@@ -59,7 +59,7 @@ export default function MissoesDiariasPage() {
       const data = await response.json();
 
       if (response.ok) {
-        setPlayerStats(data);
+        setPlayerStats(data.stats); // Extrair apenas o objeto stats
       }
     } catch (error) {
       console.error('Erro ao carregar stats:', error);
