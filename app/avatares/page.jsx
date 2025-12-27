@@ -214,6 +214,7 @@ export default function AvatarsPage() {
           COMMON_ACTIONS.mercado,
           COMMON_ACTIONS.inventario,
           COMMON_ACTIONS.fusao,
+          COMMON_ACTIONS.forjador,
           COMMON_ACTIONS.invocar,
           COMMON_ACTIONS.necromante,
           COMMON_ACTIONS.purificador,
