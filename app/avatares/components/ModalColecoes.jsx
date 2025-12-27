@@ -137,12 +137,12 @@ export default function ModalColecoes({ isOpen, onClose, userId }) {
         ></div>
 
         {/* Modal Content */}
-        <div className="relative z-10 w-full max-w-4xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 rounded-2xl border-2 border-purple-500/50 shadow-2xl">
+        <div className="relative z-10 w-full max-w-4xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 rounded-2xl border-2 border-slate-700/50 shadow-2xl">
           {/* Header */}
-          <div className="sticky top-0 z-20 bg-gradient-to-b from-slate-900 to-transparent p-6 border-b border-purple-500/30">
+          <div className="sticky top-0 z-20 bg-gradient-to-b from-slate-900 to-transparent p-6 border-b border-slate-700/30">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+                <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
                   📚 Coleções de Avatares
                 </h2>
                 <p className="text-slate-400 text-sm mt-1">
@@ -163,7 +163,7 @@ export default function ModalColecoes({ isOpen, onClose, userId }) {
                 onClick={() => setFiltro('todas')}
                 className={`px-4 py-2 rounded-lg font-bold transition-all ${
                   filtro === 'todas'
-                    ? 'bg-purple-600 text-white'
+                    ? 'bg-cyan-700 text-white'
                     : 'bg-slate-800 text-slate-400 hover:text-white'
                 }`}
               >
@@ -173,7 +173,7 @@ export default function ModalColecoes({ isOpen, onClose, userId }) {
                 onClick={() => setFiltro('completas')}
                 className={`px-4 py-2 rounded-lg font-bold transition-all ${
                   filtro === 'completas'
-                    ? 'bg-purple-600 text-white'
+                    ? 'bg-cyan-700 text-white'
                     : 'bg-slate-800 text-slate-400 hover:text-white'
                 }`}
               >
@@ -183,7 +183,7 @@ export default function ModalColecoes({ isOpen, onClose, userId }) {
                 onClick={() => setFiltro('incompletas')}
                 className={`px-4 py-2 rounded-lg font-bold transition-all ${
                   filtro === 'incompletas'
-                    ? 'bg-purple-600 text-white'
+                    ? 'bg-cyan-700 text-white'
                     : 'bg-slate-800 text-slate-400 hover:text-white'
                 }`}
               >
@@ -268,7 +268,7 @@ export default function ModalColecoes({ isOpen, onClose, userId }) {
                               className={`h-2 rounded-full transition-all bg-gradient-to-r ${
                                 colecao.completa
                                   ? 'from-green-500 to-emerald-500'
-                                  : 'from-purple-500 to-pink-500'
+                                  : 'from-cyan-600 to-blue-600'
                               }`}
                               style={{ width: `${colecao.percentual}%` }}
                             ></div>
@@ -287,7 +287,7 @@ export default function ModalColecoes({ isOpen, onClose, userId }) {
                           </div>
                           <div className="flex items-center gap-1">
                             <span>⭐</span>
-                            <span className="text-purple-400">{colecao.recompensas.xpCacador}</span>
+                            <span className="text-cyan-400">{colecao.recompensas.xpCacador}</span>
                           </div>
                         </div>
                       </div>
@@ -350,10 +350,10 @@ export default function ModalColecoes({ isOpen, onClose, userId }) {
                   </div>
                 </div>
 
-                <div className="bg-purple-900/30 rounded-lg p-4 border border-purple-600/30">
+                <div className="bg-cyan-900/30 rounded-lg p-4 border border-cyan-600/30">
                   <div className="flex items-center justify-between">
-                    <span className="text-purple-400">⭐ XP Caçador</span>
-                    <span className="text-2xl font-bold text-purple-400">
+                    <span className="text-cyan-400">⭐ XP Caçador</span>
+                    <span className="text-2xl font-bold text-cyan-400">
                       +{modalRecompensa.recompensas.xpCacador}
                     </span>
                   </div>

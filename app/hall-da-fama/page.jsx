@@ -97,7 +97,7 @@ export default function HallDaFamaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white p-4">
       <GameNav
         title="🏛️ Hall da Fama"
         actions={[
@@ -109,7 +109,7 @@ export default function HallDaFamaPage() {
       <div className="max-w-7xl mx-auto mt-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-amber-400 to-yellow-500 bg-clip-text text-transparent">
             🏛️ Hall da Fama
           </h1>
           <p className="text-slate-300">
@@ -131,7 +131,7 @@ export default function HallDaFamaPage() {
             {/* Coleções */}
             <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700">
               <div className="text-slate-400 text-sm mb-1">Coleções Dedicadas</div>
-              <div className="text-3xl font-bold text-purple-400">
+              <div className="text-3xl font-bold text-cyan-400">
                 {estatisticas.colecoes_dedicadas}
               </div>
             </div>
@@ -163,7 +163,7 @@ export default function HallDaFamaPage() {
             </p>
             <button
               onClick={() => window.location.href = '/avatares'}
-              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg font-semibold hover:from-purple-500 hover:to-pink-500 transition-all"
+              className="px-6 py-3 bg-gradient-to-r from-cyan-700 to-blue-700 rounded-lg font-semibold hover:from-cyan-600 hover:to-blue-600 transition-all"
             >
               Ver Coleções
             </button>
