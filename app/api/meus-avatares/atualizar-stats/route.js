@@ -122,8 +122,9 @@ export async function POST(request) {
 
     // Rastrear vínculo ganho para missões diárias (se houver vínculo ganho)
     if (vinculo && vinculo > 0) {
+      console.log(`🔍 [MISSÕES DEBUG] Rastreando vínculo ganho: ${vinculo} para userId: ${userId}`);
       try {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/missoes/track`, {
+        const trackResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/missoes/track`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -131,10 +132,15 @@ export async function POST(request) {
             tipoEvento: 'GANHAR_VINCULO',
             incremento: vinculo
           })
-        }).catch(err => console.error('[MISSÕES] Erro ao rastrear vínculo:', err));
+        });
+
+        const trackData = await trackResponse.json();
+        console.log(`✅ [MISSÕES DEBUG] Tracking response:`, trackData);
       } catch (error) {
         console.error('[MISSÕES] Erro ao rastrear vínculo:', error);
       }
+    } else {
+      console.log(`⚠️ [MISSÕES DEBUG] Vínculo NÃO rastreado. Valor: ${vinculo}`);
     }
 
     // Atualizar CAÇADOR no Firestore (se playerStats existe)
