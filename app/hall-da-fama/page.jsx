@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/app/providers/AuthProvider';
+import { useRouter } from 'next/navigation';
 import GameNav from '@/app/components/GameNav';
 import { COMMON_ACTIONS } from '@/app/components/GameNav';
 
 export default function HallDaFamaPage() {
-  const { user } = useAuth();
+  const router = useRouter();
+  const [user, setUser] = useState(null);
   const [hallDaFama, setHallDaFama] = useState([]);
   const [agrupadoPorColecao, setAgrupadoPorColecao] = useState([]);
   const [estatisticas, setEstatisticas] = useState(null);
@@ -14,17 +15,24 @@ export default function HallDaFamaPage() {
   const [erro, setErro] = useState(null);
 
   useEffect(() => {
-    if (user) {
-      buscarHallDaFama();
+    const userData = localStorage.getItem("user");
+    if (!userData) {
+      router.push("/login");
+      return;
     }
-  }, [user]);
 
-  const buscarHallDaFama = async () => {
+    const parsedUser = JSON.parse(userData);
+    setUser(parsedUser);
+
+    buscarHallDaFama(parsedUser.id);
+  }, [router]);
+
+  const buscarHallDaFama = async (userId) => {
     try {
       setLoading(true);
       setErro(null);
 
-      const response = await fetch(`/api/hall-da-fama?userId=${user.id}`);
+      const response = await fetch(`/api/hall-da-fama?userId=${userId}`);
       const data = await response.json();
 
       if (!response.ok) throw new Error(data.error || 'Erro ao buscar Hall da Fama');
