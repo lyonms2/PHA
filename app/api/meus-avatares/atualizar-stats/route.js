@@ -134,6 +134,17 @@ export async function POST(request) {
       console.log(`⚠️ [MISSÕES DEBUG] Vínculo NÃO rastreado. Valor: ${vinculo}`);
     }
 
+    // Rastrear níveis ganhos para missões diárias
+    if (levelUpData && levelUpData.levelUps > 0) {
+      console.log(`🔍 [MISSÕES DEBUG] Rastreando níveis ganhos: ${levelUpData.levelUps} para userId: ${userId}`);
+      try {
+        const trackData = await trackMissionProgress(userId, 'GANHAR_NIVEIS', levelUpData.levelUps);
+        console.log(`✅ [MISSÕES DEBUG] Níveis tracking response:`, trackData);
+      } catch (error) {
+        console.error('[MISSÕES] Erro ao rastrear níveis:', error);
+      }
+    }
+
     // Atualizar CAÇADOR no Firestore (se playerStats existe)
     if (playerStats) {
       await updateDocument('player_stats', userId, {
