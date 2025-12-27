@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDocument, getDocuments, updateDocument, createDocument } from '@/lib/firebase/firestore';
 import { getHunterRank, calcularXpFeito, verificarPromocao } from '@/lib/hunter/hunterRankSystem';
+import { trackMissionProgress } from '@/lib/missions/missionTracker';
 
 export const dynamic = 'force-dynamic';
 
@@ -138,6 +139,15 @@ export async function POST(request) {
       await updateDocument('avatares', avatarId, updates);
 
       console.log('[AVATAR ATUALIZADO COM SUCESSO]');
+
+      // Rastrear vínculo ganho para missões diárias (se houver vínculo ganho)
+      if (vinculoGanho > 0) {
+        try {
+          await trackMissionProgress(userId, 'GANHAR_VINCULO', vinculoGanho);
+        } catch (error) {
+          console.error('[MISSÕES] Erro ao rastrear vínculo:', error);
+        }
+      }
     }
 
     // Buscar ranking atualizado para retornar ao frontend

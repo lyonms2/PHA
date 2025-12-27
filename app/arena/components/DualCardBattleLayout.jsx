@@ -259,9 +259,9 @@ export default function DualCardBattleLayout({
       </div>
 
       {/* Layout responsivo: vertical no mobile, horizontal no desktop */}
-      <div className="flex flex-col lg:flex-row gap-2 md:gap-4 px-2 md:px-4 pb-4 relative z-10 max-h-[calc(100vh-80px)] md:max-h-[calc(100vh-100px)]">
+      <div className="flex flex-col lg:flex-row gap-2 md:gap-4 px-2 md:px-4 pb-4 lg:pb-2 relative z-10 h-[calc(100vh-80px)] md:h-[calc(100vh-100px)] overflow-hidden">
         {/* Painel Principal - Battlefield + Controles */}
-        <div className="flex-1 flex flex-col gap-8 md:gap-4">
+        <div className="flex-1 flex flex-col gap-8 md:gap-4 overflow-y-auto lg:overflow-visible">
           {/* Battlefield */}
           <div className="flex gap-2 md:gap-4 lg:gap-8 justify-center items-center pb-6 md:pb-0">
             {/* Lado do Jogador */}
@@ -426,7 +426,7 @@ export default function DualCardBattleLayout({
 
         {/* Painel de Log - Desktop: Sidebar / Mobile: Drawer fixo no bottom */}
         <div className={`
-          lg:w-80 lg:relative
+          lg:w-80 lg:relative lg:flex lg:flex-col
           fixed bottom-0 left-0 right-0 z-50
           lg:block
           bg-gradient-to-br from-slate-900/95 to-slate-800/95 lg:from-slate-900/90 lg:to-slate-800/90
@@ -437,22 +437,22 @@ export default function DualCardBattleLayout({
           backdrop-blur-sm
           flex flex-col
           transition-all duration-300
-          ${logExpanded ? 'max-h-[60vh]' : 'max-h-[120px]'}
-          lg:max-h-[calc(100vh-120px)]
+          ${logExpanded ? 'h-[60vh]' : 'h-[120px]'}
+          lg:h-full lg:max-h-full
         `}>
           <button
             onClick={() => setLogExpanded(!logExpanded)}
-            className="lg:hidden flex items-center justify-between text-purple-400 text-xs md:text-sm font-bold uppercase tracking-wider mb-2 pb-2 border-b-2 border-purple-500/50 active:scale-95 transition-transform"
+            className="lg:hidden flex items-center justify-between text-purple-400 text-xs md:text-sm font-bold uppercase tracking-wider mb-2 pb-2 border-b-2 border-purple-500/50 active:scale-95 transition-transform flex-shrink-0"
           >
             <span>📜 Log de Batalha ({log.length})</span>
             <span className="text-xl">{logExpanded ? '▼' : '▲'}</span>
           </button>
 
-          <div className="hidden lg:block text-center text-purple-400 text-sm font-bold uppercase tracking-wider mb-3 pb-2 border-b-2 border-purple-500/50">
+          <div className="hidden lg:block text-center text-purple-400 text-sm font-bold uppercase tracking-wider mb-3 pb-2 border-b-2 border-purple-500/50 flex-shrink-0">
             📜 Log de Batalha
           </div>
 
-          <div ref={logContainerRef} className="flex-1 overflow-y-auto pr-2 space-y-1 md:space-y-2 log-scrollbar">
+          <div ref={logContainerRef} className="flex-1 overflow-y-auto pr-2 space-y-1 md:space-y-2 log-scrollbar min-h-0">
             {log.map((entry, index) => (
               <div
                 key={index}

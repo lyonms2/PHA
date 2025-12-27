@@ -62,7 +62,7 @@ export async function POST(request) {
         // Rastrear progresso de missões (não bloqueia se falhar)
         // Rastrear cada nível ganho
         if (avatarAtual.user_id) {
-          trackMissionProgress(avatarAtual.user_id, 'GANHAR_NIVEL', resultadoXP.levelUps);
+          trackMissionProgress(avatarAtual.user_id, 'GANHAR_NIVEIS', resultadoXP.levelUps);
         }
       }
     }

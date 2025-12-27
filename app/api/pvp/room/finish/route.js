@@ -84,6 +84,15 @@ export async function POST(request) {
       hp_atual: hostWon ? room.host_hp : 0 // Se perdeu, HP = 0
     });
 
+    // Rastrear vínculo ganho para missões diárias (host)
+    if (hostRecompensas.vinculo > 0) {
+      try {
+        await trackMissionProgress(room.host_user_id, 'GANHAR_VINCULO', hostRecompensas.vinculo);
+      } catch (error) {
+        console.error('[MISSÕES] Erro ao rastrear vínculo (host):', error);
+      }
+    }
+
     // Atualizar stats do guest avatar
     const novoGuestXP = (guestAvatar.experiencia || 0) + guestRecompensas.xp;
     const novoGuestVinculo = Math.min(100, Math.max(0, (guestAvatar.vinculo || 0) + guestRecompensas.vinculo));
@@ -95,6 +104,15 @@ export async function POST(request) {
       exaustao: novoGuestExaustao,
       hp_atual: !hostWon ? room.guest_hp : 0 // Se perdeu, HP = 0
     });
+
+    // Rastrear vínculo ganho para missões diárias (guest)
+    if (guestRecompensas.vinculo > 0) {
+      try {
+        await trackMissionProgress(room.guest_user_id, 'GANHAR_VINCULO', guestRecompensas.vinculo);
+      } catch (error) {
+        console.error('[MISSÕES] Erro ao rastrear vínculo (guest):', error);
+      }
+    }
 
     // Atualizar stats do host player
     const novoHostFama = Math.max(0, (hostPlayerStats.fama || 0) + hostRecompensas.fama);
