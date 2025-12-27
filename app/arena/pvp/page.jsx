@@ -9,7 +9,6 @@ import {
 import AvatarSVG from "../../components/AvatarSVG";
 import { previewSinergia } from "@/lib/combat/synergyApplicator";
 import {
-  getTierInfo,
   getElementoColor,
   getElementoEmoji
 } from './utils';
@@ -26,10 +25,6 @@ export default function PvPPage() {
   const [avatarSuporte, setAvatarSuporte] = useState(null);
   const [sinergiaPreview, setSinergiaPreview] = useState(null);
 
-  // Estados de ranking
-  const [rankingData, setRankingData] = useState(null);
-  const [temporadaAtual, setTemporadaAtual] = useState(null);
-
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (!userData) {
@@ -40,8 +35,6 @@ export default function PvPPage() {
     const parsedUser = JSON.parse(userData);
     setUser(parsedUser);
     carregarAvatarAtivo(parsedUser.id);
-    carregarRanking(parsedUser.id);
-    carregarTemporada();
   }, [router]);
 
   // Preview de Sinergia em tempo real
@@ -72,31 +65,6 @@ export default function PvPPage() {
       setLoading(false);
     }
   };
-
-  const carregarRanking = async (userId) => {
-    try {
-      const response = await fetch(`/api/pvp/ranking?userId=${userId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setRankingData(data);
-      }
-    } catch (error) {
-      console.error("Erro ao carregar ranking:", error);
-    }
-  };
-
-  const carregarTemporada = async () => {
-    try {
-      const response = await fetch('/api/pvp/temporada');
-      if (response.ok) {
-        const data = await response.json();
-        setTemporadaAtual(data.temporada);
-      }
-    } catch (error) {
-      console.error("Erro ao carregar temporada:", error);
-    }
-  };
-
 
   if (loading) {
     return (
@@ -148,7 +116,6 @@ export default function PvPPage() {
   }
 
   const poderTotal = calcularPoderTotal(avatarAtivo);
-  const tierInfo = getTierInfo(rankingData?.fama || 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-gray-100 p-3 md:p-6">
@@ -200,8 +167,8 @@ export default function PvPPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-          {/* Coluna Esquerda - Avatar e Salas */}
-          <div className="lg:col-span-2 space-y-6">
+          {/* Coluna Esquerda - Avatar e Info */}
+          <div className="lg:col-span-1 space-y-6">
             {/* Seu Avatar Resumido */}
             <div className="relative">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/30 to-cyan-500/30 rounded-xl blur"></div>
@@ -403,6 +370,22 @@ export default function PvPPage() {
               </div>
             </div>
 
+            {/* Info sobre PVP */}
+            <div className="bg-slate-900/50 border border-red-700 rounded-lg p-6">
+              <h3 className="text-lg font-bold text-red-400 mb-3">⚔️ Sobre o PVP</h3>
+              <ul className="text-gray-400 text-sm space-y-2">
+                <li>• Duelos táticos em tempo real</li>
+                <li>• Ganhe fama e suba no ranking</li>
+                <li>• Salas divididas por poder total</li>
+                <li>• Sistema de sinergias obrigatório</li>
+                <li>• Recompensas de fim de temporada</li>
+                <li className="text-red-400 font-bold">• 🧪 Modo teste - sem morte permanente</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Coluna Direita - Salas por Poder */}
+          <div className="lg:col-span-2 space-y-6">
             {/* Salas por Poder */}
             <div className="bg-slate-900 border border-orange-500 rounded-lg p-6">
               <h2 className="text-xl font-bold text-orange-400 mb-4 text-center">
@@ -560,77 +543,6 @@ export default function PvPPage() {
                   ⚠️ Avatar muito exausto para batalhar
                 </p>
               )}
-            </div>
-          </div>
-
-          {/* Coluna Direita - Ranking e Info */}
-          <div className="space-y-6">
-            {/* Seu Ranking */}
-            <div className={`bg-gradient-to-br ${tierInfo.bg} to-slate-900 border border-slate-700 rounded-lg p-6`}>
-              <h3 className="text-lg font-bold text-white mb-4">Seu Ranking</h3>
-
-              <div className="text-center mb-4">
-                <div className="text-4xl mb-2">{tierInfo.icone}</div>
-                <div className={`text-2xl font-bold ${tierInfo.cor}`}>{tierInfo.nome}</div>
-              </div>
-
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Fama</span>
-                  <span className="text-yellow-400 font-bold">{rankingData?.fama || 0}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Vitórias</span>
-                  <span className="text-green-400 font-bold">{rankingData?.vitorias || 0}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Derrotas</span>
-                  <span className="text-red-400 font-bold">{rankingData?.derrotas || 0}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Sequência</span>
-                  <span className="text-orange-400 font-bold">{rankingData?.streak || 0} 🔥</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Temporada */}
-            <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-6">
-              <h3 className="text-lg font-bold text-purple-400 mb-4">📅 Temporada Atual</h3>
-
-              {temporadaAtual ? (
-                <div className="space-y-2 text-sm">
-                  <div className="text-white font-bold">{temporadaAtual.nome || `Temporada ${temporadaAtual.numero}`}</div>
-                  <div className="text-gray-400">
-                    Termina em: {temporadaAtual.dias_restantes || 30} dias
-                  </div>
-                </div>
-              ) : (
-                <div className="text-gray-500 text-sm">Carregando...</div>
-              )}
-            </div>
-
-            {/* Info sobre Temporadas */}
-            <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-6">
-              <h3 className="text-lg font-bold text-cyan-400 mb-3">Sobre as Temporadas</h3>
-              <ul className="text-gray-400 text-sm space-y-2">
-                <li>• As temporadas duram 30 dias</li>
-                <li>• Ao final, os rankings são resetados e as recompensas distribuídas</li>
-                <li>• Títulos conquistados são permanentes</li>
-                <li>• A fama determina sua posição no ranking</li>
-              </ul>
-            </div>
-
-            {/* Como funciona */}
-            <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-6">
-              <h3 className="text-lg font-bold text-cyan-400 mb-3">Sistema de Combate</h3>
-              <ul className="text-gray-400 text-sm space-y-2">
-                <li>• Salas divididas por poder total</li>
-                <li>• Combates PvP assíncronos</li>
-                <li>• Sistema 1d20 + Foco para acertos</li>
-                <li>• Vantagens elementais e sinergias</li>
-                <li>• 🧪 Modo teste - sem morte permanente</li>
-              </ul>
             </div>
           </div>
         </div>
