@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { getCorRaridadeColecao, getBgRaridadeColecao } from '@/lib/collections/collectionDefinitions';
+import { getCorRaridadeColecao, getBgRaridadeColecao, TIPOS_RESGATE } from '@/lib/collections/collectionDefinitions';
 
 export default function ModalColecoes({ isOpen, onClose, userId }) {
   const [colecoes, setColecoes] = useState([]);
@@ -10,9 +10,15 @@ export default function ModalColecoes({ isOpen, onClose, userId }) {
   const [modalRecompensa, setModalRecompensa] = useState(null);
   const [filtro, setFiltro] = useState('todas'); // 'todas', 'completas', 'incompletas'
 
+  // Estados para seleção de avatares dedicados
+  const [modalSelecaoAvatares, setModalSelecaoAvatares] = useState(null);
+  const [avataresSelecionados, setAvataresSelecionados] = useState([]);
+  const [avatares, setAvatares] = useState([]);
+
   useEffect(() => {
     if (isOpen && userId) {
       carregarColecoes();
+      carregarAvatares();
     }
   }, [isOpen, userId]);
 
@@ -34,24 +40,64 @@ export default function ModalColecoes({ isOpen, onClose, userId }) {
     }
   };
 
+  const carregarAvatares = async () => {
+    try {
+      const response = await fetch(`/api/player-stats?userId=${userId}`);
+      const data = await response.json();
+
+      if (response.ok) {
+        setAvatares(data.stats.avatars || []);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar avatares:', error);
+    }
+  };
+
   const resgatarColecao = async (colecaoId) => {
+    if (resgatando) return;
+
+    // Verificar se é coleção dedicada
+    const colecao = colecoes.find(c => c.id === colecaoId);
+    if (colecao && colecao.tipoResgate === TIPOS_RESGATE.DEDICADA) {
+      // Abrir modal de seleção de avatares
+      setModalSelecaoAvatares(colecao);
+      setAvataresSelecionados([]);
+      return;
+    }
+
+    // Coleção normal - processar diretamente
+    await confirmarResgate(colecaoId);
+  };
+
+  const confirmarResgate = async (colecaoId, avataresDedicados = null) => {
     if (resgatando) return;
 
     setResgatando(colecaoId);
     try {
+      const body = { userId, colecaoId };
+      if (avataresDedicados) {
+        body.avataresDedicados = avataresDedicados;
+      }
+
       const response = await fetch('/api/colecoes/resgatar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, colecaoId })
+        body: JSON.stringify(body)
       });
 
       const data = await response.json();
 
       if (response.ok) {
+        // Fechar modal de seleção se estiver aberto
+        setModalSelecaoAvatares(null);
+        setAvataresSelecionados([]);
+
         // Mostrar modal de recompensa
         setModalRecompensa(data);
-        // Recarregar coleções
+
+        // Recarregar coleções e avatares
         await carregarColecoes();
+        await carregarAvatares();
       } else {
         alert(`Erro: ${data.error}`);
       }
@@ -60,6 +106,14 @@ export default function ModalColecoes({ isOpen, onClose, userId }) {
       alert('Erro ao resgatar coleção');
     } finally {
       setResgatando(null);
+    }
+  };
+
+  const toggleAvatarSelecionado = (avatarId) => {
+    if (avataresSelecionados.includes(avatarId)) {
+      setAvataresSelecionados(avataresSelecionados.filter(id => id !== avatarId));
+    } else {
+      setAvataresSelecionados([...avataresSelecionados, avatarId]);
     }
   };
 
@@ -193,6 +247,16 @@ export default function ModalColecoes({ isOpen, onClose, userId }) {
                           {colecao.descricao}
                         </p>
 
+                        {/* Aviso para coleção dedicada */}
+                        {colecao.tipoResgate === TIPOS_RESGATE.DEDICADA && (
+                          <div className="bg-amber-900/30 border border-amber-600/50 rounded-lg p-2 mb-3">
+                            <p className="text-amber-400 text-xs flex items-center gap-1">
+                              <span>⚠️</span>
+                              <span>{colecao.avisoImportante || 'Avatares dedicados vão permanentemente para o Hall da Fama'}</span>
+                            </p>
+                          </div>
+                        )}
+
                         {/* Progresso */}
                         <div className="mb-3">
                           <div className="flex justify-between text-xs text-slate-400 mb-1">
@@ -308,6 +372,131 @@ export default function ModalColecoes({ isOpen, onClose, userId }) {
               >
                 Continuar
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Seleção de Avatares (Coleções Dedicadas) */}
+      {modalSelecaoAvatares && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/90 backdrop-blur-sm"
+            onClick={() => setModalSelecaoAvatares(null)}
+          ></div>
+
+          <div className="relative z-10 w-full max-w-4xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-slate-900 via-amber-900 to-slate-900 rounded-2xl border-2 border-amber-500/50 shadow-2xl">
+            {/* Header */}
+            <div className="sticky top-0 z-20 bg-gradient-to-b from-slate-900 to-transparent p-6 border-b border-amber-500/30">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-3xl font-bold text-amber-400 flex items-center gap-2">
+                    <span>🏛️</span>
+                    <span>Dedicar Avatares</span>
+                  </h2>
+                  <p className="text-amber-300 text-sm mt-1">
+                    {modalSelecaoAvatares.nome}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setModalSelecaoAvatares(null)}
+                  className="text-slate-400 hover:text-white transition-colors text-2xl"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Aviso Importante */}
+              <div className="bg-red-900/30 border-2 border-red-600/50 rounded-lg p-4 mb-4">
+                <p className="text-red-400 font-bold flex items-center gap-2 mb-2">
+                  <span>⚠️</span>
+                  <span>ATENÇÃO: Decisão Permanente</span>
+                </p>
+                <p className="text-red-300 text-sm">
+                  Os avatares selecionados serão movidos permanentemente para o Hall da Fama.
+                  Eles não poderão mais ser usados em combate, mas seus slots serão liberados
+                  e você receberá recompensas exclusivas!
+                </p>
+              </div>
+
+              {/* Contador de Seleção */}
+              <div className="text-center bg-slate-800/50 rounded-lg p-3">
+                <span className="text-slate-300">
+                  Selecionados: <span className="text-amber-400 font-bold text-xl">{avataresSelecionados.length}</span>
+                  {modalSelecaoAvatares.criterio.quantidade && (
+                    <span className="text-slate-400"> / {modalSelecaoAvatares.criterio.quantidade}</span>
+                  )}
+                </span>
+              </div>
+            </div>
+
+            {/* Body - Lista de Avatares */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-300px)]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {avatares
+                  .filter(av => av.status !== 'vendendo' && !av.caido)
+                  .map((avatar) => {
+                    const selecionado = avataresSelecionados.includes(avatar.id);
+                    return (
+                      <div
+                        key={avatar.id}
+                        onClick={() => toggleAvatarSelecionado(avatar.id)}
+                        className={`cursor-pointer rounded-lg p-4 border-2 transition-all ${
+                          selecionado
+                            ? 'border-amber-500 bg-amber-900/30 shadow-lg shadow-amber-500/20'
+                            : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          {/* Checkbox */}
+                          <div className={`flex-shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center ${
+                            selecionado
+                              ? 'bg-amber-500 border-amber-400'
+                              : 'border-slate-600'
+                          }`}>
+                            {selecionado && <span className="text-white text-sm">✓</span>}
+                          </div>
+
+                          {/* Info do Avatar */}
+                          <div className="flex-1">
+                            <h4 className="font-bold text-white mb-1">{avatar.nome}</h4>
+                            <div className="flex items-center gap-2 text-xs mb-2">
+                              <span className={`${avatar.raridade === 'Lendário' ? 'text-orange-400' : avatar.raridade === 'Épico' ? 'text-purple-400' : avatar.raridade === 'Raro' ? 'text-blue-400' : 'text-gray-400'}`}>
+                                {avatar.raridade}
+                              </span>
+                              <span className="text-slate-400">•</span>
+                              <span className="text-slate-300">{avatar.elemento}</span>
+                            </div>
+                            <div className="flex gap-3 text-xs text-slate-400">
+                              <span>ATK: {avatar.ataque || 0}</span>
+                              <span>DEF: {avatar.defesa || 0}</span>
+                              <span>VEL: {avatar.velocidade || 0}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="sticky bottom-0 bg-gradient-to-t from-slate-900 to-transparent p-6 border-t border-amber-500/30">
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setModalSelecaoAvatares(null)}
+                  className="flex-1 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-bold transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => confirmarResgate(modalSelecaoAvatares.id, avataresSelecionados)}
+                  disabled={avataresSelecionados.length === 0}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white rounded-lg font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {avataresSelecionados.length > 0 ? `Dedicar ${avataresSelecionados.length} Avatar${avataresSelecionados.length > 1 ? 'es' : ''}` : 'Selecione Avatares'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
