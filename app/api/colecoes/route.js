@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getDocument } from '@/lib/firebase/firestore';
+import { getDocuments } from '@/lib/firebase/firestore';
 import { calcularProgressoColecoes } from '@/lib/collections/collectionProgress';
 
 export const dynamic = 'force-dynamic';
@@ -20,14 +20,16 @@ export async function GET(request) {
       );
     }
 
-    // Buscar stats do jogador
-    const stats = await getDocument('player_stats', userId);
+    // Buscar avatares da collection 'avatares' (igual a /meus-avatares)
+    const avatares = await getDocuments('avatares', {
+      where: [['user_id', '==', userId]]
+    });
 
-    if (!stats) {
-      return NextResponse.json({ error: 'Player stats não encontrado' }, { status: 404 });
+    console.log(`[API COLECOES] Avatares encontrados: ${avatares?.length || 0}`);
+
+    if (!avatares) {
+      return NextResponse.json({ error: 'Erro ao buscar avatares' }, { status: 500 });
     }
-
-    const avatares = stats.avatars || [];
 
     // Calcular progresso de todas as coleções
     const progressoColecoes = calcularProgressoColecoes(avatares);
