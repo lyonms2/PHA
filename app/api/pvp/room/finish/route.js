@@ -87,15 +87,7 @@ export async function POST(request) {
     // Rastrear vínculo ganho para missões diárias (host)
     if (hostRecompensas.vinculo > 0) {
       try {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/missoes/track`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: room.host_user_id,
-            tipoEvento: 'GANHAR_VINCULO',
-            incremento: hostRecompensas.vinculo
-          })
-        }).catch(err => console.error('[MISSÕES] Erro ao rastrear vínculo (host):', err));
+        await trackMissionProgress(room.host_user_id, 'GANHAR_VINCULO', hostRecompensas.vinculo);
       } catch (error) {
         console.error('[MISSÕES] Erro ao rastrear vínculo (host):', error);
       }
@@ -116,15 +108,7 @@ export async function POST(request) {
     // Rastrear vínculo ganho para missões diárias (guest)
     if (guestRecompensas.vinculo > 0) {
       try {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/missoes/track`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: room.guest_user_id,
-            tipoEvento: 'GANHAR_VINCULO',
-            incremento: guestRecompensas.vinculo
-          })
-        }).catch(err => console.error('[MISSÕES] Erro ao rastrear vínculo (guest):', err));
+        await trackMissionProgress(room.guest_user_id, 'GANHAR_VINCULO', guestRecompensas.vinculo);
       } catch (error) {
         console.error('[MISSÕES] Erro ao rastrear vínculo (guest):', error);
       }
