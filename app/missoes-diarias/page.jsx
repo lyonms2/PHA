@@ -186,7 +186,7 @@ export default function MissoesDiariasPage() {
               <div className="relative bg-slate-900/80 backdrop-blur-xl border border-amber-900/30 rounded-lg p-4">
                 <div className="text-xs text-slate-400 mb-1">Hunter Rank</div>
                 <div className="text-2xl font-bold text-amber-400">{hunterRank.nome}</div>
-                <div className="text-xs text-slate-400 mt-1">Bônus: +{Math.floor((hunterRank.multiplicador - 1) * 100)}%</div>
+                <div className="text-xs text-slate-400 mt-1">Bônus: +{Math.floor((hunterRank.multiplicadorRecompensas - 1) * 100)}%</div>
               </div>
             </div>
           )}
@@ -299,9 +299,9 @@ export default function MissoesDiariasPage() {
                           <span className="text-purple-400 font-mono">{missao.recompensas.xpCacador}</span>
                         </div>
                       )}
-                      {hunterRank && hunterRank.multiplicador > 1 && (
+                      {hunterRank && hunterRank.multiplicadorRecompensas > 1 && (
                         <div className="text-xs text-amber-400/70">
-                          (+{Math.floor((hunterRank.multiplicador - 1) * 100)}% rank)
+                          (+{Math.floor((hunterRank.multiplicadorRecompensas - 1) * 100)}% rank)
                         </div>
                       )}
                     </div>
