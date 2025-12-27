@@ -6,6 +6,7 @@
 import { NextResponse } from 'next/server';
 import { getDocument, updateDocument } from '@/lib/firebase/firestore';
 import { processarGanhoXP } from '@/app/avatares/sistemas/progressionSystem';
+import { trackMissionProgress } from '@/lib/missions/missionTracker';
 
 export const dynamic = 'force-dynamic';
 
@@ -124,17 +125,7 @@ export async function POST(request) {
     if (vinculo && vinculo > 0) {
       console.log(`🔍 [MISSÕES DEBUG] Rastreando vínculo ganho: ${vinculo} para userId: ${userId}`);
       try {
-        const trackResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/missoes/track`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId,
-            tipoEvento: 'GANHAR_VINCULO',
-            incremento: vinculo
-          })
-        });
-
-        const trackData = await trackResponse.json();
+        const trackData = await trackMissionProgress(userId, 'GANHAR_VINCULO', vinculo);
         console.log(`✅ [MISSÕES DEBUG] Tracking response:`, trackData);
       } catch (error) {
         console.error('[MISSÕES] Erro ao rastrear vínculo:', error);
