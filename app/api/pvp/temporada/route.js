@@ -40,12 +40,40 @@ export async function GET(request) {
       });
     }
 
-    const temporada = temporadas[0];
+    let temporada = temporadas[0];
 
     // Calcular dias restantes
-    const dataFim = new Date(temporada.data_fim);
-    const agora = new Date();
-    const diasRestantes = Math.ceil((dataFim - agora) / (1000 * 60 * 60 * 24));
+    let dataFim = new Date(temporada.data_fim);
+    let agora = new Date();
+    let diasRestantes = Math.ceil((dataFim - agora) / (1000 * 60 * 60 * 24));
+
+    // Se a temporada expirou, encerrar automaticamente
+    if (diasRestantes < 0) {
+      console.log('[TEMPORADA] Temporada expirada, encerrando automaticamente...');
+
+      try {
+        // Importar função de encerramento
+        const { encerrarTemporada } = await import('./encerrar/temporadaService');
+        await encerrarTemporada(temporada);
+
+        console.log('[TEMPORADA] Temporada encerrada com sucesso, recarregando...');
+
+        // Recarregar temporada ativa (a nova criada)
+        temporadas = await getDocuments('pvp_temporadas', {
+          where: [['ativa', '==', true]]
+        });
+
+        if (temporadas && temporadas.length > 0) {
+          temporada = temporadas[0];
+          dataFim = new Date(temporada.data_fim);
+          agora = new Date();
+          diasRestantes = Math.ceil((dataFim - agora) / (1000 * 60 * 60 * 24));
+        }
+      } catch (error) {
+        console.error('[TEMPORADA] Erro ao encerrar temporada automaticamente:', error);
+        // Continuar retornando a temporada expirada se falhar
+      }
+    }
 
     return NextResponse.json({
       success: true,

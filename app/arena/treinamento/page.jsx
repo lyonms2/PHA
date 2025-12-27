@@ -267,7 +267,7 @@ export default function TreinamentoAIPage() {
                   <div>
                     <div className="text-[10px] text-purple-300 font-bold uppercase tracking-wider">SEU AVATAR</div>
                     <div className="font-bold text-white text-base truncate">{avatarAtivo.nome}</div>
-                    <div className="text-[10px] text-slate-400 truncate">🎯 {user?.nome_operacao || 'Caçador'}</div>
+                    <div className="text-[10px] text-slate-400 truncate">🎯 {user?.nome_operacao || 'Caçador Misterioso'}</div>
                   </div>
                   <button
                     onClick={() => router.push('/avatares')}
