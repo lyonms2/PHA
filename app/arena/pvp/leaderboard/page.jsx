@@ -145,30 +145,34 @@ export default function LeaderboardPage() {
             <div className="bg-gradient-to-br from-yellow-900/30 to-slate-950 border border-yellow-500 rounded-lg p-4 text-center">
               <div className="text-4xl mb-2">🥇</div>
               <div className="text-yellow-400 font-bold text-lg mb-2">1º Lugar</div>
-              <div className="text-sm text-gray-300">1000 Moedas</div>
+              <div className="text-sm text-gray-300">1000 Moedas + 100 Fragmentos</div>
               <div className="text-xs text-yellow-300">Título: "Campeão Lendário"</div>
+              <div className="text-xs text-purple-400 mt-1">+ Avatar Lendário</div>
             </div>
             <div className="bg-gradient-to-br from-gray-700/30 to-slate-950 border border-gray-300 rounded-lg p-4 text-center">
               <div className="text-4xl mb-2">🥈</div>
               <div className="text-gray-300 font-bold text-lg mb-2">2º Lugar</div>
-              <div className="text-sm text-gray-300">500 Moedas</div>
+              <div className="text-sm text-gray-300">500 Moedas + 50 Fragmentos</div>
               <div className="text-xs text-gray-400">Título: "Guerreiro Épico"</div>
+              <div className="text-xs text-blue-400 mt-1">+ Avatar Raro</div>
             </div>
             <div className="bg-gradient-to-br from-orange-900/30 to-slate-950 border border-orange-600 rounded-lg p-4 text-center">
               <div className="text-4xl mb-2">🥉</div>
               <div className="text-orange-600 font-bold text-lg mb-2">3º Lugar</div>
-              <div className="text-sm text-gray-300">250 Moedas</div>
+              <div className="text-sm text-gray-300">250 Moedas + 30 Fragmentos</div>
               <div className="text-xs text-orange-400">Título: "Lutador Raro"</div>
+              <div className="text-xs text-blue-400 mt-1">+ Avatar Raro</div>
             </div>
           </div>
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-slate-950 border border-purple-500/30 rounded p-3 text-center">
-              <div className="text-purple-400 font-bold">Top 10</div>
-              <div className="text-sm text-gray-400">100 Moedas</div>
+              <div className="text-purple-400 font-bold">Top 4-10</div>
+              <div className="text-sm text-gray-400">100 Moedas + 20 Fragmentos</div>
+              <div className="text-xs text-slate-500 mt-1">+ Título Especial</div>
             </div>
             <div className="bg-slate-950 border border-blue-500/30 rounded p-3 text-center">
-              <div className="text-blue-400 font-bold">Top 50</div>
-              <div className="text-sm text-gray-400">50 Moedas</div>
+              <div className="text-blue-400 font-bold">Top 11-50</div>
+              <div className="text-sm text-gray-400">50 Moedas + 10 Fragmentos</div>
             </div>
           </div>
         </div>
