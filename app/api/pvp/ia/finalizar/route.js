@@ -138,6 +138,23 @@ export async function POST(request) {
       await updateDocument('avatares', avatarId, updates);
 
       console.log('[AVATAR ATUALIZADO COM SUCESSO]');
+
+      // Rastrear vínculo ganho para missões diárias (se houver vínculo ganho)
+      if (vinculoGanho > 0) {
+        try {
+          await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/missoes/track`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId,
+              tipoEvento: 'GANHAR_VINCULO',
+              incremento: vinculoGanho
+            })
+          }).catch(err => console.error('[MISSÕES] Erro ao rastrear vínculo:', err));
+        } catch (error) {
+          console.error('[MISSÕES] Erro ao rastrear vínculo:', error);
+        }
+      }
     }
 
     // Buscar ranking atualizado para retornar ao frontend
