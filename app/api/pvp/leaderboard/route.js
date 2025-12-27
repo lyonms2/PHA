@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getDocuments } from '@/lib/firebase/firestore';
+import { getDocuments, getDocument } from '@/lib/firebase/firestore';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,9 +55,21 @@ export async function GET(request) {
       }))
       .slice(0, limit);
 
-    // 6. Buscar títulos ativos dos jogadores no leaderboard
+    // 6. Buscar nomes de operação e títulos ativos dos jogadores no leaderboard
     if (leaderboard.length > 0) {
       const userIds = leaderboard.map(p => p.user_id);
+
+      // Buscar nomes de operação dos jogadores
+      const playerStatsPromises = userIds.map(uid => getDocument('player_stats', uid));
+      const playerStatsResults = await Promise.all(playerStatsPromises);
+
+      // Criar mapa de userId -> nome_operacao
+      const nomesMap = {};
+      playerStatsResults.forEach((stats, index) => {
+        if (stats && stats.nome_operacao) {
+          nomesMap[userIds[index]] = stats.nome_operacao;
+        }
+      });
 
       const titulos = await getDocuments('pvp_titulos', {
         where: [['ativo', '==', true]]
@@ -74,8 +86,9 @@ export async function GET(request) {
         }
       });
 
-      // Adicionar título a cada jogador
+      // Adicionar nome e título a cada jogador
       leaderboard.forEach(jogador => {
+        jogador.nome = nomesMap[jogador.user_id] || null;
         jogador.titulo = titulosMap[jogador.user_id] || null;
       });
     }
