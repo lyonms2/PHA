@@ -13,9 +13,10 @@ import { formatAttackLog, formatDefendLog, formatAbilityLog } from '@/lib/combat
  * @param {Object} lastProcessedLogIdRef - Ref do último log processado
  * @param {Function} addLog - Callback para adicionar log
  * @param {Function} showDamageEffect - Callback para mostrar efeito visual
+ * @param {Object} opponentAvatar - Avatar do oponente (para pegar elemento)
  * @returns {void}
  */
-export function processarNovosLogs(battleLog, opponentNomeAtual, lastProcessedLogIdRef, addLog, showDamageEffect) {
+export function processarNovosLogs(battleLog, opponentNomeAtual, lastProcessedLogIdRef, addLog, showDamageEffect, opponentAvatar = null) {
   if (!battleLog || battleLog.length === 0) return;
 
   // Encontrar logs novos
@@ -57,23 +58,23 @@ export function processarNovosLogs(battleLog, opponentNomeAtual, lastProcessedLo
     // Efeitos visuais baseados na ação
     if (acao === 'attack' || acao === 'ability') {
       if (errou) {
-        showDamageEffect('me', '', 'dodge');
+        // Miss/dodge - sem número, sem elemento
+        showDamageEffect('me', null, 'dodge', null);
       } else if (dano > 0) {
-        if (numGolpes && numGolpes > 1) {
-          showDamageEffect('me', `${dano} ×${numGolpes}`, 'multihit');
-        } else {
-          showDamageEffect('me', dano, critico ? 'critical' : 'damage');
-        }
+        // Dano do oponente em mim - mostrar elemento do oponente
+        const tipoEfeito = critico ? 'critical' : 'damage';
+        const elemento = opponentAvatar?.elemento || null;
+        showDamageEffect('me', dano, tipoEfeito, elemento);
 
         // Contra-ataque visual
         if (contraAtaque) {
-          setTimeout(() => showDamageEffect('opponent', '🔥', 'burn'), 500);
+          setTimeout(() => showDamageEffect('opponent', null, 'block', null), 500);
         }
       }
 
-      // Cura visual (habilidades de suporte)
+      // Cura visual (habilidades de suporte do oponente)
       if (cura > 0) {
-        showDamageEffect('opponent', cura, 'heal');
+        showDamageEffect('opponent', cura, 'heal', null);
       }
     }
   }

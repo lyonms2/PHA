@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import FloatingNumber from './FloatingNumber';
 import ElementalEffect from './ElementalEffect';
 
@@ -9,17 +9,30 @@ import ElementalEffect from './ElementalEffect';
  * Combina números flutuantes, efeitos elementais e shake do avatar
  */
 export default function BattleEffectWrapper({ children, effect, className = "" }) {
-  const [showNumber, setShowNumber] = useState(!!effect?.number);
-  const [showElemental, setShowElemental] = useState(!!effect?.elemento);
+  const [showNumber, setShowNumber] = useState(false);
+  const [showElemental, setShowElemental] = useState(false);
   const [avatarShake, setAvatarShake] = useState(false);
 
-  // Ativar shake quando recebe dano
-  if (effect?.type === 'damage' || effect?.type === 'critical') {
-    if (!avatarShake) {
-      setAvatarShake(true);
-      setTimeout(() => setAvatarShake(false), 400);
+  // Atualizar quando effect muda
+  useEffect(() => {
+    if (effect) {
+      // Mostrar número se tiver tipo válido (mesmo sem number para miss/dodge/block)
+      if (effect.type) {
+        setShowNumber(true);
+      }
+
+      // Mostrar efeito elemental se tiver elemento
+      if (effect.elemento) {
+        setShowElemental(true);
+      }
+
+      // Ativar shake quando recebe dano
+      if (effect.type === 'damage' || effect.type === 'critical') {
+        setAvatarShake(true);
+        setTimeout(() => setAvatarShake(false), 400);
+      }
     }
-  }
+  }, [effect]);
 
   // Ativar brilho quando cura
   const healGlow = effect?.type === 'heal';
@@ -34,8 +47,8 @@ export default function BattleEffectWrapper({ children, effect, className = "" }
         {children}
       </div>
 
-      {/* Número flutuante */}
-      {showNumber && effect?.number && (
+      {/* Número flutuante - mostrar para todos os tipos */}
+      {showNumber && effect?.type && (
         <FloatingNumber
           value={effect.number}
           type={effect.type}

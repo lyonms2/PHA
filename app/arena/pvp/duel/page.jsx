@@ -239,7 +239,7 @@ function DuelContent() {
 
           // Processar novos logs de batalha
           if (data.battleLog && data.battleLog.length > 0) {
-            processarNovosLogs(data.battleLog, data.opponentNome, lastProcessedLogIdRef, addLog, showDamageEffect);
+            processarNovosLogs(data.battleLog, data.opponentNome, lastProcessedLogIdRef, addLog, showDamageEffect, data.opponentAvatar);
           }
 
           // Detectar mudança de turno
