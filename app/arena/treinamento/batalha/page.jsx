@@ -403,12 +403,21 @@ function BatalhaTreinoIAContent() {
         if (result.iaAction) {
           const iaAction = result.iaAction;
 
+          console.log('🎯 [TREINAMENTO executarTurnoIA] Processando ação da IA:', iaAction);
+
           // Efeitos visuais
           if (iaAction.action === 'attack' || iaAction.action === 'ability') {
             if (!iaAction.errou && iaAction.dano > 0) {
               const tipoEfeito = iaAction.critico ? 'critical' : 'damage';
+              console.log('💥 [TREINAMENTO] IA causou dano - chamando mostrarDanoVisual:', {
+                alvo: 'meu',
+                dano: iaAction.dano,
+                tipoEfeito,
+                elemento: iaAvatar?.elemento
+              });
               mostrarDanoVisual('meu', iaAction.dano, tipoEfeito, iaAvatar?.elemento);
             } else if (iaAction.errou) {
+              console.log('💨 [TREINAMENTO] IA errou - chamando mostrarDanoVisual');
               mostrarDanoVisual('meu', null, 'dodge', null);
             }
           }
@@ -429,15 +438,26 @@ function BatalhaTreinoIAContent() {
     const effect = {
       type: tipo, // 'damage', 'critical', 'heal', 'miss', 'dodge', 'block'
       number: dano,
-      elemento: elemento
+      elemento: elemento,
+      timestamp: Date.now() // Força React detectar mudança
     };
 
+    console.log('🎬 [TREINAMENTO mostrarDanoVisual] CHAMADO:', { alvo, dano, tipo, elemento });
+
     if (alvo === 'meu') {
+      console.log('👤 [TREINAMENTO] Setando myDamageEffect:', effect);
       setMyDamageEffect(effect);
-      setTimeout(() => setMyDamageEffect(null), 1200);
+      setTimeout(() => {
+        console.log('👤 [TREINAMENTO] Limpando myDamageEffect');
+        setMyDamageEffect(null);
+      }, 1200);
     } else {
+      console.log('🤖 [TREINAMENTO] Setando opponentDamageEffect:', effect);
       setOpponentDamageEffect(effect);
-      setTimeout(() => setOpponentDamageEffect(null), 1200);
+      setTimeout(() => {
+        console.log('🤖 [TREINAMENTO] Limpando opponentDamageEffect');
+        setOpponentDamageEffect(null);
+      }, 1200);
     }
   };
 
