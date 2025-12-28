@@ -370,11 +370,16 @@ function BatalhaTreinoIAContent() {
 
   // Turno da IA
   const executarTurnoIA = async (id) => {
+    console.log('🟢 [executarTurnoIA] FUNÇÃO CHAMADA! battleId:', id || battleId);
+
     try {
       // Primeiro processar efeitos da IA se houver
       if (opponentEffects.length > 0) {
+        console.log('🟢 [executarTurnoIA] Processando efeitos da IA primeiro');
         await processarEfeitosIA(id || battleId);
       }
+
+      console.log('🟢 [executarTurnoIA] Fazendo requisição para /api/arena/treino-ia/batalha');
 
       const response = await fetch('/api/arena/treino-ia/batalha', {
         method: 'POST',
@@ -384,6 +389,8 @@ function BatalhaTreinoIAContent() {
           action: 'ia_turn'
         })
       });
+
+      console.log('🟢 [executarTurnoIA] Response recebida, status:', response.status);
 
       const result = await response.json();
       console.log('🔴 [executarTurnoIA] RESULTADO COMPLETO:', result);
