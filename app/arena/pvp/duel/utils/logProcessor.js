@@ -19,6 +19,12 @@ import { formatAttackLog, formatDefendLog, formatAbilityLog } from '@/lib/combat
 export function processarNovosLogs(battleLog, opponentNomeAtual, lastProcessedLogIdRef, addLog, showDamageEffect, opponentAvatar = null) {
   if (!battleLog || battleLog.length === 0) return;
 
+  console.log('🔵 [logProcessor] INICIANDO processarNovosLogs:', {
+    battleLogLength: battleLog.length,
+    opponentNome: opponentNomeAtual,
+    opponentAvatar: opponentAvatar?.nome
+  });
+
   // Encontrar logs novos
   const novosLogs = [];
   let encontrouUltimo = lastProcessedLogIdRef.current === null;
@@ -35,18 +41,29 @@ export function processarNovosLogs(battleLog, opponentNomeAtual, lastProcessedLo
     novosLogs.push(logEntry);
   }
 
+  console.log('🔵 [logProcessor] Novos logs encontrados:', novosLogs.length);
+
   // Processar cada novo log
   for (const logEntry of novosLogs) {
     const { acao, jogador, dano, cura, critico, errou, numGolpes, contraAtaque } = logEntry;
+
+    console.log('🔵 [logProcessor] Processando log:', { acao, jogador, dano, errou, critico });
 
     // Comparação confiável usando opponentNome do servidor (não do state React)
     // Se jogador === opponentNome, então é ação do oponente
     // Caso contrário, é minha própria ação
     const ehAcaoOponente = jogador === opponentNomeAtual;
 
+    console.log('🔵 [logProcessor] É ação do oponente?', ehAcaoOponente, { jogador, opponentNomeAtual });
+
     // PULAR minhas próprias ações - já foram processadas quando executei
     // Apenas processar ações do OPONENTE para ver o que ele fez
-    if (!ehAcaoOponente) continue;
+    if (!ehAcaoOponente) {
+      console.log('🔵 [logProcessor] PULANDO - não é ação do oponente');
+      continue;
+    }
+
+    console.log('🔵 [logProcessor] PROCESSANDO ação do oponente');
 
     // USAR BIBLIOTECA CENTRALIZADA
     // O backend já formata os logs usando battleLogger.js
