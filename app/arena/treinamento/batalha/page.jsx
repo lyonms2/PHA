@@ -333,11 +333,8 @@ function BatalhaTreinoIAContent() {
   const processarAcaoIA = (iaAction) => {
     if (!iaAction) return;
 
-    console.log('🎯 [processarAcaoIA] Processando ação da IA:', iaAction);
-
     // IA defendeu
     if (iaAction.action === 'defend') {
-      console.log('🛡️ [processarAcaoIA] IA defendeu - mostrando block');
       mostrarDanoVisual('oponente', null, 'block', null);
       return;
     }
@@ -346,30 +343,21 @@ function BatalhaTreinoIAContent() {
     if (iaAction.action === 'attack' || iaAction.action === 'ability') {
       if (!iaAction.errou && iaAction.dano > 0) {
         const tipoEfeito = iaAction.critico ? 'critical' : 'damage';
-        console.log('💥 [processarAcaoIA] IA causou dano - mostrando efeito:', {
-          dano: iaAction.dano,
-          tipoEfeito,
-          elemento: iaAvatar?.elemento
-        });
         mostrarDanoVisual('meu', iaAction.dano, tipoEfeito, iaAvatar?.elemento);
       } else if (iaAction.bloqueado) {
         // Jogador bloqueou o ataque da IA
-        console.log('🛡️ [processarAcaoIA] Jogador bloqueou - mostrando block');
         mostrarDanoVisual('meu', null, 'block', null);
       } else if (iaAction.esquivou) {
         // Jogador esquivou do ataque da IA
-        console.log('💨 [processarAcaoIA] Jogador esquivou - mostrando dodge');
         mostrarDanoVisual('meu', null, 'dodge', null);
       } else if (iaAction.errou) {
         // IA simplesmente errou
-        console.log('❌ [processarAcaoIA] IA errou - mostrando miss no jogador');
         mostrarDanoVisual('meu', null, 'miss', null);
       }
     }
 
     // Cura da IA (habilidades de suporte)
     if (iaAction.cura > 0) {
-      console.log('💚 [processarAcaoIA] IA se curou:', iaAction.cura);
       mostrarDanoVisual('oponente', iaAction.cura, 'heal', null);
     }
   };
@@ -448,13 +436,11 @@ function BatalhaTreinoIAContent() {
 
         // Logs da IA (processados automaticamente pelo backend)
         if (result.logsParaJogador && Array.isArray(result.logsParaJogador)) {
-          console.log('📜 [LOGS ATACAR] Logs da IA:', result.logsParaJogador);
           result.logsParaJogador.forEach(log => addLog(log));
         }
 
         // PROCESSAR AÇÃO DA IA (efeitos visuais)
         if (result.iaAction) {
-          console.log('🤖 [ATACAR] Processando ação da IA:', result.iaAction);
           setTimeout(() => processarAcaoIA(result.iaAction), 800);
         }
 
@@ -506,13 +492,11 @@ function BatalhaTreinoIAContent() {
 
         // Logs da IA (processados automaticamente pelo backend)
         if (result.logsParaJogador && Array.isArray(result.logsParaJogador)) {
-          console.log('📜 [LOGS DEFENDER] Logs da IA:', result.logsParaJogador);
           result.logsParaJogador.forEach(log => addLog(log));
         }
 
         // PROCESSAR AÇÃO DA IA (efeitos visuais)
         if (result.iaAction) {
-          console.log('🤖 [DEFENDER] Processando ação da IA:', result.iaAction);
           setTimeout(() => processarAcaoIA(result.iaAction), 800);
         }
 
@@ -597,13 +581,11 @@ function BatalhaTreinoIAContent() {
 
         // Logs da IA (processados automaticamente pelo backend)
         if (result.logsParaJogador && Array.isArray(result.logsParaJogador)) {
-          console.log('📜 [LOGS HABILIDADE] Logs da IA:', result.logsParaJogador);
           result.logsParaJogador.forEach(log => addLog(log));
         }
 
         // PROCESSAR AÇÃO DA IA (efeitos visuais)
         if (result.iaAction) {
-          console.log('🤖 [HABILIDADE] Processando ação da IA:', result.iaAction);
           setTimeout(() => processarAcaoIA(result.iaAction), 800);
         }
 
