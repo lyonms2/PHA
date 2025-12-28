@@ -11,11 +11,11 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request) {
   try {
-    const { roomId, winner, rendeu = false } = await request.json();
+    const { roomId, winner, rendeu = false, userId } = await request.json();
 
-    if (!roomId || !winner) {
+    if (!roomId || !winner || !userId) {
       return NextResponse.json(
-        { error: 'roomId e winner são obrigatórios' },
+        { error: 'roomId, winner e userId são obrigatórios' },
         { status: 400 }
       );
     }
@@ -37,42 +37,61 @@ export async function POST(request) {
       );
     }
 
-    // Verificar se recompensas já foram processadas (finished_at existe)
-    if (room.finished_at) {
+    // Verificar se este jogador já processou suas recompensas
+    const processedBy = room.processed_by || [];
+    if (processedBy.includes(userId)) {
+      console.log('⚠️ [PVP FINISH] Jogador já processou recompensas:', userId);
       return NextResponse.json(
-        { error: 'Recompensas já foram processadas para esta batalha' },
+        { error: 'Você já processou suas recompensas desta batalha' },
         { status: 400 }
       );
     }
+
+    // Verificar se é a primeira vez que alguém processa
+    const isPrimeiraProcessamento = processedBy.length === 0;
 
     // Determinar vencedor e perdedor
     const hostWon = winner === 'host';
     const hostAvatar = room.host_avatar;
     const guestAvatar = room.guest_avatar;
 
-    // Calcular recompensas para host (sem apostas)
-    const hostRecompensas = calcularRecompensasPVP(
-      hostAvatar,
-      guestAvatar,
-      hostWon,
-      !hostWon && rendeu // Host se rendeu se perdeu e rendeu = true
-    );
+    let hostRecompensas, guestRecompensas;
 
-    // Calcular recompensas para guest (sem apostas)
-    const guestRecompensas = calcularRecompensasPVP(
-      guestAvatar,
-      hostAvatar,
-      !hostWon,
-      hostWon && rendeu // Guest se rendeu se perdeu e rendeu = true
-    );
+    // APENAS processar recompensas na PRIMEIRA chamada
+    if (isPrimeiraProcessamento) {
+      console.log('🎯 [PVP FINISH] Primeira chamada - processando recompensas para ambos jogadores');
 
-    // Buscar dados atuais dos jogadores
-    const [hostPlayerStats, guestPlayerStats] = await Promise.all([
-      getDocument('player_stats', room.host_user_id),
-      getDocument('player_stats', room.guest_user_id)
-    ]);
+      // Calcular recompensas para host (sem apostas)
+      hostRecompensas = calcularRecompensasPVP(
+        hostAvatar,
+        guestAvatar,
+        hostWon,
+        !hostWon && rendeu // Host se rendeu se perdeu e rendeu = true
+      );
 
-    // Atualizar stats do host avatar
+      // Calcular recompensas para guest (sem apostas)
+      guestRecompensas = calcularRecompensasPVP(
+        guestAvatar,
+        hostAvatar,
+        !hostWon,
+        hostWon && rendeu // Guest se rendeu se perdeu e rendeu = true
+      );
+    } else {
+      console.log('✅ [PVP FINISH] Segunda chamada - recompensas já processadas, apenas marcando');
+
+      // Recompensas já foram calculadas, usar valores padrão apenas para retorno
+      hostRecompensas = { fama: 0, xp: 0, xpCacador: 0, vinculo: 0, exaustao: 0 };
+      guestRecompensas = { fama: 0, xp: 0, xpCacador: 0, vinculo: 0, exaustao: 0 };
+    }
+
+    // Buscar dados atuais e atualizar APENAS na primeira chamada
+    if (isPrimeiraProcessamento) {
+      const [hostPlayerStats, guestPlayerStats] = await Promise.all([
+        getDocument('player_stats', room.host_user_id),
+        getDocument('player_stats', room.guest_user_id)
+      ]);
+
+      // Atualizar stats do host avatar
     const novoHostXP = (hostAvatar.experiencia || 0) + hostRecompensas.xp;
     const novoHostVinculo = Math.min(100, Math.max(0, (hostAvatar.vinculo || 0) + hostRecompensas.vinculo));
     const novoHostExaustao = Math.min(100, Math.max(0, (hostAvatar.exaustao || 0) + hostRecompensas.exaustao));
@@ -255,67 +274,87 @@ export async function POST(request) {
       console.warn('⚠️ [PVP RANKING] Nenhuma temporada ativa encontrada!');
     }
 
-    // Marcar sala como finalizada (temporariamente, será deletada em seguida)
+      // Rastrear progresso de missões (não bloqueia se falhar)
+      // Ambos os jogadores participaram do PVP
+      trackMissionProgress(room.host_user_id, 'PARTICIPAR_PVP', 1);
+      trackMissionProgress(room.guest_user_id, 'PARTICIPAR_PVP', 1);
+
+      // Apenas o vencedor ganha crédito por vitória
+      if (hostWon) {
+        trackMissionProgress(room.host_user_id, 'VITORIA_PVP', 1);
+      } else {
+        trackMissionProgress(room.guest_user_id, 'VITORIA_PVP', 1);
+      }
+
+      console.log('🏆 Recompensas PVP aplicadas:', {
+        roomId,
+        winner: hostWon ? 'host' : 'guest',
+        host: {
+          fama: hostRecompensas.fama,
+          xpCacador: hostRecompensas.xpCacador,
+          xpAvatar: hostRecompensas.xp
+        },
+        guest: {
+          fama: guestRecompensas.fama,
+          xpCacador: guestRecompensas.xpCacador,
+          xpAvatar: guestRecompensas.xp
+        }
+      });
+    } // Fim do if (isPrimeiraProcessamento)
+
+    // Marcar este jogador como tendo processado suas recompensas
+    const novosProcessados = [...processedBy, userId];
+    const ambosProcessaram = novosProcessados.length >= 2;
+
     await updateDocument('pvp_duel_rooms', roomId, {
       status: 'finished',
       winner,
       rendeu,
-      finished_at: new Date().toISOString()
+      finished_at: room.finished_at || new Date().toISOString(),
+      processed_by: novosProcessados
     });
 
-    // Deletar documento da sala após processar recompensas
-    // Não há necessidade de manter histórico, pois stats já foram atualizados
-    try {
-      await deleteDocument('pvp_duel_rooms', roomId);
-      console.log('🗑️ [PVP CLEANUP] Sala deletada:', roomId);
-    } catch (error) {
-      console.error('⚠️ [PVP CLEANUP] Erro ao deletar sala:', error);
-      // Não bloqueia o fluxo se falhar
-    }
+    console.log(`✅ [PVP FINISH] Jogador ${userId} marcado como processado. Total: ${novosProcessados.length}/2`);
 
-    // Rastrear progresso de missões (não bloqueia se falhar)
-    // Ambos os jogadores participaram do PVP
-    trackMissionProgress(room.host_user_id, 'PARTICIPAR_PVP', 1);
-    trackMissionProgress(room.guest_user_id, 'PARTICIPAR_PVP', 1);
-
-    // Apenas o vencedor ganha crédito por vitória
-    if (hostWon) {
-      trackMissionProgress(room.host_user_id, 'VITORIA_PVP', 1);
-    } else {
-      trackMissionProgress(room.guest_user_id, 'VITORIA_PVP', 1);
-    }
-
-    console.log('🏆 Recompensas PVP aplicadas:', {
-      roomId,
-      winner: hostWon ? 'host' : 'guest',
-      host: {
-        fama: hostRecompensas.fama,
-        xpCacador: hostRecompensas.xpCacador,
-        xpAvatar: hostRecompensas.xp
-      },
-      guest: {
-        fama: guestRecompensas.fama,
-        xpCacador: guestRecompensas.xpCacador,
-        xpAvatar: guestRecompensas.xp
+    // DELETAR sala apenas quando AMBOS jogadores processaram
+    if (ambosProcessaram) {
+      try {
+        await deleteDocument('pvp_duel_rooms', roomId);
+        console.log('🗑️ [PVP CLEANUP] Ambos jogadores processaram - Sala deletada:', roomId);
+      } catch (error) {
+        console.error('⚠️ [PVP CLEANUP] Erro ao deletar sala:', error);
+        // Não bloqueia o fluxo se falhar
       }
-    });
+    } else {
+      console.log('⏳ [PVP CLEANUP] Aguardando segundo jogador processar recompensas...');
+    }
+
+    // Buscar stats atualizados para retornar
+    const [hostAvatarAtualizado, guestAvatarAtualizado, hostPlayerAtualizado, guestPlayerAtualizado] = await Promise.all([
+      getDocument('avatares', hostAvatar.id),
+      getDocument('avatares', guestAvatar.id),
+      getDocument('player_stats', room.host_user_id),
+      getDocument('player_stats', room.guest_user_id)
+    ]);
 
     return NextResponse.json({
       success: true,
       winner,
       rendeu,
+      processedCount: novosProcessados.length,
+      allProcessed: ambosProcessaram,
       host: {
         recompensas: hostRecompensas,
         stats: {
           avatar: {
-            experiencia: novoHostXP,
-            vinculo: novoHostVinculo,
-            exaustao: novoHostExaustao,
-            hp_atual: hostWon ? room.host_hp : 0
+            experiencia: hostAvatarAtualizado?.experiencia || 0,
+            vinculo: hostAvatarAtualizado?.vinculo || 0,
+            exaustao: hostAvatarAtualizado?.exaustao || 0,
+            hp_atual: hostAvatarAtualizado?.hp_atual || 0
           },
           player: {
-            fama: novoHostFama,
-            hunterRankXp: novoHostHunterXP
+            fama: hostPlayerAtualizado?.fama || 0,
+            hunterRankXp: hostPlayerAtualizado?.hunterRankXp || 0
           }
         }
       },
@@ -323,14 +362,14 @@ export async function POST(request) {
         recompensas: guestRecompensas,
         stats: {
           avatar: {
-            experiencia: novoGuestXP,
-            vinculo: novoGuestVinculo,
-            exaustao: novoGuestExaustao,
-            hp_atual: !hostWon ? room.guest_hp : 0
+            experiencia: guestAvatarAtualizado?.experiencia || 0,
+            vinculo: guestAvatarAtualizado?.vinculo || 0,
+            exaustao: guestAvatarAtualizado?.exaustao || 0,
+            hp_atual: guestAvatarAtualizado?.hp_atual || 0
           },
           player: {
-            fama: novoGuestFama,
-            hunterRankXp: novoGuestHunterXP
+            fama: guestPlayerAtualizado?.fama || 0,
+            hunterRankXp: guestPlayerAtualizado?.hunterRankXp || 0
           }
         }
       }
