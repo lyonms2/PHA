@@ -88,11 +88,19 @@ function BatalhaTreinoIAContent() {
         // Carregar sinergias
         if (dados.sinergia) {
           setSinergiaAtiva(dados.sinergia);
-          console.log('✨ Sinergia Player:', dados.sinergia.sinergiaAtiva?.nome || 'Nenhuma');
+          console.log('✨ Sinergia Player:', {
+            nome: dados.sinergia.sinergiaAtiva?.nome || 'Nenhuma',
+            modificadores: dados.sinergia.modificadores,
+            modificadoresFormatados: dados.sinergia.modificadoresFormatados
+          });
         }
         if (dados.sinergiaIA) {
           setSinergiaIA(dados.sinergiaIA);
-          console.log('✨ Sinergia IA:', dados.sinergiaIA.sinergiaAtiva?.nome || 'Nenhuma');
+          console.log('✨ Sinergia IA:', {
+            nome: dados.sinergiaIA.sinergiaAtiva?.nome || 'Nenhuma',
+            modificadores: dados.sinergiaIA.modificadores,
+            modificadoresFormatados: dados.sinergiaIA.modificadoresFormatados
+          });
         }
 
         // Inicializar batalha
