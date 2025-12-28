@@ -88,11 +88,11 @@ function BatalhaTreinoIAContent() {
         // Carregar sinergias
         if (dados.sinergia) {
           setSinergiaAtiva(dados.sinergia);
-          console.log('✨ Sinergia Player:', dados.sinergia.nome);
+          console.log('✨ Sinergia Player:', dados.sinergia.sinergiaAtiva?.nome || 'Nenhuma');
         }
         if (dados.sinergiaIA) {
           setSinergiaIA(dados.sinergiaIA);
-          console.log('✨ Sinergia IA:', dados.sinergiaIA.nome);
+          console.log('✨ Sinergia IA:', dados.sinergiaIA.sinergiaAtiva?.nome || 'Nenhuma');
         }
 
         // Inicializar batalha
