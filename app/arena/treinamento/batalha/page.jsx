@@ -342,10 +342,20 @@ function BatalhaTreinoIAContent() {
     // Efeitos visuais para ataques e habilidades da IA
     if (iaAction.action === 'attack' || iaAction.action === 'ability') {
       if (!iaAction.errou && iaAction.dano > 0) {
-        const tipoEfeito = iaAction.critico ? 'critical' : 'damage';
-        mostrarDanoVisual('meu', iaAction.dano, tipoEfeito, iaAvatar?.elemento);
+        if (iaAction.bloqueado) {
+          // Jogador bloqueou: primeiro mostra bloqueio, depois dano reduzido
+          mostrarDanoVisual('meu', null, 'block', null);
+          setTimeout(() => {
+            const tipoEfeito = iaAction.critico ? 'critical' : 'damage';
+            mostrarDanoVisual('meu', iaAction.dano, tipoEfeito, iaAvatar?.elemento);
+          }, 600);
+        } else {
+          // Dano normal ou crítico
+          const tipoEfeito = iaAction.critico ? 'critical' : 'damage';
+          mostrarDanoVisual('meu', iaAction.dano, tipoEfeito, iaAvatar?.elemento);
+        }
       } else if (iaAction.bloqueado) {
-        // Jogador bloqueou o ataque da IA
+        // Jogador bloqueou completamente (sem dano)
         mostrarDanoVisual('meu', null, 'block', null);
       } else if (iaAction.esquivou) {
         // Jogador esquivou do ataque da IA
@@ -421,10 +431,22 @@ function BatalhaTreinoIAContent() {
 
         // Efeito visual do meu ataque
         if (!result.errou) {
-          const tipoEfeito = result.critico ? 'critical' : 'damage';
-          mostrarDanoVisual('oponente', result.dano, tipoEfeito, meuAvatar?.elemento);
+          if (result.bloqueado) {
+            // IA bloqueou: primeiro mostra bloqueio, depois dano reduzido
+            mostrarDanoVisual('oponente', null, 'block', null);
+            if (result.dano > 0) {
+              setTimeout(() => {
+                const tipoEfeito = result.critico ? 'critical' : 'damage';
+                mostrarDanoVisual('oponente', result.dano, tipoEfeito, meuAvatar?.elemento);
+              }, 600);
+            }
+          } else {
+            // Dano normal ou crítico
+            const tipoEfeito = result.critico ? 'critical' : 'damage';
+            mostrarDanoVisual('oponente', result.dano, tipoEfeito, meuAvatar?.elemento);
+          }
         } else if (result.bloqueado) {
-          // IA bloqueou o ataque
+          // IA bloqueou completamente (sem dano)
           mostrarDanoVisual('oponente', null, 'block', null);
         } else if (result.esquivou) {
           // IA esquivou do ataque
@@ -566,10 +588,20 @@ function BatalhaTreinoIAContent() {
 
         // Efeitos visuais da minha habilidade
         if (!result.errou && result.dano > 0) {
-          const tipoEfeito = result.critico ? 'critical' : 'damage';
-          mostrarDanoVisual('oponente', result.dano, tipoEfeito, meuAvatar?.elemento);
+          if (result.bloqueado) {
+            // IA bloqueou: primeiro mostra bloqueio, depois dano reduzido
+            mostrarDanoVisual('oponente', null, 'block', null);
+            setTimeout(() => {
+              const tipoEfeito = result.critico ? 'critical' : 'damage';
+              mostrarDanoVisual('oponente', result.dano, tipoEfeito, meuAvatar?.elemento);
+            }, 600);
+          } else {
+            // Dano normal ou crítico
+            const tipoEfeito = result.critico ? 'critical' : 'damage';
+            mostrarDanoVisual('oponente', result.dano, tipoEfeito, meuAvatar?.elemento);
+          }
         } else if (result.bloqueado) {
-          // IA bloqueou a habilidade
+          // IA bloqueou completamente (sem dano)
           mostrarDanoVisual('oponente', null, 'block', null);
         } else if (result.esquivou) {
           // IA esquivou da habilidade

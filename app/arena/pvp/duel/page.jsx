@@ -517,8 +517,14 @@ function DuelContent() {
 
         // Efeitos visuais
         if (data.bloqueado) {
-          // Oponente bloqueou o ataque
+          // Oponente bloqueou: primeiro mostra bloqueio, depois dano reduzido
           showDamageEffect('opponent', null, 'block', null);
+          if (data.dano > 0) {
+            setTimeout(() => {
+              const tipoEfeito = data.critico ? 'critical' : 'damage';
+              showDamageEffect('opponent', data.dano, tipoEfeito, meuAvatar?.elemento);
+            }, 600);
+          }
         } else {
           // Dano normal ou crítico no oponente
           const tipoEfeito = data.critico ? 'critical' : 'damage';
@@ -867,8 +873,12 @@ function DuelContent() {
         // Efeitos visuais de dano/cura com elemento
         if (data.dano > 0) {
           if (data.bloqueado) {
-            // Oponente bloqueou a habilidade
+            // Oponente bloqueou: primeiro mostra bloqueio, depois dano reduzido
             showDamageEffect('opponent', null, 'block', null);
+            setTimeout(() => {
+              const tipoEfeito = data.critico ? 'critical' : 'damage';
+              showDamageEffect('opponent', data.dano, tipoEfeito, meuAvatar?.elemento);
+            }, 600);
           } else {
             // Dano normal ou crítico no oponente
             const tipoEfeito = data.critico ? 'critical' : 'damage';
