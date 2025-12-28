@@ -345,9 +345,18 @@ function BatalhaTreinoIAContent() {
           elemento: iaAvatar?.elemento
         });
         mostrarDanoVisual('meu', iaAction.dano, tipoEfeito, iaAvatar?.elemento);
-      } else if (iaAction.errou) {
-        console.log('💨 [processarAcaoIA] IA errou - mostrando dodge');
+      } else if (iaAction.bloqueado) {
+        // Jogador bloqueou o ataque da IA
+        console.log('🛡️ [processarAcaoIA] Jogador bloqueou - mostrando block');
+        mostrarDanoVisual('meu', null, 'block', null);
+      } else if (iaAction.esquivou) {
+        // Jogador esquivou do ataque da IA
+        console.log('💨 [processarAcaoIA] Jogador esquivou - mostrando dodge');
         mostrarDanoVisual('meu', null, 'dodge', null);
+      } else if (iaAction.errou) {
+        // IA simplesmente errou
+        console.log('❌ [processarAcaoIA] IA errou - mostrando miss no jogador');
+        mostrarDanoVisual('meu', null, 'miss', null);
       }
     }
 
@@ -419,7 +428,14 @@ function BatalhaTreinoIAContent() {
         if (!result.errou) {
           const tipoEfeito = result.critico ? 'critical' : 'damage';
           mostrarDanoVisual('oponente', result.dano, tipoEfeito, meuAvatar?.elemento);
+        } else if (result.bloqueado) {
+          // IA bloqueou o ataque
+          mostrarDanoVisual('oponente', null, 'block', null);
+        } else if (result.esquivou) {
+          // IA esquivou do ataque
+          mostrarDanoVisual('oponente', null, 'dodge', null);
         } else {
+          // Jogador simplesmente errou
           mostrarDanoVisual('oponente', null, 'miss', null);
         }
 
@@ -555,7 +571,14 @@ function BatalhaTreinoIAContent() {
         if (!result.errou && result.dano > 0) {
           const tipoEfeito = result.critico ? 'critical' : 'damage';
           mostrarDanoVisual('oponente', result.dano, tipoEfeito, meuAvatar?.elemento);
+        } else if (result.bloqueado) {
+          // IA bloqueou a habilidade
+          mostrarDanoVisual('oponente', null, 'block', null);
+        } else if (result.esquivou) {
+          // IA esquivou da habilidade
+          mostrarDanoVisual('oponente', null, 'dodge', null);
         } else if (result.errou) {
+          // Jogador simplesmente errou
           mostrarDanoVisual('oponente', null, 'miss', null);
         }
 
