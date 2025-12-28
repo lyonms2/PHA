@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getDocument, updateDocument } from '@/lib/firebase/firestore';
+import { getDocument, updateDocument, deleteDocument } from '@/lib/firebase/firestore';
 import { calcularPenalidadesAbandonoPVP } from '@/lib/pvp/pvpRewardsSystem';
 
 export const dynamic = 'force-dynamic';
@@ -89,6 +89,16 @@ export async function POST(request) {
       finished_at: new Date().toISOString(),
       finish_reason: 'abandon'
     });
+
+    // Deletar documento da sala após processar penalidades
+    // Não há necessidade de manter histórico, pois stats já foram atualizados
+    try {
+      await deleteDocument('pvp_duel_rooms', roomId);
+      console.log('🗑️ [PVP CLEANUP] Sala deletada após abandono:', roomId);
+    } catch (error) {
+      console.error('⚠️ [PVP CLEANUP] Erro ao deletar sala:', error);
+      // Não bloqueia o fluxo se falhar
+    }
 
     return NextResponse.json({
       success: true,

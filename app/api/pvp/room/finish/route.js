@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getDocument, getDocuments, updateDocument, createDocument } from '@/lib/firebase/firestore';
+import { getDocument, getDocuments, updateDocument, createDocument, deleteDocument } from '@/lib/firebase/firestore';
 import { calcularRecompensasPVP } from '@/lib/pvp/pvpRewardsSystem';
 import { trackMissionProgress } from '@/lib/missions/missionTracker';
 
@@ -255,13 +255,23 @@ export async function POST(request) {
       console.warn('⚠️ [PVP RANKING] Nenhuma temporada ativa encontrada!');
     }
 
-    // Marcar sala como finalizada
+    // Marcar sala como finalizada (temporariamente, será deletada em seguida)
     await updateDocument('pvp_duel_rooms', roomId, {
       status: 'finished',
       winner,
       rendeu,
       finished_at: new Date().toISOString()
     });
+
+    // Deletar documento da sala após processar recompensas
+    // Não há necessidade de manter histórico, pois stats já foram atualizados
+    try {
+      await deleteDocument('pvp_duel_rooms', roomId);
+      console.log('🗑️ [PVP CLEANUP] Sala deletada:', roomId);
+    } catch (error) {
+      console.error('⚠️ [PVP CLEANUP] Erro ao deletar sala:', error);
+      // Não bloqueia o fluxo se falhar
+    }
 
     // Rastrear progresso de missões (não bloqueia se falhar)
     // Ambos os jogadores participaram do PVP
