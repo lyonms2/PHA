@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import AvatarSVG from '@/app/components/AvatarSVG';
+import BattleEffectWrapper from './BattleEffectWrapper';
 import { getElementoEmoji, getElementoCor, getEfeitoEmoji, ehBuff } from '@/lib/arena/battleEffects';
 import { calcularPoderTotal } from '@/lib/gameLogic';
 
@@ -57,7 +58,11 @@ export default function DualCardBattleLayout({
 
   // Sinergias
   playerSynergy = null,
-  opponentSynergy = null
+  opponentSynergy = null,
+
+  // Efeitos visuais de dano/cura
+  myDamageEffect = null,
+  opponentDamageEffect = null
 }) {
   const [playerCardActive, setPlayerCardActive] = useState('attack'); // 'attack' ou 'support'
   const [opponentCardActive, setOpponentCardActive] = useState('attack');
@@ -102,7 +107,7 @@ export default function DualCardBattleLayout({
     setOpponentCardActive(prev => prev === 'attack' ? 'support' : 'attack');
   };
 
-  const renderAvatarCard = (avatar, type, isActive, hp, hpMax, energy, energyMax, effects, side, synergy) => {
+  const renderAvatarCard = (avatar, type, isActive, hp, hpMax, energy, energyMax, effects, side, synergy, damageEffect) => {
     if (!avatar) return null;
 
     const isAttack = type === 'attack';
@@ -139,7 +144,13 @@ export default function DualCardBattleLayout({
           <div className="relative h-full flex flex-col items-center p-2 pt-6">
             {/* Avatar SVG - ajustado para não sobrepor o label */}
             <div className={`${isActive ? 'scale-100' : 'scale-75'} transition-transform ${!isAttack ? 'mt-1' : 'mt-2'}`}>
-              <AvatarSVG avatar={avatar} tamanho={isAttack ? (isActive ? 110 : 66) : 70} />
+              {isAttack && damageEffect ? (
+                <BattleEffectWrapper effect={damageEffect}>
+                  <AvatarSVG avatar={avatar} tamanho={isActive ? 110 : 66} />
+                </BattleEffectWrapper>
+              ) : (
+                <AvatarSVG avatar={avatar} tamanho={isAttack ? (isActive ? 110 : 66) : 70} />
+              )}
             </div>
 
             {/* Info do avatar (só quando ativo) */}
@@ -290,7 +301,8 @@ export default function DualCardBattleLayout({
                   myEnergyMax,
                   myEffects,
                   'player',
-                  null
+                  null,
+                  myDamageEffect
                 )}
 
                 {/* Card de Suporte */}
@@ -304,7 +316,8 @@ export default function DualCardBattleLayout({
                   myEnergyMax,
                   myEffects,
                   'player',
-                  playerSynergy
+                  playerSynergy,
+                  null
                 )}
               </div>
             </div>
@@ -335,7 +348,8 @@ export default function DualCardBattleLayout({
                   opponentEnergyMax,
                   opponentEffects,
                   'opponent',
-                  null
+                  null,
+                  opponentDamageEffect
                 )}
 
                 {/* Card de Suporte */}
@@ -349,7 +363,8 @@ export default function DualCardBattleLayout({
                   opponentEnergyMax,
                   opponentEffects,
                   'opponent',
-                  opponentSynergy
+                  opponentSynergy,
+                  null
                 )}
               </div>
             </div>
