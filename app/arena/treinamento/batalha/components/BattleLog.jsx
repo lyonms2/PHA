@@ -52,7 +52,12 @@ function LogEntry({ message, isLatest }) {
   let textColor = 'text-slate-300';
   let borderColor = 'border-slate-700';
 
-  if (message.includes('🎯') || message.includes('⚔️')) {
+  if (message.includes('✨ SINERGIA') || message.includes('💎')) {
+    // Mensagens de sinergia - destaque especial roxo/cyan
+    bgColor = 'bg-gradient-to-r from-purple-900/30 to-cyan-900/30';
+    borderColor = 'border-cyan-500/40';
+    textColor = 'text-cyan-200';
+  } else if (message.includes('🎯') || message.includes('⚔️')) {
     bgColor = 'bg-orange-900/20';
     borderColor = 'border-orange-700/30';
   } else if (message.includes('❤️') || message.includes('DERROTADO')) {
