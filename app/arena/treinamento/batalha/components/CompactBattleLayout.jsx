@@ -104,41 +104,39 @@ export default function CompactBattleLayout({
           )}
 
           {/* Sinergia Player - Detalhada */}
-          {sinergiaPlayer && (
+          {sinergiaPlayer && sinergiaPlayer.sinergiaAtiva && (
             <div className="bg-slate-900/95 rounded-lg border border-purple-500/40 p-2 overflow-y-auto">
               <div className="text-xs font-bold text-purple-300 mb-1 text-center">
-                ✨ {sinergiaPlayer.nome}
+                ✨ {sinergiaPlayer.sinergiaAtiva.nome}
               </div>
               <div className="text-[10px] text-slate-400 text-center mb-2">
-                {meuAvatar.elemento} × {sinergiaPlayer.avatarSuporte?.elemento}
+                {sinergiaPlayer.sinergiaAtiva.elementoSuporte} VS {sinergiaPlayer.sinergiaAtiva.elementoInimigo}
               </div>
 
-              {/* Vantagens e Desvantagens */}
+              {/* Modificadores */}
               <div className="space-y-1">
-                {/* Vantagens */}
-                {sinergiaPlayer.vantagens && sinergiaPlayer.vantagens.length > 0 && sinergiaPlayer.vantagens.map((vantagem, idx) => (
-                  <div key={`vantagem-${idx}`} className="text-[9px] px-1.5 py-0.5 rounded bg-green-900/30 text-green-300 border border-green-600/30">
-                    ✅ {vantagem.texto}
-                  </div>
-                ))}
-
-                {/* Desvantagens */}
-                {sinergiaPlayer.desvantagens && sinergiaPlayer.desvantagens.length > 0 && sinergiaPlayer.desvantagens.map((desvantagem, idx) => (
-                  <div key={`desvantagem-${idx}`} className="text-[9px] px-1.5 py-0.5 rounded bg-red-900/30 text-red-300 border border-red-600/30">
-                    ⚠️ {desvantagem.texto}
-                  </div>
-                ))}
-
-                {/* Sem desvantagens (sinergia perfeita) */}
-                {(!sinergiaPlayer.desvantagens || sinergiaPlayer.desvantagens.length === 0) && (
-                  <div className="text-[9px] px-1.5 py-0.5 rounded bg-purple-900/30 text-purple-300 border border-purple-600/30 text-center">
-                    ⭐ Sinergia Perfeita
-                  </div>
-                )}
+                {sinergiaPlayer.modificadoresFormatados && sinergiaPlayer.modificadoresFormatados.map((mod, idx) => {
+                  const isPositivo = mod.valor > 0;
+                  const cor = isPositivo ? 'bg-green-900/30 text-green-300 border-green-600/30' : 'bg-red-900/30 text-red-300 border-red-600/30';
+                  const icone = isPositivo ? '✨' : '💢';
+                  return (
+                    <div key={`mod-${idx}`} className={`text-[9px] px-1.5 py-0.5 rounded ${cor} border flex items-center justify-between`}>
+                      <span>{icone} {mod.nome}</span>
+                      <span className="font-bold">{mod.valorFormatado}</span>
+                    </div>
+                  );
+                })}
               </div>
+
+              {/* Multiplicador de Raridade */}
+              {sinergiaPlayer.sinergiaAtiva.multiplicadorRaridade > 1.0 && (
+                <div className="text-[9px] text-yellow-400 text-center mt-2 font-bold">
+                  💎 {sinergiaPlayer.sinergiaAtiva.raridadeSuporte} ×{sinergiaPlayer.sinergiaAtiva.multiplicadorRaridade.toFixed(1)}
+                </div>
+              )}
 
               <div className="text-[9px] text-slate-500 mt-2 italic text-center">
-                {sinergiaPlayer.descricao}
+                {sinergiaPlayer.sinergiaAtiva.descricao}
               </div>
             </div>
           )}
@@ -271,41 +269,39 @@ export default function CompactBattleLayout({
           )}
 
           {/* Sinergia IA - Detalhada */}
-          {sinergiaIA && (
+          {sinergiaIA && sinergiaIA.sinergiaAtiva && (
             <div className="bg-slate-900/95 rounded-lg border border-purple-500/40 p-2 overflow-y-auto">
               <div className="text-xs font-bold text-purple-300 mb-1 text-center">
-                ✨ {sinergiaIA.nome}
+                ✨ {sinergiaIA.sinergiaAtiva.nome}
               </div>
               <div className="text-[10px] text-slate-400 text-center mb-2">
-                {iaAvatar.elemento} × {sinergiaIA.avatarSuporte?.elemento}
+                {sinergiaIA.sinergiaAtiva.elementoSuporte} VS {sinergiaIA.sinergiaAtiva.elementoInimigo}
               </div>
 
-              {/* Vantagens e Desvantagens */}
+              {/* Modificadores */}
               <div className="space-y-1">
-                {/* Vantagens */}
-                {sinergiaIA.vantagens && sinergiaIA.vantagens.length > 0 && sinergiaIA.vantagens.map((vantagem, idx) => (
-                  <div key={`vantagem-${idx}`} className="text-[9px] px-1.5 py-0.5 rounded bg-green-900/30 text-green-300 border border-green-600/30">
-                    ✅ {vantagem.texto}
-                  </div>
-                ))}
-
-                {/* Desvantagens */}
-                {sinergiaIA.desvantagens && sinergiaIA.desvantagens.length > 0 && sinergiaIA.desvantagens.map((desvantagem, idx) => (
-                  <div key={`desvantagem-${idx}`} className="text-[9px] px-1.5 py-0.5 rounded bg-red-900/30 text-red-300 border border-red-600/30">
-                    ⚠️ {desvantagem.texto}
-                  </div>
-                ))}
-
-                {/* Sem desvantagens (sinergia perfeita) */}
-                {(!sinergiaIA.desvantagens || sinergiaIA.desvantagens.length === 0) && (
-                  <div className="text-[9px] px-1.5 py-0.5 rounded bg-purple-900/30 text-purple-300 border border-purple-600/30 text-center">
-                    ⭐ Sinergia Perfeita
-                  </div>
-                )}
+                {sinergiaIA.modificadoresFormatados && sinergiaIA.modificadoresFormatados.map((mod, idx) => {
+                  const isPositivo = mod.valor > 0;
+                  const cor = isPositivo ? 'bg-green-900/30 text-green-300 border-green-600/30' : 'bg-red-900/30 text-red-300 border-red-600/30';
+                  const icone = isPositivo ? '✨' : '💢';
+                  return (
+                    <div key={`mod-${idx}`} className={`text-[9px] px-1.5 py-0.5 rounded ${cor} border flex items-center justify-between`}>
+                      <span>{icone} {mod.nome}</span>
+                      <span className="font-bold">{mod.valorFormatado}</span>
+                    </div>
+                  );
+                })}
               </div>
+
+              {/* Multiplicador de Raridade */}
+              {sinergiaIA.sinergiaAtiva.multiplicadorRaridade > 1.0 && (
+                <div className="text-[9px] text-yellow-400 text-center mt-2 font-bold">
+                  💎 {sinergiaIA.sinergiaAtiva.raridadeSuporte} ×{sinergiaIA.sinergiaAtiva.multiplicadorRaridade.toFixed(1)}
+                </div>
+              )}
 
               <div className="text-[9px] text-slate-500 mt-2 italic text-center">
-                {sinergiaIA.descricao}
+                {sinergiaIA.sinergiaAtiva.descricao}
               </div>
             </div>
           )}

@@ -69,8 +69,14 @@ export default function DualCardBattleLayout({
     console.log('🔍 DualCardBattleLayout - Dados recebidos:', {
       meuAvatarSuporte: meuAvatarSuporte ? { nome: meuAvatarSuporte.nome, elemento: meuAvatarSuporte.elemento } : null,
       iaAvatarSuporte: iaAvatarSuporte ? { nome: iaAvatarSuporte.nome, elemento: iaAvatarSuporte.elemento } : null,
-      playerSynergy: playerSynergy ? { nome: playerSynergy.nome, vantagens: playerSynergy.vantagens?.length, desvantagens: playerSynergy.desvantagens?.length } : null,
-      opponentSynergy: opponentSynergy ? { nome: opponentSynergy.nome, vantagens: opponentSynergy.vantagens?.length, desvantagens: opponentSynergy.desvantagens?.length } : null,
+      playerSynergy: playerSynergy ? {
+        nome: playerSynergy.sinergiaAtiva?.nome,
+        modificadores: playerSynergy.modificadoresFormatados?.length
+      } : null,
+      opponentSynergy: opponentSynergy ? {
+        nome: opponentSynergy.sinergiaAtiva?.nome,
+        modificadores: opponentSynergy.modificadoresFormatados?.length
+      } : null,
       playerAbilities: playerAbilities?.length || 0,
       logCount: log.length
     });
@@ -193,43 +199,42 @@ export default function DualCardBattleLayout({
                 )}
 
                 {/* Card de SUPORTE: mostrar detalhes da sinergia */}
-                {!isAttack && synergy && (
+                {!isAttack && synergy && synergy.sinergiaAtiva && (
                   <div className="w-full px-2 mt-1 space-y-1.5 overflow-y-auto max-h-[140px] custom-scrollbar">
                     {/* Nome da Sinergia */}
                     <div className="text-[11px] text-amber-300 font-bold text-center uppercase tracking-wide">
-                      {synergy.nome}
+                      {synergy.sinergiaAtiva.nome}
                     </div>
 
                     {/* Descrição */}
                     <div className="text-[9px] text-amber-200/70 text-center italic leading-tight">
-                      {synergy.descricao}
+                      {synergy.sinergiaAtiva.descricao}
                     </div>
 
-                    {/* Vantagens - USA ARRAY DIRETO! */}
-                    {synergy.vantagens && synergy.vantagens.length > 0 && (
+                    {/* Modificadores Ativos */}
+                    {synergy.modificadoresFormatados && synergy.modificadoresFormatados.length > 0 && (
                       <div className="space-y-0.5">
-                        <div className="text-[8px] text-green-400 font-bold uppercase tracking-wider">
-                          ✅ VANTAGENS:
+                        <div className="text-[8px] text-cyan-400 font-bold uppercase tracking-wider">
+                          ⚡ MODIFICADORES:
                         </div>
-                        {synergy.vantagens.map((v, i) => (
-                          <div key={i} className="text-[9px] text-green-300 leading-tight">
-                            ✨ {v.texto}
-                          </div>
-                        ))}
+                        {synergy.modificadoresFormatados.map((mod, i) => {
+                          const isPositivo = mod.valor > 0;
+                          const cor = isPositivo ? 'text-green-300' : 'text-red-300';
+                          const icone = isPositivo ? '✨' : '💢';
+                          return (
+                            <div key={i} className={`text-[9px] ${cor} leading-tight flex items-center justify-between`}>
+                              <span>{icone} {mod.nome}</span>
+                              <span className="font-bold">{mod.valorFormatado}</span>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
 
-                    {/* Desvantagens - USA ARRAY DIRETO! */}
-                    {synergy.desvantagens && synergy.desvantagens.length > 0 && (
-                      <div className="space-y-0.5">
-                        <div className="text-[8px] text-red-400 font-bold uppercase tracking-wider">
-                          ⚠️ DESVANTAGENS:
-                        </div>
-                        {synergy.desvantagens.map((d, i) => (
-                          <div key={i} className="text-[9px] text-red-300 leading-tight">
-                            💢 {d.texto}
-                          </div>
-                        ))}
+                    {/* Multiplicador de Raridade */}
+                    {synergy.sinergiaAtiva.multiplicadorRaridade > 1.0 && (
+                      <div className="text-[8px] text-yellow-400 text-center font-bold">
+                        💎 {synergy.sinergiaAtiva.raridadeSuporte} ×{synergy.sinergiaAtiva.multiplicadorRaridade.toFixed(1)}
                       </div>
                     )}
                   </div>
