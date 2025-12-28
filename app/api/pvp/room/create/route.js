@@ -71,38 +71,24 @@ export async function POST(request) {
       );
     }
 
-    // Aplicar sinergia entre Principal e Suporte
-    const resultadoSinergia = aplicarSinergia(avatar, avatarSuporte);
-
-    // Preparar informações da sinergia para armazenar na sala
-    const sinergiaInfo = {
-      ...resultadoSinergia.sinergiaAtiva,
-      modificadores: resultadoSinergia.modificadores,
-      logTexto: resultadoSinergia.logTexto,
-      avatarSuporte: {
-        id: avatarSuporte.id,
-        nome: avatarSuporte.nome,
-        elemento: avatarSuporte.elemento,
-        nivel: avatarSuporte.nivel,
-        raridade: avatarSuporte.raridade,
-        marca_morte: avatarSuporte.marca_morte || false,
-        forca: avatarSuporte.forca,
-        agilidade: avatarSuporte.agilidade,
-        resistencia: avatarSuporte.resistencia,
-        foco: avatarSuporte.foco
-      }
+    // NOTA: Sinergia será calculada quando o guest entrar (precisamos do oponente)
+    // Por enquanto, apenas armazenamos o avatar suporte
+    const avatarSuporteInfo = {
+      id: avatarSuporte.id,
+      nome: avatarSuporte.nome,
+      elemento: avatarSuporte.elemento,
+      nivel: avatarSuporte.nivel,
+      raridade: avatarSuporte.raridade,
+      marca_morte: avatarSuporte.marca_morte || false,
+      forca: avatarSuporte.forca,
+      agilidade: avatarSuporte.agilidade,
+      resistencia: avatarSuporte.resistencia,
+      foco: avatarSuporte.foco
     };
 
-    console.log('✨ Sinergia aplicada (Host):', {
-      principal: avatar.nome,
-      suporte: avatarSuporte.nome,
-      sinergia: sinergiaInfo.nome,
-      log: resultadoSinergia.logTexto
-    });
-
-    // Calcular HP máximo do avatar com modificadores de sinergia
+    // HP máximo base (sem sinergia ainda)
     const hpMaximoBase = calcularHPMaximoCompleto(avatar);
-    const hpMaximo = calcularHPComSinergia(hpMaximoBase, resultadoSinergia.modificadores);
+    const hpMaximo = hpMaximoBase;
     const hpAtual = Math.min(avatar.hp_atual || hpMaximo, hpMaximo);
 
     // Gerar código de 6 caracteres
@@ -128,12 +114,12 @@ export async function POST(request) {
         foco: avatar.foco || 10,
         habilidades: avatar.habilidades || []
       },
-      host_avatar_suporte: sinergiaInfo.avatarSuporte, // Avatar suporte do host
-      host_sinergia: sinergiaInfo, // Informações da sinergia do host
+      host_avatar_suporte: avatarSuporteInfo, // Avatar suporte do host
+      host_sinergia: null, // Será calculada quando guest entrar
       host_hp: hpAtual,
       host_hp_max: hpMaximo,
-      host_energy: calcularEnergiaComSinergia(100, resultadoSinergia.modificadores),
-      host_energy_max: calcularEnergiaComSinergia(100, resultadoSinergia.modificadores),
+      host_energy: 100,
+      host_energy_max: 100,
       host_effects: [],
       host_cooldowns: {},
       guest_user_id: null,
@@ -156,13 +142,12 @@ export async function POST(request) {
       expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minutos
     });
 
-    console.log('✨ Sala PVP criada via CÓDIGO com sinergia:', {
+    console.log('✨ Sala PVP criada via CÓDIGO:', {
       roomId,
       roomCode,
       host: {
         nome: avatar.nome,
-        suporte: sinergiaInfo.avatarSuporte?.nome || 'Nenhum',
-        sinergia: sinergiaInfo.nome || 'Nenhuma'
+        suporte: avatarSuporteInfo.nome
       }
     });
 

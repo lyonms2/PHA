@@ -39,13 +39,13 @@ export default function PvPPage() {
 
   // Preview de Sinergia em tempo real
   useEffect(() => {
-    if (avatarAtivo && avatarSuporte) {
-      const preview = previewSinergia(avatarAtivo.elemento, avatarSuporte.elemento, avatarAtivo.raridade);
+    if (avatarSuporte) {
+      const preview = previewSinergia(avatarSuporte.elemento, avatarSuporte.raridade);
       setSinergiaPreview(preview);
     } else {
       setSinergiaPreview(null);
     }
-  }, [avatarAtivo, avatarSuporte]);
+  }, [avatarSuporte]);
 
   const carregarAvatarAtivo = async (userId) => {
     try {
@@ -320,50 +320,62 @@ export default function PvPPage() {
 
                 {/* Preview de Sinergia */}
                 {sinergiaPreview && avatarSuporte && (
-                  <div className={`border rounded-lg p-3 ${
-                    sinergiaPreview.isSpecial
-                      ? 'border-yellow-500 bg-yellow-900/20'
-                      : 'border-purple-500/50 bg-purple-900/20'
-                  }`}>
-                    <div className="text-center mb-2">
-                      <div className="text-sm font-bold text-purple-300">
-                        {sinergiaPreview.isSpecial && '⭐ '}
-                        {sinergiaPreview.nome}
-                        {sinergiaPreview.isSpecial && ' ⭐'}
-                      </div>
-                      <div className="text-xs text-slate-400 mt-0.5">
-                        {avatarAtivo?.elemento} × {avatarSuporte?.elemento}
-                      </div>
-                    </div>
-
-                    <div className="text-xs space-y-1">
-                      {/* Vantagens */}
-                      {sinergiaPreview.vantagens && sinergiaPreview.vantagens.length > 0 && (
-                        <div className="bg-green-900/30 border border-green-600/50 rounded p-2">
-                          <div className="font-bold text-green-400 mb-1">✅ Vantagens:</div>
-                          {sinergiaPreview.vantagens.map((vantagem, i) => (
-                            <div key={i} className="text-green-300">• {vantagem.texto}</div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Desvantagens */}
-                      {sinergiaPreview.desvantagens && sinergiaPreview.desvantagens.length > 0 ? (
-                        <div className="bg-red-900/30 border border-red-600/50 rounded p-2">
-                          <div className="font-bold text-red-400 mb-1">⚠️ Desvantagens:</div>
-                          {sinergiaPreview.desvantagens.map((desvantagem, i) => (
-                            <div key={i} className="text-red-300">• {desvantagem.texto}</div>
-                          ))}
-                        </div>
-                      ) : sinergiaPreview.vantagens && sinergiaPreview.vantagens.length > 0 && (
-                        <div className="bg-purple-900/30 border border-purple-600/50 rounded p-2 text-center">
-                          <div className="font-bold text-purple-300">⭐ Sinergia Perfeita</div>
-                        </div>
+                  <div className="border border-purple-500/50 bg-gradient-to-br from-purple-950/50 to-cyan-950/50 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-black text-cyan-400">
+                        ✨ SINERGIAS DO SUPORTE
+                      </span>
+                      {sinergiaPreview.multiplicador > 1.0 && (
+                        <span className="text-[9px] bg-yellow-600/30 text-yellow-400 px-1.5 py-0.5 rounded border border-yellow-500/50 font-bold">
+                          {sinergiaPreview.raridadeSuporte} ×{sinergiaPreview.multiplicador.toFixed(1)}
+                        </span>
                       )}
                     </div>
 
-                    <div className="text-xs text-slate-400 mt-2 italic text-center">
-                      {sinergiaPreview.descricao}
+                    <div className="text-[11px] text-purple-400 font-bold mb-1">
+                      Tipo: {sinergiaPreview.tipoSuporte}
+                    </div>
+
+                    <p className="text-[11px] text-slate-300 mb-3 leading-relaxed italic">
+                      {sinergiaPreview.descricaoGeral}
+                    </p>
+
+                    {/* Matchups Possíveis */}
+                    <div className="text-[10px] text-cyan-400 font-bold mb-1.5">⚡ CONTRA INIMIGOS:</div>
+                    <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                      {sinergiaPreview.matchups.map((matchup, idx) => {
+                        const modEntries = Object.entries(matchup.modificadores);
+                        const temModificadores = modEntries.length > 0;
+
+                        return (
+                          <div key={idx} className={`${matchup.tipo === 'default' ? 'bg-slate-900/50 border-slate-600/30' : 'bg-cyan-900/20 border-cyan-600/30'} border rounded px-2 py-1.5`}>
+                            <div className="flex items-center justify-between mb-0.5">
+                              <span className="text-[11px] font-bold text-white">VS {matchup.elemento}</span>
+                              <span className="text-[10px] text-cyan-400">{matchup.nome}</span>
+                            </div>
+                            {temModificadores && (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {modEntries.map(([tipo, valor], midx) => {
+                                  const percentual = Math.floor(valor * 100);
+                                  const sinal = percentual > 0 ? '+' : '';
+                                  const cor = percentual > 0 ? 'text-green-400 bg-green-900/30' : 'text-red-400 bg-red-900/30';
+                                  const nomes = {
+                                    dano_habilidades: 'Dano Hab',
+                                    resistencia: 'Resistência',
+                                    evasao: 'Evasão',
+                                    critico: 'Crítico'
+                                  };
+                                  return (
+                                    <span key={midx} className={`text-[10px] ${cor} px-1.5 py-0.5 rounded`}>
+                                      {sinal}{percentual}% {nomes[tipo] || tipo}
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

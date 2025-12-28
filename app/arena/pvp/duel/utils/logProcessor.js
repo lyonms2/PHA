@@ -13,10 +13,17 @@ import { formatAttackLog, formatDefendLog, formatAbilityLog } from '@/lib/combat
  * @param {Object} lastProcessedLogIdRef - Ref do último log processado
  * @param {Function} addLog - Callback para adicionar log
  * @param {Function} showDamageEffect - Callback para mostrar efeito visual
+ * @param {Object} opponentAvatar - Avatar do oponente (para pegar elemento)
  * @returns {void}
  */
-export function processarNovosLogs(battleLog, opponentNomeAtual, lastProcessedLogIdRef, addLog, showDamageEffect) {
+export function processarNovosLogs(battleLog, opponentNomeAtual, lastProcessedLogIdRef, addLog, showDamageEffect, opponentAvatar = null) {
   if (!battleLog || battleLog.length === 0) return;
+
+  console.log('🔵 [logProcessor] INICIANDO processarNovosLogs:', {
+    battleLogLength: battleLog.length,
+    opponentNome: opponentNomeAtual,
+    opponentAvatar: opponentAvatar?.nome
+  });
 
   // Encontrar logs novos
   const novosLogs = [];
@@ -34,18 +41,29 @@ export function processarNovosLogs(battleLog, opponentNomeAtual, lastProcessedLo
     novosLogs.push(logEntry);
   }
 
+  console.log('🔵 [logProcessor] Novos logs encontrados:', novosLogs.length);
+
   // Processar cada novo log
   for (const logEntry of novosLogs) {
     const { acao, jogador, dano, cura, critico, errou, numGolpes, contraAtaque } = logEntry;
+
+    console.log('🔵 [logProcessor] Processando log:', { acao, jogador, dano, errou, critico });
 
     // Comparação confiável usando opponentNome do servidor (não do state React)
     // Se jogador === opponentNome, então é ação do oponente
     // Caso contrário, é minha própria ação
     const ehAcaoOponente = jogador === opponentNomeAtual;
 
+    console.log('🔵 [logProcessor] É ação do oponente?', ehAcaoOponente, { jogador, opponentNomeAtual });
+
     // PULAR minhas próprias ações - já foram processadas quando executei
     // Apenas processar ações do OPONENTE para ver o que ele fez
-    if (!ehAcaoOponente) continue;
+    if (!ehAcaoOponente) {
+      console.log('🔵 [logProcessor] PULANDO - não é ação do oponente');
+      continue;
+    }
+
+    console.log('🔵 [logProcessor] PROCESSANDO ação do oponente');
 
     // USAR BIBLIOTECA CENTRALIZADA
     // O backend já formata os logs usando battleLogger.js
@@ -56,24 +74,29 @@ export function processarNovosLogs(battleLog, opponentNomeAtual, lastProcessedLo
 
     // Efeitos visuais baseados na ação
     if (acao === 'attack' || acao === 'ability') {
+      console.log('🎯 [logProcessor] Processando ação da IA:', { acao, errou, dano, critico, cura });
+
       if (errou) {
-        showDamageEffect('me', '', 'dodge');
+        // Miss/dodge - sem número, sem elemento
+        console.log('💨 [logProcessor] IA errou - chamando showDamageEffect(me, null, dodge, null)');
+        showDamageEffect('me', null, 'dodge', null);
       } else if (dano > 0) {
-        if (numGolpes && numGolpes > 1) {
-          showDamageEffect('me', `${dano} ×${numGolpes}`, 'multihit');
-        } else {
-          showDamageEffect('me', dano, critico ? 'critical' : 'damage');
-        }
+        // Dano do oponente em mim - mostrar elemento do oponente
+        const tipoEfeito = critico ? 'critical' : 'damage';
+        const elemento = opponentAvatar?.elemento || null;
+        console.log('💥 [logProcessor] IA causou dano - chamando showDamageEffect:', { target: 'me', dano, tipoEfeito, elemento });
+        showDamageEffect('me', dano, tipoEfeito, elemento);
 
         // Contra-ataque visual
         if (contraAtaque) {
-          setTimeout(() => showDamageEffect('opponent', '🔥', 'burn'), 500);
+          setTimeout(() => showDamageEffect('opponent', null, 'block', null), 500);
         }
       }
 
-      // Cura visual (habilidades de suporte)
+      // Cura visual (habilidades de suporte do oponente)
       if (cura > 0) {
-        showDamageEffect('opponent', cura, 'heal');
+        console.log('💚 [logProcessor] IA curou - chamando showDamageEffect(opponent, cura, heal, null)');
+        showDamageEffect('opponent', cura, 'heal', null);
       }
     }
   }

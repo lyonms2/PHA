@@ -199,9 +199,8 @@ export async function POST(request) {
       );
     }
 
-    // Buscar avatar suporte (opcional)
+    // Buscar avatar suporte (opcional) - calcularemos a sinergia depois de gerar o oponente
     let avatarSuporte = null;
-    let sinergiaInfo = null;
 
     if (suporteId) {
       avatarSuporte = await getDocument('avatares', suporteId);
@@ -212,35 +211,6 @@ export async function POST(request) {
           { status: 404 }
         );
       }
-
-      // Aplicar sinergia entre Principal e Suporte
-      const resultado = aplicarSinergia(avatar, avatarSuporte);
-
-      // Armazenar informações da sinergia (não modificar stats, apenas guardar modificadores)
-      sinergiaInfo = {
-        ...resultado.sinergiaAtiva,
-        modificadores: resultado.modificadores,
-        logTexto: resultado.logTexto,
-        avatarSuporte: {
-          id: avatarSuporte.id,
-          nome: avatarSuporte.nome,
-          elemento: avatarSuporte.elemento,
-          nivel: avatarSuporte.nivel,
-          raridade: avatarSuporte.raridade,
-          marca_morte: avatarSuporte.marca_morte || false,
-          forca: avatarSuporte.forca,
-          agilidade: avatarSuporte.agilidade,
-          resistencia: avatarSuporte.resistencia,
-          foco: avatarSuporte.foco
-        }
-      };
-
-      console.log('✨ Sinergia aplicada (Jogador):', {
-        principal: avatar.nome,
-        suporte: avatarSuporte.nome,
-        sinergia: sinergiaInfo.nome,
-        log: resultado.logTexto
-      });
     }
 
     // Calcular poder do avatar do jogador
@@ -268,13 +238,46 @@ export async function POST(request) {
     oponenteSuporte.elemento = elementoSuporte;
     oponenteSuporte.nome = `${oponenteSuporte.nome} (Suporte)`;
 
-    // Aplicar sinergia da IA
-    const resultadoSinergiaIA = aplicarSinergia(oponentePrincipal, oponenteSuporte);
+    // Aplicar sinergia do JOGADOR: Suporte (jogador) VS Principal (IA)
+    let sinergiaInfo = null;
+    if (avatarSuporte) {
+      const resultadoSinergiaJogador = aplicarSinergia(avatarSuporte, oponentePrincipal);
+
+      sinergiaInfo = {
+        sinergiaAtiva: resultadoSinergiaJogador.sinergiaAtiva,
+        modificadores: resultadoSinergiaJogador.modificadores,
+        logTexto: resultadoSinergiaJogador.logTexto,
+        modificadoresFormatados: resultadoSinergiaJogador.modificadoresFormatados,
+        avatarSuporte: {
+          id: avatarSuporte.id,
+          nome: avatarSuporte.nome,
+          elemento: avatarSuporte.elemento,
+          nivel: avatarSuporte.nivel,
+          raridade: avatarSuporte.raridade,
+          marca_morte: avatarSuporte.marca_morte || false,
+          forca: avatarSuporte.forca,
+          agilidade: avatarSuporte.agilidade,
+          resistencia: avatarSuporte.resistencia,
+          foco: avatarSuporte.foco
+        }
+      };
+
+      console.log('✨ Sinergia aplicada (Jogador):', {
+        suporteJogador: avatarSuporte.nome,
+        principalInimigo: oponentePrincipal.nome,
+        sinergia: resultadoSinergiaJogador.sinergiaAtiva?.nome || 'Nenhuma',
+        log: resultadoSinergiaJogador.logTexto
+      });
+    }
+
+    // Aplicar sinergia da IA: Suporte (IA) VS Principal (Jogador)
+    const resultadoSinergiaIA = aplicarSinergia(oponenteSuporte, avatar);
 
     const sinergiaIA = {
-      ...resultadoSinergiaIA.sinergiaAtiva,
+      sinergiaAtiva: resultadoSinergiaIA.sinergiaAtiva,
       modificadores: resultadoSinergiaIA.modificadores,
       logTexto: resultadoSinergiaIA.logTexto,
+      modificadoresFormatados: resultadoSinergiaIA.modificadoresFormatados,
       avatarSuporte: {
         id: oponenteSuporte.id,
         nome: oponenteSuporte.nome,
@@ -288,6 +291,13 @@ export async function POST(request) {
         foco: oponenteSuporte.foco
       }
     };
+
+    console.log('✨ Sinergia aplicada (IA):', {
+      suporteIA: oponenteSuporte.nome,
+      principalJogador: avatar.nome,
+      sinergia: resultadoSinergiaIA.sinergiaAtiva?.nome || 'Nenhuma',
+      log: resultadoSinergiaIA.logTexto
+    });
 
     // Escolher personalidade da IA
     const personalidadeIA = escolherPersonalidade();
@@ -303,7 +313,7 @@ export async function POST(request) {
         elemento: oponenteSuporte.elemento,
         poder: oponenteSuporte._poderTotal
       },
-      sinergia: sinergiaIA.nome,
+      sinergia: sinergiaIA.sinergiaAtiva?.nome || 'Nenhuma',
       personalidade: personalidadeIA.tipo
     });
 

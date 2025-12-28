@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import AvatarSVG from '@/app/components/AvatarSVG';
+import BattleEffectWrapper from './BattleEffectWrapper';
 import { getElementoEmoji, getElementoCor, getEfeitoEmoji, ehBuff } from '@/lib/arena/battleEffects';
 import { calcularPoderTotal } from '@/lib/gameLogic';
 
@@ -57,7 +58,11 @@ export default function DualCardBattleLayout({
 
   // Sinergias
   playerSynergy = null,
-  opponentSynergy = null
+  opponentSynergy = null,
+
+  // Efeitos visuais de dano/cura
+  myDamageEffect = null,
+  opponentDamageEffect = null
 }) {
   const [playerCardActive, setPlayerCardActive] = useState('attack'); // 'attack' ou 'support'
   const [opponentCardActive, setOpponentCardActive] = useState('attack');
@@ -69,12 +74,31 @@ export default function DualCardBattleLayout({
     console.log('🔍 DualCardBattleLayout - Dados recebidos:', {
       meuAvatarSuporte: meuAvatarSuporte ? { nome: meuAvatarSuporte.nome, elemento: meuAvatarSuporte.elemento } : null,
       iaAvatarSuporte: iaAvatarSuporte ? { nome: iaAvatarSuporte.nome, elemento: iaAvatarSuporte.elemento } : null,
-      playerSynergy: playerSynergy ? { nome: playerSynergy.nome, vantagens: playerSynergy.vantagens?.length, desvantagens: playerSynergy.desvantagens?.length } : null,
-      opponentSynergy: opponentSynergy ? { nome: opponentSynergy.nome, vantagens: opponentSynergy.vantagens?.length, desvantagens: opponentSynergy.desvantagens?.length } : null,
+      playerSynergy: playerSynergy ? {
+        nome: playerSynergy.sinergiaAtiva?.nome,
+        modificadores: playerSynergy.modificadoresFormatados?.length
+      } : null,
+      opponentSynergy: opponentSynergy ? {
+        nome: opponentSynergy.sinergiaAtiva?.nome,
+        modificadores: opponentSynergy.modificadoresFormatados?.length
+      } : null,
       playerAbilities: playerAbilities?.length || 0,
       logCount: log.length
     });
   }, [meuAvatarSuporte, iaAvatarSuporte, playerSynergy, opponentSynergy, playerAbilities, log]);
+
+  // Debug: Rastrear mudanças nos efeitos de dano
+  useEffect(() => {
+    if (myDamageEffect) {
+      console.log('🎨 [DualCardBattleLayout] myDamageEffect RECEBIDO:', myDamageEffect);
+    }
+  }, [myDamageEffect]);
+
+  useEffect(() => {
+    if (opponentDamageEffect) {
+      console.log('🎨 [DualCardBattleLayout] opponentDamageEffect RECEBIDO:', opponentDamageEffect);
+    }
+  }, [opponentDamageEffect]);
 
   // Auto-scroll log para o FINAL (logs mais recentes por último)
   useEffect(() => {
@@ -96,12 +120,12 @@ export default function DualCardBattleLayout({
     setOpponentCardActive(prev => prev === 'attack' ? 'support' : 'attack');
   };
 
-  const renderAvatarCard = (avatar, type, isActive, hp, hpMax, energy, energyMax, effects, side, synergy) => {
+  const renderAvatarCard = (avatar, type, isActive, hp, hpMax, energy, energyMax, effects, side, synergy, damageEffect) => {
     if (!avatar) return null;
 
     const isAttack = type === 'attack';
     const cardClasses = `
-      absolute w-full transition-all duration-400 ease-in-out rounded-xl overflow-hidden cursor-pointer
+      absolute w-full transition-all duration-400 ease-in-out rounded-xl cursor-pointer
       ${isAttack ? 'h-[264px]' : isActive ? 'h-[240px]' : 'h-[200px]'}
       ${isActive ? 'z-30 top-0' : 'z-10 opacity-0 pointer-events-none'}
       ${isActive && !isAttack ? 'scale-105 shadow-2xl' : ''}
@@ -118,7 +142,7 @@ export default function DualCardBattleLayout({
 
     return (
       <div className={cardClasses}>
-        <div className={`relative h-full bg-gradient-to-br ${bgGradient} border-4 ${borderColor} rounded-xl shadow-2xl`}>
+        <div className={`relative h-full bg-gradient-to-br ${bgGradient} border-4 ${borderColor} rounded-xl shadow-2xl overflow-hidden`}>
           {/* Textura de fundo */}
           <div className={`absolute inset-0 opacity-5 ${isAttack ? 'bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(124,58,237,0.1)_10px,rgba(124,58,237,0.1)_20px)]' : 'bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(251,191,36,0.1)_10px,rgba(251,191,36,0.1)_20px)]'}`} />
 
@@ -131,9 +155,15 @@ export default function DualCardBattleLayout({
 
           {/* Conteúdo do avatar */}
           <div className="relative h-full flex flex-col items-center p-2 pt-6">
-            {/* Avatar SVG - ajustado para não sobrepor o label */}
-            <div className={`${isActive ? 'scale-100' : 'scale-75'} transition-transform ${!isAttack ? 'mt-1' : 'mt-2'}`}>
-              <AvatarSVG avatar={avatar} tamanho={isAttack ? (isActive ? 110 : 66) : 70} />
+            {/* Avatar SVG - sempre envolto com wrapper para evitar sumir */}
+            <div className={`relative ${isActive ? 'scale-100' : 'scale-75'} transition-transform ${!isAttack ? 'mt-1' : 'mt-2'} overflow-visible`}>
+              {isAttack ? (
+                <BattleEffectWrapper effect={damageEffect}>
+                  <AvatarSVG avatar={avatar} tamanho={isActive ? 110 : 66} />
+                </BattleEffectWrapper>
+              ) : (
+                <AvatarSVG avatar={avatar} tamanho={70} />
+              )}
             </div>
 
             {/* Info do avatar (só quando ativo) */}
@@ -193,43 +223,42 @@ export default function DualCardBattleLayout({
                 )}
 
                 {/* Card de SUPORTE: mostrar detalhes da sinergia */}
-                {!isAttack && synergy && (
+                {!isAttack && synergy && synergy.sinergiaAtiva && (
                   <div className="w-full px-2 mt-1 space-y-1.5 overflow-y-auto max-h-[140px] custom-scrollbar">
                     {/* Nome da Sinergia */}
                     <div className="text-[11px] text-amber-300 font-bold text-center uppercase tracking-wide">
-                      {synergy.nome}
+                      {synergy.sinergiaAtiva.nome}
                     </div>
 
                     {/* Descrição */}
                     <div className="text-[9px] text-amber-200/70 text-center italic leading-tight">
-                      {synergy.descricao}
+                      {synergy.sinergiaAtiva.descricao}
                     </div>
 
-                    {/* Vantagens - USA ARRAY DIRETO! */}
-                    {synergy.vantagens && synergy.vantagens.length > 0 && (
+                    {/* Modificadores Ativos */}
+                    {synergy.modificadoresFormatados && synergy.modificadoresFormatados.length > 0 && (
                       <div className="space-y-0.5">
-                        <div className="text-[8px] text-green-400 font-bold uppercase tracking-wider">
-                          ✅ VANTAGENS:
+                        <div className="text-[8px] text-cyan-400 font-bold uppercase tracking-wider">
+                          ⚡ MODIFICADORES:
                         </div>
-                        {synergy.vantagens.map((v, i) => (
-                          <div key={i} className="text-[9px] text-green-300 leading-tight">
-                            ✨ {v.texto}
-                          </div>
-                        ))}
+                        {synergy.modificadoresFormatados.map((mod, i) => {
+                          const isPositivo = mod.valor > 0;
+                          const cor = isPositivo ? 'text-green-300' : 'text-red-300';
+                          const icone = isPositivo ? '✨' : '💢';
+                          return (
+                            <div key={i} className={`text-[9px] ${cor} leading-tight flex items-center gap-1`}>
+                              <span>{icone}</span>
+                              <span className="font-bold">{mod.texto}</span>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
 
-                    {/* Desvantagens - USA ARRAY DIRETO! */}
-                    {synergy.desvantagens && synergy.desvantagens.length > 0 && (
-                      <div className="space-y-0.5">
-                        <div className="text-[8px] text-red-400 font-bold uppercase tracking-wider">
-                          ⚠️ DESVANTAGENS:
-                        </div>
-                        {synergy.desvantagens.map((d, i) => (
-                          <div key={i} className="text-[9px] text-red-300 leading-tight">
-                            💢 {d.texto}
-                          </div>
-                        ))}
+                    {/* Multiplicador de Raridade */}
+                    {synergy.sinergiaAtiva.multiplicadorRaridade > 1.0 && (
+                      <div className="text-[8px] text-yellow-400 text-center font-bold">
+                        💎 {synergy.sinergiaAtiva.raridadeSuporte} ×{synergy.sinergiaAtiva.multiplicadorRaridade.toFixed(1)}
                       </div>
                     )}
                   </div>
@@ -285,7 +314,8 @@ export default function DualCardBattleLayout({
                   myEnergyMax,
                   myEffects,
                   'player',
-                  null
+                  null,
+                  myDamageEffect
                 )}
 
                 {/* Card de Suporte */}
@@ -299,7 +329,8 @@ export default function DualCardBattleLayout({
                   myEnergyMax,
                   myEffects,
                   'player',
-                  playerSynergy
+                  playerSynergy,
+                  null
                 )}
               </div>
             </div>
@@ -330,7 +361,8 @@ export default function DualCardBattleLayout({
                   opponentEnergyMax,
                   opponentEffects,
                   'opponent',
-                  null
+                  null,
+                  opponentDamageEffect
                 )}
 
                 {/* Card de Suporte */}
@@ -344,7 +376,8 @@ export default function DualCardBattleLayout({
                   opponentEnergyMax,
                   opponentEffects,
                   'opponent',
-                  opponentSynergy
+                  opponentSynergy,
+                  null
                 )}
               </div>
             </div>

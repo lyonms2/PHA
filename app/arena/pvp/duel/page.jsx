@@ -239,7 +239,7 @@ function DuelContent() {
 
           // Processar novos logs de batalha
           if (data.battleLog && data.battleLog.length > 0) {
-            processarNovosLogs(data.battleLog, data.opponentNome, lastProcessedLogIdRef, addLog, showDamageEffect);
+            processarNovosLogs(data.battleLog, data.opponentNome, lastProcessedLogIdRef, addLog, showDamageEffect, data.opponentAvatar);
           }
 
           // Detectar mudança de turno
@@ -406,15 +406,21 @@ function DuelContent() {
     }
   };
 
-  // Mostrar efeito visual de dano/cura
-  const showDamageEffect = (target, value, type = 'damage') => {
-    const effect = { value, type };
+  // Mostrar efeito visual de dano/cura com efeito elemental
+  const showDamageEffect = (target, value, type = 'damage', elemento = null) => {
+    const effect = {
+      type: type,       // 'damage', 'critical', 'heal', 'miss', 'dodge', 'block'
+      number: value,
+      elemento: elemento,
+      timestamp: Date.now() // Força React a detectar mudança
+    };
+
     if (target === 'me') {
       setMyDamageEffect(effect);
-      setTimeout(() => setMyDamageEffect(null), 1500);
+      setTimeout(() => setMyDamageEffect(null), 1200);
     } else {
       setOpponentDamageEffect(effect);
-      setTimeout(() => setOpponentDamageEffect(null), 1500);
+      setTimeout(() => setOpponentDamageEffect(null), 1200);
     }
   };
 
@@ -444,13 +450,13 @@ function DuelContent() {
         if (data.errou) {
           if (data.invisivel) {
             addLog(`👻 ERROU! Oponente está INVISÍVEL!`);
-            showDamageEffect('opponent', '', 'dodge');
+            showDamageEffect('opponent', null, 'dodge', null);
           } else if (data.esquivou) {
             addLog(`💨 ERROU! O oponente esquivou com maestria!`);
-            showDamageEffect('opponent', '', 'dodge');
+            showDamageEffect('opponent', null, 'dodge', null);
           } else {
             addLog(`💨 ERROU! O oponente esquivou!`);
-            showDamageEffect('opponent', '', 'miss');
+            showDamageEffect('opponent', null, 'miss', null);
           }
           if (d && d.chanceAcerto) {
             addLog(`📊 Chance: ${d.chanceAcerto}% | AGI: ${d.agilidade} vs ${d.agilidadeOponente} | Rolou: ${d.rolouAcerto}`);
@@ -509,12 +515,19 @@ function DuelContent() {
 
         addLog(`⚡ Energia: -10 → ${data.newEnergy}`);
 
-        // Efeito visual de dano no oponente
-        showDamageEffect('opponent', data.dano, data.critico ? 'critical' : 'damage');
+        // Efeitos visuais
+        if (data.bloqueado) {
+          // Oponente bloqueou o ataque
+          showDamageEffect('opponent', null, 'block', null);
+        } else {
+          // Dano normal ou crítico no oponente
+          const tipoEfeito = data.critico ? 'critical' : 'damage';
+          showDamageEffect('opponent', data.dano, tipoEfeito, meuAvatar?.elemento);
+        }
 
         // Efeito visual de contra-ataque em mim
         if (data.contraAtaque) {
-          setTimeout(() => showDamageEffect('me', '🔥', 'burn'), 500);
+          setTimeout(() => showDamageEffect('me', null, 'block', null), 500);
         }
 
         setOpponentHp(data.newOpponentHp);
@@ -528,7 +541,10 @@ function DuelContent() {
       console.error('Erro ao atacar:', err);
       addLog('❌ Erro ao atacar');
     } finally {
-      setActionInProgress(false);
+      // Delay de 1.5s para dar tempo das animações completarem
+      setTimeout(() => {
+        setActionInProgress(false);
+      }, 1500);
     }
   };
 
@@ -576,6 +592,8 @@ function DuelContent() {
 
       if (data.success) {
         addLog(`🛡️ Você defendeu! +${data.energyGained} ⚡`);
+        // Efeito visual de defesa
+        showDamageEffect('me', null, 'block', null);
         setMyEnergy(data.newEnergy);
       } else {
         addLog(`❌ ${data.error}`);
@@ -584,7 +602,10 @@ function DuelContent() {
       console.error('Erro ao defender:', err);
       addLog('❌ Erro ao defender');
     } finally {
-      setActionInProgress(false);
+      // Delay de 1.5s para dar tempo das animações completarem
+      setTimeout(() => {
+        setActionInProgress(false);
+      }, 1500);
     }
   };
 
@@ -736,13 +757,13 @@ function DuelContent() {
         if (data.errou) {
           if (data.invisivel) {
             addLog(`👻 ${hab.nome} ERROU! Oponente está INVISÍVEL!`);
-            showDamageEffect('opponent', '', 'dodge');
+            showDamageEffect('opponent', null, 'dodge', null);
           } else if (data.esquivou) {
             addLog(`💨 ${hab.nome} ERROU! O oponente esquivou com maestria!`);
-            showDamageEffect('opponent', '', 'dodge');
+            showDamageEffect('opponent', null, 'dodge', null);
           } else {
             addLog(`💨 ${hab.nome} ERROU! O oponente esquivou!`);
-            showDamageEffect('opponent', '', 'miss');
+            showDamageEffect('opponent', null, 'miss', null);
           }
           if (data.detalhes) {
             const d = data.detalhes;
@@ -836,8 +857,6 @@ function DuelContent() {
 
           if (ehBuff) {
             addLog(`💚 Aplicado em você: ${data.efeitosAplicados.join(', ')}`);
-            // Efeito visual de buff aplicado
-            showDamageEffect('me', hab.nome, 'buff');
           } else {
             addLog(`🎯 Aplicado no oponente: ${data.efeitosAplicados.join(', ')}`);
           }
@@ -845,23 +864,24 @@ function DuelContent() {
 
         addLog(`⚡ Energia: -${custoEnergia} → ${data.newEnergy}`);
 
-        // Efeitos visuais de dano/cura
+        // Efeitos visuais de dano/cura com elemento
         if (data.dano > 0) {
-          // Verificar se é múltiplos golpes
-          const numGolpes = hab.num_golpes || 1;
-          if (numGolpes > 1) {
-            showDamageEffect('opponent', `${data.dano} ×${numGolpes}`, 'multihit');
+          if (data.bloqueado) {
+            // Oponente bloqueou a habilidade
+            showDamageEffect('opponent', null, 'block', null);
           } else {
-            showDamageEffect('opponent', data.dano, data.critico ? 'critical' : 'damage');
+            // Dano normal ou crítico no oponente
+            const tipoEfeito = data.critico ? 'critical' : 'damage';
+            showDamageEffect('opponent', data.dano, tipoEfeito, meuAvatar?.elemento);
           }
         }
         if (data.cura > 0) {
-          showDamageEffect('me', data.cura, 'heal');
+          showDamageEffect('me', data.cura, 'heal', null);
         }
 
         // Efeito visual de contra-ataque
         if (data.contraAtaque) {
-          setTimeout(() => showDamageEffect('me', '🔥', 'burn'), 500);
+          setTimeout(() => showDamageEffect('me', null, 'block', null), 500);
         }
 
         if (data.newOpponentHp !== undefined) {
@@ -880,7 +900,10 @@ function DuelContent() {
       console.error('Erro ao usar habilidade:', err);
       addLog('❌ Erro ao usar habilidade');
     } finally {
-      setActionInProgress(false);
+      // Delay de 1.5s para dar tempo das animações completarem
+      setTimeout(() => {
+        setActionInProgress(false);
+      }, 1500);
     }
   };
 
@@ -1339,6 +1362,10 @@ function DuelContent() {
         // Sinergias
         playerSynergy={minhaSinergia}
         opponentSynergy={opponentSinergia}
+
+        // Efeitos visuais de dano/cura
+        myDamageEffect={myDamageEffect}
+        opponentDamageEffect={opponentDamageEffect}
       />
 
       {/* Modal de Recompensas */}

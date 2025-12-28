@@ -59,13 +59,13 @@ export default function TreinamentoAIPage() {
 
   // Atualizar preview de sinergia quando avatar suporte mudar
   useEffect(() => {
-    if (avatarAtivo && avatarSuporte) {
-      const preview = previewSinergia(avatarAtivo.elemento, avatarSuporte.elemento, avatarAtivo.raridade);
+    if (avatarSuporte) {
+      const preview = previewSinergia(avatarSuporte.elemento, avatarSuporte.raridade);
       setSinergiaPreview(preview);
     } else {
       setSinergiaPreview(null);
     }
-  }, [avatarAtivo, avatarSuporte]);
+  }, [avatarSuporte]);
 
   const iniciarTreinoIA = async (minPower, maxPower, dificuldade) => {
     if (!avatarAtivo) {
@@ -412,46 +412,61 @@ export default function TreinamentoAIPage() {
               {sinergiaPreview && (
                 <div className="mt-3 bg-gradient-to-br from-purple-950/50 to-cyan-950/50 border border-cyan-500/30 rounded-lg p-3">
                   <div className="flex items-center justify-between mb-2">
-                    <span className={`text-xs font-black ${sinergiaPreview.isSpecial ? 'text-yellow-400' : 'text-cyan-400'}`}>
-                      {sinergiaPreview.isSpecial && '⚠️ '}{sinergiaPreview.nome}
+                    <span className="text-xs font-black text-cyan-400">
+                      ✨ SINERGIAS DO SUPORTE
                     </span>
+                    {sinergiaPreview.multiplicador > 1.0 && (
+                      <span className="text-[9px] bg-yellow-600/30 text-yellow-400 px-1.5 py-0.5 rounded border border-yellow-500/50 font-bold">
+                        {sinergiaPreview.raridadeSuporte} ×{sinergiaPreview.multiplicador.toFixed(1)}
+                      </span>
+                    )}
                   </div>
 
-                  <p className="text-[10px] text-slate-300 mb-2 leading-relaxed">
-                    {sinergiaPreview.descricao}
+                  <div className="text-[10px] text-purple-400 font-bold mb-1">
+                    Tipo: {sinergiaPreview.tipoSuporte}
+                  </div>
+
+                  <p className="text-[10px] text-slate-300 mb-3 leading-relaxed italic">
+                    {sinergiaPreview.descricaoGeral}
                   </p>
 
-                  {/* Vantagens */}
-                  {sinergiaPreview.vantagens && sinergiaPreview.vantagens.length > 0 && (
-                    <div className="mb-2">
-                      <div className="text-[9px] text-green-400 font-bold mb-1">✅ VANTAGENS:</div>
-                      <div className="text-[10px] space-y-1">
-                        {sinergiaPreview.vantagens.map((vantagem, idx) => (
-                          <div key={idx} className="bg-green-900/30 text-green-300 border border-green-600/30 rounded px-2 py-1">
-                            ✨ {vantagem.texto}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  {/* Matchups Possíveis */}
+                  <div className="text-[9px] text-cyan-400 font-bold mb-1.5">⚡ CONTRA INIMIGOS:</div>
+                  <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                    {sinergiaPreview.matchups.map((matchup, idx) => {
+                      const modEntries = Object.entries(matchup.modificadores);
+                      const temModificadores = modEntries.length > 0;
 
-                  {/* Desvantagens */}
-                  {sinergiaPreview.desvantagens && sinergiaPreview.desvantagens.length > 0 ? (
-                    <div>
-                      <div className="text-[9px] text-red-400 font-bold mb-1">⚠️ DESVANTAGENS:</div>
-                      <div className="text-[10px] space-y-1">
-                        {sinergiaPreview.desvantagens.map((desvantagem, idx) => (
-                          <div key={idx} className="bg-red-900/30 text-red-300 border border-red-600/30 rounded px-2 py-1">
-                            💢 {desvantagem.texto}
+                      return (
+                        <div key={idx} className={`${matchup.tipo === 'default' ? 'bg-slate-900/50 border-slate-600/30' : 'bg-cyan-900/20 border-cyan-600/30'} border rounded px-2 py-1.5`}>
+                          <div className="flex items-center justify-between mb-0.5">
+                            <span className="text-[10px] font-bold text-white">VS {matchup.elemento}</span>
+                            <span className="text-[9px] text-cyan-400">{matchup.nome}</span>
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="bg-purple-900/30 text-purple-300 border border-purple-600/30 rounded px-2 py-1 text-center text-[10px]">
-                      ⭐ Sinergia Perfeita - Sem Desvantagens!
-                    </div>
-                  )}
+                          {temModificadores && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {modEntries.map(([tipo, valor], midx) => {
+                                const percentual = Math.floor(valor * 100);
+                                const sinal = percentual > 0 ? '+' : '';
+                                const cor = percentual > 0 ? 'text-green-400 bg-green-900/30' : 'text-red-400 bg-red-900/30';
+                                const nomes = {
+                                  dano_habilidades: 'Dano Hab',
+                                  resistencia: 'Resistência',
+                                  evasao: 'Evasão',
+                                  critico: 'Crítico'
+                                };
+                                return (
+                                  <span key={midx} className={`text-[9px] ${cor} px-1.5 py-0.5 rounded`}>
+                                    {sinal}{percentual}% {nomes[tipo] || tipo}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>

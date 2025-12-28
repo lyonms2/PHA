@@ -15,6 +15,7 @@ import SynergyDisplay from './components/SynergyDisplay';
 import AvatarDuoDisplay from './components/AvatarDuoDisplay';
 import BattleLog from './components/BattleLog';
 import DualCardBattleLayout from '@/app/arena/components/DualCardBattleLayout';
+import BattleEffectWrapper from '@/app/arena/components/BattleEffectWrapper';
 
 function BatalhaTreinoIAContent() {
   const router = useRouter();
@@ -88,11 +89,9 @@ function BatalhaTreinoIAContent() {
         // Carregar sinergias
         if (dados.sinergia) {
           setSinergiaAtiva(dados.sinergia);
-          console.log('✨ Sinergia Player:', dados.sinergia.nome);
         }
         if (dados.sinergiaIA) {
           setSinergiaIA(dados.sinergiaIA);
-          console.log('✨ Sinergia IA:', dados.sinergiaIA.nome);
         }
 
         // Inicializar batalha
@@ -264,6 +263,7 @@ function BatalhaTreinoIAContent() {
 
       if (result.success) {
         const battle = result.battle;
+
         setMyHp(battle.playerHp);
         setMyHpMax(battle.playerHpMax);
         setOpponentHp(battle.iaHp);
@@ -279,11 +279,6 @@ function BatalhaTreinoIAContent() {
         setIsYourTurn(battle.currentTurn === 'player');
         setStatus(battle.status);
         setWinner(battle.winner);
-
-        // Turno da IA
-        if (battle.currentTurn === 'ia' && battle.status === 'active') {
-          setTimeout(() => executarTurnoIA(id || battleId), 1500);
-        }
 
         // Processar efeitos quando é meu turno
         if (battle.currentTurn === 'player' && battle.status === 'active') {
@@ -333,95 +328,37 @@ function BatalhaTreinoIAContent() {
     }
   };
 
-  // Processar efeitos da IA no início do turno dela
-  const processarEfeitosIA = async (id) => {
-    try {
-      const response = await fetch('/api/arena/treino-ia/batalha', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          battleId: id || battleId,
-          action: 'process_effects',
-          target: 'ia'
-        })
-      });
 
-      const result = await response.json();
-      if (result.success) {
-        // Mostrar logs dos efeitos
-        if (result.logsEfeitos && result.logsEfeitos.length > 0) {
-          for (const log of result.logsEfeitos) {
-            addLog(log);
-          }
-        }
+  // Processar efeitos visuais da ação da IA (chamado após cada ação do jogador)
+  const processarAcaoIA = (iaAction) => {
+    if (!iaAction) return;
 
-        setOpponentHp(result.newHp);
-        setOpponentEffects(result.efeitosRestantes || []);
-
-        if (result.finished) {
-          addLog(`☠️ ${iaAvatar.nome} morreu por efeitos!`);
-          setStatus('finished');
-          setWinner('player');
-        }
-      }
-    } catch (error) {
-      console.error('Erro ao processar efeitos da IA:', error);
+    // IA defendeu
+    if (iaAction.action === 'defend') {
+      mostrarDanoVisual('oponente', null, 'block', null);
+      return;
     }
-  };
 
-  // Turno da IA
-  const executarTurnoIA = async (id) => {
-    try {
-      // Primeiro processar efeitos da IA se houver
-      if (opponentEffects.length > 0) {
-        await processarEfeitosIA(id || battleId);
+    // Efeitos visuais para ataques e habilidades da IA
+    if (iaAction.action === 'attack' || iaAction.action === 'ability') {
+      if (!iaAction.errou && iaAction.dano > 0) {
+        const tipoEfeito = iaAction.critico ? 'critical' : 'damage';
+        mostrarDanoVisual('meu', iaAction.dano, tipoEfeito, iaAvatar?.elemento);
+      } else if (iaAction.bloqueado) {
+        // Jogador bloqueou o ataque da IA
+        mostrarDanoVisual('meu', null, 'block', null);
+      } else if (iaAction.esquivou) {
+        // Jogador esquivou do ataque da IA
+        mostrarDanoVisual('meu', null, 'dodge', null);
+      } else if (iaAction.errou) {
+        // IA simplesmente errou
+        mostrarDanoVisual('meu', null, 'miss', null);
       }
+    }
 
-      const response = await fetch('/api/arena/treino-ia/batalha', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          battleId: id || battleId,
-          action: 'ia_turn'
-        })
-      });
-
-      const result = await response.json();
-      if (result.success) {
-        // Adicionar logs explícitos do backend primeiro
-        if (result.logsParaJogador && Array.isArray(result.logsParaJogador)) {
-          console.log('📜 [LOGS] Adicionando logs da IA:', result.logsParaJogador);
-          result.logsParaJogador.forEach(log => addLog(log));
-        }
-
-        // Verificar fim de batalha DEPOIS de processar logs
-        if (result.finished || (result.iaAction && result.iaAction.finished)) {
-          processarFimDeBatalha(result);
-          return; // Não processar mais nada se a batalha acabou
-        }
-
-        // Efeitos visuais para ações da IA
-        if (result.iaAction) {
-          const iaAction = result.iaAction;
-
-          // Efeitos visuais
-          if (iaAction.action === 'attack' || iaAction.action === 'ability') {
-            if (!iaAction.errou && iaAction.dano > 0) {
-              if (iaAction.numGolpes && iaAction.numGolpes > 1) {
-                mostrarDanoVisual('meu', `${iaAction.dano} ×${iaAction.numGolpes}`, 'multihit');
-              } else {
-                mostrarDanoVisual('meu', iaAction.dano, iaAction.critico ? 'critical' : 'damage');
-              }
-            } else if (iaAction.errou) {
-              mostrarDanoVisual('meu', '', 'dodge');
-            }
-          }
-        }
-
-        await atualizarEstado(id || battleId);
-      }
-    } catch (error) {
-      console.error('Erro turno IA:', error);
+    // Cura da IA (habilidades de suporte)
+    if (iaAction.cura > 0) {
+      mostrarDanoVisual('oponente', iaAction.cura, 'heal', null);
     }
   };
 
@@ -429,13 +366,20 @@ function BatalhaTreinoIAContent() {
     setLog(prev => [...prev, msg]); // Mais recente no final (embaixo), mostra todos os logs
   };
 
-  const mostrarDanoVisual = (alvo, dano) => {
+  const mostrarDanoVisual = (alvo, dano, tipo = 'damage', elemento = null) => {
+    const effect = {
+      type: tipo, // 'damage', 'critical', 'heal', 'miss', 'dodge', 'block'
+      number: dano,
+      elemento: elemento,
+      timestamp: Date.now() // Força React detectar mudança
+    };
+
     if (alvo === 'meu') {
-      setMyDamageEffect(dano);
-      setTimeout(() => setMyDamageEffect(null), 1000);
+      setMyDamageEffect(effect);
+      setTimeout(() => setMyDamageEffect(null), 1200);
     } else {
-      setOpponentDamageEffect(dano);
-      setTimeout(() => setOpponentDamageEffect(null), 1000);
+      setOpponentDamageEffect(effect);
+      setTimeout(() => setOpponentDamageEffect(null), 1200);
     }
   };
 
@@ -475,14 +419,29 @@ function BatalhaTreinoIAContent() {
           addLog('🔥🛡️ CONTRA-ATAQUE! Você foi queimado!');
         }
 
+        // Efeito visual do meu ataque
+        if (!result.errou) {
+          const tipoEfeito = result.critico ? 'critical' : 'damage';
+          mostrarDanoVisual('oponente', result.dano, tipoEfeito, meuAvatar?.elemento);
+        } else if (result.bloqueado) {
+          // IA bloqueou o ataque
+          mostrarDanoVisual('oponente', null, 'block', null);
+        } else if (result.esquivou) {
+          // IA esquivou do ataque
+          mostrarDanoVisual('oponente', null, 'dodge', null);
+        } else {
+          // Jogador simplesmente errou
+          mostrarDanoVisual('oponente', null, 'miss', null);
+        }
+
         // Logs da IA (processados automaticamente pelo backend)
         if (result.logsParaJogador && Array.isArray(result.logsParaJogador)) {
-          console.log('📜 [LOGS ATACAR] Logs da IA:', result.logsParaJogador);
           result.logsParaJogador.forEach(log => addLog(log));
         }
 
-        if (!result.errou) {
-          mostrarDanoVisual('oponente', result.dano, result.critico ? 'critical' : 'damage');
+        // PROCESSAR AÇÃO DA IA (efeitos visuais)
+        if (result.iaAction) {
+          setTimeout(() => processarAcaoIA(result.iaAction), 800);
         }
 
         // Verificar fim de batalha
@@ -497,7 +456,10 @@ function BatalhaTreinoIAContent() {
     } catch (error) {
       console.error('Erro:', error);
     } finally {
-      setActionInProgress(false);
+      // Delay de 1.5s para dar tempo das animações completarem
+      setTimeout(() => {
+        setActionInProgress(false);
+      }, 1500);
     }
   };
 
@@ -525,10 +487,17 @@ function BatalhaTreinoIAContent() {
           addLog(result.log.detalhes);
         }
 
+        // Efeito visual de defesa
+        mostrarDanoVisual('meu', null, 'block', null);
+
         // Logs da IA (processados automaticamente pelo backend)
         if (result.logsParaJogador && Array.isArray(result.logsParaJogador)) {
-          console.log('📜 [LOGS DEFENDER] Logs da IA:', result.logsParaJogador);
           result.logsParaJogador.forEach(log => addLog(log));
+        }
+
+        // PROCESSAR AÇÃO DA IA (efeitos visuais)
+        if (result.iaAction) {
+          setTimeout(() => processarAcaoIA(result.iaAction), 800);
         }
 
         await atualizarEstado();
@@ -536,7 +505,10 @@ function BatalhaTreinoIAContent() {
     } catch (error) {
       console.error('Erro:', error);
     } finally {
-      setActionInProgress(false);
+      // Delay de 1.5s para dar tempo das animações completarem
+      setTimeout(() => {
+        setActionInProgress(false);
+      }, 1500);
     }
   };
 
@@ -592,19 +564,29 @@ function BatalhaTreinoIAContent() {
           addLog('🔥🛡️ CONTRA-ATAQUE! Você foi queimado!');
         }
 
+        // Efeitos visuais da minha habilidade
+        if (!result.errou && result.dano > 0) {
+          const tipoEfeito = result.critico ? 'critical' : 'damage';
+          mostrarDanoVisual('oponente', result.dano, tipoEfeito, meuAvatar?.elemento);
+        } else if (result.bloqueado) {
+          // IA bloqueou a habilidade
+          mostrarDanoVisual('oponente', null, 'block', null);
+        } else if (result.esquivou) {
+          // IA esquivou da habilidade
+          mostrarDanoVisual('oponente', null, 'dodge', null);
+        } else if (result.errou) {
+          // Jogador simplesmente errou
+          mostrarDanoVisual('oponente', null, 'miss', null);
+        }
+
         // Logs da IA (processados automaticamente pelo backend)
         if (result.logsParaJogador && Array.isArray(result.logsParaJogador)) {
-          console.log('📜 [LOGS HABILIDADE] Logs da IA:', result.logsParaJogador);
           result.logsParaJogador.forEach(log => addLog(log));
         }
 
-        // Efeitos visuais
-        if (!result.errou && result.dano > 0) {
-          if (result.numGolpes && result.numGolpes > 1) {
-            mostrarDanoVisual('oponente', `${result.dano} ×${result.numGolpes}`, 'multihit');
-          } else {
-            mostrarDanoVisual('oponente', result.dano, result.critico ? 'critical' : 'damage');
-          }
+        // PROCESSAR AÇÃO DA IA (efeitos visuais)
+        if (result.iaAction) {
+          setTimeout(() => processarAcaoIA(result.iaAction), 800);
         }
 
         // Verificar fim de batalha
@@ -619,7 +601,10 @@ function BatalhaTreinoIAContent() {
     } catch (error) {
       console.error('Erro:', error);
     } finally {
-      setActionInProgress(false);
+      // Delay de 1.5s para dar tempo das animações completarem
+      setTimeout(() => {
+        setActionInProgress(false);
+      }, 1500);
     }
   };
 
@@ -697,6 +682,10 @@ function BatalhaTreinoIAContent() {
         // Sinergias
         playerSynergy={sinergiaAtiva}
         opponentSynergy={sinergiaIA}
+
+        // Efeitos visuais de dano/cura
+        myDamageEffect={myDamageEffect}
+        opponentDamageEffect={opponentDamageEffect}
       />
     );
   }
@@ -740,15 +729,10 @@ function BatalhaTreinoIAContent() {
 
               {/* Avatar e Stats */}
               <div className="p-3 flex gap-3">
-                <div className="flex-shrink-0 relative">
-                  <AvatarSVG avatar={meuAvatar} tamanho={100} />
-                  {myDamageEffect && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-2xl font-bold text-red-500 animate-bounce">
-                        -{myDamageEffect}
-                      </div>
-                    </div>
-                  )}
+                <div className="flex-shrink-0">
+                  <BattleEffectWrapper effect={myDamageEffect}>
+                    <AvatarSVG avatar={meuAvatar} tamanho={100} />
+                  </BattleEffectWrapper>
                 </div>
 
                 <div className="flex-1 space-y-1.5 text-xs">
@@ -868,15 +852,10 @@ function BatalhaTreinoIAContent() {
 
               {/* Avatar e Stats */}
               <div className="p-3 flex gap-3">
-                <div className="flex-shrink-0 relative">
-                  <AvatarSVG avatar={iaAvatar} tamanho={100} />
-                  {opponentDamageEffect && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-2xl font-bold text-red-500 animate-bounce">
-                        -{opponentDamageEffect}
-                      </div>
-                    </div>
-                  )}
+                <div className="flex-shrink-0">
+                  <BattleEffectWrapper effect={opponentDamageEffect}>
+                    <AvatarSVG avatar={iaAvatar} tamanho={100} />
+                  </BattleEffectWrapper>
                 </div>
 
                 <div className="flex-1 space-y-1.5 text-xs">
