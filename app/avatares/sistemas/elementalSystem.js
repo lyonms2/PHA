@@ -63,9 +63,9 @@ export const VANTAGENS_ELEMENTAIS = {
     oposto: ELEMENTOS.LUZ
   },
   [ELEMENTOS.LUZ]: {
-    forte_contra: [ELEMENTOS.SOMBRA, ELEMENTOS.VOID],
+    forte_contra: [ELEMENTOS.SOMBRA],
     fraco_contra: [],
-    neutro: [ELEMENTOS.FOGO, ELEMENTOS.AGUA, ELEMENTOS.TERRA, ELEMENTOS.VENTO, ELEMENTOS.ELETRICIDADE],
+    neutro: [ELEMENTOS.FOGO, ELEMENTOS.AGUA, ELEMENTOS.TERRA, ELEMENTOS.VENTO, ELEMENTOS.ELETRICIDADE, ELEMENTOS.VOID, ELEMENTOS.AETHER],
     oposto: ELEMENTOS.SOMBRA
   },
   [ELEMENTOS.VOID]: {
@@ -379,8 +379,8 @@ export const TABELA_VANTAGENS = `
 ║   └─ Fraco contra: 🌱 Terra                                    ║
 ╠════════════════════════════════════════════════════════════════╣
 ║ 🌑 SOMBRA ↔ 🌞 LUZ (Opostos - 2x dano mútuo)                  ║
-║   ├─ Luz forte contra: Sombra, Void                            ║
-║   └─ Sombra forte contra: Luz, Água                            ║
+║   ├─ Luz forte contra: Sombra                                  ║
+║   └─ Sombra forte contra: Luz                                  ║
 ╠════════════════════════════════════════════════════════════════╣
 ║ 🕳️ VOID (EXTREMAMENTE RARO)                                  ║
 ║   ├─ Forte contra: 🌞 Luz, 🌑 Sombra                          ║
