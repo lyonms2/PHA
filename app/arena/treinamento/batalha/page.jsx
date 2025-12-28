@@ -263,6 +263,7 @@ function BatalhaTreinoIAContent() {
 
       if (result.success) {
         const battle = result.battle;
+
         setMyHp(battle.playerHp);
         setMyHpMax(battle.playerHpMax);
         setOpponentHp(battle.iaHp);
@@ -278,11 +279,6 @@ function BatalhaTreinoIAContent() {
         setIsYourTurn(battle.currentTurn === 'player');
         setStatus(battle.status);
         setWinner(battle.winner);
-
-        // Turno da IA
-        if (battle.currentTurn === 'ia' && battle.status === 'active') {
-          setTimeout(() => executarTurnoIA(id || battleId), 1500);
-        }
 
         // Processar efeitos quando é meu turno
         if (battle.currentTurn === 'player' && battle.status === 'active') {
@@ -332,112 +328,33 @@ function BatalhaTreinoIAContent() {
     }
   };
 
-  // Processar efeitos da IA no início do turno dela
-  const processarEfeitosIA = async (id) => {
-    try {
-      const response = await fetch('/api/arena/treino-ia/batalha', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          battleId: id || battleId,
-          action: 'process_effects',
-          target: 'ia'
-        })
-      });
 
-      const result = await response.json();
-      if (result.success) {
-        // Mostrar logs dos efeitos
-        if (result.logsEfeitos && result.logsEfeitos.length > 0) {
-          for (const log of result.logsEfeitos) {
-            addLog(log);
-          }
-        }
+  // Processar efeitos visuais da ação da IA (chamado após cada ação do jogador)
+  const processarAcaoIA = (iaAction) => {
+    if (!iaAction) return;
 
-        setOpponentHp(result.newHp);
-        setOpponentEffects(result.efeitosRestantes || []);
+    console.log('🎯 [processarAcaoIA] Processando ação da IA:', iaAction);
 
-        if (result.finished) {
-          addLog(`☠️ ${iaAvatar.nome} morreu por efeitos!`);
-          setStatus('finished');
-          setWinner('player');
-        }
+    // Efeitos visuais para ataques e habilidades da IA
+    if (iaAction.action === 'attack' || iaAction.action === 'ability') {
+      if (!iaAction.errou && iaAction.dano > 0) {
+        const tipoEfeito = iaAction.critico ? 'critical' : 'damage';
+        console.log('💥 [processarAcaoIA] IA causou dano - mostrando efeito:', {
+          dano: iaAction.dano,
+          tipoEfeito,
+          elemento: iaAvatar?.elemento
+        });
+        mostrarDanoVisual('meu', iaAction.dano, tipoEfeito, iaAvatar?.elemento);
+      } else if (iaAction.errou) {
+        console.log('💨 [processarAcaoIA] IA errou - mostrando dodge');
+        mostrarDanoVisual('meu', null, 'dodge', null);
       }
-    } catch (error) {
-      console.error('Erro ao processar efeitos da IA:', error);
     }
-  };
 
-  // Turno da IA
-  const executarTurnoIA = async (id) => {
-    console.log('🟢 [executarTurnoIA] FUNÇÃO CHAMADA! battleId:', id || battleId);
-
-    try {
-      // Primeiro processar efeitos da IA se houver
-      if (opponentEffects.length > 0) {
-        console.log('🟢 [executarTurnoIA] Processando efeitos da IA primeiro');
-        await processarEfeitosIA(id || battleId);
-      }
-
-      console.log('🟢 [executarTurnoIA] Fazendo requisição para /api/arena/treino-ia/batalha');
-
-      const response = await fetch('/api/arena/treino-ia/batalha', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          battleId: id || battleId,
-          action: 'ia_turn'
-        })
-      });
-
-      console.log('🟢 [executarTurnoIA] Response recebida, status:', response.status);
-
-      const result = await response.json();
-      console.log('🔴 [executarTurnoIA] RESULTADO COMPLETO:', result);
-
-      if (result.success) {
-        // Adicionar logs explícitos do backend primeiro
-        if (result.logsParaJogador && Array.isArray(result.logsParaJogador)) {
-          console.log('📜 [LOGS] Adicionando logs da IA:', result.logsParaJogador);
-          result.logsParaJogador.forEach(log => addLog(log));
-        }
-
-        // Verificar fim de batalha DEPOIS de processar logs
-        if (result.finished || (result.iaAction && result.iaAction.finished)) {
-          processarFimDeBatalha(result);
-          return; // Não processar mais nada se a batalha acabou
-        }
-
-        console.log('🔴 [executarTurnoIA] result.iaAction existe?', !!result.iaAction, result.iaAction);
-
-        // Efeitos visuais para ações da IA
-        if (result.iaAction) {
-          const iaAction = result.iaAction;
-
-          console.log('🎯 [TREINAMENTO executarTurnoIA] Processando ação da IA:', iaAction);
-
-          // Efeitos visuais
-          if (iaAction.action === 'attack' || iaAction.action === 'ability') {
-            if (!iaAction.errou && iaAction.dano > 0) {
-              const tipoEfeito = iaAction.critico ? 'critical' : 'damage';
-              console.log('💥 [TREINAMENTO] IA causou dano - chamando mostrarDanoVisual:', {
-                alvo: 'meu',
-                dano: iaAction.dano,
-                tipoEfeito,
-                elemento: iaAvatar?.elemento
-              });
-              mostrarDanoVisual('meu', iaAction.dano, tipoEfeito, iaAvatar?.elemento);
-            } else if (iaAction.errou) {
-              console.log('💨 [TREINAMENTO] IA errou - chamando mostrarDanoVisual');
-              mostrarDanoVisual('meu', null, 'dodge', null);
-            }
-          }
-        }
-
-        await atualizarEstado(id || battleId);
-      }
-    } catch (error) {
-      console.error('Erro turno IA:', error);
+    // Cura da IA (habilidades de suporte)
+    if (iaAction.cura > 0) {
+      console.log('💚 [processarAcaoIA] IA se curou:', iaAction.cura);
+      mostrarDanoVisual('oponente', iaAction.cura, 'heal', null);
     }
   };
 
@@ -453,23 +370,12 @@ function BatalhaTreinoIAContent() {
       timestamp: Date.now() // Força React detectar mudança
     };
 
-    console.log('🎬 [TREINAMENTO mostrarDanoVisual] CHAMADO:', { alvo, dano, tipo, elemento });
-    console.trace('🔎 [STACK TRACE] De onde está sendo chamado:');
-
     if (alvo === 'meu') {
-      console.log('👤 [TREINAMENTO] Setando myDamageEffect:', effect);
       setMyDamageEffect(effect);
-      setTimeout(() => {
-        console.log('👤 [TREINAMENTO] Limpando myDamageEffect');
-        setMyDamageEffect(null);
-      }, 1200);
+      setTimeout(() => setMyDamageEffect(null), 1200);
     } else {
-      console.log('🤖 [TREINAMENTO] Setando opponentDamageEffect:', effect);
       setOpponentDamageEffect(effect);
-      setTimeout(() => {
-        console.log('🤖 [TREINAMENTO] Limpando opponentDamageEffect');
-        setOpponentDamageEffect(null);
-      }, 1200);
+      setTimeout(() => setOpponentDamageEffect(null), 1200);
     }
   };
 
@@ -509,17 +415,24 @@ function BatalhaTreinoIAContent() {
           addLog('🔥🛡️ CONTRA-ATAQUE! Você foi queimado!');
         }
 
+        // Efeito visual do meu ataque
+        if (!result.errou) {
+          const tipoEfeito = result.critico ? 'critical' : 'damage';
+          mostrarDanoVisual('oponente', result.dano, tipoEfeito, meuAvatar?.elemento);
+        } else {
+          mostrarDanoVisual('oponente', null, 'miss', null);
+        }
+
         // Logs da IA (processados automaticamente pelo backend)
         if (result.logsParaJogador && Array.isArray(result.logsParaJogador)) {
           console.log('📜 [LOGS ATACAR] Logs da IA:', result.logsParaJogador);
           result.logsParaJogador.forEach(log => addLog(log));
         }
 
-        if (!result.errou) {
-          const tipoEfeito = result.critico ? 'critical' : 'damage';
-          mostrarDanoVisual('oponente', result.dano, tipoEfeito, meuAvatar?.elemento);
-        } else {
-          mostrarDanoVisual('oponente', null, 'miss', null);
+        // PROCESSAR AÇÃO DA IA (efeitos visuais)
+        if (result.iaAction) {
+          console.log('🤖 [ATACAR] Processando ação da IA:', result.iaAction);
+          setTimeout(() => processarAcaoIA(result.iaAction), 800);
         }
 
         // Verificar fim de batalha
@@ -569,6 +482,12 @@ function BatalhaTreinoIAContent() {
         if (result.logsParaJogador && Array.isArray(result.logsParaJogador)) {
           console.log('📜 [LOGS DEFENDER] Logs da IA:', result.logsParaJogador);
           result.logsParaJogador.forEach(log => addLog(log));
+        }
+
+        // PROCESSAR AÇÃO DA IA (efeitos visuais)
+        if (result.iaAction) {
+          console.log('🤖 [DEFENDER] Processando ação da IA:', result.iaAction);
+          setTimeout(() => processarAcaoIA(result.iaAction), 800);
         }
 
         await atualizarEstado();
@@ -632,18 +551,24 @@ function BatalhaTreinoIAContent() {
           addLog('🔥🛡️ CONTRA-ATAQUE! Você foi queimado!');
         }
 
+        // Efeitos visuais da minha habilidade
+        if (!result.errou && result.dano > 0) {
+          const tipoEfeito = result.critico ? 'critical' : 'damage';
+          mostrarDanoVisual('oponente', result.dano, tipoEfeito, meuAvatar?.elemento);
+        } else if (result.errou) {
+          mostrarDanoVisual('oponente', null, 'miss', null);
+        }
+
         // Logs da IA (processados automaticamente pelo backend)
         if (result.logsParaJogador && Array.isArray(result.logsParaJogador)) {
           console.log('📜 [LOGS HABILIDADE] Logs da IA:', result.logsParaJogador);
           result.logsParaJogador.forEach(log => addLog(log));
         }
 
-        // Efeitos visuais
-        if (!result.errou && result.dano > 0) {
-          const tipoEfeito = result.critico ? 'critical' : 'damage';
-          mostrarDanoVisual('oponente', result.dano, tipoEfeito, meuAvatar?.elemento);
-        } else if (result.errou) {
-          mostrarDanoVisual('oponente', null, 'miss', null);
+        // PROCESSAR AÇÃO DA IA (efeitos visuais)
+        if (result.iaAction) {
+          console.log('🤖 [HABILIDADE] Processando ação da IA:', result.iaAction);
+          setTimeout(() => processarAcaoIA(result.iaAction), 800);
         }
 
         // Verificar fim de batalha
