@@ -96,14 +96,17 @@ export async function POST(request) {
       );
     }
 
-    // Aplicar sinergia entre Principal e Suporte
-    const resultadoSinergia = aplicarSinergia(avatar, avatarSuporte);
+    // AGORA temos ambos os jogadores! Calcular AMBAS as sinergias corretamente
+    // NOVO SISTEMA: Suporte (próprio) VS Principal (inimigo)
 
-    // Preparar informações da sinergia para armazenar na sala
-    const sinergiaInfo = {
-      ...resultadoSinergia.sinergiaAtiva,
-      modificadores: resultadoSinergia.modificadores,
-      logTexto: resultadoSinergia.logTexto,
+    // Sinergia do GUEST: Suporte (guest) VS Principal (host)
+    const resultadoSinergiaGuest = aplicarSinergia(avatarSuporte, room.host_avatar);
+
+    const sinergiaGuest = {
+      sinergiaAtiva: resultadoSinergiaGuest.sinergiaAtiva,
+      modificadores: resultadoSinergiaGuest.modificadores,
+      logTexto: resultadoSinergiaGuest.logTexto,
+      modificadoresFormatados: resultadoSinergiaGuest.modificadoresFormatados,
       avatarSuporte: {
         id: avatarSuporte.id,
         nome: avatarSuporte.nome,
@@ -118,27 +121,52 @@ export async function POST(request) {
       }
     };
 
-    console.log('✨ Sinergia aplicada (Guest):', {
-      principal: avatar.nome,
-      suporte: avatarSuporte.nome,
-      sinergia: sinergiaInfo.nome,
-      log: resultadoSinergia.logTexto
+    // Sinergia do HOST: Suporte (host) VS Principal (guest)
+    const resultadoSinergiaHost = aplicarSinergia(room.host_avatar_suporte, avatar);
+
+    const sinergiaHost = {
+      sinergiaAtiva: resultadoSinergiaHost.sinergiaAtiva,
+      modificadores: resultadoSinergiaHost.modificadores,
+      logTexto: resultadoSinergiaHost.logTexto,
+      modificadoresFormatados: resultadoSinergiaHost.modificadoresFormatados,
+      avatarSuporte: room.host_avatar_suporte
+    };
+
+    console.log('✨ Sinergias calculadas:', {
+      guest: {
+        suporte: avatarSuporte.nome,
+        principalInimigo: room.host_avatar.nome,
+        sinergia: resultadoSinergiaGuest.sinergiaAtiva?.nome || 'Nenhuma'
+      },
+      host: {
+        suporte: room.host_avatar_suporte.nome,
+        principalInimigo: avatar.nome,
+        sinergia: resultadoSinergiaHost.sinergiaAtiva?.nome || 'Nenhuma'
+      }
     });
 
-    // Calcular HP máximo do avatar com modificadores de sinergia
-    const hpMaximoBase = calcularHPMaximoCompleto(avatar);
-    const hpMaximo = calcularHPComSinergia(hpMaximoBase, resultadoSinergia.modificadores);
-    const hpAtual = Math.min(avatar.hp_atual || hpMaximo, hpMaximo);
+    // Calcular HP e Energia para GUEST com sinergia
+    const guestHpMaximoBase = calcularHPMaximoCompleto(avatar);
+    const guestHpMaximo = calcularHPComSinergia(guestHpMaximoBase, resultadoSinergiaGuest.modificadores);
+    const guestHpAtual = Math.min(avatar.hp_atual || guestHpMaximo, guestHpMaximo);
+    const guestEnergia = calcularEnergiaComSinergia(100, resultadoSinergiaGuest.modificadores);
 
-    // Atualizar sala com o convidado e sinergia
+    // Calcular HP e Energia para HOST com sinergia (recalcular)
+    const hostHpMaximoBase = room.host_hp_max; // Era calculado sem sinergia
+    const hostHpMaximo = calcularHPComSinergia(hostHpMaximoBase, resultadoSinergiaHost.modificadores);
+    const hostHpAtual = Math.min(room.host_hp, hostHpMaximo);
+    const hostEnergia = calcularEnergiaComSinergia(100, resultadoSinergiaHost.modificadores);
+
+    // Atualizar sala com AMBAS as sinergias e stats ajustados
     await updateDocument('pvp_duel_rooms', room.id, {
+      // Dados do GUEST
       guest_user_id: visitorId,
       guest_nome: playerStats?.nome_operacao || 'Jogador 2',
       guest_avatar: {
         id: avatar.id,
         nome: avatar.nome,
-        hp_maximo: hpMaximo,
-        hp_atual: hpAtual,
+        hp_maximo: guestHpMaximo,
+        hp_atual: guestHpAtual,
         exaustao: avatar.exaustao || 0,
         nivel: avatar.nivel || 1,
         raridade: avatar.raridade || 'comum',
@@ -149,14 +177,22 @@ export async function POST(request) {
         foco: avatar.foco || 10,
         habilidades: avatar.habilidades || []
       },
-      guest_avatar_suporte: sinergiaInfo.avatarSuporte, // Avatar suporte do guest
-      guest_sinergia: sinergiaInfo, // Informações da sinergia do guest
-      guest_hp: hpAtual,
-      guest_hp_max: hpMaximo,
-      guest_energy: calcularEnergiaComSinergia(100, resultadoSinergia.modificadores),
-      guest_energy_max: calcularEnergiaComSinergia(100, resultadoSinergia.modificadores),
+      guest_avatar_suporte: sinergiaGuest.avatarSuporte,
+      guest_sinergia: sinergiaGuest,
+      guest_hp: guestHpAtual,
+      guest_hp_max: guestHpMaximo,
+      guest_energy: guestEnergia,
+      guest_energy_max: guestEnergia,
       guest_effects: [],
       guest_cooldowns: {},
+
+      // Atualizar dados do HOST com sinergia correta
+      host_sinergia: sinergiaHost,
+      host_hp_max: hostHpMaximo,
+      host_hp: hostHpAtual,
+      host_energy: hostEnergia,
+      host_energy_max: hostEnergia,
+
       status: 'ready'
     });
 

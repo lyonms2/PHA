@@ -249,34 +249,6 @@ export async function POST(request) {
 
       if (challenge.suporte_id) {
         hostAvatarSuporte = await getDocument('avatares', challenge.suporte_id);
-
-        if (hostAvatarSuporte && challenge.avatar) {
-          const resultadoSinergia = aplicarSinergia(challenge.avatar, hostAvatarSuporte);
-
-          hostSinergiaInfo = {
-            ...resultadoSinergia.sinergiaAtiva,
-            modificadores: resultadoSinergia.modificadores,
-            logTexto: resultadoSinergia.logTexto,
-            avatarSuporte: {
-              id: hostAvatarSuporte.id,
-              nome: hostAvatarSuporte.nome,
-              elemento: hostAvatarSuporte.elemento,
-              nivel: hostAvatarSuporte.nivel,
-              raridade: hostAvatarSuporte.raridade,
-              marca_morte: hostAvatarSuporte.marca_morte || false,
-              forca: hostAvatarSuporte.forca,
-              agilidade: hostAvatarSuporte.agilidade,
-              resistencia: hostAvatarSuporte.resistencia,
-              foco: hostAvatarSuporte.foco
-            }
-          };
-
-          // Recalcular HP e Energia com modificadores de sinergia
-          const hpMaximoBase = calcularHPMaximoCompleto(challenge.avatar);
-          hostHpMax = calcularHPComSinergia(hpMaximoBase, resultadoSinergia.modificadores);
-          hostEnergy = calcularEnergiaComSinergia(100, resultadoSinergia.modificadores);
-          hostEnergyMax = hostEnergy;
-        }
       }
 
       const hostHpAtual = Math.min(challenge.hp_atual || hostHpMax, hostHpMax);
@@ -290,34 +262,69 @@ export async function POST(request) {
 
       if (myEntry?.suporte_id) {
         guestAvatarSuporte = await getDocument('avatares', myEntry.suporte_id);
+      }
 
-        if (guestAvatarSuporte && myEntry.avatar) {
-          const resultadoSinergia = aplicarSinergia(myEntry.avatar, guestAvatarSuporte);
+      // ====== CALCULAR AMBAS AS SINERGIAS CORRETAMENTE ======
+      // NOVO SISTEMA: Suporte (próprio) VS Principal (inimigo)
 
-          guestSinergiaInfo = {
-            ...resultadoSinergia.sinergiaAtiva,
-            modificadores: resultadoSinergia.modificadores,
-            logTexto: resultadoSinergia.logTexto,
-            avatarSuporte: {
-              id: guestAvatarSuporte.id,
-              nome: guestAvatarSuporte.nome,
-              elemento: guestAvatarSuporte.elemento,
-              nivel: guestAvatarSuporte.nivel,
-              raridade: guestAvatarSuporte.raridade,
-              marca_morte: guestAvatarSuporte.marca_morte || false,
-              forca: guestAvatarSuporte.forca,
-              agilidade: guestAvatarSuporte.agilidade,
-              resistencia: guestAvatarSuporte.resistencia,
-              foco: guestAvatarSuporte.foco
-            }
-          };
+      // Sinergia do HOST: Suporte (host) VS Principal (guest)
+      if (hostAvatarSuporte && myEntry?.avatar) {
+        const resultadoSinergia = aplicarSinergia(hostAvatarSuporte, myEntry.avatar);
 
-          // Recalcular HP e Energia com modificadores de sinergia
-          const hpMaximoBase = calcularHPMaximoCompleto(myEntry.avatar);
-          guestHpMax = calcularHPComSinergia(hpMaximoBase, resultadoSinergia.modificadores);
-          guestEnergy = calcularEnergiaComSinergia(100, resultadoSinergia.modificadores);
-          guestEnergyMax = guestEnergy;
-        }
+        hostSinergiaInfo = {
+          sinergiaAtiva: resultadoSinergia.sinergiaAtiva,
+          modificadores: resultadoSinergia.modificadores,
+          logTexto: resultadoSinergia.logTexto,
+          modificadoresFormatados: resultadoSinergia.modificadoresFormatados,
+          avatarSuporte: {
+            id: hostAvatarSuporte.id,
+            nome: hostAvatarSuporte.nome,
+            elemento: hostAvatarSuporte.elemento,
+            nivel: hostAvatarSuporte.nivel,
+            raridade: hostAvatarSuporte.raridade,
+            marca_morte: hostAvatarSuporte.marca_morte || false,
+            forca: hostAvatarSuporte.forca,
+            agilidade: hostAvatarSuporte.agilidade,
+            resistencia: hostAvatarSuporte.resistencia,
+            foco: hostAvatarSuporte.foco
+          }
+        };
+
+        // Recalcular HP e Energia com modificadores de sinergia
+        const hpMaximoBase = calcularHPMaximoCompleto(challenge.avatar);
+        hostHpMax = calcularHPComSinergia(hpMaximoBase, resultadoSinergia.modificadores);
+        hostEnergy = calcularEnergiaComSinergia(100, resultadoSinergia.modificadores);
+        hostEnergyMax = hostEnergy;
+      }
+
+      // Sinergia do GUEST: Suporte (guest) VS Principal (host)
+      if (guestAvatarSuporte && challenge.avatar) {
+        const resultadoSinergia = aplicarSinergia(guestAvatarSuporte, challenge.avatar);
+
+        guestSinergiaInfo = {
+          sinergiaAtiva: resultadoSinergia.sinergiaAtiva,
+          modificadores: resultadoSinergia.modificadores,
+          logTexto: resultadoSinergia.logTexto,
+          modificadoresFormatados: resultadoSinergia.modificadoresFormatados,
+          avatarSuporte: {
+            id: guestAvatarSuporte.id,
+            nome: guestAvatarSuporte.nome,
+            elemento: guestAvatarSuporte.elemento,
+            nivel: guestAvatarSuporte.nivel,
+            raridade: guestAvatarSuporte.raridade,
+            marca_morte: guestAvatarSuporte.marca_morte || false,
+            forca: guestAvatarSuporte.forca,
+            agilidade: guestAvatarSuporte.agilidade,
+            resistencia: guestAvatarSuporte.resistencia,
+            foco: guestAvatarSuporte.foco
+          }
+        };
+
+        // Recalcular HP e Energia com modificadores de sinergia
+        const hpMaximoBase = calcularHPMaximoCompleto(myEntry.avatar);
+        guestHpMax = calcularHPComSinergia(hpMaximoBase, resultadoSinergia.modificadores);
+        guestEnergy = calcularEnergiaComSinergia(100, resultadoSinergia.modificadores);
+        guestEnergyMax = guestEnergy;
       }
 
       const guestHpAtual = Math.min(myEntry?.hp_atual || guestHpMax, guestHpMax);
