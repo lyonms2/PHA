@@ -335,6 +335,13 @@ function BatalhaTreinoIAContent() {
 
     console.log('🎯 [processarAcaoIA] Processando ação da IA:', iaAction);
 
+    // IA defendeu
+    if (iaAction.action === 'defend') {
+      console.log('🛡️ [processarAcaoIA] IA defendeu - mostrando block');
+      mostrarDanoVisual('oponente', null, 'block', null);
+      return;
+    }
+
     // Efeitos visuais para ataques e habilidades da IA
     if (iaAction.action === 'attack' || iaAction.action === 'ability') {
       if (!iaAction.errou && iaAction.dano > 0) {
@@ -463,7 +470,10 @@ function BatalhaTreinoIAContent() {
     } catch (error) {
       console.error('Erro:', error);
     } finally {
-      setActionInProgress(false);
+      // Delay de 1.5s para dar tempo das animações completarem
+      setTimeout(() => {
+        setActionInProgress(false);
+      }, 1500);
     }
   };
 
@@ -511,7 +521,10 @@ function BatalhaTreinoIAContent() {
     } catch (error) {
       console.error('Erro:', error);
     } finally {
-      setActionInProgress(false);
+      // Delay de 1.5s para dar tempo das animações completarem
+      setTimeout(() => {
+        setActionInProgress(false);
+      }, 1500);
     }
   };
 
@@ -606,7 +619,10 @@ function BatalhaTreinoIAContent() {
     } catch (error) {
       console.error('Erro:', error);
     } finally {
-      setActionInProgress(false);
+      // Delay de 1.5s para dar tempo das animações completarem
+      setTimeout(() => {
+        setActionInProgress(false);
+      }, 1500);
     }
   };
 
