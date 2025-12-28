@@ -112,7 +112,7 @@ export default function DualCardBattleLayout({
 
     const isAttack = type === 'attack';
     const cardClasses = `
-      absolute w-full transition-all duration-400 ease-in-out rounded-xl overflow-hidden cursor-pointer
+      absolute w-full transition-all duration-400 ease-in-out rounded-xl cursor-pointer
       ${isAttack ? 'h-[264px]' : isActive ? 'h-[240px]' : 'h-[200px]'}
       ${isActive ? 'z-30 top-0' : 'z-10 opacity-0 pointer-events-none'}
       ${isActive && !isAttack ? 'scale-105 shadow-2xl' : ''}
@@ -129,7 +129,7 @@ export default function DualCardBattleLayout({
 
     return (
       <div className={cardClasses}>
-        <div className={`relative h-full bg-gradient-to-br ${bgGradient} border-4 ${borderColor} rounded-xl shadow-2xl`}>
+        <div className={`relative h-full bg-gradient-to-br ${bgGradient} border-4 ${borderColor} rounded-xl shadow-2xl overflow-hidden`}>
           {/* Textura de fundo */}
           <div className={`absolute inset-0 opacity-5 ${isAttack ? 'bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(124,58,237,0.1)_10px,rgba(124,58,237,0.1)_20px)]' : 'bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(251,191,36,0.1)_10px,rgba(251,191,36,0.1)_20px)]'}`} />
 

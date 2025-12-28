@@ -84,6 +84,7 @@ export default function FloatingNumber({ value, type, onComplete }) {
         ${config.glow}
         font-black
         tracking-wider
+        text-center
       `}>
         {displayText}
       </div>
