@@ -386,6 +386,8 @@ function BatalhaTreinoIAContent() {
       });
 
       const result = await response.json();
+      console.log('🔴 [executarTurnoIA] RESULTADO COMPLETO:', result);
+
       if (result.success) {
         // Adicionar logs explícitos do backend primeiro
         if (result.logsParaJogador && Array.isArray(result.logsParaJogador)) {
@@ -398,6 +400,8 @@ function BatalhaTreinoIAContent() {
           processarFimDeBatalha(result);
           return; // Não processar mais nada se a batalha acabou
         }
+
+        console.log('🔴 [executarTurnoIA] result.iaAction existe?', !!result.iaAction, result.iaAction);
 
         // Efeitos visuais para ações da IA
         if (result.iaAction) {
