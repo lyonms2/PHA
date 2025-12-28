@@ -443,6 +443,7 @@ function BatalhaTreinoIAContent() {
     };
 
     console.log('🎬 [TREINAMENTO mostrarDanoVisual] CHAMADO:', { alvo, dano, tipo, elemento });
+    console.trace('🔎 [STACK TRACE] De onde está sendo chamado:');
 
     if (alvo === 'meu') {
       console.log('👤 [TREINAMENTO] Setando myDamageEffect:', effect);
