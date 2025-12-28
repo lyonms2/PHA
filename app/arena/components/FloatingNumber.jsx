@@ -62,7 +62,8 @@ export default function FloatingNumber({ value, type, onComplete }) {
     },
     block: {
       color: 'text-blue-400',
-      prefix: '🛡️ ',
+      prefix: '',
+      text: '🛡️ BLOQUEOU!',
       size: 'text-2xl',
       animation: 'animate-bounce-in',
       glow: 'drop-shadow-[0_0_8px_rgba(96,165,250,0.8)]'
@@ -70,6 +71,9 @@ export default function FloatingNumber({ value, type, onComplete }) {
   };
 
   const config = configs[type] || configs.damage;
+
+  // Determinar texto a exibir
+  const displayText = config.text || (value != null ? `${config.prefix}${value}` : config.prefix);
 
   return (
     <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
@@ -81,7 +85,7 @@ export default function FloatingNumber({ value, type, onComplete }) {
         font-black
         tracking-wider
       `}>
-        {config.text || `${config.prefix}${value}`}
+        {displayText}
       </div>
     </div>
   );

@@ -59,11 +59,13 @@ export function processarNovosLogs(battleLog, opponentNomeAtual, lastProcessedLo
     if (acao === 'attack' || acao === 'ability') {
       if (errou) {
         // Miss/dodge - sem número, sem elemento
+        console.log('🎯 [EFEITO] IA errou - mostrando dodge');
         showDamageEffect('me', null, 'dodge', null);
       } else if (dano > 0) {
         // Dano do oponente em mim - mostrar elemento do oponente
         const tipoEfeito = critico ? 'critical' : 'damage';
         const elemento = opponentAvatar?.elemento || null;
+        console.log('💥 [EFEITO] IA causou dano:', { dano, tipoEfeito, elemento, opponentAvatar: opponentAvatar?.nome });
         showDamageEffect('me', dano, tipoEfeito, elemento);
 
         // Contra-ataque visual

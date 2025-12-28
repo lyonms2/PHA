@@ -16,18 +16,23 @@ export default function BattleEffectWrapper({ children, effect, className = "" }
   // Atualizar quando effect muda
   useEffect(() => {
     if (effect) {
+      console.log('🎨 [BattleEffectWrapper] Recebeu effect:', effect);
+
       // Mostrar número se tiver tipo válido (mesmo sem number para miss/dodge/block)
       if (effect.type) {
+        console.log('📊 Mostrando número para tipo:', effect.type);
         setShowNumber(true);
       }
 
       // Mostrar efeito elemental se tiver elemento
       if (effect.elemento) {
+        console.log('🔥 Mostrando efeito elemental:', effect.elemento);
         setShowElemental(true);
       }
 
       // Ativar shake quando recebe dano
       if (effect.type === 'damage' || effect.type === 'critical') {
+        console.log('💥 Ativando shake do avatar');
         setAvatarShake(true);
         setTimeout(() => setAvatarShake(false), 400);
       }
