@@ -250,7 +250,7 @@ export function aplicarPenalidadesExaustao(stats, exaustao, effects = []) {
   let multiplicador = 1.0;
 
   // Aplicar penalidades de exaustão
-  if (nivel.penalidades.stats) {
+  if (nivel && nivel.penalidades && nivel.penalidades.stats) {
     multiplicador += nivel.penalidades.stats;
   }
 
