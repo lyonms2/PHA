@@ -222,9 +222,9 @@ export default function DualCardBattleLayout({
                           const cor = isPositivo ? 'text-green-300' : 'text-red-300';
                           const icone = isPositivo ? '✨' : '💢';
                           return (
-                            <div key={i} className={`text-[9px] ${cor} leading-tight flex items-center justify-between`}>
-                              <span>{icone} {mod.nome}</span>
-                              <span className="font-bold">{mod.valorFormatado}</span>
+                            <div key={i} className={`text-[9px] ${cor} leading-tight flex items-center gap-1`}>
+                              <span>{icone}</span>
+                              <span className="font-bold">{mod.texto}</span>
                             </div>
                           );
                         })}

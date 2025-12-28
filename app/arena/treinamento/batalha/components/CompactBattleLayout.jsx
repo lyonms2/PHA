@@ -120,9 +120,9 @@ export default function CompactBattleLayout({
                   const cor = isPositivo ? 'bg-green-900/30 text-green-300 border-green-600/30' : 'bg-red-900/30 text-red-300 border-red-600/30';
                   const icone = isPositivo ? '✨' : '💢';
                   return (
-                    <div key={`mod-${idx}`} className={`text-[9px] px-1.5 py-0.5 rounded ${cor} border flex items-center justify-between`}>
-                      <span>{icone} {mod.nome}</span>
-                      <span className="font-bold">{mod.valorFormatado}</span>
+                    <div key={`mod-${idx}`} className={`text-[9px] px-1.5 py-0.5 rounded ${cor} border flex items-center gap-1`}>
+                      <span>{icone}</span>
+                      <span className="font-bold">{mod.texto}</span>
                     </div>
                   );
                 })}
@@ -285,9 +285,9 @@ export default function CompactBattleLayout({
                   const cor = isPositivo ? 'bg-green-900/30 text-green-300 border-green-600/30' : 'bg-red-900/30 text-red-300 border-red-600/30';
                   const icone = isPositivo ? '✨' : '💢';
                   return (
-                    <div key={`mod-${idx}`} className={`text-[9px] px-1.5 py-0.5 rounded ${cor} border flex items-center justify-between`}>
-                      <span>{icone} {mod.nome}</span>
-                      <span className="font-bold">{mod.valorFormatado}</span>
+                    <div key={`mod-${idx}`} className={`text-[9px] px-1.5 py-0.5 rounded ${cor} border flex items-center gap-1`}>
+                      <span>{icone}</span>
+                      <span className="font-bold">{mod.texto}</span>
                     </div>
                   );
                 })}
