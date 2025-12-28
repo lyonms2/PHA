@@ -57,13 +57,17 @@ export function processarNovosLogs(battleLog, opponentNomeAtual, lastProcessedLo
 
     // Efeitos visuais baseados na ação
     if (acao === 'attack' || acao === 'ability') {
+      console.log('🎯 [logProcessor] Processando ação da IA:', { acao, errou, dano, critico, cura });
+
       if (errou) {
         // Miss/dodge - sem número, sem elemento
+        console.log('💨 [logProcessor] IA errou - chamando showDamageEffect(me, null, dodge, null)');
         showDamageEffect('me', null, 'dodge', null);
       } else if (dano > 0) {
         // Dano do oponente em mim - mostrar elemento do oponente
         const tipoEfeito = critico ? 'critical' : 'damage';
         const elemento = opponentAvatar?.elemento || null;
+        console.log('💥 [logProcessor] IA causou dano - chamando showDamageEffect:', { target: 'me', dano, tipoEfeito, elemento });
         showDamageEffect('me', dano, tipoEfeito, elemento);
 
         // Contra-ataque visual
@@ -74,6 +78,7 @@ export function processarNovosLogs(battleLog, opponentNomeAtual, lastProcessedLo
 
       // Cura visual (habilidades de suporte do oponente)
       if (cura > 0) {
+        console.log('💚 [logProcessor] IA curou - chamando showDamageEffect(opponent, cura, heal, null)');
         showDamageEffect('opponent', cura, 'heal', null);
       }
     }

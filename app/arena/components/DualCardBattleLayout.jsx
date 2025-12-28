@@ -87,6 +87,19 @@ export default function DualCardBattleLayout({
     });
   }, [meuAvatarSuporte, iaAvatarSuporte, playerSynergy, opponentSynergy, playerAbilities, log]);
 
+  // Debug: Rastrear mudanças nos efeitos de dano
+  useEffect(() => {
+    if (myDamageEffect) {
+      console.log('🎨 [DualCardBattleLayout] myDamageEffect RECEBIDO:', myDamageEffect);
+    }
+  }, [myDamageEffect]);
+
+  useEffect(() => {
+    if (opponentDamageEffect) {
+      console.log('🎨 [DualCardBattleLayout] opponentDamageEffect RECEBIDO:', opponentDamageEffect);
+    }
+  }, [opponentDamageEffect]);
+
   // Auto-scroll log para o FINAL (logs mais recentes por último)
   useEffect(() => {
     if (logContainerRef.current) {

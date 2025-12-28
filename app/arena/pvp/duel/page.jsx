@@ -411,15 +411,26 @@ function DuelContent() {
     const effect = {
       type: type,       // 'damage', 'critical', 'heal', 'miss', 'dodge', 'block'
       number: value,
-      elemento: elemento
+      elemento: elemento,
+      timestamp: Date.now() // Força React a detectar mudança
     };
 
+    console.log('🎬 [showDamageEffect] CHAMADO:', { target, value, type, elemento });
+
     if (target === 'me') {
+      console.log('👤 [PLAYER] Setando myDamageEffect:', effect);
       setMyDamageEffect(effect);
-      setTimeout(() => setMyDamageEffect(null), 1200);
+      setTimeout(() => {
+        console.log('👤 [PLAYER] Limpando myDamageEffect');
+        setMyDamageEffect(null);
+      }, 1200);
     } else {
+      console.log('🤖 [OPPONENT] Setando opponentDamageEffect:', effect);
       setOpponentDamageEffect(effect);
-      setTimeout(() => setOpponentDamageEffect(null), 1200);
+      setTimeout(() => {
+        console.log('🤖 [OPPONENT] Limpando opponentDamageEffect');
+        setOpponentDamageEffect(null);
+      }, 1200);
     }
   };
 
