@@ -238,31 +238,22 @@ function getProximoNivel(exaustao) {
 }
 
 /**
- * Aplica penalidades de exaustão e buffs de efeitos aos stats
+ * Aplica buffs de efeitos aos stats
+ * NOTA: Exaustão não afeta stats, apenas bloqueia combate aos 100%
  * @param {Object} stats - Stats base
- * @param {number} exaustao - Nível de exaustão
+ * @param {number} exaustao - Nível de exaustão (não usado, mantido por compatibilidade)
  * @param {Array} effects - Efeitos ativos (opcional)
- * @returns {Object} Stats com penalidades e buffs aplicados
+ * @returns {Object} Stats com buffs aplicados
  */
 export function aplicarPenalidadesExaustao(stats, exaustao, effects = []) {
-  const nivel = getNivelExaustao(exaustao);
-
+  // Exaustão não afeta stats - apenas bloqueia combate aos 100%
   let multiplicador = 1.0;
-
-  // Aplicar penalidades de exaustão
-  if (nivel && nivel.penalidades && nivel.penalidades.stats) {
-    multiplicador += nivel.penalidades.stats;
-  }
 
   // Aplicar buffs de efeitos (bencao, velocidade_aumentada, etc.)
   for (const efeito of effects) {
     // Benção: +20% em TODOS os stats
     if (efeito.bonusTodosStats) {
       multiplicador += efeito.bonusTodosStats;
-    }
-    // Velocidade Aumentada: +40% agilidade (será aplicado depois)
-    if (efeito.bonusAgilidade) {
-      continue;
     }
   }
 
