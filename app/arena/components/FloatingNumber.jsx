@@ -63,8 +63,8 @@ export default function FloatingNumber({ value, type, onComplete }) {
     block: {
       color: 'text-blue-400',
       prefix: '',
-      text: '🛡️ BLOQUEOU!',
-      size: 'text-2xl',
+      text: '🛡️ BLOQUEOU',
+      size: 'text-xl',
       animation: 'animate-bounce-in',
       glow: 'drop-shadow-[0_0_8px_rgba(96,165,250,0.8)]'
     }

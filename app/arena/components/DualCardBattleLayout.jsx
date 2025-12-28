@@ -143,7 +143,7 @@ export default function DualCardBattleLayout({
           {/* Conteúdo do avatar */}
           <div className="relative h-full flex flex-col items-center p-2 pt-6">
             {/* Avatar SVG - sempre envolto com wrapper para evitar sumir */}
-            <div className={`${isActive ? 'scale-100' : 'scale-75'} transition-transform ${!isAttack ? 'mt-1' : 'mt-2'}`}>
+            <div className={`relative ${isActive ? 'scale-100' : 'scale-75'} transition-transform ${!isAttack ? 'mt-1' : 'mt-2'} overflow-visible`}>
               {isAttack ? (
                 <BattleEffectWrapper effect={damageEffect}>
                   <AvatarSVG avatar={avatar} tamanho={isActive ? 110 : 66} />

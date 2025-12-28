@@ -414,14 +414,10 @@ function DuelContent() {
       elemento: elemento
     };
 
-    console.log('🎬 [showDamageEffect]', { target, value, type, elemento, effect });
-
     if (target === 'me') {
-      console.log('👤 Aplicando efeito no MEU avatar:', effect);
       setMyDamageEffect(effect);
       setTimeout(() => setMyDamageEffect(null), 1200);
     } else {
-      console.log('🤖 Aplicando efeito no avatar OPONENTE:', effect);
       setOpponentDamageEffect(effect);
       setTimeout(() => setOpponentDamageEffect(null), 1200);
     }
