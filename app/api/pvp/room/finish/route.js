@@ -39,6 +39,15 @@ export async function POST(request) {
 
     // Verificar se este jogador já processou suas recompensas
     const processedBy = room.processed_by || [];
+    console.log(`🔍 [PVP FINISH] Checagem inicial:`, {
+      roomId,
+      userId,
+      processedBy,
+      jaProcessou: processedBy.includes(userId),
+      hostUserId: room.host_user_id,
+      guestUserId: room.guest_user_id
+    });
+
     if (processedBy.includes(userId)) {
       console.log('⚠️ [PVP FINISH] Jogador já processou recompensas:', userId);
       return NextResponse.json(
@@ -49,6 +58,7 @@ export async function POST(request) {
 
     // Verificar se é a primeira vez que alguém processa
     const isPrimeiraProcessamento = processedBy.length === 0;
+    console.log(`📊 [PVP FINISH] isPrimeiraProcessamento: ${isPrimeiraProcessamento}`);
 
     // Determinar vencedor e perdedor
     const hostWon = winner === 'host';
@@ -306,6 +316,13 @@ export async function POST(request) {
     const novosProcessados = [...processedBy, userId];
     const ambosProcessaram = novosProcessados.length >= 2;
 
+    console.log(`📝 [PVP FINISH] Atualizando sala:`, {
+      processedByAntigo: processedBy,
+      novosProcessados,
+      ambosProcessaram,
+      length: novosProcessados.length
+    });
+
     await updateDocument('pvp_duel_rooms', roomId, {
       status: 'finished',
       winner,
@@ -318,15 +335,16 @@ export async function POST(request) {
 
     // DELETAR sala apenas quando AMBOS jogadores processaram
     if (ambosProcessaram) {
+      console.log(`🎯 [PVP CLEANUP] CONDIÇÃO ATINGIDA - Ambos processaram (${novosProcessados.length}). Deletando sala...`);
       try {
         await deleteDocument('pvp_duel_rooms', roomId);
-        console.log('🗑️ [PVP CLEANUP] Ambos jogadores processaram - Sala deletada:', roomId);
+        console.log('🗑️ [PVP CLEANUP] ✅ Sala deletada com sucesso:', roomId);
       } catch (error) {
-        console.error('⚠️ [PVP CLEANUP] Erro ao deletar sala:', error);
+        console.error('⚠️ [PVP CLEANUP] ❌ Erro ao deletar sala:', error);
         // Não bloqueia o fluxo se falhar
       }
     } else {
-      console.log('⏳ [PVP CLEANUP] Aguardando segundo jogador processar recompensas...');
+      console.log(`⏳ [PVP CLEANUP] Aguardando segundo jogador processar recompensas... (${novosProcessados.length}/2)`);
     }
 
     // Buscar stats atualizados para retornar

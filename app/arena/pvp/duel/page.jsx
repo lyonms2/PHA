@@ -114,8 +114,9 @@ function DuelContent() {
             // Aplicar sinergia
             const resultadoSinergia = aplicarSinergia(ativo, suporte);
             const sinergiaInfo = {
-              ...resultadoSinergia.sinergiaAtiva,
+              sinergiaAtiva: resultadoSinergia.sinergiaAtiva,
               modificadores: resultadoSinergia.modificadores,
+              modificadoresFormatados: resultadoSinergia.modificadoresFormatados,
               avatarSuporte: {
                 id: suporte.id,
                 nome: suporte.nome,
