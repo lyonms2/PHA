@@ -173,13 +173,19 @@ function BatalhaTreinoIAContent() {
       };
 
       setRecompensas(recompensasComHP);
-      setMostrarRecompensas(true);
 
       if (result.winner === 'player') {
         addLog('🎉 VITÓRIA! Você venceu a batalha!');
       } else {
         addLog('☠️ DERROTA! Você foi derrotado...');
       }
+
+      // AGUARDAR 2.5s para animações do último golpe terminarem
+      console.log('⏳ Aguardando animações do último golpe terminarem...');
+      setTimeout(() => {
+        console.log('✅ Mostrando modal de recompensas');
+        setMostrarRecompensas(true);
+      }, 2500);
     } else {
       console.warn('⚠️ [FIM BATALHA] Condições não atendidas:', {
         finished: result.finished,
