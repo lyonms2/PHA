@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import AvatarSVG from "../../../components/AvatarSVG";
 import { calcularPoderTotal } from "@/lib/gameLogic";
 import { HABILIDADES_POR_ELEMENTO } from "@/app/avatares/sistemas/abilitiesSystem";
-import { aplicarSinergia } from "@/lib/combat/synergyApplicator";
 import SynergyDisplay from "../../treinamento/batalha/components/SynergyDisplay";
 import DualCardBattleLayout from '@/app/arena/components/DualCardBattleLayout';
 import {
@@ -111,31 +110,9 @@ function DuelContent() {
           if (suporte) {
             setMeuAvatarSuporte(suporte);
 
-            // Aplicar sinergia
-            const resultadoSinergia = aplicarSinergia(ativo, suporte);
-            const sinergiaInfo = {
-              sinergiaAtiva: resultadoSinergia.sinergiaAtiva,
-              modificadores: resultadoSinergia.modificadores,
-              modificadoresFormatados: resultadoSinergia.modificadoresFormatados,
-              avatarSuporte: {
-                id: suporte.id,
-                nome: suporte.nome,
-                elemento: suporte.elemento,
-                nivel: suporte.nivel
-              }
-            };
-            setMinhaSinergia(sinergiaInfo);
-
-            // Atualizar avatar principal com stats da sinergia
-            setMeuAvatar({
-              ...ativo,
-              ...resultadoSinergia.stats
-            });
-
-            console.log('✨ Sinergia carregada no PVP:', {
+            console.log('✨ Avatar suporte carregado no PVP:', {
               principal: ativo.nome,
-              suporte: suporte.nome,
-              sinergia: sinergiaInfo.nome
+              suporte: suporte.nome
             });
           }
         }
@@ -215,6 +192,7 @@ function DuelContent() {
           setOpponentAvatar(data.opponentAvatar || null);
           setOpponentAvatarSuporte(data.opponentAvatarSuporte || null);
           setOpponentSinergia(data.opponentSinergia || null);
+          setMinhaSinergia(data.mySinergia || null);
           setMyEffects(data.myEffects || []);
           setOpponentEffects(data.opponentEffects || []);
           setMyCooldowns(data.myCooldowns || {});
