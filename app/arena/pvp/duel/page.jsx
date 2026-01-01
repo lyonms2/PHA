@@ -675,8 +675,7 @@ function DuelContent() {
         body: JSON.stringify({
           roomId: roomData.id || roomId,
           winner: roomData.winner,
-          rendeu: roomData.rendeu || false,
-          userId: visitorId
+          rendeu: roomData.rendeu || false
         })
       });
       const data = await res.json();
