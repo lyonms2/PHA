@@ -162,8 +162,6 @@ function BatalhaTreinoIAContent() {
 
     if (result.finished && result.recompensas) {
       console.log('✅ [FIM BATALHA] Processando fim de batalha...');
-      setStatus('finished');
-      setWinner(result.winner);
 
       // Adicionar HP original (para não perder HP no treino)
       const recompensasComHP = {
@@ -181,8 +179,11 @@ function BatalhaTreinoIAContent() {
       }
 
       // AGUARDAR 2.5s para animações do último golpe terminarem
+      // SÓ DEPOIS mudar status e mostrar modal
       console.log('⏳ Aguardando animações do último golpe terminarem...');
       setTimeout(() => {
+        setStatus('finished');
+        setWinner(result.winner);
         console.log('✅ Mostrando modal de recompensas');
         setMostrarRecompensas(true);
       }, 2500);
