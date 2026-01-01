@@ -402,7 +402,7 @@ function BatalhaTreinoIAContent() {
 
   // Atacar
   const atacar = async () => {
-    if (actionInProgress || !isYourTurn || myEnergy < 10) return;
+    if (actionInProgress || !isYourTurn || myEnergy < 10 || status === 'finished') return;
     setActionInProgress(true);
 
     try {
@@ -494,7 +494,7 @@ function BatalhaTreinoIAContent() {
 
   // Defender
   const defender = async () => {
-    if (actionInProgress || !isYourTurn) return;
+    if (actionInProgress || !isYourTurn || status === 'finished') return;
     setActionInProgress(true);
 
     try {
@@ -543,7 +543,7 @@ function BatalhaTreinoIAContent() {
 
   // Usar habilidade
   const usarHabilidade = async (index) => {
-    if (actionInProgress || !isYourTurn) return;
+    if (actionInProgress || !isYourTurn || status === 'finished') return;
     setActionInProgress(true);
 
     try {
