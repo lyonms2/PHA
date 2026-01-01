@@ -687,7 +687,13 @@ function DuelContent() {
           isWinner,
           rendeu: roomData.rendeu || false
         });
-        setShowRewardsModal(true);
+
+        // AGUARDAR 2.5s para animações do último golpe terminarem
+        console.log('⏳ Aguardando animações do último golpe terminarem...');
+        setTimeout(() => {
+          console.log('✅ Mostrando modal de recompensas');
+          setShowRewardsModal(true);
+        }, 2500);
       }
     } catch (err) {
       console.error('Erro ao buscar recompensas:', err);
