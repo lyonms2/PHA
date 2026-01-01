@@ -466,6 +466,12 @@ function DuelContent() {
           if (d.bonusVinculo) {
             calc += ` | 💕 ${d.bonusVinculo}`;
           }
+          if (d.sinergia) {
+            calc += ` | ✨ ${d.sinergia}`;
+          }
+          if (d.bonusCritico) {
+            calc += ` | 🎯 ${d.bonusCritico} Crítico`;
+          }
           if (d.elementalMult !== 1.0) {
             const elemEmoji = d.elementalMult > 1 ? '🔥' : '💨';
             calc += ` | ${elemEmoji} ×${d.elementalMult}`;
@@ -805,6 +811,12 @@ function DuelContent() {
           if (d.bonusVinculo) {
             calc += ` | 💕 ${d.bonusVinculo}`;
           }
+          if (d.sinergia) {
+            calc += ` | ✨ ${d.sinergia}`;
+          }
+          if (d.bonusCritico) {
+            calc += ` | 🎯 ${d.bonusCritico} Crítico`;
+          }
           if (d.elementalMult !== 1.0) {
             const elemEmoji = d.elementalMult > 1 ? '🔥' : '💨';
             calc += ` | ${elemEmoji} ×${d.elementalMult}`;
@@ -817,6 +829,9 @@ function DuelContent() {
           }
           if (data.numGolpes && data.numGolpes > 1) {
             calc += ` | ⚔️ ×${data.numGolpes} golpes`;
+          }
+          if (d.rouboVida) {
+            calc += ` | 💉 ${d.rouboVida}`;
           }
 
           addLog(calc);
