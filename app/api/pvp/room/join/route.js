@@ -148,13 +148,13 @@ export async function POST(request) {
     // Calcular HP e Energia para GUEST com sinergia
     const guestHpMaximoBase = calcularHPMaximoCompleto(avatar);
     const guestHpMaximo = calcularHPComSinergia(guestHpMaximoBase, resultadoSinergiaGuest.modificadores);
-    const guestHpAtual = Math.min(avatar.hp_atual || guestHpMaximo, guestHpMaximo);
+    const guestHpAtual = guestHpMaximo; // PVP sempre começa com HP máximo (combate simulado)
     const guestEnergia = calcularEnergiaComSinergia(100, resultadoSinergiaGuest.modificadores);
 
     // Calcular HP e Energia para HOST com sinergia (recalcular)
     const hostHpMaximoBase = room.host_hp_max; // Era calculado sem sinergia
     const hostHpMaximo = calcularHPComSinergia(hostHpMaximoBase, resultadoSinergiaHost.modificadores);
-    const hostHpAtual = Math.min(room.host_hp, hostHpMaximo);
+    const hostHpAtual = hostHpMaximo; // PVP sempre começa com HP máximo (combate simulado)
     const hostEnergia = calcularEnergiaComSinergia(100, resultadoSinergiaHost.modificadores);
 
     // Atualizar sala com AMBAS as sinergias e stats ajustados
