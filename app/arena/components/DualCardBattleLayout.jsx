@@ -52,6 +52,7 @@ export default function DualCardBattleLayout({
 
   // Inventário de itens (poções)
   playerItems = [],
+  playerItemsUsed = 0,
 
   // Log
   log = [],
@@ -398,8 +399,9 @@ export default function DualCardBattleLayout({
             <div className="grid grid-cols-3 gap-2 mb-2 md:mb-3">
               <button
                 onClick={onAttack}
-                disabled={!isYourTurn || status !== 'active'}
+                disabled={!isYourTurn || status !== 'active' || myEnergy < 10}
                 className="min-h-[40px] md:min-h-[44px] px-2 md:px-3 py-1.5 md:py-2.5 bg-gradient-to-br from-purple-900 to-purple-800 border-2 border-purple-500 rounded-lg font-bold uppercase text-[10px] md:text-xs tracking-wider text-purple-200 hover:from-purple-800 hover:to-purple-700 hover:border-purple-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-purple-500/50 active:scale-95"
+                title={myEnergy < 10 ? 'Energia insuficiente (10 necessária)' : 'Ataque básico'}
               >
                 ⚔ Atacar
               </button>
@@ -412,11 +414,15 @@ export default function DualCardBattleLayout({
               </button>
               <button
                 onClick={() => setShowItemsModal(true)}
-                disabled={!isYourTurn || status !== 'active' || !playerItems || playerItems.length === 0}
+                disabled={!isYourTurn || status !== 'active' || !playerItems || playerItems.length === 0 || playerItemsUsed >= 2}
                 className="min-h-[40px] md:min-h-[44px] px-2 md:px-3 py-1.5 md:py-2.5 bg-gradient-to-br from-cyan-900 to-cyan-800 border-2 border-cyan-500 rounded-lg font-bold uppercase text-[10px] md:text-xs tracking-wider text-cyan-200 hover:from-cyan-800 hover:to-cyan-700 hover:border-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-cyan-500/50 active:scale-95"
-                title={!playerItems || playerItems.length === 0 ? 'Sem itens disponíveis' : 'Usar poção'}
+                title={
+                  playerItemsUsed >= 2 ? 'Limite de 2 itens atingido' :
+                  !playerItems || playerItems.length === 0 ? 'Sem itens disponíveis' :
+                  `Usar poção (${playerItemsUsed}/2)`
+                }
               >
-                🧪 Itens
+                🧪 Itens ({playerItemsUsed}/2)
               </button>
             </div>
 

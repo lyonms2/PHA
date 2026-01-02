@@ -78,7 +78,8 @@ export async function GET(request) {
         iaDefending: battle.ia.defending || false,
         battleLog: battle.battle_log || [],
         playerCooldowns: battle.player_cooldowns || {},
-        iaCooldowns: battle.ia_cooldowns || {}
+        iaCooldowns: battle.ia_cooldowns || {},
+        playerItemsUsed: battle.player_items_used ?? 0
       },
       isYourTurn: battle.current_turn === 'player'
     });
@@ -480,6 +481,15 @@ export async function POST(request) {
         );
       }
 
+      // Verificar limite de 2 itens por batalha
+      const itemsUsed = battle.player_items_used ?? 0;
+      if (itemsUsed >= 2) {
+        return NextResponse.json(
+          { error: 'Você já usou o máximo de 2 itens nesta batalha!' },
+          { status: 400 }
+        );
+      }
+
       // Verificar se já está com HP cheio
       const currentHp = battle.player.hp;
       const maxHp = battle.player.hp_max;
@@ -504,6 +514,10 @@ export async function POST(request) {
         await deleteDocument('player_inventory', inventoryItemId);
       }
 
+      // Incrementar contador de itens usados
+      const newItemsUsed = itemsUsed + 1;
+      battle.player_items_used = newItemsUsed;
+
       // Atualizar HP do jogador
       battle.player = {
         ...battle.player,
@@ -527,7 +541,9 @@ export async function POST(request) {
         finished: false,
         hpCurado,
         hpAnterior: currentHp,
-        hpNovo: newHp
+        hpNovo: newHp,
+        itemsUsed: newItemsUsed,
+        itemsMax: 2
       };
     } else {
       return NextResponse.json(

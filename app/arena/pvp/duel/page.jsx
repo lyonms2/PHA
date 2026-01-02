@@ -57,6 +57,7 @@ function DuelContent() {
   const [log, setLog] = useState([]);
   const [inLobby, setInLobby] = useState(false);
   const [inventario, setInventario] = useState([]);
+  const [myItemsUsed, setMyItemsUsed] = useState(0);
 
   // Estados para efeitos visuais
   const [myDamageEffect, setMyDamageEffect] = useState(null);
@@ -216,6 +217,7 @@ function DuelContent() {
           setOpponentEffects(data.opponentEffects || []);
           setMyCooldowns(data.myCooldowns || {});
           setOpponentCooldowns(data.opponentCooldowns || {});
+          setMyItemsUsed(data.myItemsUsed ?? 0);
 
           // Atualizar apostas
           setMyBet(data.role === 'host' ? (data.room.host_bet || 0) : (data.room.guest_bet || 0));
@@ -965,8 +967,11 @@ function DuelContent() {
           showDamageEffect('me', -data.hpCurado, 'heal', null);
         }
 
-        // Atualizar HP local
+        // Atualizar HP local e contador de itens
         setMyHp(data.hpNovo);
+        if (data.itemsUsed !== undefined) {
+          setMyItemsUsed(data.itemsUsed);
+        }
 
         // Recarregar inventário
         const userData = localStorage.getItem("user");
@@ -1435,6 +1440,7 @@ function DuelContent() {
 
         // Inventário de itens
         playerItems={inventario}
+        playerItemsUsed={myItemsUsed}
 
         // Log
         log={log}
