@@ -123,8 +123,8 @@ export async function GET(request) {
         continue;
       }
 
-      // RECUPERAÇÃO SIMPLES: 10 pontos por hora
-      const recuperacao = Math.floor(horasPassadas * 10);
+      // RECUPERAÇÃO SIMPLES: 5 pontos por hora (mais desafiador)
+      const recuperacao = Math.floor(horasPassadas * 5);
 
       if (recuperacao > 0) {
         const novaExaustao = Math.max(0, exaustaoAtual - recuperacao);

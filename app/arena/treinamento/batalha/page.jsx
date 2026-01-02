@@ -58,8 +58,9 @@ function BatalhaTreinoIAContent() {
   // Sinergias ativas
   const [sinergiaAtiva, setSinergiaAtiva] = useState(null);
   const [sinergiaIA, setSinergiaIA] = useState(null);
+  const [inventario, setInventario] = useState([]);
 
-  // Carregar usuário
+  // Carregar usuário e inventário
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (!userData) {
@@ -69,7 +70,27 @@ function BatalhaTreinoIAContent() {
     const parsed = JSON.parse(userData);
     setVisitorId(parsed.visitorId || parsed.id);
     setMeuNome(parsed.nome_operacao || parsed.nome || 'Jogador');
+
+    // Carregar inventário
+    carregarInventario(parsed.id);
   }, [router]);
+
+  const carregarInventario = async (userId) => {
+    try {
+      const response = await fetch(`/api/inventario?userId=${userId}`);
+      const data = await response.json();
+      if (response.ok) {
+        // Filtrar apenas poções de HP (que podem ser usadas em batalha)
+        const pocoesHP = (data.inventario || []).filter(inv => {
+          const efeito = inv.items?.efeito;
+          return efeito === 'hp' || efeito === 'cura_hp';
+        });
+        setInventario(pocoesHP);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar inventário:", error);
+    }
+  };
 
   // Inicializar batalha
   useEffect(() => {
@@ -647,6 +668,63 @@ function BatalhaTreinoIAContent() {
     }
   };
 
+  // Usar item (poção)
+  const usarItem = async (inventoryItem) => {
+    if (actionInProgress || !isYourTurn || status === 'finished') return;
+
+    const item = inventoryItem.items;
+    if (!item) return;
+
+    setActionInProgress(true);
+    try {
+      const response = await fetch('/api/arena/treino-ia/batalha', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          battleId,
+          action: 'useItem',
+          inventoryItemId: inventoryItem.id,
+          itemId: item.id
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        addLog(`🧪 ${item.nome} usado!`);
+        if (result.hpCurado > 0) {
+          addLog(`💚 HP restaurado: +${result.hpCurado} (${result.hpAnterior} → ${result.hpNovo})`);
+          mostrarDanoVisual('meu', -result.hpCurado, 'heal', null);
+        }
+
+        // Atualizar HP local
+        setMyHp(result.hpNovo);
+
+        // Recarregar inventário
+        const userData = localStorage.getItem("user");
+        if (userData) {
+          const parsed = JSON.parse(userData);
+          await carregarInventario(parsed.id);
+        }
+
+        // PROCESSAR AÇÃO DA IA (após usar item)
+        if (result.iaAction) {
+          setTimeout(() => processarAcaoIA(result.iaAction), 800);
+        }
+
+        await atualizarEstado();
+      } else {
+        addLog(`❌ ${result.error || 'Erro ao usar item'}`);
+      }
+    } catch (error) {
+      console.error('Erro ao usar item:', error);
+      addLog('❌ Erro ao usar item');
+    } finally {
+      setTimeout(() => {
+        setActionInProgress(false);
+      }, 1000);
+    }
+  };
+
   if (!meuAvatar || !iaAvatar || !battleId) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950 text-gray-100 flex items-center justify-center scrollbar-fire">
@@ -706,10 +784,14 @@ function BatalhaTreinoIAContent() {
         onAttack={atacar}
         onDefend={defender}
         onAbilityUse={usarHabilidade}
+        onItemUse={usarItem}
         onSurrender={() => router.push('/arena/treinamento')}
 
         // Habilidades disponíveis
         playerAbilities={meuAvatar?.habilidades || []}
+
+        // Inventário de itens
+        playerItems={inventario}
 
         // Log
         log={log}

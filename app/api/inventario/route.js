@@ -136,32 +136,11 @@ export async function POST(request) {
       const efeito = item.efeito;
 
       if (efeito === 'hp' || efeito === 'cura_hp') {
-        // Calcular HP máximo
-        hpMaximo = avatarAtivo.resistencia * 10 + avatarAtivo.nivel * 5;
-        const hpAtual = avatarAtivo.hp_atual !== null && avatarAtivo.hp_atual !== undefined
-          ? avatarAtivo.hp_atual
-          : hpMaximo;
-
-        // Verificar se já está com HP cheio
-        if (hpAtual >= hpMaximo) {
-          return Response.json(
-            { message: "Avatar já está com HP cheio!" },
-            { status: 400 }
-          );
-        }
-
-        // Calcular novo HP (não pode passar do máximo)
-        novoHP = Math.min(hpAtual + item.valor_efeito, hpMaximo);
-        hpCurado = novoHP - hpAtual;
-
-        resultado = {
-          tipo: 'cura_hp',
-          avatar: avatarAtivo.nome,
-          hp_curado: hpCurado,
-          hp_anterior: hpAtual,
-          hp_novo: novoHP,
-          hp_maximo: hpMaximo
-        };
+        // BLOQUEIO: Poções de HP só podem ser usadas durante batalhas
+        return Response.json(
+          { message: "⚔️ Poções de HP só podem ser usadas durante batalhas! Use o botão 'Itens' nas batalhas PVP ou Treinamento." },
+          { status: 400 }
+        );
       } else if (efeito === 'exaustao' || efeito === 'cura_exaustao' || efeito === 'exaustão') {
         const exaustaoAtual = avatarAtivo.exaustao || 0;
 

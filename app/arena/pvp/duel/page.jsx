@@ -56,6 +56,7 @@ function DuelContent() {
   const [opponentCooldowns, setOpponentCooldowns] = useState({});
   const [log, setLog] = useState([]);
   const [inLobby, setInLobby] = useState(false);
+  const [inventario, setInventario] = useState([]);
 
   // Estados para efeitos visuais
   const [myDamageEffect, setMyDamageEffect] = useState(null);
@@ -92,8 +93,9 @@ function DuelContent() {
     setVisitorId(parsed.visitorId || parsed.id);
     setMeuNome(parsed.nome_operacao || parsed.nome || 'Jogador');
 
-    // Carregar avatar ativo
+    // Carregar avatar ativo e inventário
     carregarAvatar(parsed.id);
+    carregarInventario(parsed.id);
   }, [router]);
 
   const carregarAvatar = async (userId) => {
@@ -119,6 +121,23 @@ function DuelContent() {
       }
     } catch (error) {
       console.error("Erro ao carregar avatar:", error);
+    }
+  };
+
+  const carregarInventario = async (userId) => {
+    try {
+      const response = await fetch(`/api/inventario?userId=${userId}`);
+      const data = await response.json();
+      if (response.ok) {
+        // Filtrar apenas poções de HP (que podem ser usadas em batalha)
+        const pocoesHP = (data.inventario || []).filter(inv => {
+          const efeito = inv.items?.efeito;
+          return efeito === 'hp' || efeito === 'cura_hp';
+        });
+        setInventario(pocoesHP);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar inventário:", error);
     }
   };
 
@@ -917,6 +936,57 @@ function DuelContent() {
     }
   };
 
+  // Usar item (poção)
+  const usarItem = async (inventoryItem) => {
+    if (!roomId || !visitorId || !isYourTurn || actionInProgress) return;
+
+    const item = inventoryItem.items;
+    if (!item) return;
+
+    setActionInProgress(true);
+    try {
+      const res = await fetch('/api/pvp/room/state', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roomId,
+          visitorId,
+          action: 'useItem',
+          inventoryItemId: inventoryItem.id,
+          itemId: item.id
+        })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        addLog(`🧪 ${item.nome} usado!`);
+        if (data.hpCurado > 0) {
+          addLog(`💚 HP restaurado: +${data.hpCurado} (${data.hpAnterior} → ${data.hpNovo})`);
+          showDamageEffect('me', -data.hpCurado, 'heal', null);
+        }
+
+        // Atualizar HP local
+        setMyHp(data.hpNovo);
+
+        // Recarregar inventário
+        const userData = localStorage.getItem("user");
+        if (userData) {
+          const parsed = JSON.parse(userData);
+          await carregarInventario(parsed.id);
+        }
+      } else {
+        addLog(`❌ ${data.error || 'Erro ao usar item'}`);
+      }
+    } catch (err) {
+      console.error('Erro ao usar item:', err);
+      addLog('❌ Erro ao usar item');
+    } finally {
+      setTimeout(() => {
+        setActionInProgress(false);
+      }, 1000);
+    }
+  };
+
   // Tela inicial - entrar no lobby
   if (!inLobby && !roomId) {
     const poder = meuAvatar ? calcularPoderTotal(meuAvatar) : 0;
@@ -1357,10 +1427,14 @@ function DuelContent() {
         onAttack={atacar}
         onDefend={defender}
         onAbilityUse={usarHabilidade}
+        onItemUse={usarItem}
         onSurrender={renderSe}
 
         // Habilidades disponíveis
         playerAbilities={meuAvatar?.habilidades || []}
+
+        // Inventário de itens
+        playerItems={inventario}
 
         // Log
         log={log}

@@ -31,9 +31,9 @@ export const CONFIG_EXAUSTAO = {
   POR_HABILIDADE_ULTIMATE: 5,
 
   // Taxa de recuperação (DOCUMENTAÇÃO)
-  // Sistema real: 10 pontos/hora (calculado em /app/api/meus-avatares/route.js)
+  // Sistema real: 5 pontos/hora (calculado em /app/api/meus-avatares/route.js)
   // Poções: valor_efeito do item (geralmente 50 pontos)
-  RECUPERACAO_POR_HORA: 10, // Valor REAL usado
+  RECUPERACAO_POR_HORA: 5, // Valor REAL usado
 
   // Limites críticos
   NIVEL_ALERTA: 60, // Começa a sentir cansaço
@@ -307,8 +307,8 @@ export const TABELA_EXAUSTAO = `
 ║    Descanse para poder batalhar novamente                     ║
 ╠═══════════════════════════════════════════════════════════════╣
 ║ RECUPERAÇÃO:                                                   ║
-║   Passiva: 10 pontos/hora (offline)                           ║
-║   Poção da Loja: Variável por item                            ║
+║   Passiva: 5 pontos/hora (offline)                            ║
+║   Poção de Energia: Variável por item (~50 pts)               ║
 ║                                                                ║
 ║ GANHO DE EXAUSTÃO:                                            ║
 ║   Combate Fácil: 2.5 pts                                      ║

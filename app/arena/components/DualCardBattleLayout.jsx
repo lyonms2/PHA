@@ -44,10 +44,14 @@ export default function DualCardBattleLayout({
   onAttack,
   onDefend,
   onAbilityUse,
+  onItemUse,
   onSurrender,
 
   // Habilidades disponíveis
   playerAbilities = [],
+
+  // Inventário de itens (poções)
+  playerItems = [],
 
   // Log
   log = [],
@@ -67,6 +71,7 @@ export default function DualCardBattleLayout({
   const [playerCardActive, setPlayerCardActive] = useState('attack'); // 'attack' ou 'support'
   const [opponentCardActive, setOpponentCardActive] = useState('attack');
   const [logExpanded, setLogExpanded] = useState(false); // Para mobile drawer
+  const [showItemsModal, setShowItemsModal] = useState(false); // Modal de itens
   const logContainerRef = useRef(null);
 
   // Debug: Verificar dados recebidos
@@ -390,20 +395,28 @@ export default function DualCardBattleLayout({
             </div>
 
             {/* Ações básicas */}
-            <div className="grid grid-cols-2 gap-2 mb-2 md:mb-3">
+            <div className="grid grid-cols-3 gap-2 mb-2 md:mb-3">
               <button
                 onClick={onAttack}
                 disabled={!isYourTurn || status !== 'active'}
-                className="min-h-[40px] md:min-h-[44px] px-2 md:px-4 py-1.5 md:py-2.5 bg-gradient-to-br from-purple-900 to-purple-800 border-2 border-purple-500 rounded-lg font-bold uppercase text-[10px] md:text-xs tracking-wider text-purple-200 hover:from-purple-800 hover:to-purple-700 hover:border-purple-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-purple-500/50 active:scale-95"
+                className="min-h-[40px] md:min-h-[44px] px-2 md:px-3 py-1.5 md:py-2.5 bg-gradient-to-br from-purple-900 to-purple-800 border-2 border-purple-500 rounded-lg font-bold uppercase text-[10px] md:text-xs tracking-wider text-purple-200 hover:from-purple-800 hover:to-purple-700 hover:border-purple-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-purple-500/50 active:scale-95"
               >
                 ⚔ Atacar
               </button>
               <button
                 onClick={onDefend}
                 disabled={!isYourTurn || status !== 'active'}
-                className="min-h-[40px] md:min-h-[44px] px-2 md:px-4 py-1.5 md:py-2.5 bg-gradient-to-br from-green-900 to-green-800 border-2 border-green-500 rounded-lg font-bold uppercase text-[10px] md:text-xs tracking-wider text-green-200 hover:from-green-800 hover:to-green-700 hover:border-green-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-green-500/50 active:scale-95"
+                className="min-h-[40px] md:min-h-[44px] px-2 md:px-3 py-1.5 md:py-2.5 bg-gradient-to-br from-green-900 to-green-800 border-2 border-green-500 rounded-lg font-bold uppercase text-[10px] md:text-xs tracking-wider text-green-200 hover:from-green-800 hover:to-green-700 hover:border-green-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-green-500/50 active:scale-95"
               >
                 🛡 Defender
+              </button>
+              <button
+                onClick={() => setShowItemsModal(true)}
+                disabled={!isYourTurn || status !== 'active' || !playerItems || playerItems.length === 0}
+                className="min-h-[40px] md:min-h-[44px] px-2 md:px-3 py-1.5 md:py-2.5 bg-gradient-to-br from-cyan-900 to-cyan-800 border-2 border-cyan-500 rounded-lg font-bold uppercase text-[10px] md:text-xs tracking-wider text-cyan-200 hover:from-cyan-800 hover:to-cyan-700 hover:border-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-cyan-500/50 active:scale-95"
+                title={!playerItems || playerItems.length === 0 ? 'Sem itens disponíveis' : 'Usar poção'}
+              >
+                🧪 Itens
               </button>
             </div>
 
@@ -565,6 +578,98 @@ export default function DualCardBattleLayout({
           scrollbar-color: #a855f7 rgba(0, 0, 0, 0.4);
         }
       `}</style>
+
+      {/* Modal de Itens */}
+      {showItemsModal && (
+        <div
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+          onClick={() => setShowItemsModal(false)}
+        >
+          <div
+            className="max-w-md w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/30 to-blue-500/30 rounded-lg blur opacity-75"></div>
+
+              <div className="relative bg-slate-950/95 backdrop-blur-xl border border-cyan-900/50 rounded-lg overflow-hidden">
+                <div className="p-4 text-center font-bold text-lg bg-gradient-to-r from-cyan-600 to-blue-600 flex items-center justify-center gap-2">
+                  <span className="text-2xl">🧪</span>
+                  <span>USAR ITEM</span>
+                </div>
+
+                <div className="p-6 max-h-[60vh] overflow-y-auto">
+                  {!playerItems || playerItems.length === 0 ? (
+                    <div className="text-center py-8">
+                      <div className="text-4xl mb-3">📦</div>
+                      <p className="text-slate-400">Nenhum item disponível</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {playerItems.map((inventoryItem) => {
+                        const item = inventoryItem.items;
+                        const canUse = item.efeito === 'hp' || item.efeito === 'cura_hp';
+
+                        return (
+                          <button
+                            key={inventoryItem.id}
+                            onClick={() => {
+                              if (onItemUse) {
+                                onItemUse(inventoryItem);
+                                setShowItemsModal(false);
+                              }
+                            }}
+                            disabled={!canUse}
+                            className="w-full group/item relative disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <div className={`absolute -inset-0.5 ${
+                              canUse
+                                ? 'bg-gradient-to-r from-cyan-500 to-blue-500'
+                                : 'bg-gradient-to-r from-gray-500 to-gray-600'
+                            } rounded blur opacity-50 group-hover/item:opacity-75 transition-all`}></div>
+
+                            <div className={`relative bg-slate-950 rounded border-2 ${
+                              canUse ? 'border-cyan-500/50' : 'border-gray-500/50'
+                            } p-4 transition-all`}>
+                              <div className="flex items-center gap-3 mb-2">
+                                <span className="text-3xl">{item.icone}</span>
+                                <div className="flex-1 text-left">
+                                  <div className={`font-bold ${canUse ? 'text-cyan-400' : 'text-gray-400'}`}>
+                                    {item.nome}
+                                  </div>
+                                  <div className="text-xs text-slate-500">x{inventoryItem.quantidade}</div>
+                                </div>
+                              </div>
+                              <p className="text-sm text-slate-300 mb-2">
+                                {item.descricao}
+                              </p>
+                              <div className="text-xs text-green-400 font-bold">
+                                Restaura {item.valor_efeito} HP
+                              </div>
+                              {!canUse && (
+                                <div className="text-xs text-red-400 mt-2">
+                                  ⚠️ Apenas poções de HP podem ser usadas em batalha
+                                </div>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => setShowItemsModal(false)}
+                    className="w-full mt-4 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded transition-colors font-bold"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -6,6 +6,7 @@ import {
   handleAttack,
   handleDefend,
   handleAbility,
+  handleUseItem,
   handleSurrender,
   handleProcessEffects
 } from './handlers';
@@ -26,7 +27,7 @@ export async function GET(request) {
  */
 export async function POST(request) {
   try {
-    const { roomId, visitorId, action, abilityIndex } = await request.json();
+    const { roomId, visitorId, action, abilityIndex, inventoryItemId, itemId } = await request.json();
 
     if (!roomId || !visitorId || !action) {
       return NextResponse.json(
@@ -69,6 +70,9 @@ export async function POST(request) {
 
       case 'ability':
         return handleAbility({ room, role, isHost, abilityIndex });
+
+      case 'useItem':
+        return handleUseItem({ room, role, isHost, inventoryItemId, itemId });
 
       case 'surrender':
         return handleSurrender({ room, isHost });

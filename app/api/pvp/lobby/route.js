@@ -132,7 +132,7 @@ export async function POST(request) {
           avatar: avatar || null,
           suporte_id: suporteId || null,
           poder: avatar ? (avatar.forca + avatar.agilidade + avatar.resistencia + avatar.foco) : 0,
-          hp_atual: avatar?.hp_atual || hpMax,
+          hp_atual: hpMax, // PVP sempre mostra HP máximo (100%)
           hp_maximo: hpMax,
           exaustao: avatar?.exaustao || 0,
           created_at: new Date().toISOString()
@@ -251,7 +251,7 @@ export async function POST(request) {
         hostAvatarSuporte = await getDocument('avatares', challenge.suporte_id);
       }
 
-      const hostHpAtual = Math.min(challenge.hp_atual || hostHpMax, hostHpMax);
+      const hostHpAtual = hostHpMax; // PVP sempre começa com HP máximo (combate simulado)
 
       // ====== BUSCAR E APLICAR SINERGIA DO GUEST (aceitante) ======
       let guestSinergiaInfo = null;
@@ -327,7 +327,7 @@ export async function POST(request) {
         guestEnergyMax = guestEnergy;
       }
 
-      const guestHpAtual = Math.min(myEntry?.hp_atual || guestHpMax, guestHpMax);
+      const guestHpAtual = guestHpMax; // PVP sempre começa com HP máximo (combate simulado)
 
       // ====== CRIAR SALA COM DADOS COMPLETOS ======
       const roomId = await createDocument('pvp_duel_rooms', {

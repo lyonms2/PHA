@@ -89,7 +89,7 @@ export async function POST(request) {
     // HP máximo base (sem sinergia ainda)
     const hpMaximoBase = calcularHPMaximoCompleto(avatar);
     const hpMaximo = hpMaximoBase;
-    const hpAtual = Math.min(avatar.hp_atual || hpMaximo, hpMaximo);
+    const hpAtual = hpMaximo; // PVP sempre começa com HP máximo (combate simulado)
 
     // Gerar código de 6 caracteres
     const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
