@@ -50,6 +50,16 @@ export async function handleUseItem({ room, role, isHost, inventoryItemId, itemI
     );
   }
 
+  // Verificar limite de 2 itens por batalha
+  const itemsUsedField = isHost ? 'host_items_used' : 'guest_items_used';
+  const itemsUsed = room[itemsUsedField] ?? 0;
+  if (itemsUsed >= 2) {
+    return NextResponse.json(
+      { error: 'Você já usou o máximo de 2 itens nesta batalha!' },
+      { status: 400 }
+    );
+  }
+
   // Pegar HP atual
   const myHpField = isHost ? 'host_hp' : 'guest_hp';
   const myHpMaxField = isHost ? 'host_hp_max' : 'guest_hp_max';
@@ -91,9 +101,13 @@ export async function handleUseItem({ room, role, isHost, inventoryItemId, itemI
     hpNovo: newHp
   });
 
+  // Incrementar contador de itens usados
+  const newItemsUsed = itemsUsed + 1;
+
   // Atualizar sala
   await updateDocument('pvp_duel_rooms', room.id, {
     [myHpField]: newHp,
+    [itemsUsedField]: newItemsUsed,
     current_turn: isHost ? 'guest' : 'host',
     battle_log: battleLog
   });
@@ -103,6 +117,8 @@ export async function handleUseItem({ room, role, isHost, inventoryItemId, itemI
     hpCurado,
     hpAnterior: currentHp,
     hpNovo: newHp,
-    hpMaximo: maxHp
+    hpMaximo: maxHp,
+    itemsUsed: newItemsUsed,
+    itemsMax: 2
   });
 }

@@ -59,6 +59,7 @@ function BatalhaTreinoIAContent() {
   const [sinergiaAtiva, setSinergiaAtiva] = useState(null);
   const [sinergiaIA, setSinergiaIA] = useState(null);
   const [inventario, setInventario] = useState([]);
+  const [playerItemsUsed, setPlayerItemsUsed] = useState(0);
 
   // Carregar usuário e inventário
   useEffect(() => {
@@ -304,6 +305,7 @@ function BatalhaTreinoIAContent() {
         setOpponentEffects(battle.iaEffects || []);
         setPlayerCooldowns(battle.playerCooldowns || {});
         setIaCooldowns(battle.iaCooldowns || {});
+        setPlayerItemsUsed(battle.playerItemsUsed ?? 0);
         setIsYourTurn(battle.currentTurn === 'player');
         setStatus(battle.status);
         setWinner(battle.winner);
@@ -696,8 +698,11 @@ function BatalhaTreinoIAContent() {
           mostrarDanoVisual('meu', -result.hpCurado, 'heal', null);
         }
 
-        // Atualizar HP local
+        // Atualizar HP local e contador de itens
         setMyHp(result.hpNovo);
+        if (result.itemsUsed !== undefined) {
+          setPlayerItemsUsed(result.itemsUsed);
+        }
 
         // Recarregar inventário
         const userData = localStorage.getItem("user");
@@ -792,6 +797,7 @@ function BatalhaTreinoIAContent() {
 
         // Inventário de itens
         playerItems={inventario}
+        playerItemsUsed={playerItemsUsed}
 
         // Log
         log={log}
