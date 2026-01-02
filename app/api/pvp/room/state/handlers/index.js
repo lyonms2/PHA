@@ -8,5 +8,6 @@ export { handleReady } from './handleReady';
 export { handleAttack } from './handleAttack';
 export { handleDefend } from './handleDefend';
 export { handleAbility } from './handleAbility';
+export { handleUseItem } from './handleUseItem';
 export { handleSurrender } from './handleSurrender';
 export { handleProcessEffects } from './handleProcessEffects';
