@@ -97,7 +97,7 @@ export async function GET(request) {
  */
 export async function POST(request) {
   try {
-    const { battleId, action, playerAvatar, iaAvatar, personalidadeIA, abilityIndex, dificuldade, sinergia, sinergiaIA } = await request.json();
+    const { battleId, action, playerAvatar, iaAvatar, personalidadeIA, abilityIndex, dificuldade, sinergia, sinergiaIA, inventoryItemId, itemId } = await request.json();
 
     // ===== INICIAR NOVA BATALHA =====
     if (action === 'init') {
@@ -442,6 +442,93 @@ export async function POST(request) {
           'TREINO'
         );
       }
+    } else if (action === 'useItem') {
+      // ===== USAR ITEM (POÇÃO) =====
+      if (!inventoryItemId || !itemId) {
+        return NextResponse.json(
+          { error: 'inventoryItemId e itemId são obrigatórios' },
+          { status: 400 }
+        );
+      }
+
+      const { getDocument, updateDocument, deleteDocument } = await import('@/lib/firebase/firestore');
+
+      // Buscar item do inventário
+      const inventoryItem = await getDocument('player_inventory', inventoryItemId);
+      if (!inventoryItem) {
+        return NextResponse.json(
+          { error: 'Item não encontrado no inventário' },
+          { status: 404 }
+        );
+      }
+
+      // Buscar detalhes do item
+      const item = await getDocument('items', itemId);
+      if (!item) {
+        return NextResponse.json(
+          { error: 'Item não encontrado' },
+          { status: 404 }
+        );
+      }
+
+      // Verificar se é poção de HP
+      const efeito = item.efeito;
+      if (efeito !== 'hp' && efeito !== 'cura_hp') {
+        return NextResponse.json(
+          { error: 'Apenas poções de HP podem ser usadas em batalha' },
+          { status: 400 }
+        );
+      }
+
+      // Verificar se já está com HP cheio
+      const currentHp = battle.player.hp;
+      const maxHp = battle.player.hp_max;
+      if (currentHp >= maxHp) {
+        return NextResponse.json(
+          { error: 'HP já está no máximo!' },
+          { status: 400 }
+        );
+      }
+
+      // Calcular HP curado
+      const hpCurado = Math.min(item.valor_efeito, maxHp - currentHp);
+      const newHp = currentHp + hpCurado;
+
+      // Consumir item do inventário
+      if (inventoryItem.quantidade > 1) {
+        await updateDocument('player_inventory', inventoryItemId, {
+          quantidade: inventoryItem.quantidade - 1,
+          updated_at: new Date().toISOString()
+        });
+      } else {
+        await deleteDocument('player_inventory', inventoryItemId);
+      }
+
+      // Atualizar HP do jogador
+      battle.player = {
+        ...battle.player,
+        hp: newHp
+      };
+
+      // Criar resultado
+      result = {
+        success: true,
+        action: 'useItem',
+        attacker: { ...battle.player, hp: newHp, energy: battle.player.energy },
+        defender: battle.ia,
+        log: {
+          acao: 'useItem',
+          jogador: battle.player.nome,
+          item: item.nome,
+          hpCurado,
+          hpAnterior: currentHp,
+          hpNovo: newHp
+        },
+        finished: false,
+        hpCurado,
+        hpAnterior: currentHp,
+        hpNovo: newHp
+      };
     } else {
       return NextResponse.json(
         { error: 'Ação inválida' },
