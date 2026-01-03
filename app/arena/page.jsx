@@ -213,13 +213,19 @@ export default function ArenaLobby() {
               <div className="flex items-start gap-2">
                 <span className="text-cyan-400 mt-0.5 text-sm">🛡️</span>
                 <div className="text-sm text-slate-300">
-                  <strong className="text-white">Defender:</strong> Reduz 40% do dano recebido no próximo turno. Ótimo para aguentar ataques fortes!
+                  <strong className="text-white">Defender:</strong> Reduz 50% do dano recebido no próximo turno e recupera 20 de energia. Única forma de recuperar energia!
                 </div>
               </div>
               <div className="flex items-start gap-2">
                 <span className="text-cyan-400 mt-0.5 text-sm">🔥</span>
                 <div className="text-sm text-slate-300">
-                  <strong className="text-white">Elementos:</strong> Fogo → Terra → Vento → Água → Fogo. Vantagem causa +50% de dano!
+                  <strong className="text-white">Elementos (9 tipos):</strong> Ciclo básico: Fogo → Vento → Terra → Eletricidade → Água → Fogo. Luz ↔ Sombra (opostos 2x). Void e Aether são raros!
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-cyan-400 mt-0.5 text-sm">⚡</span>
+                <div className="text-sm text-slate-300">
+                  <strong className="text-white">Vantagem Elemental:</strong> Super efetivo causa +50% de dano. Opostos (Luz vs Sombra) causam +100%!
                 </div>
               </div>
               <div className="flex items-start gap-2">
@@ -243,7 +249,7 @@ export default function ArenaLobby() {
               <div className="flex items-start gap-2">
                 <span className="text-cyan-400 mt-0.5 text-sm">😰</span>
                 <div className="text-sm text-slate-300">
-                  <strong className="text-white">Exaustão:</strong> Recupera 5 pts/hora. Acima de 60% reduz stats em 30%, acima de 80% reduz 50%!
+                  <strong className="text-white">Exaustão:</strong> Recupera 5 pts/hora. Apenas 100% de exaustão impede participação nas lutas!
                 </div>
               </div>
               <div className="flex items-start gap-2">
