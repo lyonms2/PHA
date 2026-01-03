@@ -193,6 +193,15 @@ export async function PUT(request) {
       return aliveCheck.response;
     }
 
+    // Validar que avatar não está à venda
+    if (avatarToActivate.em_venda) {
+      console.log(`[ATIVAR AVATAR] ❌ Avatar está à venda, não pode ativar`);
+      return NextResponse.json(
+        { message: "Não é possível ativar um avatar que está à venda. Cancele a venda primeiro." },
+        { status: 400 }
+      );
+    }
+
     // Desativar todos os avatares do usuário
     console.log(`[ATIVAR AVATAR] 1️⃣ Desativando TODOS os avatares do usuário...`);
 
@@ -226,9 +235,6 @@ export async function PUT(request) {
     try {
       await updateDocument('avatares', avatarId, {
         ativo: true,
-        em_venda: false,  // Remover da venda ao ativar
-        preco_venda: null,
-        preco_fragmentos: null,
         updated_at: timestampAtivacao
       });
     } catch (activateError) {

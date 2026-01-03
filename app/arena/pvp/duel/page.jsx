@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AvatarSVG from "../../../components/AvatarSVG";
-import { calcularPoderTotal } from "@/lib/gameLogic";
+import { calcularPoderTotal, calcularHPMaximoCompleto } from "@/lib/gameLogic";
 import { HABILIDADES_POR_ELEMENTO } from "@/app/avatares/sistemas/abilitiesSystem";
 import SynergyDisplay from "../../treinamento/batalha/components/SynergyDisplay";
 import DualCardBattleLayout from '@/app/arena/components/DualCardBattleLayout';
@@ -995,8 +995,8 @@ function DuelContent() {
   // Tela inicial - entrar no lobby
   if (!inLobby && !roomId) {
     const poder = meuAvatar ? calcularPoderTotal(meuAvatar) : 0;
-    const hpMax = meuAvatar ? (meuAvatar.resistencia * 10) + (meuAvatar.nivel * 5) : 100;
-    const hpAtual = meuAvatar?.hp_atual ?? hpMax;
+    const hpMax = meuAvatar ? calcularHPMaximoCompleto(meuAvatar) : 100;
+    const hpAtual = hpMax; // PVP sempre começa com HP máximo
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 text-gray-100 p-4">
@@ -1194,8 +1194,8 @@ function DuelContent() {
   // Tela do lobby
   if (inLobby && !roomId) {
     const poder = meuAvatar ? calcularPoderTotal(meuAvatar) : 0;
-    const hpMax = meuAvatar ? (meuAvatar.resistencia * 10) + (meuAvatar.nivel * 5) : 100;
-    const hpAtual = meuAvatar?.hp_atual ?? hpMax;
+    const hpMax = meuAvatar ? calcularHPMaximoCompleto(meuAvatar) : 100;
+    const hpAtual = hpMax; // PVP sempre começa com HP máximo
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 text-gray-100 p-4">

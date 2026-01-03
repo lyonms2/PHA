@@ -135,7 +135,7 @@ export default function ArenaLobby() {
       <div className="container mx-auto px-3 py-4">
 
         {/* Modos de Jogo */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {modos.map((modo) => (
             <button
               key={modo.id}
@@ -152,43 +152,43 @@ export default function ArenaLobby() {
                 <div className={`absolute inset-0 bg-gradient-to-br ${modo.cor} opacity-0 group-hover:opacity-20 transition-opacity duration-300`}></div>
               )}
 
-              <div className="relative p-4">
+              <div className="relative p-6">
                 {/* Emoji */}
-                <div className={`text-4xl md:text-5xl mb-3 ${modo.disponivel ? 'group-hover:scale-110' : ''} transition-transform duration-300`}>
+                <div className={`text-5xl md:text-6xl mb-4 ${modo.disponivel ? 'group-hover:scale-110' : ''} transition-transform duration-300`}>
                   {modo.emoji}
                 </div>
 
                 {/* Nome */}
-                <h2 className="text-xl md:text-2xl font-black text-white mb-1">
+                <h2 className="text-2xl md:text-3xl font-black text-white mb-2">
                   {modo.nome}
                 </h2>
 
                 {/* Descrição */}
-                <p className="text-sm text-slate-300 font-semibold mb-2">
+                <p className="text-base text-slate-300 font-semibold mb-3">
                   {modo.descricao}
                 </p>
 
-                <p className="text-xs text-slate-400 leading-relaxed mb-3">
+                <p className="text-sm text-slate-400 leading-relaxed mb-4">
                   {modo.detalhes}
                 </p>
 
                 {/* Recursos */}
-                <div className="space-y-1 mb-4">
+                <div className="space-y-2 mb-5">
                   {modo.recursos.map((recurso, index) => (
-                    <div key={index} className="flex items-center gap-1.5 text-xs">
-                      <div className={`w-1 h-1 rounded-full ${modo.disponivel ? 'bg-cyan-400' : 'bg-slate-600'}`}></div>
-                      <span className="text-slate-400">{recurso}</span>
+                    <div key={index} className="flex items-center gap-2 text-sm">
+                      <div className={`w-1.5 h-1.5 rounded-full ${modo.disponivel ? 'bg-cyan-400' : 'bg-slate-600'}`}></div>
+                      <span className="text-slate-300">{recurso}</span>
                     </div>
                   ))}
                 </div>
 
                 {/* Botão */}
                 {modo.disponivel ? (
-                  <div className={`bg-gradient-to-r ${modo.cor} text-white font-black py-2 px-4 rounded-lg text-sm text-center uppercase tracking-wider group-hover:shadow-lg transition-shadow`}>
+                  <div className={`bg-gradient-to-r ${modo.cor} text-white font-black py-3 px-6 rounded-lg text-base text-center uppercase tracking-wider group-hover:shadow-lg transition-shadow`}>
                     Entrar →
                   </div>
                 ) : (
-                  <div className="bg-slate-800 text-slate-500 font-black py-2 px-4 rounded-lg text-sm text-center uppercase tracking-wider">
+                  <div className="bg-slate-800 text-slate-500 font-black py-3 px-6 rounded-lg text-base text-center uppercase tracking-wider">
                     Bloqueado
                   </div>
                 )}
@@ -198,37 +198,67 @@ export default function ArenaLobby() {
         </div>
 
         {/* Dicas de Combate */}
-        <div className="max-w-3xl mx-auto">
-          <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-800">
-            <h3 className="text-base font-bold text-cyan-400 mb-3 flex items-center gap-2">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-slate-900/50 rounded-lg p-6 border border-slate-800">
+            <h3 className="text-lg font-bold text-cyan-400 mb-4 flex items-center gap-2">
               <span>💡</span> Dicas de Combate
             </h3>
-            <ul className="space-y-1.5 text-xs text-slate-300">
-              <li className="flex items-start gap-1.5">
-                <span className="text-cyan-400 mt-0.5">▸</span>
-                <span><strong>Gestão de Energia:</strong> "Esperar" restaura +30 energia, "Defender" +15 e reduz dano recebido em 40%.</span>
-              </li>
-              <li className="flex items-start gap-1.5">
-                <span className="text-cyan-400 mt-0.5">▸</span>
-                <span><strong>Vantagem Elemental:</strong> Fogo &gt; Terra &gt; Vento &gt; Água &gt; Fogo. Eletricidade/Luz/Sombra são neutros.</span>
-              </li>
-              <li className="flex items-start gap-1.5">
-                <span className="text-cyan-400 mt-0.5">▸</span>
-                <span><strong>Habilidades:</strong> Cada avatar tem 3 habilidades únicas baseadas em seu elemento e raridade.</span>
-              </li>
-              <li className="flex items-start gap-1.5">
-                <span className="text-cyan-400 mt-0.5">▸</span>
-                <span><strong>Exaustão:</strong> Acima de 60% reduz Força/Resistência em 30%. Acima de 80% reduz em 50%!</span>
-              </li>
-              <li className="flex items-start gap-1.5">
-                <span className="text-cyan-400 mt-0.5">▸</span>
-                <span><strong>No PvP:</strong> Use "Render-se" para fugir quando HP &lt; 30% e evitar penalidades maiores.</span>
-              </li>
-              <li className="flex items-start gap-1.5">
-                <span className="text-cyan-400 mt-0.5">▸</span>
-                <span><strong>Treinamento:</strong> Comece em "Fácil" para aprender mecânicas, depois suba a dificuldade.</span>
-              </li>
-            </ul>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+              <div className="flex items-start gap-2">
+                <span className="text-cyan-400 mt-0.5 text-sm">⚔️</span>
+                <div className="text-sm text-slate-300">
+                  <strong className="text-white">Ataque Básico:</strong> Custa 10 de energia. Use quando quiser economizar energia das habilidades.
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-cyan-400 mt-0.5 text-sm">🛡️</span>
+                <div className="text-sm text-slate-300">
+                  <strong className="text-white">Defender:</strong> Reduz 50% do dano recebido no próximo turno e recupera 20 de energia. Única forma de recuperar energia!
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-cyan-400 mt-0.5 text-sm">🔥</span>
+                <div className="text-sm text-slate-300">
+                  <strong className="text-white">Elementos (9 tipos):</strong> Ciclo básico: Fogo → Vento → Terra → Eletricidade → Água → Fogo. Luz ↔ Sombra (opostos 2x). Void e Aether são raros!
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-cyan-400 mt-0.5 text-sm">⚡</span>
+                <div className="text-sm text-slate-300">
+                  <strong className="text-white">Vantagem Elemental:</strong> Super efetivo causa +50% de dano. Opostos (Luz vs Sombra) causam +100%!
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-cyan-400 mt-0.5 text-sm">✨</span>
+                <div className="text-sm text-slate-300">
+                  <strong className="text-white">Sinergias:</strong> No PVP, escolha um avatar suporte para ativar modificadores poderosos!
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-cyan-400 mt-0.5 text-sm">🧪</span>
+                <div className="text-sm text-slate-300">
+                  <strong className="text-white">Poções de HP:</strong> Use até 2 poções por batalha através do botão "Itens". Não consome energia!
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-cyan-400 mt-0.5 text-sm">⏱️</span>
+                <div className="text-sm text-slate-300">
+                  <strong className="text-white">Cooldowns:</strong> Habilidades fortes têm tempo de recarga. Planeje suas ações!
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-cyan-400 mt-0.5 text-sm">😰</span>
+                <div className="text-sm text-slate-300">
+                  <strong className="text-white">Exaustão:</strong> Recupera 5 pts/hora. Apenas 100% de exaustão impede participação nas lutas!
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-cyan-400 mt-0.5 text-sm">🎯</span>
+                <div className="text-sm text-slate-300">
+                  <strong className="text-white">Treinamento:</strong> Comece no Fácil, suba gradualmente. Sem morte permanente!
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

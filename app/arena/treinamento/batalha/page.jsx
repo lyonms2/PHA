@@ -286,8 +286,14 @@ function BatalhaTreinoIAContent() {
 
   // Atualizar estado
   const atualizarEstado = async (id) => {
+    const currentBattleId = id || battleId;
+    if (!currentBattleId) {
+      console.warn('atualizarEstado: battleId não definido');
+      return;
+    }
+
     try {
-      const response = await fetch(`/api/arena/treino-ia/batalha?battleId=${id || battleId}`);
+      const response = await fetch(`/api/arena/treino-ia/batalha?battleId=${currentBattleId}`);
       const result = await response.json();
 
       if (result.success) {
@@ -313,7 +319,7 @@ function BatalhaTreinoIAContent() {
         // Processar efeitos quando é meu turno
         if (battle.currentTurn === 'player' && battle.status === 'active') {
           if (myEffects.length > 0) {
-            setTimeout(() => processarMeusEfeitos(id || battleId), 500);
+            setTimeout(() => processarMeusEfeitos(currentBattleId), 500);
           }
         }
       }
@@ -324,12 +330,18 @@ function BatalhaTreinoIAContent() {
 
   // Processar efeitos do jogador no início do turno
   const processarMeusEfeitos = async (id) => {
+    const currentBattleId = id || battleId;
+    if (!currentBattleId) {
+      console.warn('processarMeusEfeitos: battleId não definido');
+      return;
+    }
+
     try {
       const response = await fetch('/api/arena/treino-ia/batalha', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          battleId: id || battleId,
+          battleId: currentBattleId,
           action: 'process_effects',
           target: 'player'
         })
@@ -425,7 +437,7 @@ function BatalhaTreinoIAContent() {
 
   // Atacar
   const atacar = async () => {
-    if (actionInProgress || !isYourTurn || myEnergy < 10 || status === 'finished') return;
+    if (!battleId || actionInProgress || !isYourTurn || myEnergy < 10 || status === 'finished') return;
     setActionInProgress(true);
 
     try {
@@ -517,7 +529,7 @@ function BatalhaTreinoIAContent() {
 
   // Defender
   const defender = async () => {
-    if (actionInProgress || !isYourTurn || status === 'finished') return;
+    if (!battleId || actionInProgress || !isYourTurn || status === 'finished') return;
     setActionInProgress(true);
 
     try {
@@ -566,7 +578,7 @@ function BatalhaTreinoIAContent() {
 
   // Usar habilidade
   const usarHabilidade = async (index) => {
-    if (actionInProgress || !isYourTurn || status === 'finished') return;
+    if (!battleId || actionInProgress || !isYourTurn || status === 'finished') return;
     setActionInProgress(true);
 
     try {
@@ -672,7 +684,7 @@ function BatalhaTreinoIAContent() {
 
   // Usar item (poção)
   const usarItem = async (inventoryItem) => {
-    if (actionInProgress || !isYourTurn || status === 'finished') return;
+    if (!battleId || actionInProgress || !isYourTurn || status === 'finished') return;
 
     const item = inventoryItem.items;
     if (!item) return;

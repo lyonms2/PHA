@@ -365,18 +365,27 @@ export default function InventarioPage() {
                             </div>
                           </div>
 
-                          <button
-                            onClick={() => setItemParaUsar(inventoryItem)}
-                            disabled={usandoItem || !avatarAtivo}
-                            className="w-full group/btn relative disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <div className="absolute -inset-0.5 bg-gradient-to-r from-green-500 to-cyan-500 rounded blur opacity-50 group-hover/btn:opacity-75 transition-all"></div>
-                            <div className="relative px-4 py-3 bg-slate-950 rounded border border-green-500/50 group-hover/btn:border-green-400 transition-all">
-                              <span className="font-bold text-green-400">
-                                {!avatarAtivo ? '⚠️ Sem avatar ativo' : usandoItem ? 'Usando...' : '✨ Usar Item'}
+                          {/* Verificar se é poção de HP (apenas informativo) ou outro item (pode usar) */}
+                          {item.efeito === 'hp' || item.efeito === 'cura_hp' ? (
+                            <div className="w-full px-4 py-3 bg-slate-900/50 rounded border border-cyan-500/30 text-center">
+                              <span className="text-sm text-cyan-400 font-bold">
+                                ⚔️ Use durante batalhas
                               </span>
                             </div>
-                          </button>
+                          ) : (
+                            <button
+                              onClick={() => setItemParaUsar(inventoryItem)}
+                              disabled={usandoItem || !avatarAtivo}
+                              className="w-full group/btn relative disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <div className="absolute -inset-0.5 bg-gradient-to-r from-green-500 to-cyan-500 rounded blur opacity-50 group-hover/btn:opacity-75 transition-all"></div>
+                              <div className="relative px-4 py-3 bg-slate-950 rounded border border-green-500/50 group-hover/btn:border-green-400 transition-all">
+                                <span className="font-bold text-green-400">
+                                  {!avatarAtivo ? '⚠️ Sem avatar ativo' : usandoItem ? 'Usando...' : '✨ Usar Item'}
+                                </span>
+                              </div>
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
