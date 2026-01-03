@@ -28,6 +28,7 @@ export const dynamic = 'force-dynamic';
 
 // Habilitar logs de debug das sessões
 enableSessionLogs();
+console.log('✅ [ROTA TREINO] Módulo carregado - Storage habilitado');
 
 /**
  * GET - Buscar estado da batalha
