@@ -93,17 +93,44 @@ function BatalhaTreinoIAContent() {
     }
   };
 
+  // Ref para prevenir inicializações duplicadas
+  const inicializacaoEmAndamentoRef = useRef(false);
+
   // Inicializar batalha
   useEffect(() => {
+    // PROTEÇÃO: Evitar múltiplas inicializações
+    if (inicializacaoEmAndamentoRef.current) {
+      console.warn('⚠️ Inicialização já em andamento, ignorando duplicata');
+      return;
+    }
+
     const iniciar = async () => {
+      inicializacaoEmAndamentoRef.current = true;
+      console.log('🎮 [INIT] Iniciando batalha de treinamento...');
+
       try {
         const dadosJSON = sessionStorage.getItem('treino_ia_dados');
         if (!dadosJSON) {
+          console.warn('⚠️ Sem dados de treino no sessionStorage, redirecionando...');
           router.push('/arena/treinamento');
           return;
         }
 
-        const dados = JSON.parse(dadosJSON);
+        let dados;
+        try {
+          dados = JSON.parse(dadosJSON);
+          console.log('✅ [INIT] Dados do sessionStorage carregados:', {
+            playerAvatar: dados.playerAvatar?.nome,
+            oponente: dados.oponente?.nome,
+            dificuldade: dados.dificuldade
+          });
+        } catch (parseError) {
+          console.error('❌ Erro ao parsear dados do sessionStorage:', parseError);
+          sessionStorage.removeItem('treino_ia_dados'); // Limpar dados corrompidos
+          router.push('/arena/treinamento');
+          return;
+        }
+
         setMeuAvatar(dados.playerAvatar);
         setIaAvatar(dados.oponente);
         setDificuldade(dados.dificuldade || 'normal');
@@ -117,6 +144,7 @@ function BatalhaTreinoIAContent() {
         }
 
         // Inicializar batalha
+        console.log('📡 [INIT] Chamando API para criar batalha...');
         const response = await fetch('/api/arena/treino-ia/batalha', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -132,17 +160,35 @@ function BatalhaTreinoIAContent() {
         });
 
         const result = await response.json();
-        if (result.success) {
+        console.log('📡 [INIT] Resposta da API:', { success: result.success, battleId: result.battleId });
+
+        if (result.success && result.battleId) {
           setBattleId(result.battleId);
           addLog(`⚔️ Batalha iniciada!`);
-          atualizarEstado(result.battleId);
+          console.log('✅ [INIT] BattleId definido:', result.battleId);
+
+          // Aguardar battleId ser setado antes de atualizar estado
+          setTimeout(() => {
+            atualizarEstado(result.battleId);
+          }, 100);
+        } else {
+          console.error('❌ [INIT] Falha ao iniciar batalha:', result);
+          addLog('❌ Erro ao iniciar batalha');
+          setTimeout(() => router.push('/arena/treinamento'), 2000);
         }
       } catch (error) {
-        console.error('Erro ao iniciar:', error);
+        console.error('❌ [INIT] Erro ao iniciar batalha:', error);
+        addLog('❌ Erro ao iniciar batalha');
+        setTimeout(() => router.push('/arena/treinamento'), 2000);
       }
     };
 
     iniciar();
+
+    // Cleanup
+    return () => {
+      inicializacaoEmAndamentoRef.current = false;
+    };
   }, [router]);
 
   // Detectar fim de batalha já será tratado nas ações (atacar/habilidade)
@@ -318,7 +364,8 @@ function BatalhaTreinoIAContent() {
 
         // Processar efeitos quando é meu turno
         if (battle.currentTurn === 'player' && battle.status === 'active') {
-          if (myEffects.length > 0) {
+          // Usar os efeitos do backend (mais confiável que o estado local)
+          if (battle.playerEffects && battle.playerEffects.length > 0) {
             setTimeout(() => processarMeusEfeitos(currentBattleId), 500);
           }
         }
