@@ -45,7 +45,7 @@ export async function GET(request) {
       );
     }
 
-    const battle = getBattle(battleId);
+    const battle = await getBattle(battleId);
 
     if (!battle) {
       return NextResponse.json(
@@ -204,7 +204,7 @@ export async function POST(request) {
         ia_cooldowns: {}
       };
 
-      setBattle(newBattleId, newBattle);
+      await setBattle(newBattleId, newBattle);
 
       console.log('🎮 Nova batalha de treino iniciada:', {
         battleId: newBattleId,
@@ -227,7 +227,7 @@ export async function POST(request) {
       );
     }
 
-    const battle = getBattle(battleId);
+    const battle = await getBattle(battleId);
 
     if (!battle) {
       return NextResponse.json(
@@ -302,7 +302,7 @@ export async function POST(request) {
 
       console.log('💰 [RECOMPENSAS] Player morreu por efeitos - Calculadas:', recompensas);
       battle.rewardsApplied = true;
-      setBattle(battleId, battle);
+      await setBattle(battleId, battle);
 
       // Rastrear progresso de missões (não bloqueia se falhar)
       const userId = battle.playerAvatarOriginal?.user_id;
@@ -626,7 +626,7 @@ export async function POST(request) {
 
       console.log('💰 [RECOMPENSAS] Calculadas:', recompensas);
       battle.rewardsApplied = true;
-      setBattle(battleId, battle);
+      await setBattle(battleId, battle);
 
       // Rastrear progresso de missões (não bloqueia se falhar)
       const userId = battle.playerAvatarOriginal?.user_id;
@@ -702,7 +702,7 @@ export async function POST(request) {
 
       console.log('💰 [RECOMPENSAS] IA morreu por efeitos - Calculadas:', recompensas);
       battle.rewardsApplied = true;
-      setBattle(battleId, battle);
+      await setBattle(battleId, battle);
 
       // Rastrear progresso de missões (não bloqueia se falhar)
       const userId = battle.playerAvatarOriginal?.user_id;
@@ -928,7 +928,7 @@ export async function POST(request) {
 
         console.log('💰 [RECOMPENSAS] Derrota - Calculadas:', recompensas);
         battle.rewardsApplied = true;
-        setBattle(battleId, battle);
+        await setBattle(battleId, battle);
 
         // Preparar logs para o jogador ver
         const logsParaJogador = [];
@@ -961,7 +961,7 @@ export async function POST(request) {
 
     // Voltar turno para player
     battle.current_turn = 'player';
-    setBattle(battleId, battle);
+    await setBattle(battleId, battle);
 
     // Preparar logs para o jogador ver
     const logsParaJogador = [];
