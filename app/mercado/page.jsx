@@ -356,6 +356,15 @@ export default function MercadoPage() {
                       <span>Nv.{avatar.nivel}</span>
                     </div>
 
+                    {/* Badge de Merges (se tiver) */}
+                    {avatar.merge_count > 0 && (
+                      <div className="mb-2 p-1.5 bg-violet-950/50 rounded border border-violet-500/30 flex items-center justify-center gap-1.5">
+                        <span className="text-violet-400 text-xs">🧬</span>
+                        <span className="text-violet-300 text-xs font-bold">{avatar.merge_count} Merge{avatar.merge_count > 1 ? 's' : ''}</span>
+                        <span className="text-violet-400 text-xs">({avatar.merge_count}/3)</span>
+                      </div>
+                    )}
+
                     {/* Preço */}
                     <div className="mb-3 p-2 bg-amber-950/30 rounded border border-amber-500/30">
                       <div className="text-xs text-amber-400 text-center font-mono">PREÇO</div>
@@ -485,6 +494,11 @@ export default function MercadoPage() {
                             <span className="inline-block px-3 py-1 bg-slate-800 rounded-full text-sm font-mono text-slate-300">
                               Nv.{modalDetalhes.nivel}
                             </span>
+                            {modalDetalhes.merge_count > 0 && (
+                              <span className="inline-block px-3 py-1 bg-violet-900/50 border border-violet-500/50 rounded-full text-sm font-bold text-violet-300">
+                                🧬 {modalDetalhes.merge_count}/3 Merges
+                              </span>
+                            )}
                           </div>
                         </div>
 
