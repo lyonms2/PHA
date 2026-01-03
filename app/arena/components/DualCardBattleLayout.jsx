@@ -180,6 +180,13 @@ export default function DualCardBattleLayout({
                   {avatar.nome}
                 </div>
 
+                {/* Badge de Elemento */}
+                <div className="mt-0.5">
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${getElementoCor(avatar.elemento)}`}>
+                    {getElementoEmoji(avatar.elemento)} {avatar.elemento}
+                  </span>
+                </div>
+
                 {/* Card de ATAQUE: mostrar HP e Energia */}
                 {isAttack && (
                   <>
