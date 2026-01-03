@@ -22,11 +22,13 @@ import { calcularHPMaximoCompleto } from '@/lib/combat/statsCalculator';
 import { trackMissionProgress } from '@/lib/missions/missionTracker';
 import { calcularHPComSinergia, calcularEnergiaComSinergia } from '@/lib/combat/synergyApplicator';
 import { decrementarCooldowns, ativarCooldown } from '@/lib/combat/cooldownSystem';
+import { getBattle, setBattle, deleteBattle, enableSessionLogs } from '@/lib/arena/battleSessionStorage';
 
 export const dynamic = 'force-dynamic';
 
-// Armazenamento em memória das batalhas
-const battleSessions = new Map();
+// Habilitar logs de debug das sessões
+enableSessionLogs();
+console.log('✅ [ROTA TREINO] Módulo carregado - Storage habilitado');
 
 /**
  * GET - Buscar estado da batalha
@@ -43,7 +45,7 @@ export async function GET(request) {
       );
     }
 
-    const battle = battleSessions.get(battleId);
+    const battle = await getBattle(battleId);
 
     if (!battle) {
       return NextResponse.json(
@@ -202,7 +204,7 @@ export async function POST(request) {
         ia_cooldowns: {}
       };
 
-      battleSessions.set(newBattleId, newBattle);
+      await setBattle(newBattleId, newBattle);
 
       console.log('🎮 Nova batalha de treino iniciada:', {
         battleId: newBattleId,
@@ -225,7 +227,7 @@ export async function POST(request) {
       );
     }
 
-    const battle = battleSessions.get(battleId);
+    const battle = await getBattle(battleId);
 
     if (!battle) {
       return NextResponse.json(
@@ -300,7 +302,7 @@ export async function POST(request) {
 
       console.log('💰 [RECOMPENSAS] Player morreu por efeitos - Calculadas:', recompensas);
       battle.rewardsApplied = true;
-      battleSessions.set(battleId, battle);
+      await setBattle(battleId, battle);
 
       // Rastrear progresso de missões (não bloqueia se falhar)
       const userId = battle.playerAvatarOriginal?.user_id;
@@ -624,7 +626,7 @@ export async function POST(request) {
 
       console.log('💰 [RECOMPENSAS] Calculadas:', recompensas);
       battle.rewardsApplied = true;
-      battleSessions.set(battleId, battle);
+      await setBattle(battleId, battle);
 
       // Rastrear progresso de missões (não bloqueia se falhar)
       const userId = battle.playerAvatarOriginal?.user_id;
@@ -700,7 +702,7 @@ export async function POST(request) {
 
       console.log('💰 [RECOMPENSAS] IA morreu por efeitos - Calculadas:', recompensas);
       battle.rewardsApplied = true;
-      battleSessions.set(battleId, battle);
+      await setBattle(battleId, battle);
 
       // Rastrear progresso de missões (não bloqueia se falhar)
       const userId = battle.playerAvatarOriginal?.user_id;
@@ -870,11 +872,19 @@ export async function POST(request) {
         success: iaResult?.success,
         action: iaResult?.action,
         attackerHp: iaResult?.attacker?.hp,
-        defenderHp: iaResult?.defender?.hp
+        defenderHp: iaResult?.defender?.hp,
+        iaResultExists: !!iaResult
       });
     } // Fim do else - IA não atordoada
 
+    console.log('🔍 [DEBUG] Verificando iaResult antes de processar:', {
+      iaResultExists: !!iaResult,
+      iaResultSuccess: iaResult?.success,
+      acaoIA: acaoIA?.acao
+    });
+
     if (iaResult && iaResult.success) {
+      console.log('✅ [IA] iaResult válido, atualizando estado da batalha');
       // Atualizar estado
       if (acaoIA.acao === 'defend') {
         battle.ia = {
@@ -918,7 +928,7 @@ export async function POST(request) {
 
         console.log('💰 [RECOMPENSAS] Derrota - Calculadas:', recompensas);
         battle.rewardsApplied = true;
-        battleSessions.set(battleId, battle);
+        await setBattle(battleId, battle);
 
         // Preparar logs para o jogador ver
         const logsParaJogador = [];
@@ -937,6 +947,13 @@ export async function POST(request) {
           logsParaJogador
         });
       }
+    } else {
+      console.error('❌ [IA] iaResult inválido ou sem success:', {
+        iaResultExists: !!iaResult,
+        success: iaResult?.success,
+        action: iaResult?.action,
+        error: iaResult?.error
+      });
     }
 
     // Decrementar cooldowns do player no início do turno
@@ -944,7 +961,7 @@ export async function POST(request) {
 
     // Voltar turno para player
     battle.current_turn = 'player';
-    battleSessions.set(battleId, battle);
+    await setBattle(battleId, battle);
 
     // Preparar logs para o jogador ver
     const logsParaJogador = [];
