@@ -871,11 +871,19 @@ export async function POST(request) {
         success: iaResult?.success,
         action: iaResult?.action,
         attackerHp: iaResult?.attacker?.hp,
-        defenderHp: iaResult?.defender?.hp
+        defenderHp: iaResult?.defender?.hp,
+        iaResultExists: !!iaResult
       });
     } // Fim do else - IA não atordoada
 
+    console.log('🔍 [DEBUG] Verificando iaResult antes de processar:', {
+      iaResultExists: !!iaResult,
+      iaResultSuccess: iaResult?.success,
+      acaoIA: acaoIA?.acao
+    });
+
     if (iaResult && iaResult.success) {
+      console.log('✅ [IA] iaResult válido, atualizando estado da batalha');
       // Atualizar estado
       if (acaoIA.acao === 'defend') {
         battle.ia = {
@@ -938,6 +946,13 @@ export async function POST(request) {
           logsParaJogador
         });
       }
+    } else {
+      console.error('❌ [IA] iaResult inválido ou sem success:', {
+        iaResultExists: !!iaResult,
+        success: iaResult?.success,
+        action: iaResult?.action,
+        error: iaResult?.error
+      });
     }
 
     // Decrementar cooldowns do player no início do turno
