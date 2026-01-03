@@ -361,8 +361,9 @@ function BatalhaTreinoIAContent() {
 
         if (result.finished) {
           addLog('☠️ Você morreu por efeitos!');
-          setStatus('finished');
-          setWinner('ia');
+
+          // Processar fim de batalha com recompensas
+          processarFimDeBatalha(result);
         }
       }
     } catch (error) {
@@ -564,7 +565,12 @@ function BatalhaTreinoIAContent() {
           setTimeout(() => processarAcaoIA(result.iaAction), 800);
         }
 
-        await atualizarEstado();
+        // Verificar fim de batalha
+        processarFimDeBatalha(result);
+
+        if (!result.finished) {
+          await atualizarEstado();
+        }
       }
     } catch (error) {
       console.error('Erro:', error);
@@ -728,7 +734,12 @@ function BatalhaTreinoIAContent() {
           setTimeout(() => processarAcaoIA(result.iaAction), 800);
         }
 
-        await atualizarEstado();
+        // Verificar fim de batalha
+        processarFimDeBatalha(result);
+
+        if (!result.finished) {
+          await atualizarEstado();
+        }
       } else {
         addLog(`❌ ${result.error || 'Erro ao usar item'}`);
       }
