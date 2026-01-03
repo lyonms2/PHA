@@ -98,13 +98,17 @@ function BatalhaTreinoIAContent() {
 
   // Inicializar batalha
   useEffect(() => {
-    // PROTEÇÃO: Evitar múltiplas inicializações
-    if (inicializacaoEmAndamentoRef.current) {
-      console.warn('⚠️ Inicialização já em andamento, ignorando duplicata');
-      return;
-    }
+    // RESET da ref ao montar (importante para quando volta de uma batalha anterior)
+    console.log('🔄 [MOUNT] Componente montado, resetando ref de inicialização');
+    inicializacaoEmAndamentoRef.current = false;
 
     const iniciar = async () => {
+      // PROTEÇÃO: Evitar múltiplas inicializações
+      if (inicializacaoEmAndamentoRef.current) {
+        console.warn('⚠️ Inicialização já em andamento, ignorando duplicata');
+        return;
+      }
+
       inicializacaoEmAndamentoRef.current = true;
       console.log('🎮 [INIT] Iniciando batalha de treinamento...');
 
@@ -163,14 +167,17 @@ function BatalhaTreinoIAContent() {
         console.log('📡 [INIT] Resposta da API:', { success: result.success, battleId: result.battleId });
 
         if (result.success && result.battleId) {
+          console.log('✅ [INIT] BattleId recebido:', result.battleId);
           setBattleId(result.battleId);
           addLog(`⚔️ Batalha iniciada!`);
-          console.log('✅ [INIT] BattleId definido:', result.battleId);
+          console.log('✅ [INIT] setState(battleId) chamado');
 
           // Aguardar battleId ser setado antes de atualizar estado
+          // Timeout maior para garantir que o backend salvou a sessão
           setTimeout(() => {
+            console.log('⏰ [INIT] Timeout executado, chamando atualizarEstado');
             atualizarEstado(result.battleId);
-          }, 100);
+          }, 500);
         } else {
           console.error('❌ [INIT] Falha ao iniciar batalha:', result);
           addLog('❌ Erro ao iniciar batalha');
@@ -333,16 +340,25 @@ function BatalhaTreinoIAContent() {
   // Atualizar estado
   const atualizarEstado = async (id) => {
     const currentBattleId = id || battleId;
+    console.log('📊 [ATUALIZAR] Chamado com:', { id, battleId, currentBattleId });
+
     if (!currentBattleId) {
-      console.warn('atualizarEstado: battleId não definido');
+      console.warn('⚠️ [ATUALIZAR] battleId não definido');
       return;
     }
 
     try {
-      const response = await fetch(`/api/arena/treino-ia/batalha?battleId=${currentBattleId}`);
+      const url = `/api/arena/treino-ia/batalha?battleId=${currentBattleId}`;
+      console.log('📡 [ATUALIZAR] Fazendo GET para:', url);
+
+      const response = await fetch(url);
+      console.log('📡 [ATUALIZAR] Resposta:', { status: response.status, ok: response.ok });
+
       const result = await response.json();
+      console.log('📊 [ATUALIZAR] Resultado:', { success: result.success, error: result.error });
 
       if (result.success) {
+        console.log('✅ [ATUALIZAR] Estado recebido com sucesso');
         const battle = result.battle;
 
         setMyHp(battle.playerHp);
@@ -369,9 +385,19 @@ function BatalhaTreinoIAContent() {
             setTimeout(() => processarMeusEfeitos(currentBattleId), 500);
           }
         }
+      } else {
+        console.error('❌ [ATUALIZAR] Falha ao buscar estado:', result.error);
+        addLog(`❌ Erro: ${result.error || 'Batalha não encontrada'}`);
+        // Se batalha não encontrada, redirecionar após 2s
+        if (result.error === 'Batalha não encontrada') {
+          setTimeout(() => {
+            router.push('/arena/treinamento');
+          }, 2000);
+        }
       }
     } catch (error) {
-      console.error('Erro ao atualizar:', error);
+      console.error('❌ [ATUALIZAR] Erro ao atualizar:', error);
+      addLog('❌ Erro de conexão ao atualizar estado');
     }
   };
 
