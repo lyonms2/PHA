@@ -490,249 +490,111 @@ export default function TreinamentoAIPage() {
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-slate-900 border border-purple-500 rounded-lg p-6">
               <h2 className="text-xl font-bold text-purple-400 mb-4 text-center">
-                🏟️ SALAS DE TREINO POR PODER
+                🏟️ ESCOLHA A DIFICULDADE
               </h2>
               <p className="text-slate-400 text-center mb-6 text-sm">
-                Escolha uma sala compatível com o poder do seu avatar
+                O oponente IA será gerado com base no poder do seu avatar
               </p>
 
               <div className="space-y-4">
-                {/* Sala Iniciante */}
-                <div className={`bg-slate-800 rounded-lg p-4 border-2 transition-all ${
-                  poderTotal >= 0 && poderTotal <= 39
-                    ? 'border-green-500 shadow-lg shadow-green-500/20'
-                    : 'border-slate-700 opacity-50'
-                }`}>
-                  <div className="flex justify-between items-center mb-3">
-                    <div>
-                      <h3 className="font-bold text-green-400 text-lg">🌱 Iniciante</h3>
-                      <p className="text-sm text-slate-400">Poder: 0 - 39</p>
+                {/* Botão Fácil */}
+                <button
+                  onClick={() => iniciarTreinoIA(0, 999, 'facil')}
+                  disabled={iniciandoBatalha}
+                  className="w-full bg-gradient-to-r from-green-700 to-green-600 hover:from-green-600 hover:to-green-500 text-white rounded-lg p-6 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 border-2 border-green-500 shadow-lg shadow-green-500/20"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="text-left">
+                      <h3 className="text-2xl font-bold mb-1">🌱 FÁCIL</h3>
+                      <p className="text-sm text-green-100">IA com 70% dos seus stats</p>
+                      <p className="text-xs text-green-200 mt-1">Ótimo para praticar e aprender</p>
                     </div>
+                    <div className="text-5xl opacity-50">🎯</div>
                   </div>
+                </button>
 
-                  {/* Opções de Dificuldade */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <button
-                      onClick={() => iniciarTreinoIA(0, 39, 'facil')}
-                      disabled={poderTotal < 0 || poderTotal > 39 || iniciandoBatalha}
-                      className={`px-3 py-2 rounded-lg font-bold text-sm ${
-                        poderTotal >= 0 && poderTotal <= 39
-                          ? 'bg-green-700 hover:bg-green-600 text-white'
-                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                      }`}
-                    >
-                      Fácil
-                    </button>
-                    <button
-                      onClick={() => iniciarTreinoIA(0, 39, 'normal')}
-                      disabled={poderTotal < 0 || poderTotal > 39 || iniciandoBatalha}
-                      className={`px-3 py-2 rounded-lg font-bold text-sm ${
-                        poderTotal >= 0 && poderTotal <= 39
-                          ? 'bg-yellow-600 hover:bg-yellow-500 text-white'
-                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                      }`}
-                    >
-                      Normal
-                    </button>
-                    <button
-                      onClick={() => iniciarTreinoIA(0, 39, 'dificil')}
-                      disabled={poderTotal < 0 || poderTotal > 39 || iniciandoBatalha}
-                      className={`px-3 py-2 rounded-lg font-bold text-sm ${
-                        poderTotal >= 0 && poderTotal <= 39
-                          ? 'bg-red-600 hover:bg-red-500 text-white'
-                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                      }`}
-                    >
-                      Difícil
-                    </button>
-                  </div>
-                </div>
-
-                {/* Sala Intermediário */}
-                <div className={`bg-slate-800 rounded-lg p-4 border-2 transition-all ${
-                  poderTotal >= 40 && poderTotal <= 60
-                    ? 'border-blue-500 shadow-lg shadow-blue-500/20'
-                    : 'border-slate-700 opacity-50'
-                }`}>
-                  <div className="flex justify-between items-center mb-3">
-                    <div>
-                      <h3 className="font-bold text-blue-400 text-lg">⚡ Intermediário</h3>
-                      <p className="text-sm text-slate-400">Poder: 40 - 60</p>
+                {/* Botão Normal */}
+                <button
+                  onClick={() => iniciarTreinoIA(0, 999, 'normal')}
+                  disabled={iniciandoBatalha}
+                  className="w-full bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-white rounded-lg p-6 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 border-2 border-yellow-400 shadow-lg shadow-yellow-500/20"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="text-left">
+                      <h3 className="text-2xl font-bold mb-1">⚡ NORMAL</h3>
+                      <p className="text-sm text-yellow-100">IA com 100% dos seus stats</p>
+                      <p className="text-xs text-yellow-200 mt-1">Desafio equilibrado e competitivo</p>
                     </div>
+                    <div className="text-5xl opacity-50">⚔️</div>
                   </div>
+                </button>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <button
-                      onClick={() => iniciarTreinoIA(40, 60, 'facil')}
-                      disabled={poderTotal < 40 || poderTotal > 60 || iniciandoBatalha}
-                      className={`px-3 py-2 rounded-lg font-bold text-sm ${
-                        poderTotal >= 40 && poderTotal <= 60
-                          ? 'bg-green-700 hover:bg-green-600 text-white'
-                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                      }`}
-                    >
-                      Fácil
-                    </button>
-                    <button
-                      onClick={() => iniciarTreinoIA(40, 60, 'normal')}
-                      disabled={poderTotal < 40 || poderTotal > 60 || iniciandoBatalha}
-                      className={`px-3 py-2 rounded-lg font-bold text-sm ${
-                        poderTotal >= 40 && poderTotal <= 60
-                          ? 'bg-yellow-600 hover:bg-yellow-500 text-white'
-                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                      }`}
-                    >
-                      Normal
-                    </button>
-                    <button
-                      onClick={() => iniciarTreinoIA(40, 60, 'dificil')}
-                      disabled={poderTotal < 40 || poderTotal > 60 || iniciandoBatalha}
-                      className={`px-3 py-2 rounded-lg font-bold text-sm ${
-                        poderTotal >= 40 && poderTotal <= 60
-                          ? 'bg-red-600 hover:bg-red-500 text-white'
-                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                      }`}
-                    >
-                      Difícil
-                    </button>
-                  </div>
-                </div>
-
-                {/* Sala Avançado */}
-                <div className={`bg-slate-800 rounded-lg p-4 border-2 transition-all ${
-                  poderTotal >= 61 && poderTotal <= 90
-                    ? 'border-purple-500 shadow-lg shadow-purple-500/20'
-                    : 'border-slate-700 opacity-50'
-                }`}>
-                  <div className="flex justify-between items-center mb-3">
-                    <div>
-                      <h3 className="font-bold text-purple-400 text-lg">🔥 Avançado</h3>
-                      <p className="text-sm text-slate-400">Poder: 61 - 90</p>
+                {/* Botão Difícil */}
+                <button
+                  onClick={() => iniciarTreinoIA(0, 999, 'dificil')}
+                  disabled={iniciandoBatalha}
+                  className="w-full bg-gradient-to-r from-red-700 to-red-600 hover:from-red-600 hover:to-red-500 text-white rounded-lg p-6 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 border-2 border-red-500 shadow-lg shadow-red-500/20"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="text-left">
+                      <h3 className="text-2xl font-bold mb-1">🔥 DIFÍCIL</h3>
+                      <p className="text-sm text-red-100">IA com 130% dos seus stats</p>
+                      <p className="text-xs text-red-200 mt-1">Teste seus limites ao máximo</p>
                     </div>
+                    <div className="text-5xl opacity-50">💀</div>
                   </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <button
-                      onClick={() => iniciarTreinoIA(61, 90, 'facil')}
-                      disabled={poderTotal < 61 || poderTotal > 90 || iniciandoBatalha}
-                      className={`px-3 py-2 rounded-lg font-bold text-sm ${
-                        poderTotal >= 61 && poderTotal <= 90
-                          ? 'bg-green-700 hover:bg-green-600 text-white'
-                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                      }`}
-                    >
-                      Fácil
-                    </button>
-                    <button
-                      onClick={() => iniciarTreinoIA(61, 90, 'normal')}
-                      disabled={poderTotal < 61 || poderTotal > 90 || iniciandoBatalha}
-                      className={`px-3 py-2 rounded-lg font-bold text-sm ${
-                        poderTotal >= 61 && poderTotal <= 90
-                          ? 'bg-yellow-600 hover:bg-yellow-500 text-white'
-                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                      }`}
-                    >
-                      Normal
-                    </button>
-                    <button
-                      onClick={() => iniciarTreinoIA(61, 90, 'dificil')}
-                      disabled={poderTotal < 61 || poderTotal > 90 || iniciandoBatalha}
-                      className={`px-3 py-2 rounded-lg font-bold text-sm ${
-                        poderTotal >= 61 && poderTotal <= 90
-                          ? 'bg-red-600 hover:bg-red-500 text-white'
-                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                      }`}
-                    >
-                      Difícil
-                    </button>
-                  </div>
-                </div>
-
-                {/* Sala Elite */}
-                <div className={`bg-slate-800 rounded-lg p-4 border-2 transition-all ${
-                  poderTotal > 90
-                    ? 'border-red-500 shadow-lg shadow-red-500/20'
-                    : 'border-slate-700 opacity-50'
-                }`}>
-                  <div className="flex justify-between items-center mb-3">
-                    <div>
-                      <h3 className="font-bold text-red-400 text-lg">👑 Elite</h3>
-                      <p className="text-sm text-slate-400">Poder: 91+</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <button
-                      onClick={() => iniciarTreinoIA(91, 999, 'facil')}
-                      disabled={poderTotal <= 90 || iniciandoBatalha}
-                      className={`px-3 py-2 rounded-lg font-bold text-sm ${
-                        poderTotal > 90
-                          ? 'bg-green-700 hover:bg-green-600 text-white'
-                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                      }`}
-                    >
-                      Fácil
-                    </button>
-                    <button
-                      onClick={() => iniciarTreinoIA(91, 999, 'normal')}
-                      disabled={poderTotal <= 90 || iniciandoBatalha}
-                      className={`px-3 py-2 rounded-lg font-bold text-sm ${
-                        poderTotal > 90
-                          ? 'bg-yellow-600 hover:bg-yellow-500 text-white'
-                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                      }`}
-                    >
-                      Normal
-                    </button>
-                    <button
-                      onClick={() => iniciarTreinoIA(91, 999, 'dificil')}
-                      disabled={poderTotal <= 90 || iniciandoBatalha}
-                      className={`px-3 py-2 rounded-lg font-bold text-sm ${
-                        poderTotal > 90
-                          ? 'bg-red-600 hover:bg-red-500 text-white'
-                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                      }`}
-                    >
-                      Difícil
-                    </button>
-                  </div>
-                </div>
+                </button>
               </div>
 
               {avatarAtivo.exaustao >= 99 && (
-                <p className="text-red-600 text-sm mt-4 text-center font-bold">
-                  💀 Avatar em colapso - NÃO PODE TREINAR!
-                </p>
+                <div className="mt-6 bg-red-900/30 border border-red-500 rounded-lg p-4 text-center">
+                  <p className="text-red-400 font-bold">
+                    💀 Avatar em colapso - NÃO PODE TREINAR!
+                  </p>
+                  <p className="text-red-300 text-sm mt-1">
+                    Seu avatar precisa descansar antes de treinar
+                  </p>
+                </div>
               )}
               {avatarAtivo.exaustao >= 80 && avatarAtivo.exaustao < 99 && (
-                <p className="text-red-400 text-sm mt-4 text-center">
-                  ⚠️ Avatar com exaustão crítica - penalidades severas!
-                </p>
+                <div className="mt-6 bg-yellow-900/30 border border-yellow-500 rounded-lg p-4 text-center">
+                  <p className="text-yellow-400 font-bold">
+                    ⚠️ Avatar com exaustão crítica!
+                  </p>
+                  <p className="text-yellow-300 text-sm mt-1">
+                    Penalidades severas serão aplicadas em combate
+                  </p>
+                </div>
               )}
 
               {iniciandoBatalha && (
-                <p className="text-cyan-400 text-sm mt-4 text-center animate-pulse">
-                  ⏳ Gerando oponente IA...
-                </p>
+                <div className="mt-6 bg-cyan-900/30 border border-cyan-500 rounded-lg p-4 text-center">
+                  <p className="text-cyan-400 font-bold animate-pulse">
+                    ⏳ Gerando oponente IA...
+                  </p>
+                  <p className="text-cyan-300 text-sm mt-1">
+                    Preparando batalha de treino
+                  </p>
+                </div>
               )}
             </div>
 
-            {/* Legendas de Dificuldade */}
+            {/* Info sobre Sistema de Treino */}
             <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-6">
-              <h3 className="text-lg font-bold text-cyan-400 mb-3">Níveis de Dificuldade</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="text-green-400 font-bold">Fácil:</span>
-                  <span className="text-gray-400">IA com 70% dos seus stats - Ótimo para praticar</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-yellow-400 font-bold">Normal:</span>
-                  <span className="text-gray-400">IA com 100% dos seus stats - Desafio equilibrado</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-red-400 font-bold">Difícil:</span>
-                  <span className="text-gray-400">IA com 130% dos seus stats - Teste seus limites</span>
-                </div>
+              <h3 className="text-lg font-bold text-cyan-400 mb-3">💡 Como Funciona</h3>
+              <div className="space-y-3 text-sm text-gray-300">
+                <p>
+                  • O oponente IA é gerado <span className="text-cyan-400 font-bold">dinamicamente</span> baseado no poder do seu avatar
+                </p>
+                <p>
+                  • Escolha a dificuldade para ajustar o <span className="text-purple-400 font-bold">multiplicador de stats</span> do oponente
+                </p>
+                <p>
+                  • Sinergias entre avatares são <span className="text-yellow-400 font-bold">aplicadas automaticamente</span>
+                </p>
+                <p>
+                  • Exaustão afeta seu desempenho - descanse entre batalhas!
+                </p>
               </div>
             </div>
           </div>
