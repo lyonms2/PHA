@@ -30,13 +30,14 @@ export const HABILIDADES_SOMBRA = {
   // ==================== 2️⃣ MANTO DA NOITE ====================
   MANTO_DA_NOITE: criarHabilidade({
     nome: 'Manto da Noite',
-    descricao: 'Torna-se invisível (100% evasão por 1 turno)',
+    descricao: 'Torna-se invisível (100% evasão por 2 turnos)',
     tipo: TIPO_HABILIDADE.SUPORTE,
     elemento: ELEMENTOS.SOMBRA,
     dano_base: 0,
     multiplicador_stat: 0,
     stat_primario: 'foco',
     efeitos_status: ['invisivel'],
+    duracao_efeito: 2,
     alvo: 'self',
     custo_energia: 30,
     cooldown: 4,

@@ -32,13 +32,14 @@ export const HABILIDADES_VENTO = {
   // ==================== 2️⃣ VELOCIDADE DO VENTO ====================
   VELOCIDADE_DO_VENTO: criarHabilidade({
     nome: 'Velocidade do Vento',
-    descricao: 'Aumenta drasticamente a evasão (+50% evasão por 1 turno)',
+    descricao: 'Aumenta drasticamente a evasão (+50% evasão por 2 turnos)',
     tipo: TIPO_HABILIDADE.SUPORTE,
     elemento: ELEMENTOS.VENTO,
     dano_base: 0,
     multiplicador_stat: 0,
     stat_primario: 'agilidade',
     efeitos_status: ['evasao_aumentada'],
+    duracao_efeito: 2,
     alvo: 'self',
     custo_energia: 30,
     cooldown: 3,

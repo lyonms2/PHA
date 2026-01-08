@@ -32,13 +32,14 @@ export const HABILIDADES_ELETRICIDADE = {
   // ==================== 2️⃣ SOBRECARGA ====================
   SOBRECARGA: criarHabilidade({
     nome: 'Sobrecarga',
-    descricao: 'Aumenta drasticamente o foco (+60% foco por 1 turno)',
+    descricao: 'Aumenta drasticamente o foco (+60% foco por 2 turnos)',
     tipo: TIPO_HABILIDADE.SUPORTE,
     elemento: ELEMENTOS.ELETRICIDADE,
     dano_base: 0,
     multiplicador_stat: 0,
     stat_primario: 'foco',
     efeitos_status: ['sobrecarga'],
+    duracao_efeito: 2,
     alvo: 'self',
     custo_energia: 30,
     cooldown: 3,

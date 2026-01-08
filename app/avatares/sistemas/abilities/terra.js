@@ -32,13 +32,14 @@ export const HABILIDADES_TERRA = {
   // ==================== 2️⃣ MURALHA DE PEDRA ====================
   MURALHA_DE_PEDRA: criarHabilidade({
     nome: 'Muralha de Pedra',
-    descricao: 'Ergue uma barreira rochosa que aumenta +70% resistência por 1 turno',
+    descricao: 'Ergue uma barreira rochosa que aumenta +70% resistência por 2 turnos',
     tipo: TIPO_HABILIDADE.SUPORTE,
     elemento: ELEMENTOS.TERRA,
     dano_base: 0,
     multiplicador_stat: 0,
     stat_primario: 'resistencia',
     efeitos_status: ['defesa_aumentada'],
+    duracao_efeito: 2,
     alvo: 'self',
     custo_energia: 30,
     cooldown: 3,

@@ -32,13 +32,14 @@ export const HABILIDADES_FOGO = {
   // ==================== 2️⃣ ESCUDO DE CHAMAS ====================
   ESCUDO_DE_CHAMAS: criarHabilidade({
     nome: 'Escudo de Chamas',
-    descricao: 'Cria um escudo flamejante que aumenta +50% defesa por 1 turno',
+    descricao: 'Cria um escudo flamejante que aumenta +50% defesa por 2 turnos',
     tipo: TIPO_HABILIDADE.SUPORTE,
     elemento: ELEMENTOS.FOGO,
     dano_base: 0,
     multiplicador_stat: 0,
     stat_primario: 'resistencia',
     efeitos_status: ['defesa_aumentada'],
+    duracao_efeito: 2,
     alvo: 'self',
     custo_energia: 30,
     cooldown: 3,
