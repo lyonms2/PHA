@@ -15,33 +15,33 @@ export const HABILIDADES_VOID = {
   // ==================== 1️⃣ RUPTURA DIMENSIONAL ====================
   RUPTURA_DIMENSIONAL: criarHabilidade({
     nome: 'Ruptura Dimensional',
-    descricao: 'Rasga a realidade causando dano e ignorando 50% da defesa, removendo buffs do inimigo',
+    descricao: 'Rasga a realidade causando dano massivo, ignorando 80% da defesa e removendo TODOS os buffs do inimigo',
     tipo: TIPO_HABILIDADE.OFENSIVA,
     raridade: RARIDADE_HABILIDADE.AVANCADA,
     elemento: ELEMENTOS.VOID,
-    dano_base: 100,
-    multiplicador_stat: 2.0,
+    dano_base: 130, // Aumentado de 100 para 130
+    multiplicador_stat: 2.2, // Aumentado de 2.0 para 2.2
     stat_primario: 'foco',
-    ignora_defesa: 0.50, // Ignora 50% da defesa
+    ignora_defesa: 0.80, // Aumentado de 50% para 80%
     efeitos_status: ['anula_buffs'], // Remove buffs do inimigo
-    custo_energia: 40,
-    cooldown: 2,
+    custo_energia: 50, // Aumentado de 40 para 50 (mais poderoso = mais caro)
+    cooldown: 3, // Aumentado de 2 para 3
     nivel_minimo: 1
   }),
 
   // ==================== 2️⃣ CAMPO DE ANULAÇÃO ====================
   CAMPO_DE_ANULACAO: criarHabilidade({
     nome: 'Campo de Anulação',
-    descricao: 'Reduz dano recebido em 40% por 1 turno',
+    descricao: 'Cria um vácuo protetor que reduz 60% do dano recebido por 2 turnos',
     tipo: TIPO_HABILIDADE.SUPORTE,
     elemento: ELEMENTOS.VOID,
     dano_base: 0,
     multiplicador_stat: 0,
     stat_primario: 'foco',
-    efeitos_status: ['reducao_dano'],
+    efeitos_status: ['campo_void'], // Efeito especial: 60% redução por 2 turnos
     alvo: 'self',
-    custo_energia: 30,
-    cooldown: 3,
+    custo_energia: 35, // Aumentado de 30 para 35
+    cooldown: 4, // Aumentado de 3 para 4
     nivel_minimo: 1
   })
 };
@@ -51,15 +51,15 @@ export const HABILIDADES_VOID = {
  * RESUMO DAS 2 HABILIDADES DE VOID
  * ========================================
  *
- * 1️⃣ RUPTURA DIMENSIONAL (Ataque)
- *    Dano: 100 base + Foco×2.0
- *    Efeitos: Ignora 50% defesa + Remove buffs do inimigo
- *    Energia: 40 | Cooldown: 2
+ * 1️⃣ RUPTURA DIMENSIONAL (Ataque) ⚠️ PODEROSO
+ *    Dano: 130 base + Foco×2.2 (MAIS FORTE!)
+ *    Efeitos: Ignora 80% defesa + Remove TODOS buffs do inimigo
+ *    Energia: 50 | Cooldown: 3
  *
- * 2️⃣ CAMPO DE ANULAÇÃO (Defesa)
+ * 2️⃣ CAMPO DE ANULAÇÃO (Defesa) 🛡️ TANQUE
  *    Dano: 0 (não ataca)
- *    Efeitos: Reduz dano recebido em 40% por 1 turno
- *    Energia: 30 | Cooldown: 3
+ *    Efeitos: Reduz 60% dano recebido por 2 TURNOS
+ *    Energia: 35 | Cooldown: 4
  *
  * ✅ SISTEMA SIMPLIFICADO
  * ✅ Efeitos claros e diretos

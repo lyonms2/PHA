@@ -30,13 +30,13 @@ export const HABILIDADES_LUZ = {
   // ==================== 2️⃣ BENÇÃO ====================
   BENCAO: criarHabilidade({
     nome: 'Benção',
-    descricao: 'Aumenta todos os stats em +20% por 1 turno',
+    descricao: 'Restaura 25% do HP máximo + aumenta todos os stats em +20% por 1 turno',
     tipo: TIPO_HABILIDADE.SUPORTE,
     elemento: ELEMENTOS.LUZ,
-    dano_base: 0,
+    dano_base: -25, // Negativo = cura (25% do HP máximo)
     multiplicador_stat: 0,
     stat_primario: 'foco',
-    efeitos_status: ['bencao'],
+    efeitos_status: ['bencao', 'cura_instantanea'],
     alvo: 'self',
     custo_energia: 30,
     cooldown: 3,
@@ -56,7 +56,7 @@ export const HABILIDADES_LUZ = {
  *
  * 2️⃣ BENÇÃO (Suporte)
  *    Dano: 0 (não ataca)
- *    Efeitos: +20% em TODOS os stats por 1 turno
+ *    Efeitos: Restaura 25% HP máximo + +20% TODOS stats por 1 turno
  *    Energia: 30 | Cooldown: 3
  *
  * ✅ SISTEMA SIMPLIFICADO
