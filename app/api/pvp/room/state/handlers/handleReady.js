@@ -31,9 +31,20 @@ export async function handleReady({ roomId, isHost }) {
       guestEnergyMax = Math.floor(guestEnergyMax * (1 - hostModificadores.energia_inimigo_reducao));
     }
 
+    // Determinar quem começa baseado na agilidade
+    const hostAvatar = updatedRoom.host_avatar;
+    const guestAvatar = updatedRoom.guest_avatar;
+
+    // Calcular agilidade efetiva com sinergias
+    const hostAgilidade = Math.floor(hostAvatar.agilidade * (1 + (hostModificadores.agilidade || 0)));
+    const guestAgilidade = Math.floor(guestAvatar.agilidade * (1 + (guestModificadores.agilidade || 0)));
+
+    // Quem tem maior agilidade começa (em caso de empate, host tem vantagem)
+    const firstTurn = guestAgilidade > hostAgilidade ? 'guest' : 'host';
+
     await updateDocument('pvp_duel_rooms', roomId, {
       status: 'active',
-      current_turn: 'host', // Host começa
+      current_turn: firstTurn, // Avatar com maior agilidade começa
       host_energy: hostEnergyMax,
       host_energy_max: hostEnergyMax,
       guest_energy: guestEnergyMax,
