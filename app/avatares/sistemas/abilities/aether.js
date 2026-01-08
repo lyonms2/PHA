@@ -15,33 +15,33 @@ export const HABILIDADES_AETHER = {
   // ==================== 1️⃣ RAIO PRIMORDIAL ====================
   RAIO_PRIMORDIAL: criarHabilidade({
     nome: 'Raio Primordial',
-    descricao: 'Descarga de energia pura que penetra 50% da defesa e purifica debuffs próprios',
+    descricao: 'Descarga devastadora de energia primordial que penetra 75% da defesa e purifica TODOS os debuffs próprios',
     tipo: TIPO_HABILIDADE.OFENSIVA,
     raridade: RARIDADE_HABILIDADE.AVANCADA,
     elemento: ELEMENTOS.AETHER,
-    dano_base: 100,
-    multiplicador_stat: 2.0,
+    dano_base: 125, // Aumentado de 100 para 125
+    multiplicador_stat: 2.3, // Aumentado de 2.0 para 2.3
     stat_primario: 'foco',
-    ignora_defesa: 0.50, // Penetra 50% da defesa
-    efeitos_status: ['limpar_debuffs'], // Remove debuffs próprios
-    custo_energia: 40,
-    cooldown: 2,
+    ignora_defesa: 0.75, // Aumentado de 50% para 75%
+    efeitos_status: ['limpar_debuffs', 'sobrecarga'], // Remove debuffs + buff temporário
+    custo_energia: 50, // Aumentado de 40 para 50
+    cooldown: 3, // Aumentado de 2 para 3
     nivel_minimo: 1
   }),
 
   // ==================== 2️⃣ CAMPO DE TRANSCENDÊNCIA ====================
   CAMPO_DE_TRANSCENDENCIA: criarHabilidade({
     nome: 'Campo de Transcendência',
-    descricao: 'Eleva o corpo a estado superior (+30% em TODOS os stats por 1 turno)',
+    descricao: 'Eleva o corpo a estado superior (+50% em TODOS os stats por 2 turnos)',
     tipo: TIPO_HABILIDADE.SUPORTE,
     elemento: ELEMENTOS.AETHER,
     dano_base: 0,
     multiplicador_stat: 0,
     stat_primario: 'foco',
-    efeitos_status: ['transcendencia'], // +30% todos os stats
+    efeitos_status: ['transcendencia'], // +50% todos os stats por 2 turnos
     alvo: 'self',
-    custo_energia: 30,
-    cooldown: 3,
+    custo_energia: 40, // Aumentado de 30 para 40
+    cooldown: 4, // Aumentado de 3 para 4
     nivel_minimo: 1
   })
 };
@@ -51,15 +51,15 @@ export const HABILIDADES_AETHER = {
  * RESUMO DAS 2 HABILIDADES DE AETHER
  * ========================================
  *
- * 1️⃣ RAIO PRIMORDIAL (Ataque)
- *    Dano: 100 base + Foco×2.0
- *    Efeitos: Penetra 50% defesa + Remove debuffs próprios
- *    Energia: 40 | Cooldown: 2
+ * 1️⃣ RAIO PRIMORDIAL (Ataque) ⚡ DEVASTADOR
+ *    Dano: 125 base + Foco×2.3 (EXTREMAMENTE FORTE!)
+ *    Efeitos: Penetra 75% defesa + Remove TODOS debuffs + Sobrecarga
+ *    Energia: 50 | Cooldown: 3
  *
- * 2️⃣ CAMPO DE TRANSCENDÊNCIA (Suporte)
+ * 2️⃣ CAMPO DE TRANSCENDÊNCIA (Suporte) 🌟 SUPREMO
  *    Dano: 0 (não ataca)
- *    Efeitos: +30% em TODOS os stats por 1 turno
- *    Energia: 30 | Cooldown: 3
+ *    Efeitos: +50% TODOS stats por 2 TURNOS (MEGA BUFF!)
+ *    Energia: 40 | Cooldown: 4
  *
  * ✅ SISTEMA SIMPLIFICADO
  * ✅ Efeitos claros e diretos
