@@ -19,8 +19,8 @@ export const HABILIDADES_VOID = {
     tipo: TIPO_HABILIDADE.OFENSIVA,
     raridade: RARIDADE_HABILIDADE.AVANCADA,
     elemento: ELEMENTOS.VOID,
-    dano_base: 130, // Aumentado de 100 para 130
-    multiplicador_stat: 2.2, // Aumentado de 2.0 para 2.2
+    dano_base: 0, // Sem dano base fixo - 100% baseado em stats
+    multiplicador_stat: 4.0, // Foco × 4.0 (VOID - mais forte que elementos básicos)
     stat_primario: 'foco',
     ignora_defesa: 0.80, // Aumentado de 50% para 80%
     efeitos_status: ['anula_buffs'], // Remove buffs do inimigo

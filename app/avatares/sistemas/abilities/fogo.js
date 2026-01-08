@@ -18,8 +18,8 @@ export const HABILIDADES_FOGO = {
     tipo: TIPO_HABILIDADE.OFENSIVA,
     raridade: RARIDADE_HABILIDADE.AVANCADA,
     elemento: ELEMENTOS.FOGO,
-    dano_base: 100,
-    multiplicador_stat: 2.0,
+    dano_base: 0, // Sem dano base fixo - 100% baseado em stats
+    multiplicador_stat: 3.5, // Força × 3.5
     stat_primario: 'forca',
     efeitos_status: ['queimado'],
     chance_efeito: 70,
@@ -53,7 +53,7 @@ export const HABILIDADES_FOGO = {
  * ========================================
  *
  * 1️⃣ EXPLOSÃO DE CHAMAS (Ataque)
- *    Dano: 100 base + Força×2.0
+ *    Dano: Força × 3.5
  *    Efeitos: 70% chance de queimar (-30% defesa por 1 turno)
  *    Energia: 40 | Cooldown: 2
  *

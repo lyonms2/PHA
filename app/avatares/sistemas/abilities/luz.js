@@ -18,8 +18,8 @@ export const HABILIDADES_LUZ = {
     tipo: TIPO_HABILIDADE.OFENSIVA,
     raridade: RARIDADE_HABILIDADE.AVANCADA,
     elemento: ELEMENTOS.LUZ,
-    dano_base: 100,
-    multiplicador_stat: 2.0,
+    dano_base: 0, // Sem dano base fixo - 100% baseado em stats
+    multiplicador_stat: 3.5, // Foco × 3.5
     stat_primario: 'foco',
     efeitos_status: ['roubo_vida_intenso'], // 30% do dano vira cura
     custo_energia: 40,

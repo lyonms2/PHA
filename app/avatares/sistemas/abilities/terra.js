@@ -18,8 +18,8 @@ export const HABILIDADES_TERRA = {
     tipo: TIPO_HABILIDADE.OFENSIVA,
     raridade: RARIDADE_HABILIDADE.AVANCADA,
     elemento: ELEMENTOS.TERRA,
-    dano_base: 100,
-    multiplicador_stat: 2.0,
+    dano_base: 0, // Sem dano base fixo - 100% baseado em stats
+    multiplicador_stat: 3.5, // Força × 3.5
     stat_primario: 'forca',
     efeitos_status: ['atordoado'],
     chance_efeito: 75,

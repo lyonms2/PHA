@@ -19,8 +19,8 @@ export const HABILIDADES_AETHER = {
     tipo: TIPO_HABILIDADE.OFENSIVA,
     raridade: RARIDADE_HABILIDADE.AVANCADA,
     elemento: ELEMENTOS.AETHER,
-    dano_base: 125, // Aumentado de 100 para 125
-    multiplicador_stat: 2.3, // Aumentado de 2.0 para 2.3
+    dano_base: 0, // Sem dano base fixo - 100% baseado em stats
+    multiplicador_stat: 4.2, // Foco × 4.2 (AETHER - supremo)
     stat_primario: 'foco',
     ignora_defesa: 0.75, // Aumentado de 50% para 75%
     efeitos_status: ['limpar_debuffs', 'sobrecarga'], // Remove debuffs + buff temporário

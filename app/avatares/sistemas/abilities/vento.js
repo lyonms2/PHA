@@ -18,8 +18,8 @@ export const HABILIDADES_VENTO = {
     tipo: TIPO_HABILIDADE.OFENSIVA,
     raridade: RARIDADE_HABILIDADE.AVANCADA,
     elemento: ELEMENTOS.VENTO,
-    dano_base: 100,
-    multiplicador_stat: 2.0,
+    dano_base: 0, // Sem dano base fixo - 100% baseado em stats
+    multiplicador_stat: 3.5, // Agilidade × 3.5
     stat_primario: 'agilidade',
     efeitos_status: ['desorientado'],
     chance_efeito: 65,
