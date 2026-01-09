@@ -1188,28 +1188,24 @@ function BatalhaTreinoIAContent() {
                 onClick={atacar}
                 disabled={!isYourTurn || myEnergy < 10 || actionInProgress}
                 className={`py-3 rounded-lg font-bold transition-all ${
-                  actionInProgress
-                    ? 'bg-slate-800 cursor-not-allowed opacity-30 animate-pulse'
-                    : isYourTurn && myEnergy >= 10
+                  isYourTurn && myEnergy >= 10 && !actionInProgress
                     ? 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 hover:scale-[1.02] active:scale-95'
                     : 'bg-slate-700 cursor-not-allowed opacity-50'
                 }`}
               >
-                <div className="text-sm">{actionInProgress ? '⏳' : '⚔️'} Atacar</div>
+                <div className="text-sm">⚔️ Atacar</div>
                 <div className="text-[10px] opacity-75">-10 ⚡</div>
               </button>
               <button
                 onClick={defender}
                 disabled={!isYourTurn || actionInProgress}
                 className={`py-3 rounded-lg font-bold transition-all ${
-                  actionInProgress
-                    ? 'bg-slate-800 cursor-not-allowed opacity-30 animate-pulse'
-                    : isYourTurn
+                  isYourTurn && !actionInProgress
                     ? 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 hover:scale-[1.02] active:scale-95'
                     : 'bg-slate-700 cursor-not-allowed opacity-50'
                 }`}
               >
-                <div className="text-sm">{actionInProgress ? '⏳' : '🛡️'} Defender</div>
+                <div className="text-sm">🛡️ Defender</div>
                 <div className="text-[10px] opacity-75">+20 ⚡ | -50%</div>
               </button>
             </div>
