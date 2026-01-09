@@ -21,7 +21,7 @@ export const HABILIDADES_FOGO = {
     dano_base: 0, // Sem dano base fixo - 100% baseado em stats
     multiplicador_stat: 3.5, // Força × 3.5
     stat_primario: 'forca',
-    efeitos_status: ['queimado'],
+    efeitos_status: ['queimadura'],
     chance_efeito: 70,
     duracao_efeito: 1,
     custo_energia: 40,
