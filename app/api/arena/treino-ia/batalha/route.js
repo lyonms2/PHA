@@ -434,8 +434,9 @@ export async function POST(request) {
 
       result = processAbility(battle, attacker, defender, habilidadeAtualizada);
 
-      // ===== ATIVAR COOLDOWN SE HABILIDADE FOI USADA COM SUCESSO =====
-      if (result.success && !result.errou) {
+      // ===== ATIVAR COOLDOWN SE HABILIDADE FOI USADA =====
+      // Cooldown ativa quando a habilidade é USADA (gasta energia), não quando acerta
+      if (result.success) {
         const cooldown = habilidadeAtualizada.cooldown || 0;
         battle.player_cooldowns = ativarCooldown(
           battle.player_cooldowns || {},
@@ -850,8 +851,9 @@ export async function POST(request) {
             if (!iaResult.success) {
               console.log('⚠️ [IA HABILIDADE] Falhou - Usando ataque básico como fallback:', iaResult.error);
               iaResult = processAttack(battle, iaAttacker, iaDefender);
-            } else if (!iaResult.errou) {
-              // ===== ATIVAR COOLDOWN SE HABILIDADE FOI USADA COM SUCESSO =====
+            } else {
+              // ===== ATIVAR COOLDOWN SE HABILIDADE FOI USADA =====
+              // Cooldown ativa quando a habilidade é USADA (gasta energia), não quando acerta
               const cooldown = habAtualizada.cooldown || 0;
               battle.ia_cooldowns = ativarCooldown(
                 battle.ia_cooldowns || {},
