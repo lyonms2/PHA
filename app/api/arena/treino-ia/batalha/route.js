@@ -846,8 +846,12 @@ export async function POST(request) {
           } else {
             iaResult = processAbility(battle, iaAttacker, iaDefender, habAtualizada);
 
-            // ===== ATIVAR COOLDOWN SE HABILIDADE FOI USADA COM SUCESSO =====
-            if (iaResult.success && !iaResult.errou) {
+            // ===== FALLBACK SE HABILIDADE FALHOU (ex: energia insuficiente) =====
+            if (!iaResult.success) {
+              console.log('⚠️ [IA HABILIDADE] Falhou - Usando ataque básico como fallback:', iaResult.error);
+              iaResult = processAttack(battle, iaAttacker, iaDefender);
+            } else if (!iaResult.errou) {
+              // ===== ATIVAR COOLDOWN SE HABILIDADE FOI USADA COM SUCESSO =====
               const cooldown = habAtualizada.cooldown || 0;
               battle.ia_cooldowns = ativarCooldown(
                 battle.ia_cooldowns || {},
