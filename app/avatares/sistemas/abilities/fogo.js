@@ -32,13 +32,13 @@ export const HABILIDADES_FOGO = {
   // ==================== 2️⃣ ESCUDO DE CHAMAS ====================
   ESCUDO_DE_CHAMAS: criarHabilidade({
     nome: 'Escudo de Chamas',
-    descricao: 'Cria um escudo flamejante que aumenta +50% defesa por 2 turnos',
+    descricao: 'Cria um escudo flamejante que aumenta +60% defesa por 2 turnos e queima atacantes (20% do dano recebido)',
     tipo: TIPO_HABILIDADE.SUPORTE,
     elemento: ELEMENTOS.FOGO,
     dano_base: 0,
     multiplicador_stat: 0,
     stat_primario: 'resistencia',
-    efeitos_status: ['defesa_aumentada'],
+    efeitos_status: ['defesa_aumentada_instantanea', 'escudo_flamejante'],
     duracao_efeito: 2,
     alvo: 'self',
     custo_energia: 30,
@@ -57,10 +57,11 @@ export const HABILIDADES_FOGO = {
  *    Efeitos: 70% chance de queimar (-30% defesa por 1 turno)
  *    Energia: 40 | Cooldown: 2
  *
- * 2️⃣ ESCUDO DE CHAMAS (Defesa)
+ * 2️⃣ ESCUDO DE CHAMAS (Defesa) 🔥🛡️
  *    Dano: 0 (não ataca)
- *    Efeitos: +50% defesa por 1 turno
+ *    Efeitos: +60% defesa por 2 turnos + contra-ataque queimadura (20% do dano)
  *    Energia: 30 | Cooldown: 3
+ *    ⚠️ MELHOR QUE DEFENDER: +10% defesa e queima atacantes!
  *
  * ✅ SISTEMA SIMPLIFICADO
  * ✅ Efeitos claros e diretos
