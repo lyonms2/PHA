@@ -162,10 +162,10 @@ export default function DualCardBattleLayout({
           {/* Conteúdo do avatar */}
           <div className="relative h-full flex flex-col items-center p-2 pt-6">
             {/* Avatar SVG - sempre envolto com wrapper para evitar sumir */}
-            <div className={`relative ${isActive ? 'scale-100' : 'scale-75'} transition-transform ${!isAttack ? 'mt-1' : 'mt-2'} overflow-visible`}>
+            <div className={`relative ${isActive ? 'scale-100' : 'scale-75'} transition-transform ${!isAttack ? 'mt-0' : 'mt-0'} overflow-visible flex-shrink-0`}>
               {isAttack ? (
                 <BattleEffectWrapper effect={damageEffect}>
-                  <AvatarSVG avatar={avatar} tamanho={isActive ? 110 : 66} />
+                  <AvatarSVG avatar={avatar} tamanho={isActive ? 90 : 66} />
                 </BattleEffectWrapper>
               ) : (
                 <AvatarSVG avatar={avatar} tamanho={70} />
@@ -176,12 +176,12 @@ export default function DualCardBattleLayout({
             {isActive && (
               <>
                 {/* Nome */}
-                <div className="text-xs font-bold text-white mt-1 text-center truncate max-w-full px-2">
+                <div className="text-[11px] font-bold text-white mt-0.5 text-center truncate max-w-full px-2 flex-shrink-0">
                   {avatar.nome}
                 </div>
 
                 {/* Badge de Elemento */}
-                <div className="mt-0.5">
+                <div className="mt-0.5 flex-shrink-0">
                   <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${getElementoCor(avatar.elemento)}`}>
                     {getElementoEmoji(avatar.elemento)} {avatar.elemento}
                   </span>
@@ -191,7 +191,7 @@ export default function DualCardBattleLayout({
                 {isAttack && (
                   <>
                     {/* HP Bar */}
-                    <div className="w-full px-2 mt-1">
+                    <div className="w-full px-2 mt-0.5 flex-shrink-0">
                       <div className="flex items-center justify-between text-[9px] text-slate-400 mb-0.5">
                         <span>HP</span>
                         <span>{hp}/{hpMax}</span>
@@ -205,7 +205,7 @@ export default function DualCardBattleLayout({
                     </div>
 
                     {/* Energy Bar */}
-                    <div className="w-full px-2 mt-1">
+                    <div className="w-full px-2 mt-0.5 flex-shrink-0">
                       <div className="flex items-center justify-between text-[9px] text-slate-400 mb-0.5">
                         <span>ENERGIA</span>
                         <span>{energy}/{energyMax}</span>
@@ -220,16 +220,21 @@ export default function DualCardBattleLayout({
 
                     {/* Efeitos ativos */}
                     {effects.length > 0 && (
-                      <div className="flex gap-0.5 mt-1 flex-wrap justify-center px-2">
-                        {effects.slice(0, 4).map((effect, i) => (
+                      <div className="flex gap-0.5 mt-0.5 flex-wrap justify-center px-2 flex-shrink-0 min-h-[16px]">
+                        {effects.slice(0, 3).map((effect, i) => (
                           <span
                             key={i}
-                            className={`text-[10px] ${ehBuff(effect.tipo) ? 'text-green-400' : 'text-red-400'}`}
+                            className={`text-xs ${ehBuff(effect.tipo) ? 'text-green-400' : 'text-red-400'}`}
                             title={effect.tipo}
                           >
                             {getEfeitoEmoji(effect.tipo)}
                           </span>
                         ))}
+                        {effects.length > 3 && (
+                          <span className="text-[9px] text-purple-400" title={`+${effects.length - 3} efeitos`}>
+                            +{effects.length - 3}
+                          </span>
+                        )}
                       </div>
                     )}
                   </>
