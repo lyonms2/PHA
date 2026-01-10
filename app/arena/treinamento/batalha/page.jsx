@@ -470,6 +470,14 @@ function BatalhaTreinoIAContent() {
           const tipoEfeito = iaAction.critico ? 'critical' : 'damage';
           mostrarDanoVisual('meu', iaAction.dano, tipoEfeito, iaAvatar?.elemento);
         }
+
+        // Contra-ataque do Escudo Flamejante (jogador reflete dano na IA)
+        if (iaAction.contraAtaque && iaAction.danoContraAtaque > 0) {
+          setTimeout(() => {
+            addLog(`🔥🛡️ SEU Escudo Flamejante refletiu ${iaAction.danoContraAtaque} de dano na IA!`);
+            mostrarDanoVisual('oponente', iaAction.danoContraAtaque, 'damage', 'Fogo');
+          }, 1200);
+        }
       } else if (iaAction.bloqueado) {
         // Jogador bloqueou completamente (sem dano)
         mostrarDanoVisual('meu', null, 'block', null);
@@ -541,8 +549,12 @@ function BatalhaTreinoIAContent() {
         }
 
         // Mensagem de contra-ataque
-        if (result.contraAtaque) {
-          addLog('🔥🛡️ CONTRA-ATAQUE! Você foi queimado!');
+        if (result.contraAtaque && result.danoContraAtaque > 0) {
+          addLog(`🔥🛡️ CONTRA-ATAQUE! Escudo Flamejante refletiu ${result.danoContraAtaque} de dano em você!`);
+          // Efeito visual do contra-ataque no jogador
+          setTimeout(() => {
+            mostrarDanoVisual('meu', result.danoContraAtaque, 'damage', 'Fogo');
+          }, 800);
         }
 
         // Efeito visual do meu ataque
@@ -703,8 +715,12 @@ function BatalhaTreinoIAContent() {
         }
 
         // Mensagem de contra-ataque
-        if (result.contraAtaque) {
-          addLog('🔥🛡️ CONTRA-ATAQUE! Você foi queimado!');
+        if (result.contraAtaque && result.danoContraAtaque > 0) {
+          addLog(`🔥🛡️ CONTRA-ATAQUE! Escudo Flamejante refletiu ${result.danoContraAtaque} de dano em você!`);
+          // Efeito visual do contra-ataque no jogador
+          setTimeout(() => {
+            mostrarDanoVisual('meu', result.danoContraAtaque, 'damage', 'Fogo');
+          }, 800);
         }
 
         // Efeitos visuais da minha habilidade
