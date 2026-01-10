@@ -22,25 +22,19 @@ export const EFEITOS_STATUS = {
   queimadura: {
     nome: 'Queimadura',
     tipo: 'dano_continuo',
-    dano_por_turno: 0.05, // 5% do HP máximo
-    duracao_base: 2,
-    icone: '🔥'
+    dano_por_turno: 0.05, // 5% do HP máximo por turno
+    duracao_base: 3, // Dura 3 turnos causando dano contínuo
+    icone: '🔥',
+    descricao: 'Sofre 5% do HP máximo como dano por turno durante 3 turnos (DoT da Explosão de Chamas)'
   },
 
   queimadura_intensa: {
     nome: 'Queimadura Intensa',
     tipo: 'dano_continuo',
-    dano_por_turno: 0.10,
-    duracao_base: 2,
-    icone: '🔥🔥'
-  },
-
-  queimadura_contra_ataque: {
-    nome: 'Queimadura Contra-Ataque',
-    tipo: 'dano_continuo',
-    dano_por_turno: 0.04,
-    duracao_base: 2,
-    icone: '🔥'
+    dano_por_turno: 0.10, // 10% do HP máximo por turno
+    duracao_base: 3,
+    icone: '🔥🔥',
+    descricao: 'Sofre 10% do HP máximo como dano por turno durante 3 turnos (DoT intenso)'
   },
 
   congelado: {

@@ -316,23 +316,19 @@ export async function handleAbility({ room, role, isHost, abilityIndex }) {
     if (!efeito) efeito = '⬇️ Controle aplicado!';
   }
 
-  // ===== VERIFICAR CONTRA-ATAQUE (HABILIDADES OFENSIVAS) =====
-  let contraAtaqueAplicado = false;
-  const temContraAtaqueHabilidade = opponentEffects.some(ef => ef.tipo === 'queimadura_contra_ataque');
+  // ===== VERIFICAR CONTRA-ATAQUE DE ESCUDO FLAMEJANTE (REFLECT INSTANTÂNEO) =====
+  let danoContraAtaque = 0;
+  const temEscudoFlamejante = opponentEffects.some(ef => ef.tipo === 'escudo_flamejante');
 
-  if (temContraAtaqueHabilidade && dano > 0) {
-    // Aplicar queimadura no atacante
-    const danoPorTurnoCA = Math.floor(forca * 0.2) + 5;
-    const queimaduraContraAtaque = {
-      tipo: 'queimadura',
-      valor: 10,
-      danoPorTurno: danoPorTurnoCA,
-      duracao: 3,
-      turnosRestantes: 3,
-      origem: elementoOponente
-    };
-    currentMyEffects = [...currentMyEffects.filter(e => e.tipo !== 'queimadura'), queimaduraContraAtaque];
-    contraAtaqueAplicado = true;
+  if (temEscudoFlamejante && dano > 0 && (habilidade.tipo === 'Ofensiva' || habilidade.tipo === 'Controle')) {
+    // Contra-ataque: 20% do dano recebido volta como dano instantâneo
+    danoContraAtaque = Math.floor(dano * 0.20);
+    console.log('🔥 [PVP CONTRA-ATAQUE] Escudo Flamejante ativado!', {
+      danoRecebido: dano,
+      danoContraAtaque,
+      defensor: oponenteNome,
+      atacante: meuNome
+    });
   }
 
   // Atualizar valores
@@ -345,7 +341,8 @@ export async function handleAbility({ room, role, isHost, abilityIndex }) {
   const currentMyHp = isHost ? room.host_hp : room.guest_hp;
 
   const newOpponentHp = Math.max(0, currentOpponentHp - dano);
-  const newMyHp = Math.min(myHpMax, currentMyHp + cura);
+  // Aplicar contra-ataque e cura
+  const newMyHp = Math.min(myHpMax, Math.max(0, currentMyHp + cura - danoContraAtaque));
   const newEnergy = currentEnergy - custoEnergia;
 
   // ===== ADICIONAR LOG DE BATALHA =====
@@ -358,7 +355,8 @@ export async function handleAbility({ room, role, isHost, abilityIndex }) {
     cura: cura > 0 ? cura : undefined,
     critico,
     bloqueado: detalhesCalculo.bloqueado || false,
-    contraAtaque: contraAtaqueAplicado,
+    contraAtaque: danoContraAtaque > 0,
+    danoContraAtaque: danoContraAtaque > 0 ? danoContraAtaque : undefined,
     efeitos: efeitosAplicados.length > 0 ? efeitosAplicados : undefined,
     numGolpes: numGolpes > 1 ? numGolpes : undefined,
     elemental: detalhesCalculo.elementalMult ? (detalhesCalculo.elementalMult > 1 ? 'vantagem' : detalhesCalculo.elementalMult < 1 ? 'desvantagem' : 'neutro') : 'neutro'
@@ -387,7 +385,7 @@ export async function handleAbility({ room, role, isHost, abilityIndex }) {
   if (dano > 0) {
     updates[opponentHpField] = newOpponentHp;
   }
-  if (cura > 0) {
+  if (cura > 0 || danoContraAtaque > 0) {
     updates[myHpField] = newMyHp;
   }
 
@@ -406,13 +404,14 @@ export async function handleAbility({ room, role, isHost, abilityIndex }) {
     critico,
     bloqueado: detalhesCalculo.bloqueado || false,
     elemental: detalhesCalculo.elementalMult ? (detalhesCalculo.elementalMult > 1 ? 'vantagem' : detalhesCalculo.elementalMult < 1 ? 'desvantagem' : 'neutro') : 'neutro',
-    contraAtaque: contraAtaqueAplicado,
+    contraAtaque: danoContraAtaque > 0,
+    danoContraAtaque: danoContraAtaque > 0 ? danoContraAtaque : undefined,
     efeito,
     efeitosAplicados,
     nomeHabilidade: habilidade.nome,
     numGolpes: numGolpes > 1 ? numGolpes : undefined,
     newOpponentHp: dano > 0 ? newOpponentHp : undefined,
-    newMyHp: cura > 0 ? newMyHp : undefined,
+    newMyHp: (cura > 0 || danoContraAtaque > 0) ? newMyHp : undefined,
     newEnergy,
     finished: newOpponentHp <= 0,
     winner: newOpponentHp <= 0 ? role : null,

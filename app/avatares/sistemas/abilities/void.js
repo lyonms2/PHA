@@ -19,8 +19,8 @@ export const HABILIDADES_VOID = {
     tipo: TIPO_HABILIDADE.OFENSIVA,
     raridade: RARIDADE_HABILIDADE.AVANCADA,
     elemento: ELEMENTOS.VOID,
-    dano_base: 130, // Aumentado de 100 para 130
-    multiplicador_stat: 2.2, // Aumentado de 2.0 para 2.2
+    dano_base: 0, // Sem dano base fixo - 100% baseado em stats
+    multiplicador_stat: 4.0, // Foco × 4.0 (VOID - mais forte que elementos básicos)
     stat_primario: 'foco',
     ignora_defesa: 0.80, // Aumentado de 50% para 80%
     efeitos_status: ['anula_buffs'], // Remove buffs do inimigo
@@ -32,13 +32,13 @@ export const HABILIDADES_VOID = {
   // ==================== 2️⃣ CAMPO DE ANULAÇÃO ====================
   CAMPO_DE_ANULACAO: criarHabilidade({
     nome: 'Campo de Anulação',
-    descricao: 'Cria um vácuo protetor que reduz 60% do dano recebido por 2 turnos',
+    descricao: 'Cria um vácuo protetor que reduz 40% do dano recebido por 2 turnos',
     tipo: TIPO_HABILIDADE.SUPORTE,
     elemento: ELEMENTOS.VOID,
     dano_base: 0,
     multiplicador_stat: 0,
     stat_primario: 'foco',
-    efeitos_status: ['campo_void'], // Efeito especial: 60% redução por 2 turnos
+    efeitos_status: ['reducao_dano'], // Efeito especial: 40% redução por 2 turnos
     alvo: 'self',
     custo_energia: 35, // Aumentado de 30 para 35
     cooldown: 4, // Aumentado de 3 para 4
@@ -58,7 +58,7 @@ export const HABILIDADES_VOID = {
  *
  * 2️⃣ CAMPO DE ANULAÇÃO (Defesa) 🛡️ TANQUE
  *    Dano: 0 (não ataca)
- *    Efeitos: Reduz 60% dano recebido por 2 TURNOS
+ *    Efeitos: Reduz 40% dano recebido por 2 TURNOS
  *    Energia: 35 | Cooldown: 4
  *
  * ✅ SISTEMA SIMPLIFICADO
