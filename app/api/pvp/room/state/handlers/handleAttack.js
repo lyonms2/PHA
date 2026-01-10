@@ -121,29 +121,30 @@ export async function handleAttack({ room, role, isHost }) {
     defenderModifiers
   });
 
-  // ===== VERIFICAR CONTRA-ATAQUE =====
-  const myEffectsField = isHost ? 'host_effects' : 'guest_effects';
-  let myEffects = room[myEffectsField] || [];
-  const temContraAtaque = opponentEffects.some(ef => ef.tipo === 'queimadura_contra_ataque');
+  // ===== VERIFICAR CONTRA-ATAQUE DE ESCUDO FLAMEJANTE (REFLECT INSTANTÂNEO) =====
+  let danoContraAtaque = 0;
+  const temEscudoFlamejante = opponentEffects.some(ef => ef.tipo === 'escudo_flamejante');
 
-  if (temContraAtaque) {
-    // Aplicar queimadura no atacante
-    const danoPorTurno = Math.floor(forca * 0.2) + 5;
-    const queimaduraEfeito = {
-      tipo: 'queimadura',
-      valor: 10,
-      danoPorTurno,
-      duracao: 3,
-      turnosRestantes: 3,
-      origem: elementoOponente
-    };
-    myEffects = [...myEffects.filter(e => e.tipo !== 'queimadura'), queimaduraEfeito];
+  if (temEscudoFlamejante && dano > 0) {
+    // Contra-ataque: 20% do dano recebido volta como dano instantâneo
+    danoContraAtaque = Math.floor(dano * 0.20);
+    console.log('🔥 [PVP CONTRA-ATAQUE] Escudo Flamejante ativado no ataque básico!', {
+      danoRecebido: dano,
+      danoContraAtaque,
+      defensor: oponenteNome,
+      atacante: meuNome
+    });
   }
 
   // Atualizar HP do oponente e energia do atacante
   const opponentHpField = isHost ? 'guest_hp' : 'host_hp';
+  const myHpField = isHost ? 'host_hp' : 'guest_hp';
+  const myHpMax = isHost ? (room.host_hp_max || 100) : (room.guest_hp_max || 100);
   const opponentDefendingField = isHost ? 'guest_defending' : 'host_defending';
+
   const newOpponentHp = Math.max(0, (isHost ? room.guest_hp : room.host_hp) - dano);
+  const currentMyHp = isHost ? room.host_hp : room.guest_hp;
+  const newMyHp = Math.min(myHpMax, Math.max(0, currentMyHp - danoContraAtaque));
 
   // ===== ADICIONAR LOG DE BATALHA =====
   const battleLog = adicionarLogBatalha(room.battle_log || [], {
@@ -153,18 +154,23 @@ export async function handleAttack({ room, role, isHost }) {
     dano,
     critico,
     bloqueado: opponentDefending,
-    contraAtaque: temContraAtaque,
+    contraAtaque: danoContraAtaque > 0,
+    danoContraAtaque: danoContraAtaque > 0 ? danoContraAtaque : undefined,
     elemental: elemental.tipo
   });
 
   const updates = {
     [opponentHpField]: newOpponentHp,
     [myEnergyField]: newEnergy,
-    [myEffectsField]: myEffects, // Atualizar efeitos do atacante (contra-ataque)
     [opponentDefendingField]: false, // Reset defesa do oponente após ser atacado
     current_turn: isHost ? 'guest' : 'host', // Passa o turno
     battle_log: battleLog
   };
+
+  // Atualizar HP do atacante se levou contra-ataque
+  if (danoContraAtaque > 0) {
+    updates[myHpField] = newMyHp;
+  }
 
   // Verificar se acabou
   if (newOpponentHp <= 0) {
@@ -180,8 +186,10 @@ export async function handleAttack({ room, role, isHost }) {
     critico,
     bloqueado: opponentDefending,
     elemental: elemental.tipo,
-    contraAtaque: temContraAtaque,
+    contraAtaque: danoContraAtaque > 0,
+    danoContraAtaque: danoContraAtaque > 0 ? danoContraAtaque : undefined,
     newOpponentHp,
+    newMyHp: danoContraAtaque > 0 ? newMyHp : undefined,
     newEnergy,
     finished: newOpponentHp <= 0,
     winner: newOpponentHp <= 0 ? role : null,
