@@ -4,15 +4,16 @@
 // Atualiza XP, Vínculo, Exaustão do avatar e XP do caçador após treino
 
 import { NextResponse } from 'next/server';
-import { getDocument, updateDocument } from '@/lib/firebase/firestore';
+import { getDocument, updateDocument, getDocumentsByQuery } from '@/lib/firebase/firestore';
 import { processarGanhoXP } from '@/app/avatares/sistemas/progressionSystem';
 import { trackMissionProgress } from '@/lib/missions/missionTracker';
+import { aplicarBonusColecoes } from '@/lib/arena/rewardsSystem';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request) {
   try {
-    const { userId, avatarId, xp, vinculo, exaustao, hp, xpCacador } = await request.json();
+    const { userId, avatarId, xp, vinculo, exaustao, hp, xpCacador, gold } = await request.json();
 
     if (!userId || !avatarId) {
       return NextResponse.json(
@@ -36,6 +37,42 @@ export async function POST(request) {
 
     if (!playerStats) {
       console.warn(`⚠️ Player Stats ${userId} não encontrado no Firestore. Atualizando apenas o avatar.`);
+    }
+
+    // ===== APLICAR BÔNUS DE COLEÇÕES =====
+    let recompensasComBonus = { xp, gold, vinculo, exaustao, xpCacador };
+    let bonusInfo = null;
+
+    if ((xp && xp > 0) || (gold && gold > 0)) {
+      try {
+        // Buscar todos os avatares do jogador para calcular bônus de coleções
+        const todosAvatares = await getDocumentsByQuery('avatares', [
+          { field: 'user_id', operator: '==', value: userId }
+        ]);
+
+        console.log(`💎 [COLEÇÕES] Aplicando bônus - Total de avatares: ${todosAvatares.length}`);
+
+        // Aplicar bônus de coleções
+        recompensasComBonus = aplicarBonusColecoes(
+          { xp, gold, vinculo, exaustao, xpCacador },
+          avatarData,
+          todosAvatares
+        );
+
+        bonusInfo = {
+          bonusGold: recompensasComBonus.bonusGold,
+          bonusXP: recompensasComBonus.bonusXP,
+          goldBase: recompensasComBonus.goldBase,
+          xpBase: recompensasComBonus.xpBase,
+          goldGanho: recompensasComBonus.goldGanho || 0,
+          xpGanho: recompensasComBonus.xpGanho || 0
+        };
+
+        console.log(`💰 [COLEÇÕES] Bônus aplicados:`, bonusInfo);
+      } catch (error) {
+        console.error('⚠️ [COLEÇÕES] Erro ao aplicar bônus de coleções:', error);
+        // Continuar sem bônus em caso de erro
+      }
     }
 
     // PROTEÇÃO ANTI-DUPLICAÇÃO: verificar timestamp da última atualização
@@ -64,8 +101,11 @@ export async function POST(request) {
     let novoXP = avatarData.experiencia || 0;
     let statsNovos = null;
 
-    if (xp && xp > 0) {
-      const resultadoXP = processarGanhoXP(avatarData, xp);
+    // Usar XP com bônus de coleções
+    const xpFinal = recompensasComBonus.xp || xp || 0;
+
+    if (xpFinal && xpFinal > 0) {
+      const resultadoXP = processarGanhoXP(avatarData, xpFinal);
 
       novoNivel = resultadoXP.nivelAtual;
       novoXP = resultadoXP.xpAtual;
@@ -96,6 +136,11 @@ export async function POST(request) {
     // Sistema de Hunter Rank usa hunterRankXp
     const hunterRankXpAtual = (playerStats?.hunterRankXp) || 0;
     const novoHunterRankXp = Math.max(0, hunterRankXpAtual + (xpCacador || 0));
+
+    // Calcular gold com bônus de coleções
+    const goldFinal = recompensasComBonus.gold || gold || 0;
+    const saldoAtual = (playerStats?.saldo) || 0;
+    const novoSaldo = Math.max(0, saldoAtual + goldFinal);
 
     // Atualizar AVATAR no Firestore
     const avatarUpdate = {
@@ -147,9 +192,16 @@ export async function POST(request) {
 
     // Atualizar CAÇADOR no Firestore (se playerStats existe)
     if (playerStats) {
-      await updateDocument('player_stats', userId, {
+      const playerUpdate = {
         hunterRankXp: novoHunterRankXp
-      });
+      };
+
+      // Adicionar gold ao saldo se houver
+      if (goldFinal > 0) {
+        playerUpdate.saldo = novoSaldo;
+      }
+
+      await updateDocument('player_stats', userId, playerUpdate);
     }
 
     console.log('✅ Stats atualizados:', {
@@ -160,8 +212,10 @@ export async function POST(request) {
       nivel: novoNivel,
       subiuNivel: levelUpData !== null,
       cacador: {
-        hunterRankXp: `${hunterRankXpAtual} → ${novoHunterRankXp}`
-      }
+        hunterRankXp: `${hunterRankXpAtual} → ${novoHunterRankXp}`,
+        saldo: goldFinal > 0 ? `${saldoAtual} → ${novoSaldo}` : undefined
+      },
+      bonus: bonusInfo
     });
 
     return NextResponse.json({
@@ -176,8 +230,11 @@ export async function POST(request) {
       },
       cacador: {
         hunterRankXp: novoHunterRankXp,
-        ganhouXp: xpCacador || 0
+        ganhouXp: xpCacador || 0,
+        saldo: novoSaldo,
+        ganhouGold: goldFinal
       },
+      bonusColecoes: bonusInfo,
       ...levelUpData // Inclui dados de level up se houver
     });
 
