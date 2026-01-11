@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { getDocument, getDocuments, updateDocument, createDocument, deleteDocument } from '@/lib/firebase/firestore';
+import { getDocument, getDocuments, getDocumentsByQuery, updateDocument, createDocument, deleteDocument } from '@/lib/firebase/firestore';
 import { calcularRecompensasPVP } from '@/lib/pvp/pvpRewardsSystem';
 import { trackMissionProgress } from '@/lib/missions/missionTracker';
+import { aplicarBonusColecoes } from '@/lib/arena/rewardsSystem';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,7 +53,7 @@ export async function POST(request) {
     const guestAvatar = room.guest_avatar;
 
     // Calcular recompensas para host (sem apostas)
-    const hostRecompensas = calcularRecompensasPVP(
+    const hostRecompensasBase = calcularRecompensasPVP(
       hostAvatar,
       guestAvatar,
       hostWon,
@@ -60,18 +61,55 @@ export async function POST(request) {
     );
 
     // Calcular recompensas para guest (sem apostas)
-    const guestRecompensas = calcularRecompensasPVP(
+    const guestRecompensasBase = calcularRecompensasPVP(
       guestAvatar,
       hostAvatar,
       !hostWon,
       hostWon && rendeu // Guest se rendeu se perdeu e rendeu = true
     );
 
-    // Buscar dados atuais dos jogadores
-    const [hostPlayerStats, guestPlayerStats] = await Promise.all([
+    // ===== APLICAR BÔNUS DE COLEÇÕES =====
+    // Buscar todos os avatares de ambos os jogadores
+    const [hostTodosAvatares, guestTodosAvatares, hostPlayerStats, guestPlayerStats] = await Promise.all([
+      getDocumentsByQuery('avatares', [{ field: 'user_id', operator: '==', value: room.host_user_id }]),
+      getDocumentsByQuery('avatares', [{ field: 'user_id', operator: '==', value: room.guest_user_id }]),
       getDocument('player_stats', room.host_user_id),
       getDocument('player_stats', room.guest_user_id)
     ]);
+
+    console.log(`💎 [PVP COLEÇÕES] Host: ${hostTodosAvatares.length} avatares | Guest: ${guestTodosAvatares.length} avatares`);
+
+    // Aplicar bônus de coleções para host
+    let hostRecompensas = hostRecompensasBase;
+    let hostBonusInfo = null;
+    try {
+      hostRecompensas = aplicarBonusColecoes(hostRecompensasBase, hostAvatar, hostTodosAvatares);
+      hostBonusInfo = {
+        bonusGold: hostRecompensas.bonusGold,
+        bonusXP: hostRecompensas.bonusXP,
+        goldGanho: hostRecompensas.goldGanho || 0,
+        xpGanho: hostRecompensas.xpGanho || 0
+      };
+      console.log(`💰 [PVP COLEÇÕES] Host bônus:`, hostBonusInfo);
+    } catch (error) {
+      console.error('⚠️ [PVP COLEÇÕES] Erro ao aplicar bônus host:', error);
+    }
+
+    // Aplicar bônus de coleções para guest
+    let guestRecompensas = guestRecompensasBase;
+    let guestBonusInfo = null;
+    try {
+      guestRecompensas = aplicarBonusColecoes(guestRecompensasBase, guestAvatar, guestTodosAvatares);
+      guestBonusInfo = {
+        bonusGold: guestRecompensas.bonusGold,
+        bonusXP: guestRecompensas.bonusXP,
+        goldGanho: guestRecompensas.goldGanho || 0,
+        xpGanho: guestRecompensas.xpGanho || 0
+      };
+      console.log(`💰 [PVP COLEÇÕES] Guest bônus:`, guestBonusInfo);
+    } catch (error) {
+      console.error('⚠️ [PVP COLEÇÕES] Erro ao aplicar bônus guest:', error);
+    }
 
     // Atualizar stats do host avatar
     const novoHostXP = (hostAvatar.experiencia || 0) + hostRecompensas.xp;
@@ -118,19 +156,25 @@ export async function POST(request) {
     // Atualizar stats do host player
     const novoHostFama = Math.max(0, (hostPlayerStats.fama || 0) + hostRecompensas.fama);
     const novoHostHunterXP = Math.max(0, (hostPlayerStats.hunterRankXp || 0) + hostRecompensas.xpCacador);
+    const hostGold = hostRecompensas.gold || 0;
+    const novoHostSaldo = Math.max(0, (hostPlayerStats.saldo || 0) + hostGold);
 
     await updateDocument('player_stats', room.host_user_id, {
       fama: novoHostFama,
-      hunterRankXp: novoHostHunterXP
+      hunterRankXp: novoHostHunterXP,
+      saldo: novoHostSaldo
     });
 
     // Atualizar stats do guest player
     const novoGuestFama = Math.max(0, (guestPlayerStats.fama || 0) + guestRecompensas.fama);
     const novoGuestHunterXP = Math.max(0, (guestPlayerStats.hunterRankXp || 0) + guestRecompensas.xpCacador);
+    const guestGold = guestRecompensas.gold || 0;
+    const novoGuestSaldo = Math.max(0, (guestPlayerStats.saldo || 0) + guestGold);
 
     await updateDocument('player_stats', room.guest_user_id, {
       fama: novoGuestFama,
-      hunterRankXp: novoGuestHunterXP
+      hunterRankXp: novoGuestHunterXP,
+      saldo: novoGuestSaldo
     });
 
     // === ATUALIZAR PVP RANKINGS (LEADERBOARD) ===
@@ -281,12 +325,16 @@ export async function POST(request) {
       host: {
         fama: hostRecompensas.fama,
         xpCacador: hostRecompensas.xpCacador,
-        xpAvatar: hostRecompensas.xp
+        xpAvatar: hostRecompensas.xp,
+        gold: hostRecompensas.gold,
+        bonus: hostBonusInfo
       },
       guest: {
         fama: guestRecompensas.fama,
         xpCacador: guestRecompensas.xpCacador,
-        xpAvatar: guestRecompensas.xp
+        xpAvatar: guestRecompensas.xp,
+        gold: guestRecompensas.gold,
+        bonus: guestBonusInfo
       }
     });
 
@@ -296,6 +344,7 @@ export async function POST(request) {
       rendeu,
       host: {
         recompensas: hostRecompensas,
+        bonusColecoes: hostBonusInfo,
         stats: {
           avatar: {
             experiencia: hostAvatar.experiencia,
@@ -305,12 +354,14 @@ export async function POST(request) {
           },
           player: {
             fama: hostPlayerStats.fama,
-            hunterRankXp: hostPlayerStats.hunterRankXp
+            hunterRankXp: hostPlayerStats.hunterRankXp,
+            saldo: novoHostSaldo
           }
         }
       },
       guest: {
         recompensas: guestRecompensas,
+        bonusColecoes: guestBonusInfo,
         stats: {
           avatar: {
             experiencia: guestAvatar.experiencia,
@@ -320,7 +371,8 @@ export async function POST(request) {
           },
           player: {
             fama: guestPlayerStats.fama,
-            hunterRankXp: guestPlayerStats.hunterRankXp
+            hunterRankXp: guestPlayerStats.hunterRankXp,
+            saldo: novoGuestSaldo
           }
         }
       }
