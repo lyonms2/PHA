@@ -275,6 +275,7 @@ export default function ModalColecoes({ isOpen, onClose, userId }) {
                   </div>
                 ))}
               </div>
+            )}
                 </>
             )}
           </div>
