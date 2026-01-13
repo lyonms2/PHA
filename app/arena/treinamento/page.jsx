@@ -108,9 +108,6 @@ export default function TreinamentoAIPage() {
       });
     }
 
-      });
-    }
-
     setIniciandoBatalha(true);
     setDificuldadeSelecionada(dificuldade);
 
