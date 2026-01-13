@@ -307,7 +307,7 @@ export async function POST(request) {
       // Rastrear progresso de missões (não bloqueia se falhar)
       const userId = battle.playerAvatarOriginal?.user_id;
       if (userId) {
-        trackMissionProgress(userId, 'TREINO_COMPLETO', 1);
+        trackMissionProgress(userId, 'PARTICIPAR_TREINO', 1);
       }
 
       return NextResponse.json({
@@ -316,6 +316,24 @@ export async function POST(request) {
         winner: 'ia',
         recompensas,
         message: 'Você foi derrotado por efeitos de status!'
+      });
+    }
+
+    // ===== HANDLER ESPECÍFICO PARA PROCESSAR EFEITOS =====
+    // Se a ação for apenas processar efeitos, retornar aqui sem continuar
+    if (action === 'process_effects') {
+      await setBattle(battleId, battle);
+
+      // Logs de efeitos para exibir no frontend
+      const logsEfeitos = playerEffectsResult.logs || [];
+
+      return NextResponse.json({
+        success: true,
+        action: 'process_effects',
+        newHp: battle.player.hp,
+        efeitosRestantes: battle.player.efeitos,
+        logsEfeitos,
+        finished: false
       });
     }
 

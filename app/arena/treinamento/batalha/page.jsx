@@ -295,7 +295,8 @@ function BatalhaTreinoIAContent() {
           vinculo: recompensas.vinculo,
           exaustao: recompensas.exaustao,
           hp: recompensas.hpOriginal, // HP volta ao original (é treino)
-          xpCacador: recompensas.xpCacador
+          xpCacador: recompensas.xpCacador,
+          gold: recompensas.gold || 0
         })
       });
 
