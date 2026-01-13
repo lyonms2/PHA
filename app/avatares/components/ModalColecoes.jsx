@@ -61,7 +61,7 @@ export default function ModalColecoes({ isOpen, onClose, userId }) {
                   📚 Coleções de Avatares
                 </h2>
                 <p className="text-slate-400 text-sm mt-1">
-                  Coleções completas concedem bônus passivos permanentes
+                  Coleções completas concedem bônus de Gold e XP em batalhas
                 </p>
               </div>
               <button
@@ -119,7 +119,70 @@ export default function ModalColecoes({ isOpen, onClose, userId }) {
                 <div className="text-4xl mb-4 animate-pulse">📚</div>
                 <div className="text-slate-400">Carregando coleções...</div>
               </div>
-            ) : colecoesFiltradas.length === 0 ? (
+            ) : (
+              <>
+                {/* Resumo de Bônus Ativos */}
+                {colecoesAtivas > 0 && (
+                  <div className="mb-6 bg-gradient-to-r from-green-900/40 to-emerald-900/40 border-2 border-green-500/50 rounded-lg p-4">
+                    <h3 className="text-lg font-bold text-green-300 mb-3 flex items-center gap-2">
+                      ✨ Bônus Ativos
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {(() => {
+                        let totalGoldBonus = 0;
+                        const xpBonusPorElemento = {};
+
+                        colecoes.filter(c => c.ativa).forEach(colecao => {
+                          const bonusArray = Array.isArray(colecao.bonus) ? colecao.bonus : [colecao.bonus];
+                          bonusArray.forEach(b => {
+                            if (b.tipo === 'GOLD_BONUS') {
+                              totalGoldBonus += b.valor;
+                            } else if (b.tipo === 'XP_BONUS' && b.elementoRequerido) {
+                              if (!xpBonusPorElemento[b.elementoRequerido] || xpBonusPorElemento[b.elementoRequerido] < b.valor) {
+                                xpBonusPorElemento[b.elementoRequerido] = b.valor;
+                              }
+                            }
+                          });
+                        });
+
+                        return (
+                          <>
+                            {totalGoldBonus > 0 && (
+                              <div className="bg-slate-900/50 rounded-lg p-3 border border-green-500/30">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-2xl">💰</span>
+                                  <div>
+                                    <div className="text-xs text-slate-400">Bônus de Gold Total</div>
+                                    <div className="text-xl font-bold text-yellow-400">+{totalGoldBonus}%</div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                            {Object.keys(xpBonusPorElemento).length > 0 && (
+                              <div className="bg-slate-900/50 rounded-lg p-3 border border-green-500/30">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-2xl">✨</span>
+                                  <div className="flex-1">
+                                    <div className="text-xs text-slate-400 mb-1">Bônus de XP por Elemento</div>
+                                    <div className="flex flex-wrap gap-1">
+                                      {Object.entries(xpBonusPorElemento).map(([elemento, valor]) => (
+                                        <span key={elemento} className="text-xs bg-slate-800 px-2 py-1 rounded text-cyan-300">
+                                          {elemento}: +{valor}%
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                )}
+
+                {colecoesFiltradas.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-6xl mb-4">🎯</div>
                 <div className="text-white text-xl mb-2">Nenhuma coleção neste filtro</div>
@@ -182,15 +245,29 @@ export default function ModalColecoes({ isOpen, onClose, userId }) {
 
                         {/* Bônus */}
                         {colecao.bonus && (
-                          <div className={`flex items-center gap-2 text-sm p-3 rounded-lg ${
+                          <div className={`p-3 rounded-lg space-y-2 ${
                             colecao.ativa
                               ? 'bg-green-900/30 border border-green-600/30'
                               : 'bg-slate-700/30 border border-slate-600/30'
                           }`}>
-                            <span className="text-amber-400 font-bold">🎁 BÔNUS:</span>
-                            <span className={colecao.ativa ? 'text-green-300' : 'text-slate-400'}>
-                              +{colecao.bonus.valor}% Ataque quando usar {colecao.bonus.elementoRequerido} como principal
-                            </span>
+                            <div className="flex items-center gap-2 text-sm">
+                              <span className="text-amber-400 font-bold">🎁 BÔNUS:</span>
+                            </div>
+                            {Array.isArray(colecao.bonus) ? (
+                              // Múltiplos bônus (Lendários)
+                              colecao.bonus.map((b, idx) => (
+                                <div key={idx} className={`flex items-center gap-2 text-sm ${colecao.ativa ? 'text-green-300' : 'text-slate-400'}`}>
+                                  <span className="text-lg">{b.tipo === 'GOLD_BONUS' ? '💰' : b.tipo === 'XP_BONUS' ? '✨' : '⚔️'}</span>
+                                  <span>{b.descricao}</span>
+                                </div>
+                              ))
+                            ) : (
+                              // Bônus único (Raros)
+                              <div className={`flex items-center gap-2 text-sm ${colecao.ativa ? 'text-green-300' : 'text-slate-400'}`}>
+                                <span className="text-lg">{colecao.bonus.tipo === 'GOLD_BONUS' ? '💰' : colecao.bonus.tipo === 'XP_BONUS' ? '✨' : '⚔️'}</span>
+                                <span>{colecao.bonus.descricao}</span>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -198,6 +275,8 @@ export default function ModalColecoes({ isOpen, onClose, userId }) {
                   </div>
                 ))}
               </div>
+            )}
+                </>
             )}
           </div>
         </div>

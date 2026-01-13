@@ -748,6 +748,11 @@ function BatalhaTreinoIAContent() {
           mostrarDanoVisual('oponente', null, 'miss', null);
         }
 
+        // Efeitos visuais de CURA (habilidades de suporte)
+        if (result.cura && result.cura > 0) {
+          mostrarDanoVisual('meu', result.cura, 'heal', meuAvatar?.elemento);
+        }
+
         // Logs da IA (processados automaticamente pelo backend)
         if (result.logsParaJogador && Array.isArray(result.logsParaJogador)) {
           result.logsParaJogador.forEach(log => addLog(log));
