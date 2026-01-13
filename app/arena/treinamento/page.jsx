@@ -158,7 +158,7 @@ export default function TreinamentoAIPage() {
       // Redirecionar para batalha após animação do portal
       setTimeout(() => {
         router.push('/arena/treinamento/batalha');
-      }, 3500);
+      }, 4500);
 
     } catch (error) {
       console.error('Erro ao iniciar treino:', error);
