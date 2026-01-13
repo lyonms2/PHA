@@ -319,6 +319,24 @@ export async function POST(request) {
       });
     }
 
+    // ===== HANDLER ESPECÍFICO PARA PROCESSAR EFEITOS =====
+    // Se a ação for apenas processar efeitos, retornar aqui sem continuar
+    if (action === 'process_effects') {
+      await setBattle(battleId, battle);
+
+      // Logs de efeitos para exibir no frontend
+      const logsEfeitos = playerEffectsResult.logs || [];
+
+      return NextResponse.json({
+        success: true,
+        action: 'process_effects',
+        newHp: battle.player.hp,
+        efeitosRestantes: battle.player.efeitos,
+        logsEfeitos,
+        finished: false
+      });
+    }
+
     // ===== VERIFICAR ATORDOAMENTO DO PLAYER =====
     // A lib processEffects já retorna stunned: true se estiver atordoado/paralisado
     let result; // Declarar result aqui para uso em ambos os blocos
