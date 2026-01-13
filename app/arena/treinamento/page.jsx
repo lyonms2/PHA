@@ -21,6 +21,7 @@ export default function TreinamentoAIPage() {
   const [loading, setLoading] = useState(true);
   const [modalAlerta, setModalAlerta] = useState(null);
   const [iniciandoBatalha, setIniciandoBatalha] = useState(false);
+  const [dificuldadeSelecionada, setDificuldadeSelecionada] = useState(null);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -108,6 +109,7 @@ export default function TreinamentoAIPage() {
     }
 
     setIniciandoBatalha(true);
+    setDificuldadeSelecionada(dificuldade);
 
     try {
       const poderTotal = calcularPoderTotal(avatarAtivo);
@@ -153,10 +155,10 @@ export default function TreinamentoAIPage() {
 
       sessionStorage.setItem('treino_ia_dados', JSON.stringify(dadosPartida));
 
-      // Redirecionar para batalha
+      // Redirecionar para batalha após animação do portal
       setTimeout(() => {
         router.push('/arena/treinamento/batalha');
-      }, 500);
+      }, 2000);
 
     } catch (error) {
       console.error('Erro ao iniciar treino:', error);
@@ -567,16 +569,6 @@ export default function TreinamentoAIPage() {
                 </div>
               )}
 
-              {iniciandoBatalha && (
-                <div className="mt-6 bg-cyan-900/30 border border-cyan-500 rounded-lg p-4 text-center">
-                  <p className="text-cyan-400 font-bold animate-pulse">
-                    ⏳ Gerando oponente IA...
-                  </p>
-                  <p className="text-cyan-300 text-sm mt-1">
-                    Preparando batalha de treino
-                  </p>
-                </div>
-              )}
             </div>
 
             {/* Info sobre Sistema de Treino */}
@@ -617,6 +609,41 @@ export default function TreinamentoAIPage() {
         </div>
       )}
 
+      {/* Animação de Portal */}
+      {iniciandoBatalha && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 portal-container">
+          <div className="relative w-full h-full flex items-center justify-center">
+            {/* Portal Principal */}
+            <div className={`portal-circle ${dificuldadeSelecionada}`}>
+              {/* Anéis Energéticos */}
+              <div className="portal-ring ring-1"></div>
+              <div className="portal-ring ring-2"></div>
+              <div className="portal-ring ring-3"></div>
+
+              {/* Centro do Portal */}
+              <div className="portal-core">
+                <div className="portal-inner"></div>
+              </div>
+
+              {/* Partículas */}
+              {[...Array(12)].map((_, i) => (
+                <div key={i} className={`portal-particle particle-${i + 1}`}></div>
+              ))}
+            </div>
+
+            {/* Texto */}
+            <div className="absolute bottom-1/4 text-center animate-pulse">
+              <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-cyan-400 to-pink-400 mb-2">
+                ABRINDO PORTAL
+              </h2>
+              <p className="text-cyan-300 text-lg font-mono">
+                Preparando arena de {dificuldadeSelecionada}...
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style jsx>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
@@ -634,6 +661,245 @@ export default function TreinamentoAIPage() {
 
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: rgba(6, 182, 212, 0.7);
+        }
+
+        /* ===== ANIMAÇÃO DO PORTAL ===== */
+        .portal-container {
+          animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        .portal-circle {
+          position: relative;
+          width: 400px;
+          height: 400px;
+          animation: portalExpand 1s ease-out;
+        }
+
+        @keyframes portalExpand {
+          0% {
+            transform: scale(0) rotate(0deg);
+            opacity: 0;
+          }
+          60% {
+            transform: scale(1.1) rotate(180deg);
+            opacity: 1;
+          }
+          100% {
+            transform: scale(1) rotate(360deg);
+            opacity: 1;
+          }
+        }
+
+        /* Anéis Energéticos */
+        .portal-ring {
+          position: absolute;
+          border-radius: 50%;
+          border: 3px solid;
+          animation: ringRotate 3s linear infinite;
+        }
+
+        .portal-circle.facil .portal-ring {
+          border-color: rgba(34, 197, 94, 0.6);
+          box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
+        }
+
+        .portal-circle.normal .portal-ring {
+          border-color: rgba(234, 179, 8, 0.6);
+          box-shadow: 0 0 20px rgba(234, 179, 8, 0.5);
+        }
+
+        .portal-circle.dificil .portal-ring {
+          border-color: rgba(239, 68, 68, 0.6);
+          box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+        }
+
+        .ring-1 {
+          width: 100%;
+          height: 100%;
+          top: 0;
+          left: 0;
+          animation-duration: 2s;
+        }
+
+        .ring-2 {
+          width: 75%;
+          height: 75%;
+          top: 12.5%;
+          left: 12.5%;
+          animation-duration: 3s;
+          animation-direction: reverse;
+        }
+
+        .ring-3 {
+          width: 50%;
+          height: 50%;
+          top: 25%;
+          left: 25%;
+          animation-duration: 2.5s;
+        }
+
+        @keyframes ringRotate {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        /* Centro do Portal */
+        .portal-core {
+          position: absolute;
+          width: 200px;
+          height: 200px;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          border-radius: 50%;
+          animation: portalPulse 2s ease-in-out infinite;
+        }
+
+        .portal-circle.facil .portal-core {
+          background: radial-gradient(circle, rgba(34, 197, 94, 0.8), rgba(6, 182, 212, 0.4), transparent);
+          box-shadow: 0 0 60px rgba(34, 197, 94, 0.6), inset 0 0 60px rgba(34, 197, 94, 0.4);
+        }
+
+        .portal-circle.normal .portal-core {
+          background: radial-gradient(circle, rgba(234, 179, 8, 0.8), rgba(251, 146, 60, 0.4), transparent);
+          box-shadow: 0 0 60px rgba(234, 179, 8, 0.6), inset 0 0 60px rgba(234, 179, 8, 0.4);
+        }
+
+        .portal-circle.dificil .portal-core {
+          background: radial-gradient(circle, rgba(239, 68, 68, 0.8), rgba(168, 85, 247, 0.4), transparent);
+          box-shadow: 0 0 60px rgba(239, 68, 68, 0.6), inset 0 0 60px rgba(239, 68, 68, 0.4);
+        }
+
+        @keyframes portalPulse {
+          0%, 100% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 0.8;
+          }
+          50% {
+            transform: translate(-50%, -50%) scale(1.1);
+            opacity: 1;
+          }
+        }
+
+        .portal-inner {
+          position: absolute;
+          width: 100px;
+          height: 100px;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(255, 255, 255, 0.9), transparent);
+          animation: portalInnerSwirl 1.5s ease-in-out infinite;
+        }
+
+        @keyframes portalInnerSwirl {
+          0%, 100% {
+            transform: translate(-50%, -50%) rotate(0deg) scale(1);
+          }
+          50% {
+            transform: translate(-50%, -50%) rotate(180deg) scale(1.2);
+          }
+        }
+
+        /* Partículas */
+        .portal-particle {
+          position: absolute;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          top: 50%;
+          left: 50%;
+          animation: particleOrbit 3s linear infinite;
+        }
+
+        .portal-circle.facil .portal-particle {
+          background: radial-gradient(circle, rgba(34, 197, 94, 1), transparent);
+          box-shadow: 0 0 10px rgba(34, 197, 94, 0.8);
+        }
+
+        .portal-circle.normal .portal-particle {
+          background: radial-gradient(circle, rgba(234, 179, 8, 1), transparent);
+          box-shadow: 0 0 10px rgba(234, 179, 8, 0.8);
+        }
+
+        .portal-circle.dificil .portal-particle {
+          background: radial-gradient(circle, rgba(239, 68, 68, 1), transparent);
+          box-shadow: 0 0 10px rgba(239, 68, 68, 0.8);
+        }
+
+        .particle-1 { animation-delay: 0s; animation-duration: 2s; }
+        .particle-2 { animation-delay: 0.2s; animation-duration: 2.2s; }
+        .particle-3 { animation-delay: 0.4s; animation-duration: 2.4s; }
+        .particle-4 { animation-delay: 0.6s; animation-duration: 2.6s; }
+        .particle-5 { animation-delay: 0.8s; animation-duration: 2.8s; }
+        .particle-6 { animation-delay: 1s; animation-duration: 3s; }
+        .particle-7 { animation-delay: 1.2s; animation-duration: 2.2s; }
+        .particle-8 { animation-delay: 1.4s; animation-duration: 2.4s; }
+        .particle-9 { animation-delay: 1.6s; animation-duration: 2.6s; }
+        .particle-10 { animation-delay: 1.8s; animation-duration: 2.8s; }
+        .particle-11 { animation-delay: 2s; animation-duration: 3s; }
+        .particle-12 { animation-delay: 2.2s; animation-duration: 3.2s; }
+
+        @keyframes particleOrbit {
+          0% {
+            transform: translate(-50%, -50%) rotate(0deg) translateX(150px) scale(0);
+            opacity: 0;
+          }
+          10% {
+            opacity: 1;
+            transform: translate(-50%, -50%) rotate(36deg) translateX(150px) scale(1);
+          }
+          90% {
+            opacity: 1;
+            transform: translate(-50%, -50%) rotate(324deg) translateX(150px) scale(1);
+          }
+          100% {
+            transform: translate(-50%, -50%) rotate(360deg) translateX(150px) scale(0);
+            opacity: 0;
+          }
+        }
+
+        /* Responsividade para telas menores */
+        @media (max-width: 640px) {
+          .portal-circle {
+            width: 300px;
+            height: 300px;
+          }
+
+          .portal-core {
+            width: 150px;
+            height: 150px;
+          }
+
+          .portal-inner {
+            width: 75px;
+            height: 75px;
+          }
+
+          @keyframes particleOrbit {
+            0% {
+              transform: translate(-50%, -50%) rotate(0deg) translateX(100px) scale(0);
+              opacity: 0;
+            }
+            10% {
+              opacity: 1;
+              transform: translate(-50%, -50%) rotate(36deg) translateX(100px) scale(1);
+            }
+            90% {
+              opacity: 1;
+              transform: translate(-50%, -50%) rotate(324deg) translateX(100px) scale(1);
+            }
+            100% {
+              transform: translate(-50%, -50%) rotate(360deg) translateX(100px) scale(0);
+              opacity: 0;
+            }
+          }
         }
       `}</style>
     </div>
