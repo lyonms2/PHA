@@ -307,7 +307,7 @@ export async function POST(request) {
       // Rastrear progresso de missões (não bloqueia se falhar)
       const userId = battle.playerAvatarOriginal?.user_id;
       if (userId) {
-        trackMissionProgress(userId, 'TREINO_COMPLETO', 1);
+        trackMissionProgress(userId, 'PARTICIPAR_TREINO', 1);
       }
 
       return NextResponse.json({
