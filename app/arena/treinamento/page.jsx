@@ -108,6 +108,9 @@ export default function TreinamentoAIPage() {
       });
     }
 
+      });
+    }
+
     setIniciandoBatalha(true);
     setDificuldadeSelecionada(dificuldade);
 
@@ -155,19 +158,18 @@ export default function TreinamentoAIPage() {
 
       sessionStorage.setItem('treino_ia_dados', JSON.stringify(dadosPartida));
 
-      // Redirecionar para batalha após animação do portal
+      // Manter portal visível por mais tempo após carregar os dados
       setTimeout(() => {
         router.push('/arena/treinamento/batalha');
-      }, 4500);
+      }, 2500);
 
     } catch (error) {
       console.error('Erro ao iniciar treino:', error);
+      setIniciandoBatalha(false);
       setModalAlerta({
         titulo: '❌ Erro',
         mensagem: 'Erro ao iniciar treino. Tente novamente.'
       });
-    } finally {
-      setIniciandoBatalha(false);
     }
   };
 
