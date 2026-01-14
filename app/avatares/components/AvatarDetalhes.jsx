@@ -20,6 +20,31 @@ const getInfoExaustao = (exaustao) => {
   }
 };
 
+const formatarDataCriacao = (dataISO) => {
+  if (!dataISO) return 'Data desconhecida';
+
+  try {
+    const data = new Date(dataISO);
+    const agora = new Date();
+    const diffMs = agora - data;
+    const diffDias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    // Mostrar "há X dias" para menos de 30 dias
+    if (diffDias === 0) return 'Hoje';
+    if (diffDias === 1) return 'Ontem';
+    if (diffDias < 30) return `Há ${diffDias} dias`;
+
+    // Mostrar data formatada para mais de 30 dias
+    return data.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+  } catch (e) {
+    return 'Data desconhecida';
+  }
+};
+
 const BarraExaustao = ({ exaustao }) => {
   const info = getInfoExaustao(exaustao || 0);
   
@@ -401,6 +426,25 @@ export default function AvatarDetalhes({
                             )}
                           </div>
                         )}
+                      </div>
+                    </div>
+
+                    {/* Origem (Criador e Data) */}
+                    <div>
+                      <h4 className="text-cyan-400 font-bold text-xs uppercase tracking-wider mb-3">Origem</h4>
+                      <div className="bg-slate-900/50 rounded-lg p-3 border border-slate-700/30 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-slate-500">Invocado por</span>
+                          <span className="text-sm font-bold text-cyan-300">
+                            {avatar.criador_nome_operacao || 'Caçador Desconhecido'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-slate-500">Criado em</span>
+                          <span className="text-sm text-slate-300">
+                            {formatarDataCriacao(avatar.data_criacao)}
+                          </span>
+                        </div>
                       </div>
                     </div>
 

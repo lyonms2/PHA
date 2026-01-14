@@ -111,7 +111,7 @@ function determinarRaridade(primeiraInvocacao = false, hunterRank = null, pitySt
 /**
  * Gera um avatar completo usando todos os sistemas
  */
-function gerarAvatarCompleto(primeiraInvocacao = false, hunterRank = null, pityStats = null) {
+function gerarAvatarCompleto(primeiraInvocacao = false, hunterRank = null, pityStats = null, criadorNomeOperacao = null) {
   console.log("=== GERANDO AVATAR COM NOVOS SISTEMAS ===");
 
   // 1. DETERMINAR RARIDADE (com bônus do rank + pity system)
@@ -162,7 +162,7 @@ function gerarAvatarCompleto(primeiraInvocacao = false, hunterRank = null, pityS
     agilidade: stats.agilidade,
     resistencia: stats.resistencia,
     foco: stats.foco,
-    
+
     // Habilidades (salvar objeto completo para funcionar em batalha)
     habilidades: habilidades.map(hab => ({
       nome: hab.nome,
@@ -186,14 +186,15 @@ function gerarAvatarCompleto(primeiraInvocacao = false, hunterRank = null, pityS
       nivel_minimo: hab.nivel_minimo,
       vinculo_minimo: hab.vinculo_minimo
     })),
-    
+
     // Status
     vivo: true,
     ativo: false,
-    marca_morte: false // Garantir que seja boolean
-    
-    // ❌ REMOVIDO: primeira_invocacao (metadado não vai pro banco)
-    // ❌ REMOVIDO: data_invocacao (usando created_at do banco)
+    marca_morte: false, // Garantir que seja boolean
+
+    // Origem (novo sistema de rastreabilidade)
+    criador_nome_operacao: criadorNomeOperacao || 'Caçador Desconhecido',
+    data_criacao: new Date().toISOString()
   };
   
   console.log("Avatar completo gerado!");
@@ -338,8 +339,8 @@ export async function POST(request) {
       invocacoes_sem_lendario: stats.invocacoes_sem_lendario || 0
     };
 
-    // GERAR AVATAR COM TODOS OS SISTEMAS (incluindo pity system)
-    const avatarGerado = gerarAvatarCompleto(ehPrimeiraInvocacao, hunterRank, pityStats);
+    // GERAR AVATAR COM TODOS OS SISTEMAS (incluindo pity system e info do criador)
+    const avatarGerado = gerarAvatarCompleto(ehPrimeiraInvocacao, hunterRank, pityStats, stats.nome_operacao);
     avatarGerado.user_id = userId;
     // ❌ REMOVIDO: avatarGerado.data_invocacao (coluna não existe no banco)
 
