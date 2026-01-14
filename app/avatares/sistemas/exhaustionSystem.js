@@ -31,9 +31,10 @@ export const CONFIG_EXAUSTAO = {
   POR_HABILIDADE_ULTIMATE: 5,
 
   // Taxa de recuperação (DOCUMENTAÇÃO)
-  // Sistema real: 5 pontos/hora (calculado em /app/api/meus-avatares/route.js)
+  // Sistema real: 0.5 pontos/hora (calculado em /app/api/meus-avatares/route.js)
   // Poções: valor_efeito do item (geralmente 50 pontos)
-  RECUPERACAO_POR_HORA: 5, // Valor REAL usado
+  // VALORIZAÇÃO DOS ITENS: Recuperação 10x mais lenta para incentivar uso de poções!
+  RECUPERACAO_POR_HORA: 0.5, // Valor REAL usado (200h para recuperar 100 pts totalmente)
 
   // Limites críticos
   NIVEL_ALERTA: 60, // Começa a sentir cansaço
@@ -307,8 +308,10 @@ export const TABELA_EXAUSTAO = `
 ║    Descanse para poder batalhar novamente                     ║
 ╠═══════════════════════════════════════════════════════════════╣
 ║ RECUPERAÇÃO:                                                   ║
-║   Passiva: 5 pontos/hora (offline)                            ║
-║   Poção de Energia: Variável por item (~50 pts)               ║
+║   Passiva: 0.5 pontos/hora (~8 dias para 100%)               ║
+║   Tônico de Energia: -20 pts (40h de descanso!)               ║
+║   Elixir de Vitalidade: -50 pts (100h de descanso!)           ║
+║   Cristal de Restauração: -30 pts + HP (60h descanso!)        ║
 ║                                                                ║
 ║ GANHO DE EXAUSTÃO:                                            ║
 ║   Combate Fácil: 2.5 pts                                      ║

@@ -37,7 +37,8 @@ export async function GET(request) {
     }
 
     // ==================== RECUPERAÇÃO PASSIVA DE EXAUSTÃO ====================
-    // SISTEMA SIMPLES: Recupera 10 pontos por hora automaticamente
+    // SISTEMA LENTO: Recupera 0.5 pontos por hora (valoriza itens de energia!)
+    // 200 horas (~8 dias) para recuperar 100 pontos totalmente
     const avataresAtualizados = [];
     const agora = new Date();
 
@@ -123,8 +124,9 @@ export async function GET(request) {
         continue;
       }
 
-      // RECUPERAÇÃO SIMPLES: 5 pontos por hora (mais desafiador)
-      const recuperacao = Math.floor(horasPassadas * 5);
+      // RECUPERAÇÃO LENTA: 0.5 pontos por hora (valoriza itens de energia!)
+      // 200 horas (~8 dias) para recuperar 100 pontos totalmente
+      const recuperacao = Math.floor(horasPassadas * 0.5);
 
       if (recuperacao > 0) {
         const novaExaustao = Math.max(0, exaustaoAtual - recuperacao);

@@ -149,19 +149,19 @@ export function gerarStatsBalanceados(raridade, elemento) {
     totalAtual = stats.forca + stats.agilidade + stats.resistencia + stats.foco;
   }
 
-  // Aplicar bônus elementais se existir característica
+  // Aplicar bônus elementais AGRESSIVOS para dar identidade real aos elementos
   if (caracteristicas) {
-    // Aumentar stat primária
+    // AUMENTAR stat primária SIGNIFICATIVAMENTE (+40%)
     const statPrimaria = caracteristicas.stat_primaria;
-    stats[statPrimaria] = Math.floor(stats[statPrimaria] * 1.15);
+    stats[statPrimaria] = Math.floor(stats[statPrimaria] * 1.40);
 
-    // Aumentar stat secundária
+    // AUMENTAR stat secundária MODERADAMENTE (+20%)
     const statSecundaria = caracteristicas.stat_secundaria;
-    stats[statSecundaria] = Math.floor(stats[statSecundaria] * 1.08);
+    stats[statSecundaria] = Math.floor(stats[statSecundaria] * 1.20);
 
-    // Reduzir stat fraca
+    // REDUZIR stat fraca SIGNIFICATIVAMENTE (-25%)
     const statFraca = caracteristicas.stat_fraca;
-    stats[statFraca] = Math.floor(stats[statFraca] * 0.92);
+    stats[statFraca] = Math.floor(stats[statFraca] * 0.75);
   }
 
   return stats;
@@ -192,18 +192,18 @@ export function calcularStatsAposNivel(statsAtuais, niveisGanhos, raridade, elem
 
   const novosStats = { ...statsAtuais };
 
-  // Aplicar crescimento base por nível
+  // Aplicar crescimento base por nível com IDENTIDADE ELEMENTAL FORTE
   Object.keys(crescimento).forEach(stat => {
     const crescimentoBase = crescimento[stat] * niveisGanhos;
-    
-    // Bônus adicional para stat primária do elemento
+
+    // Bônus/Penalidades AGRESSIVOS para manter identidade ao subir de nível
     let multiplicador = 1.0;
     if (caracteristicas && caracteristicas.stat_primaria === stat) {
-      multiplicador = 1.3; // 30% mais crescimento na stat primária
+      multiplicador = 1.5; // +50% mais crescimento na stat primária
     } else if (caracteristicas && caracteristicas.stat_secundaria === stat) {
-      multiplicador = 1.15; // 15% mais na secundária
+      multiplicador = 1.25; // +25% mais na secundária
     } else if (caracteristicas && caracteristicas.stat_fraca === stat) {
-      multiplicador = 0.85; // 15% menos na fraca
+      multiplicador = 0.70; // -30% menos na fraca
     }
 
     novosStats[stat] = Math.floor(novosStats[stat] + (crescimentoBase * multiplicador));
