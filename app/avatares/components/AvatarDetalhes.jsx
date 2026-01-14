@@ -416,7 +416,7 @@ export default function AvatarDetalhes({
                             {(avatar.exaustao || 0) > 0 ? (
                               <div className="text-xs text-cyan-300 font-mono flex items-center gap-2">
                                 <span className="animate-pulse">🌙</span>
-                                <span>Recupera 10 pts/hora (offline)</span>
+                                <span>Recupera 0.5 pts/hora (~8 dias total)</span>
                               </div>
                             ) : (
                               <div className="text-xs text-green-300 font-mono flex items-center gap-2">
