@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic';
  *
  * Benefícios:
  * - Remove marca_morte (avatar pode morrer e ser ressuscitado novamente)
- * - Restaura 50% dos stats perdidos na ressurreição (+15% dos stats atuais)
+ * - Stats mantidos (sem alteração)
  * - Restaura 50% do vínculo perdido (+25% do vínculo atual)
  * - Reduz exaustão para 30 (Cansado)
  *
@@ -86,36 +86,18 @@ export async function POST(request) {
       return resourceCheck.response;
     }
 
-    // 4. CALCULAR MELHORIAS (Restaura 50% do que foi perdido)
+    // 4. CALCULAR MELHORIAS
     console.log("Calculando melhorias da purificação...");
 
-    // Stats: +15% (50% dos 30% perdidos na ressurreição)
+    // Stats: MANTIDOS (sem alteração)
     const statsRestaurados = {
-      forca: Math.floor(avatar.forca * 1.15),
-      agilidade: Math.floor(avatar.agilidade * 1.15),
-      resistencia: Math.floor(avatar.resistencia * 1.15),
-      foco: Math.floor(avatar.foco * 1.15)
+      forca: avatar.forca,
+      agilidade: avatar.agilidade,
+      resistencia: avatar.resistencia,
+      foco: avatar.foco
     };
 
-    // Validar se stats ainda estão dentro dos limites da raridade
-    const validacao = validarStats(statsRestaurados, avatar.raridade);
-    if (!validacao.valido) {
-      console.log("⚠️ Stats fora dos limites, ajustando...");
-      const RANGES = {
-        'Comum': { max: 10 },
-        'Raro': { max: 16 },
-        'Lendário': { max: 25 }
-      };
-      const maximo = RANGES[avatar.raridade].max;
-
-      Object.keys(statsRestaurados).forEach(stat => {
-        if (statsRestaurados[stat] > maximo) {
-          statsRestaurados[stat] = maximo;
-        }
-      });
-    }
-
-    console.log("Stats após purificação:", statsRestaurados);
+    console.log("Stats mantidos (sem alteração):", statsRestaurados);
 
     // Vínculo: +25% (50% dos 50% perdidos)
     const novoVinculo = Math.min(100, Math.floor((avatar.vinculo || 0) * 1.25));
@@ -215,15 +197,8 @@ export async function POST(request) {
 
     // Calcular ganhos para mostrar ao jogador
     const ganhos = {
-      stats_ganhos: {
-        forca: statsRestaurados.forca - avatar.forca,
-        agilidade: statsRestaurados.agilidade - avatar.agilidade,
-        resistencia: statsRestaurados.resistencia - avatar.resistencia,
-        foco: statsRestaurados.foco - avatar.foco
-      },
       vinculo_ganho: novoVinculo - (avatar.vinculo || 0),
-      exaustao_reduzida: (avatar.exaustao || 0) - novaExaustao,
-      porcentagem_melhoria: 15
+      exaustao_reduzida: (avatar.exaustao || 0) - novaExaustao
     };
 
     return Response.json({
@@ -237,10 +212,9 @@ export async function POST(request) {
         ganhos: ganhos,
         avisos: [
           "✨ Marca da Morte REMOVIDA: Avatar pode ser ressuscitado novamente se morrer",
-          `📈 Stats aumentados em ~15% (Força +${ganhos.stats_ganhos.forca}, Agilidade +${ganhos.stats_ganhos.agilidade}, Resistência +${ganhos.stats_ganhos.resistencia}, Foco +${ganhos.stats_ganhos.foco})`,
           `💖 Vínculo aumentado em ${ganhos.vinculo_ganho}% (${avatar.vinculo}% → ${novoVinculo}%)`,
           `😌 Exaustão reduzida para 30 (CANSADO)`,
-          "🌟 Avatar está renovado e mais forte!"
+          "🌟 Avatar está renovado!"
         ]
       },
       lore: {
