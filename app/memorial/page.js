@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import AvatarSVG from '../components/AvatarSVG';
+import VelaMemorial from '../avatares/components/VelaMemorial';
 import GameNav, { COMMON_ACTIONS } from '../components/GameNav';
 
 // Função para formatar data do audit log
@@ -77,10 +78,10 @@ export default function MemorialPage() {
       try {
         const response = await fetch(`/api/meus-avatares?userId=${parsedUser.id}`);
         const data = await response.json();
-        
+
         if (response.ok) {
-          // Filtrar apenas avatares mortos E com marca da morte
-          const marcados = (data.avatares || []).filter(av => !av.vivo && av.marca_morte);
+          // Filtrar TODOS os avatares mortos (com ou sem marca_morte)
+          const marcados = (data.avatares || []).filter(av => !av.vivo);
           setAvataresMarcados(marcados);
         }
       } catch (error) {
@@ -92,6 +93,40 @@ export default function MemorialPage() {
 
     init();
   }, [router]);
+
+  // Função de renovar vela
+  const renovarVela = async (avatarId) => {
+    if (!user) return;
+
+    try {
+      const response = await fetch('/api/renovar-vela', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          avatarId
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(data.message);
+        // Recarregar avatares para atualizar o estado da vela
+        const responseAvatares = await fetch(`/api/meus-avatares?userId=${user.id}`);
+        const dataAvatares = await responseAvatares.json();
+        if (responseAvatares.ok) {
+          const marcados = (dataAvatares.avatares || []).filter(av => !av.vivo);
+          setAvataresMarcados(marcados);
+        }
+      } else {
+        alert(data.message || 'Erro ao renovar vela');
+      }
+    } catch (error) {
+      console.error('Erro ao renovar vela:', error);
+      alert('Erro ao renovar vela');
+    }
+  };
 
   const voltarParaAvatares = () => {
     router.push("/avatares");
@@ -410,6 +445,15 @@ export default function MemorialPage() {
                           </div>
                         )}
                       </div>
+
+                      {/* Vela Memorial */}
+                      <div className="mt-6 pt-4 border-t border-gray-800/30">
+                        <VelaMemorial
+                          avatar={avatar}
+                          onRenovar={() => renovarVela(avatar.id)}
+                          compacto={false}
+                        />
+                      </div>
                     </div>
 
                     {/* Base da lápide */}
@@ -418,11 +462,6 @@ export default function MemorialPage() {
                 </div>
               ))}
             </div>
-          )}
-
-          {/* Modal de Detalhes */}
-          {avatarSelecionado && (
-            <div></div>
           )}
         </div>
       </div>
