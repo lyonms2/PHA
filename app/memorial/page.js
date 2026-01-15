@@ -63,6 +63,7 @@ export default function MemorialPage() {
   const [loading, setLoading] = useState(true);
   const [avatarSelecionado, setAvatarSelecionado] = useState(null);
   const [filtroAtivo, setFiltroAtivo] = useState('todos'); // 'todos', 'ressurreicao', 'sacrificio', 'fusao', 'combate'
+  const [modalVela, setModalVela] = useState(null); // { tipo: 'sucesso' | 'erro', mensagem: string }
 
   useEffect(() => {
     const init = async () => {
@@ -111,7 +112,7 @@ export default function MemorialPage() {
       const data = await response.json();
 
       if (response.ok) {
-        alert(data.message);
+        setModalVela({ tipo: 'sucesso', mensagem: data.message });
         // Recarregar avatares para atualizar o estado da vela
         const responseAvatares = await fetch(`/api/meus-avatares?userId=${user.id}`);
         const dataAvatares = await responseAvatares.json();
@@ -120,11 +121,11 @@ export default function MemorialPage() {
           setAvataresMarcados(marcados);
         }
       } else {
-        alert(data.message || 'Erro ao renovar vela');
+        setModalVela({ tipo: 'erro', mensagem: data.message || 'Erro ao renovar vela' });
       }
     } catch (error) {
       console.error('Erro ao renovar vela:', error);
-      alert('Erro ao renovar vela');
+      setModalVela({ tipo: 'erro', mensagem: 'Erro ao renovar vela' });
     }
   };
 
@@ -469,6 +470,75 @@ export default function MemorialPage() {
       {/* Chão do cemitério */}
       <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-black via-gray-950/50 to-transparent pointer-events-none"></div>
 
+      {/* Modal de Vela */}
+      {modalVela && (
+        <div
+          className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => setModalVela(null)}
+        >
+          <div
+            className="relative bg-gradient-to-b from-gray-900/95 to-black/95 backdrop-blur-xl border-2 rounded-2xl overflow-hidden max-w-md w-full shadow-2xl animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Brilho de fundo */}
+            <div className={`absolute inset-0 opacity-10 ${
+              modalVela.tipo === 'sucesso' ? 'bg-green-500' : 'bg-red-500'
+            } blur-3xl`}></div>
+
+            {/* Topo decorativo */}
+            <div className={`relative h-2 ${
+              modalVela.tipo === 'sucesso'
+                ? 'bg-gradient-to-r from-green-800 via-green-600 to-green-800'
+                : 'bg-gradient-to-r from-red-800 via-red-600 to-red-800'
+            }`}></div>
+
+            {/* Conteúdo */}
+            <div className="relative p-8">
+              {/* Ícone */}
+              <div className="flex justify-center mb-6">
+                <div className={`relative w-24 h-24 rounded-full flex items-center justify-center ${
+                  modalVela.tipo === 'sucesso'
+                    ? 'bg-green-900/30 border-2 border-green-500/50'
+                    : 'bg-red-900/30 border-2 border-red-500/50'
+                } animate-pulse-slow`}>
+                  <div className="absolute inset-0 rounded-full animate-ping opacity-20 bg-current"></div>
+                  <span className="text-6xl relative z-10">
+                    {modalVela.tipo === 'sucesso' ? '🕯️' : '⚠️'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Mensagem */}
+              <div className="text-center mb-8">
+                <h3 className={`text-2xl font-bold mb-3 ${
+                  modalVela.tipo === 'sucesso' ? 'text-green-400' : 'text-red-400'
+                }`}>
+                  {modalVela.tipo === 'sucesso' ? 'Vela Renovada!' : 'Erro'}
+                </h3>
+                <p className="text-gray-300 text-base leading-relaxed font-mono">
+                  {modalVela.mensagem}
+                </p>
+              </div>
+
+              {/* Botão */}
+              <button
+                onClick={() => setModalVela(null)}
+                className={`w-full py-4 rounded-lg font-bold text-lg transition-all duration-300 ${
+                  modalVela.tipo === 'sucesso'
+                    ? 'bg-green-900/50 hover:bg-green-800/50 border-2 border-green-500/50 text-green-300 hover:border-green-400'
+                    : 'bg-red-900/50 hover:bg-red-800/50 border-2 border-red-500/50 text-red-300 hover:border-red-400'
+                } shadow-lg hover:shadow-xl transform hover:scale-105`}
+              >
+                Fechar
+              </button>
+            </div>
+
+            {/* Decoração inferior */}
+            <div className="h-1 bg-gradient-to-r from-transparent via-gray-700 to-transparent"></div>
+          </div>
+        </div>
+      )}
+
       <style jsx>{`
         @keyframes float-slow {
           0%, 100% {
@@ -539,6 +609,21 @@ export default function MemorialPage() {
           to {
             opacity: 1;
           }
+        }
+
+        @keyframes scale-in {
+          from {
+            opacity: 0;
+            transform: scale(0.9);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        .animate-scale-in {
+          animation: scale-in 0.3s ease-out;
         }
 
         .animate-float-slow {
