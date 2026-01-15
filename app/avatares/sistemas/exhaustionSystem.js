@@ -43,6 +43,116 @@ export const CONFIG_EXAUSTAO = {
 };
 
 /**
+ * Configurações do sistema de Memorial (Vela)
+ * Sistema que impede exclusão permanente de avatares mortos
+ * NOTA: Lógica real implementada em /app/api/meus-avatares/route.js
+ */
+export const CONFIG_VELA = {
+  // Tempo que a vela fica ativa após renovação
+  DURACAO_VELA: 7 * 24 * 60 * 60 * 1000, // 7 dias em milissegundos
+
+  // Janela crítica após vela apagar (prazo para renovar)
+  JANELA_EXCLUSAO: 24 * 60 * 60 * 1000, // 24 horas em milissegundos
+
+  // Estados da vela
+  ESTADOS: {
+    ATIVA: 'ativa',           // Vela acesa, tudo ok (< 7 dias)
+    CRITICA: 'critica',       // Período crítico de 24h (entre 7-8 dias)
+    APAGADA: 'apagada',       // Avatar será deletado (> 8 dias)
+    PRIMEIRA_VEZ: 'primeira_vez' // Acabou de morrer, precisa acender primeira vez
+  }
+};
+
+/**
+ * Calcula o estado atual da vela de um avatar morto
+ * @param {Object} avatar - Avatar morto
+ * @returns {Object} { estado, tempoRestante, percentualRestante, podeRenovar }
+ */
+export function calcularEstadoVela(avatar) {
+  if (avatar.vivo) {
+    return {
+      estado: null,
+      tempoRestante: 0,
+      percentualRestante: 100,
+      podeRenovar: false,
+      mensagem: 'Avatar está vivo'
+    };
+  }
+
+  const agora = new Date().getTime();
+
+  // Se nunca renovou, está em estado de primeira vez
+  if (!avatar.vela_ultima_renovacao) {
+    return {
+      estado: CONFIG_VELA.ESTADOS.PRIMEIRA_VEZ,
+      tempoRestante: 0,
+      percentualRestante: 0,
+      podeRenovar: true,
+      mensagem: 'Acenda a vela memorial para preservar este avatar'
+    };
+  }
+
+  // Converter timestamp do Firestore para milissegundos
+  let ultimaRenovacao;
+  if (avatar.vela_ultima_renovacao.toDate) {
+    ultimaRenovacao = avatar.vela_ultima_renovacao.toDate().getTime();
+  } else if (avatar.vela_ultima_renovacao.seconds) {
+    ultimaRenovacao = avatar.vela_ultima_renovacao.seconds * 1000;
+  } else if (typeof avatar.vela_ultima_renovacao === 'string') {
+    ultimaRenovacao = new Date(avatar.vela_ultima_renovacao).getTime();
+  } else {
+    ultimaRenovacao = avatar.vela_ultima_renovacao;
+  }
+
+  const tempoDesdeRenovacao = agora - ultimaRenovacao;
+  const proximaRenovacao = ultimaRenovacao + CONFIG_VELA.DURACAO_VELA;
+  const limiteExclusao = proximaRenovacao + CONFIG_VELA.JANELA_EXCLUSAO;
+  const tempoRestante = limiteExclusao - agora;
+
+  // Avatar será deletado
+  if (tempoRestante <= 0) {
+    return {
+      estado: CONFIG_VELA.ESTADOS.APAGADA,
+      tempoRestante: 0,
+      percentualRestante: 0,
+      podeRenovar: false,
+      mensagem: '💀 Vela apagada - Avatar será deletado',
+      deveExcluir: true
+    };
+  }
+
+  // Período crítico (últimas 24h)
+  if (tempoDesdeRenovacao >= CONFIG_VELA.DURACAO_VELA) {
+    const percentual = (tempoRestante / CONFIG_VELA.JANELA_EXCLUSAO) * 100;
+    return {
+      estado: CONFIG_VELA.ESTADOS.CRITICA,
+      tempoRestante,
+      percentualRestante: percentual,
+      podeRenovar: true,
+      mensagem: '🚨 URGENTE: Renove a vela nas próximas 24h!',
+      dias: 0,
+      horas: Math.floor(tempoRestante / (1000 * 60 * 60)),
+      minutos: Math.floor((tempoRestante % (1000 * 60 * 60)) / (1000 * 60))
+    };
+  }
+
+  // Vela ainda está ativa
+  const tempoAteProximaRenovacao = proximaRenovacao - agora;
+  const percentual = (tempoAteProximaRenovacao / CONFIG_VELA.DURACAO_VELA) * 100;
+
+  return {
+    estado: CONFIG_VELA.ESTADOS.ATIVA,
+    tempoRestante: tempoAteProximaRenovacao,
+    percentualRestante: percentual,
+    podeRenovar: false,
+    mensagem: '🕯️ Vela acesa',
+    dias: Math.floor(tempoAteProximaRenovacao / (1000 * 60 * 60 * 24)),
+    horas: Math.floor((tempoAteProximaRenovacao % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+    minutos: Math.floor((tempoAteProximaRenovacao % (1000 * 60 * 60)) / (1000 * 60))
+  };
+}
+
+/**
  * Níveis de exaustão e seus efeitos
  */
 export const NIVEIS_EXAUSTAO = {
@@ -324,9 +434,11 @@ export const TABELA_EXAUSTAO = `
 // Exportação default
 export default {
   CONFIG_EXAUSTAO,
+  CONFIG_VELA,
   NIVEIS_EXAUSTAO,
   FONTES_EXAUSTAO,
   getNivelExaustao,
   aplicarPenalidadesExaustao,
+  calcularEstadoVela,
   TABELA_EXAUSTAO
 };

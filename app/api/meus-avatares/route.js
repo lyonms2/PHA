@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDocuments, getDocument, updateDocument, deleteDocument } from "@/lib/firebase/firestore";
 import { validateRequest, validateAvatarOwnership, validateAvatarIsAlive } from '@/lib/api/middleware';
+import { calcularEstadoVela, CONFIG_VELA } from '@/app/avatares/sistemas/exhaustionSystem';
 
 export const dynamic = 'force-dynamic';
 
@@ -143,6 +144,31 @@ export async function GET(request) {
           avatarAtualizado.updated_at = agora.toISOString();
         } catch (err) {
           console.error(`Erro ao atualizar exaustão:`, err);
+        }
+      }
+
+      // ===== VERIFICAÇÃO E EXCLUSÃO AUTOMÁTICA DE VELAS APAGADAS =====
+      if (!avatarAtualizado.vivo) {
+        console.log(`\n🕯️ [VELA] Verificando vela memorial de ${avatarAtualizado.nome}`);
+
+        const estadoVela = calcularEstadoVela(avatarAtualizado);
+        console.log(`   Estado: ${estadoVela.estado}`);
+        console.log(`   Mensagem: ${estadoVela.mensagem}`);
+
+        // Se a vela apagou e passou das 24h, deletar avatar permanentemente
+        if (estadoVela.deveExcluir) {
+          console.log(`💀 [VELA] EXCLUSÃO PERMANENTE: ${avatarAtualizado.nome} (vela apagou há mais de 24h)`);
+
+          try {
+            await deleteDocument('avatares', avatarAtualizado.id);
+            console.log(`   ✅ Avatar deletado permanentemente do banco`);
+
+            // NÃO adiciona ao array (avatar foi excluído)
+            continue;
+          } catch (err) {
+            console.error(`   ❌ Erro ao deletar avatar:`, err);
+            // Se falhar a exclusão, ainda adiciona ao array (segurança)
+          }
         }
       }
 

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import AvatarSVG from '../components/AvatarSVG';
 import AvatarDetalhes from "./components/AvatarDetalhes";
 import ModalColecoes from "./components/ModalColecoes";
+import VelaMemorial from "./components/VelaMemorial";
 import GameNav, { COMMON_ACTIONS } from '../components/GameNav';
 import { calcularPoderTotal } from '@/lib/gameLogic';
 import {
@@ -145,6 +146,35 @@ export default function AvatarsPage() {
         return [...prev, avatar];
       }
     });
+  };
+
+  // Função de renovar vela
+  const renovarVela = async (avatarId) => {
+    if (!user) return;
+
+    try {
+      const response = await fetch('/api/renovar-vela', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          avatarId
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(data.message);
+        // Recarregar avatares para atualizar o estado da vela
+        await carregarAvatares(user.id);
+      } else {
+        alert(data.message || 'Erro ao renovar vela');
+      }
+    } catch (error) {
+      console.error('Erro ao renovar vela:', error);
+      alert('Erro ao renovar vela');
+    }
   };
 
   const abrirComparacao = () => {
@@ -473,6 +503,17 @@ export default function AvatarsPage() {
                         </span>
                       )}
                     </div>
+
+                    {/* Vela Memorial - apenas para avatares mortos */}
+                    {!avatar.vivo && (
+                      <div className="mb-2">
+                        <VelaMemorial
+                          avatar={avatar}
+                          onRenovar={() => renovarVela(avatar.id)}
+                          compacto={true}
+                        />
+                      </div>
+                    )}
 
                     {/* Botões */}
                     <div className="space-y-2">
