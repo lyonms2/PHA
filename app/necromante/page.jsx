@@ -47,8 +47,28 @@ export default function NecromantePage() {
         const avatarData = await avatarResponse.json();
         
         if (avatarResponse.ok) {
-          // Filtrar apenas avatares mortos SEM marca da morte
-          const mortos = (avatarData.avatares || []).filter(av => !av.vivo && !av.marca_morte);
+          // Filtrar avatares mortos que PODEM ser ressuscitados:
+          // 1. Sem marca_morte (mortos em combate normal)
+          // 2. Com marca_morte de sacrifício ou fusão (podem ser ressuscitados 1x)
+          // 3. NÃO mostrar com marca_morte de ressurreição (já foram ressuscitados antes)
+          const mortos = (avatarData.avatares || []).filter(av => {
+            if (av.vivo) return false; // Não está morto
+
+            if (!av.marca_morte) return true; // Morto em combate normal - PODE ressuscitar
+
+            // Tem marca_morte - verificar causa
+            const causa = av.marca_morte_causa;
+
+            // Sacrificados e fundidos PODEM ser ressuscitados
+            if (causa === 'sacrificio' || causa === 'fusao') return true;
+
+            // Já foi ressuscitado antes - NÃO PODE ressuscitar novamente
+            if (causa === 'ressurreicao') return false;
+
+            // Outras causas (se existirem) - permite por padrão
+            return true;
+          });
+
           setAvataresMortos(mortos);
         }
       } catch (error) {
