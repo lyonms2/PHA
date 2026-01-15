@@ -3,6 +3,7 @@ import AvatarSVG from '../../components/AvatarSVG';
 import { aplicarPenalidadesExaustao, getNivelExaustao } from '../sistemas/exhaustionSystem';
 import { calcularXPNecessario } from '../sistemas/progressionSystem';
 import { calcularPoderTotal } from '@/lib/gameLogic';
+import VelaMemorial from './VelaMemorial';
 
 const getInfoExaustao = (exaustao) => {
   if (exaustao >= 100) {
@@ -90,7 +91,8 @@ export default function AvatarDetalhes({
   getCorElemento,
   getEmojiElemento,
   userId,
-  onRename
+  onRename,
+  onRenovarVela
 }) {
   const [editandoNome, setEditandoNome] = useState(false);
   const [novoNome, setNovoNome] = useState(avatar?.nome || '');
@@ -428,6 +430,18 @@ export default function AvatarDetalhes({
                         )}
                       </div>
                     </div>
+
+                    {/* Vela Memorial - apenas para avatares mortos */}
+                    {!avatar.vivo && (
+                      <div>
+                        <h4 className="text-cyan-400 font-bold text-xs uppercase tracking-wider mb-3">Memorial</h4>
+                        <VelaMemorial
+                          avatar={avatar}
+                          onRenovar={() => onRenovarVela && onRenovarVela(avatar.id)}
+                          compacto={false}
+                        />
+                      </div>
+                    )}
 
                     {/* Origem (Criador e Data) */}
                     <div>

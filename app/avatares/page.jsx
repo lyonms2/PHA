@@ -608,6 +608,7 @@ export default function AvatarsPage() {
             });
             setTimeout(() => setModalConfirmacao(null), 3000);
           }}
+          onRenovarVela={renovarVela}
         />
       )}
 
