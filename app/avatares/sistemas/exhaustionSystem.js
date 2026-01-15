@@ -81,14 +81,63 @@ export function calcularEstadoVela(avatar) {
 
   const agora = new Date().getTime();
 
-  // Se nunca renovou, está em estado de primeira vez
+  // Se nunca renovou, usa updated_at como momento da morte
+  // Simula que entrou direto no período crítico de 24h
   if (!avatar.vela_ultima_renovacao) {
+    // Pegar data de referência (updated_at ou created_at)
+    let dataMorte;
+    if (avatar.updated_at) {
+      if (avatar.updated_at.toDate) {
+        dataMorte = avatar.updated_at.toDate().getTime();
+      } else if (avatar.updated_at.seconds) {
+        dataMorte = avatar.updated_at.seconds * 1000;
+      } else if (typeof avatar.updated_at === 'string') {
+        dataMorte = new Date(avatar.updated_at).getTime();
+      } else {
+        dataMorte = avatar.updated_at;
+      }
+    } else if (avatar.created_at) {
+      if (avatar.created_at.toDate) {
+        dataMorte = avatar.created_at.toDate().getTime();
+      } else if (avatar.created_at.seconds) {
+        dataMorte = avatar.created_at.seconds * 1000;
+      } else if (typeof avatar.created_at === 'string') {
+        dataMorte = new Date(avatar.created_at).getTime();
+      } else {
+        dataMorte = avatar.created_at;
+      }
+    } else {
+      dataMorte = agora; // Fallback
+    }
+
+    const tempoPassadoDesdeMorte = agora - dataMorte;
+    const tempoRestanteCritico = CONFIG_VELA.JANELA_EXCLUSAO - tempoPassadoDesdeMorte;
+
+    // Se já passou as 24h, avatar deve ser excluído
+    if (tempoRestanteCritico <= 0) {
+      return {
+        estado: CONFIG_VELA.ESTADOS.APAGADA,
+        tempoRestante: 0,
+        percentualRestante: 0,
+        podeRenovar: false,
+        mensagem: '💀 Vela apagada - Avatar será deletado',
+        deveExcluir: true
+      };
+    }
+
+    const percentual = (tempoRestanteCritico / CONFIG_VELA.JANELA_EXCLUSAO) * 100;
+    const horas = Math.floor(tempoRestanteCritico / (1000 * 60 * 60));
+    const minutos = Math.floor((tempoRestanteCritico % (1000 * 60 * 60)) / (1000 * 60));
+
     return {
-      estado: CONFIG_VELA.ESTADOS.PRIMEIRA_VEZ,
-      tempoRestante: 0,
-      percentualRestante: 0,
+      estado: CONFIG_VELA.ESTADOS.CRITICA,
+      tempoRestante: tempoRestanteCritico,
+      percentualRestante: percentual,
       podeRenovar: true,
-      mensagem: 'Acenda a vela memorial para preservar este avatar'
+      mensagem: '🚨 URGENTE: Renove a vela nas próximas 24h!',
+      dias: 0,
+      horas,
+      minutos
     };
   }
 
