@@ -667,6 +667,33 @@ export default function DashboardPage() {
               </div>
             </button>
 
+            {/* Botão Campeonato de Beleza */}
+            <button
+              onClick={() => router.push("/campeonato-beleza")}
+              className="w-full group relative"
+            >
+              <div className="absolute -inset-1 bg-gradient-to-r from-pink-500/20 via-rose-500/20 to-pink-500/20 rounded-lg blur opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
+
+              <div className="relative bg-slate-950/80 backdrop-blur-xl border border-pink-900/30 rounded-lg p-3 group-hover:border-pink-500/50 transition-all">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-pink-500/20 to-rose-500/20 rounded-lg flex items-center justify-center border border-pink-500/30 group-hover:border-pink-400/50 transition-all">
+                    <span className="text-xl">👑</span>
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="font-bold text-pink-300 text-sm mb-0.5 group-hover:text-pink-200 transition-colors">
+                      CAMPEONATO DE BELEZA
+                    </div>
+                    <div className="text-[10px] text-slate-400 font-mono">
+                      Vote nos avatares mais belos
+                    </div>
+                  </div>
+                  <div className="text-pink-400 group-hover:translate-x-1 group-hover:text-pink-300 transition-all text-lg">
+                    →
+                  </div>
+                </div>
+              </div>
+            </button>
+
             {/* Alerta se não tem avatar ativo */}
             {!loadingAvatares && avatares.length > 0 && !avatarAtivo && (
               <div className="relative group">
@@ -747,21 +774,22 @@ export default function DashboardPage() {
                     </div>
                   )}
 
-                  <div className="flex gap-3">
+                  {/* Botões Mobile-Friendly com Touch Targets */}
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <button
                       onClick={() => setModalEditarNome(false)}
                       disabled={salvandoNome}
-                      className="flex-1 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded transition-colors disabled:opacity-50"
+                      className="flex-1 min-h-[48px] px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded transition-colors disabled:opacity-50 active:scale-[0.98]"
                     >
                       Cancelar
                     </button>
                     <button
                       onClick={salvarNome}
                       disabled={salvandoNome}
-                      className="flex-1 group/btn relative disabled:opacity-50"
+                      className="flex-1 min-h-[48px] group/btn relative disabled:opacity-50"
                     >
                       <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded blur opacity-50 group-hover/btn:opacity-75 transition-all"></div>
-                      <div className="relative px-4 py-3 bg-slate-950 rounded border border-cyan-500/50 transition-all">
+                      <div className="relative px-4 py-3 bg-slate-950 rounded border border-cyan-500/50 transition-all active:scale-[0.98]">
                         <span className="font-bold text-cyan-400">
                           {salvandoNome ? 'Salvando...' : 'Salvar'}
                         </span>
@@ -856,21 +884,22 @@ export default function DashboardPage() {
                     </button>
                   </div>
 
-                  <div className="flex gap-3">
+                  {/* Botões Mobile-Friendly com Touch Targets */}
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <button
                       onClick={() => setModalEscolherFoto(false)}
                       disabled={salvandoFoto}
-                      className="flex-1 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded transition-colors disabled:opacity-50"
+                      className="flex-1 min-h-[48px] px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded transition-colors disabled:opacity-50 active:scale-[0.98]"
                     >
                       Cancelar
                     </button>
                     <button
                       onClick={salvarFoto}
                       disabled={salvandoFoto || !fotoSelecionada}
-                      className="flex-1 group/btn relative disabled:opacity-50"
+                      className="flex-1 min-h-[48px] group/btn relative disabled:opacity-50"
                     >
                       <div className="absolute -inset-0.5 bg-gradient-to-r from-red-500 to-purple-500 rounded blur opacity-50 group-hover/btn:opacity-75 transition-all"></div>
-                      <div className="relative px-4 py-3 bg-slate-950 rounded border border-red-500/50 transition-all">
+                      <div className="relative px-4 py-3 bg-slate-950 rounded border border-red-500/50 transition-all active:scale-[0.98]">
                         <span className="font-bold text-red-400">
                           {salvandoFoto ? 'Salvando...' : 'Confirmar'}
                         </span>
