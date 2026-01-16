@@ -22,6 +22,8 @@ export default function MercadoPage() {
   const [filtroElemento, setFiltroElemento] = useState('Todos');
   const [ordenacao, setOrdenacao] = useState('recente');
   const [filtroPrecoMax, setFiltroPrecoMax] = useState('');
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const AVATARES_POR_PAGINA = 20;
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -183,6 +185,18 @@ export default function MercadoPage() {
     }
   });
 
+  // Paginação
+  const totalPaginas = Math.ceil(avataresFiltrados.length / AVATARES_POR_PAGINA);
+  const indiceInicio = (paginaAtual - 1) * AVATARES_POR_PAGINA;
+  const indiceFim = indiceInicio + AVATARES_POR_PAGINA;
+  const avataresPaginados = avataresFiltrados.slice(indiceInicio, indiceFim);
+
+  // Reset página quando mudar filtros
+  const aplicarFiltro = (setter, valor) => {
+    setter(valor);
+    setPaginaAtual(1);
+  };
+
   if (loading && !stats) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex items-center justify-center">
@@ -246,7 +260,7 @@ export default function MercadoPage() {
             {/* Raridade */}
             <select
               value={filtroRaridade}
-              onChange={(e) => setFiltroRaridade(e.target.value)}
+              onChange={(e) => aplicarFiltro(setFiltroRaridade, e.target.value)}
               className="px-3 py-2 bg-slate-800 border border-slate-700 rounded text-sm text-white focus:border-amber-500 focus:outline-none"
             >
               <option value="Todos">Todas Raridades</option>
@@ -258,7 +272,7 @@ export default function MercadoPage() {
             {/* Elemento */}
             <select
               value={filtroElemento}
-              onChange={(e) => setFiltroElemento(e.target.value)}
+              onChange={(e) => aplicarFiltro(setFiltroElemento, e.target.value)}
               className="px-3 py-2 bg-slate-800 border border-slate-700 rounded text-sm text-white focus:border-amber-500 focus:outline-none"
             >
               <option value="Todos">Todos Elementos</option>
@@ -285,7 +299,7 @@ export default function MercadoPage() {
             {/* Ordenação */}
             <select
               value={ordenacao}
-              onChange={(e) => setOrdenacao(e.target.value)}
+              onChange={(e) => aplicarFiltro(setOrdenacao, e.target.value)}
               className="px-3 py-2 bg-slate-800 border border-slate-700 rounded text-sm text-white focus:border-amber-500 focus:outline-none"
             >
               <option value="recente">Mais Recentes</option>
@@ -303,6 +317,7 @@ export default function MercadoPage() {
                 setFiltroElemento('Todos');
                 setOrdenacao('recente');
                 setFiltroPrecoMax('');
+                setPaginaAtual(1);
               }}
               className="px-3 py-2 bg-red-900/30 hover:bg-red-800/40 border border-red-500/30 rounded text-sm font-semibold text-red-400 transition-all"
             >
@@ -311,7 +326,9 @@ export default function MercadoPage() {
           </div>
 
           <div className="mt-3 text-xs text-slate-500 font-mono">
-            {loading ? 'Carregando...' : `Mostrando ${avataresFiltrados.length} de ${avatares.length} avatares`}
+            {loading ? 'Carregando...' : avataresFiltrados.length > 0
+              ? `Mostrando ${indiceInicio + 1}-${Math.min(indiceFim, avataresFiltrados.length)} de ${avataresFiltrados.length} avatares filtrados (${avatares.length} total)`
+              : `Nenhum avatar encontrado`}
           </div>
         </div>
 
@@ -330,7 +347,7 @@ export default function MercadoPage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
-            {avataresFiltrados.map((avatar) => (
+            {avataresPaginados.map((avatar) => (
               <div
                 key={avatar.id}
                 className="group relative"
@@ -424,6 +441,59 @@ export default function MercadoPage() {
               </div>
             ))}
           </div>
+
+          {/* Controles de Paginação */}
+          {!loading && totalPaginas > 1 && (
+            <div className="mt-8 flex justify-center items-center gap-3">
+              <button
+                onClick={() => setPaginaAtual(prev => Math.max(1, prev - 1))}
+                disabled={paginaAtual === 1}
+                className="px-4 py-2 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-400 hover:text-amber-400 hover:border-amber-500/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-slate-400 disabled:hover:border-slate-700"
+              >
+                ← Anterior
+              </button>
+
+              <div className="flex gap-2">
+                {[...Array(totalPaginas)].map((_, idx) => {
+                  const numeroPagina = idx + 1;
+                  // Mostrar apenas páginas próximas (5 botões no máximo)
+                  if (
+                    numeroPagina === 1 ||
+                    numeroPagina === totalPaginas ||
+                    (numeroPagina >= paginaAtual - 1 && numeroPagina <= paginaAtual + 1)
+                  ) {
+                    return (
+                      <button
+                        key={numeroPagina}
+                        onClick={() => setPaginaAtual(numeroPagina)}
+                        className={`w-10 h-10 rounded-lg border-2 font-mono text-sm font-bold transition-all ${
+                          paginaAtual === numeroPagina
+                            ? 'border-amber-500 bg-amber-900/80 text-amber-300'
+                            : 'border-slate-700 bg-slate-900/50 text-slate-500 hover:border-slate-600 hover:text-slate-400'
+                        }`}
+                      >
+                        {numeroPagina}
+                      </button>
+                    );
+                  } else if (
+                    numeroPagina === paginaAtual - 2 ||
+                    numeroPagina === paginaAtual + 2
+                  ) {
+                    return <span key={numeroPagina} className="text-slate-600 px-1">...</span>;
+                  }
+                  return null;
+                })}
+              </div>
+
+              <button
+                onClick={() => setPaginaAtual(prev => Math.min(totalPaginas, prev + 1))}
+                disabled={paginaAtual === totalPaginas}
+                className="px-4 py-2 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-400 hover:text-amber-400 hover:border-amber-500/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-slate-400 disabled:hover:border-slate-700"
+              >
+                Próxima →
+              </button>
+            </div>
+          )}
         )}
       </div>
 
