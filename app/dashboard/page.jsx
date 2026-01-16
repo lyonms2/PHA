@@ -324,21 +324,40 @@ export default function DashboardPage() {
 
                   {/* Recursos */}
                   <div className="mb-4">
-                    <div className="text-[10px] text-slate-500 uppercase font-mono mb-2 tracking-wider">Recursos Disponíveis</div>
+                    <div className="text-[10px] text-slate-500 uppercase font-mono mb-3 tracking-wider">Recursos Disponíveis</div>
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-gradient-to-br from-amber-950/20 to-amber-900/10 rounded-lg p-3 border border-amber-500/30">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-2xl">💰</span>
-                          <div className="text-[10px] text-amber-500/70 uppercase font-mono tracking-wider">Moedas</div>
+                      {/* Moedas */}
+                      <div className="group/recurso relative">
+                        <div className="absolute -inset-0.5 bg-gradient-to-br from-amber-500/20 to-amber-600/20 rounded-lg blur opacity-0 group-hover/recurso:opacity-100 transition-opacity"></div>
+                        <div className="relative bg-gradient-to-br from-amber-950/30 to-amber-900/20 rounded-lg p-3.5 border border-amber-500/30 group-hover/recurso:border-amber-400/50 transition-all">
+                          <div className="flex flex-col h-full">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-7 h-7 bg-amber-500/20 rounded-md flex items-center justify-center border border-amber-500/40">
+                                <span className="text-lg">💰</span>
+                              </div>
+                              <div className="text-[10px] text-amber-500/80 uppercase font-mono font-bold tracking-wider">Moedas</div>
+                            </div>
+                            <div className="text-2xl font-black text-amber-400 mb-1">{stats?.moedas || 0}</div>
+                            <div className="text-[9px] text-amber-600/60 font-mono leading-tight">Moeda principal do jogo</div>
+                          </div>
                         </div>
-                        <div className="text-xl font-black text-amber-400">{stats?.moedas || 0}</div>
                       </div>
-                      <div className="bg-gradient-to-br from-purple-950/20 to-purple-900/10 rounded-lg p-3 border border-purple-500/30">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-2xl">💎</span>
-                          <div className="text-[10px] text-purple-500/70 uppercase font-mono tracking-wider">Fragmentos</div>
+
+                      {/* Fragmentos */}
+                      <div className="group/recurso relative">
+                        <div className="absolute -inset-0.5 bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-lg blur opacity-0 group-hover/recurso:opacity-100 transition-opacity"></div>
+                        <div className="relative bg-gradient-to-br from-purple-950/30 to-purple-900/20 rounded-lg p-3.5 border border-purple-500/30 group-hover/recurso:border-purple-400/50 transition-all">
+                          <div className="flex flex-col h-full">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-7 h-7 bg-purple-500/20 rounded-md flex items-center justify-center border border-purple-500/40">
+                                <span className="text-lg">💎</span>
+                              </div>
+                              <div className="text-[10px] text-purple-500/80 uppercase font-mono font-bold tracking-wider">Fragmentos</div>
+                            </div>
+                            <div className="text-2xl font-black text-purple-400 mb-1">{stats?.fragmentos || 0}</div>
+                            <div className="text-[9px] text-purple-600/60 font-mono leading-tight">Moeda premium rara</div>
+                          </div>
                         </div>
-                        <div className="text-xl font-black text-purple-400">{stats?.fragmentos || 0}</div>
                       </div>
                     </div>
                   </div>
