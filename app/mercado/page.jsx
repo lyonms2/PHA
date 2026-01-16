@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import AvatarSVG from '../components/AvatarSVG';
 import GameNav, { COMMON_ACTIONS } from '../components/GameNav';
 import { calcularPoderTotal } from '@/lib/gameLogic';
+import Pagination from '../components/Pagination';
 
 export default function MercadoPage() {
   const router = useRouter();
@@ -442,58 +443,12 @@ export default function MercadoPage() {
             ))}
           </div>
 
-          {/* Controles de Paginação */}
-          {!loading && totalPaginas > 1 && (
-            <div className="mt-8 flex justify-center items-center gap-3">
-              <button
-                onClick={() => setPaginaAtual(prev => Math.max(1, prev - 1))}
-                disabled={paginaAtual === 1}
-                className="px-4 py-2 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-400 hover:text-amber-400 hover:border-amber-500/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-slate-400 disabled:hover:border-slate-700"
-              >
-                ← Anterior
-              </button>
-
-              <div className="flex gap-2">
-                {[...Array(totalPaginas)].map((_, idx) => {
-                  const numeroPagina = idx + 1;
-                  // Mostrar apenas páginas próximas (5 botões no máximo)
-                  if (
-                    numeroPagina === 1 ||
-                    numeroPagina === totalPaginas ||
-                    (numeroPagina >= paginaAtual - 1 && numeroPagina <= paginaAtual + 1)
-                  ) {
-                    return (
-                      <button
-                        key={numeroPagina}
-                        onClick={() => setPaginaAtual(numeroPagina)}
-                        className={`w-10 h-10 rounded-lg border-2 font-mono text-sm font-bold transition-all ${
-                          paginaAtual === numeroPagina
-                            ? 'border-amber-500 bg-amber-900/80 text-amber-300'
-                            : 'border-slate-700 bg-slate-900/50 text-slate-500 hover:border-slate-600 hover:text-slate-400'
-                        }`}
-                      >
-                        {numeroPagina}
-                      </button>
-                    );
-                  } else if (
-                    numeroPagina === paginaAtual - 2 ||
-                    numeroPagina === paginaAtual + 2
-                  ) {
-                    return <span key={numeroPagina} className="text-slate-600 px-1">...</span>;
-                  }
-                  return null;
-                })}
-              </div>
-
-              <button
-                onClick={() => setPaginaAtual(prev => Math.min(totalPaginas, prev + 1))}
-                disabled={paginaAtual === totalPaginas}
-                className="px-4 py-2 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-400 hover:text-amber-400 hover:border-amber-500/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-slate-400 disabled:hover:border-slate-700"
-              >
-                Próxima →
-              </button>
-            </div>
-          )}
+          <Pagination
+            paginaAtual={paginaAtual}
+            totalPaginas={totalPaginas}
+            onMudarPagina={setPaginaAtual}
+            corTema="amber"
+          />
         )}
       </div>
 
