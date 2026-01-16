@@ -43,7 +43,7 @@ export async function GET(request) {
     let meuVoto = null;
     try {
       const statsDoc = await getDocument('stats', userId);
-      if (statsDoc.voto_beleza) {
+      if (statsDoc && statsDoc.voto_beleza) {
         const votoData = statsDoc.voto_beleza;
         // Verificar se o voto é do mês atual
         const dataVoto = new Date(votoData.votadoEm);
@@ -111,7 +111,7 @@ export async function POST(request) {
 
     // Verificar se já votou este mês
     const stats = await getDocument('stats', userId);
-    if (stats.voto_beleza) {
+    if (stats && stats.voto_beleza) {
       const dataVoto = new Date(stats.voto_beleza.votadoEm);
       const agora = new Date();
       if (dataVoto.getMonth() === agora.getMonth() && dataVoto.getFullYear() === agora.getFullYear()) {
