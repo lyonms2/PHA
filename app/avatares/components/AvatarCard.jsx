@@ -2,6 +2,7 @@ import AvatarSVG from '../../components/AvatarSVG';
 import { aplicarPenalidadesExaustao, getNivelExaustao } from '../sistemas/exhaustionSystem';
 import { calcularPoderTotal } from '@/lib/gameLogic';
 import { calcularXPNecessario } from '../sistemas/progressionSystem';
+import VelaMemorial from './VelaMemorial';
 
 const getInfoExaustao = (exaustao) => {
   if (exaustao >= 100) {
@@ -38,6 +39,7 @@ export default function AvatarCard({
   avatar,
   onClickDetalhes,
   onClickAtivar,
+  onRenovarVela,
   ativando,
   getCorRaridade,
   getCorBorda,
@@ -100,6 +102,17 @@ export default function AvatarCard({
               {getEmojiElemento(avatar.elemento)} {avatar.elemento}
             </span>
           </div>
+
+          {/* Vela Memorial - apenas para avatares mortos */}
+          {!avatar.vivo && (
+            <div className="mb-3">
+              <VelaMemorial
+                avatar={avatar}
+                onRenovar={() => onRenovarVela(avatar.id)}
+                compacto={true}
+              />
+            </div>
+          )}
 
           {/* Stats resumidos */}
           <div className="grid grid-cols-4 gap-1 mb-3">

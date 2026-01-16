@@ -15,12 +15,17 @@ export const dynamic = 'force-dynamic';
  *
  * Sistema de Ressurreição Balanceado
  *
+ * Regras:
+ * - Avatares sacrificados ou fundidos PODEM ser ressuscitados (1x)
+ * - Avatares já ressuscitados NÃO podem ser ressuscitados novamente
+ * - Avatares mortos em combate PODEM ser ressuscitados (1x)
+ *
  * Penalidades:
- * - Stats reduzidos em 30% (não 50%)
- * - Vínculo reduzido em 50% (não zerado)
+ * - Vínculo reduzido em 50%
  * - XP reduzida em 30%
  * - Exaustão aumentada para 60 (Exausto)
  * - Marca da Morte permanente (não pode ser ressuscitado novamente)
+ * - Stats mantidos (sem redução)
  */
 export async function POST(request) {
   console.log("=== INICIANDO RITUAL DE RESSURREIÇÃO ===");
@@ -50,17 +55,26 @@ export async function POST(request) {
 
     console.log("✅ Avatar encontrado:", avatar.nome);
 
-    // Validar que não tem marca da morte
-    const markCheck = validateNoDeathMark(avatar);
-    if (!markCheck.valid) {
-      console.log("⚠️ Avatar já possui Marca da Morte");
-      return NextResponse.json(
-        {
-          message: "Este avatar já foi ressuscitado uma vez e carrega a Marca da Morte. Não pode ser ressuscitado novamente.",
-          aviso: "A morte é permanente para aqueles marcados pelo Necromante."
-        },
-        { status: 400 }
-      );
+    // Validar marca da morte: Permite ressuscitar sacrificados, mas não ressuscitados anteriormente
+    if (avatar.marca_morte) {
+      const causa = avatar.marca_morte_causa;
+
+      // Se foi ressuscitado antes, não pode ressuscitar de novo
+      if (causa === 'ressurreicao') {
+        console.log("⚠️ Avatar já foi ressuscitado anteriormente");
+        return NextResponse.json(
+          {
+            message: "Este avatar já foi ressuscitado uma vez e carrega a Marca da Morte. Não pode ser ressuscitado novamente.",
+            aviso: "A morte é permanente para aqueles marcados pelo Necromante."
+          },
+          { status: 400 }
+        );
+      }
+
+      // Se foi sacrificado ou fundido, PODE ressuscitar (mas receberá marca de ressurreição)
+      if (causa === 'sacrificio' || causa === 'fusao') {
+        console.log(`✅ Avatar ${causa === 'sacrificio' ? 'sacrificado' : 'fundido'} - pode ser ressuscitado`);
+      }
     }
 
     // 2. Calcular custo baseado na raridade
@@ -97,34 +111,15 @@ export async function POST(request) {
     // 4. CALCULAR PENALIDADES BALANCEADAS
     console.log("Calculando penalidades do ritual...");
 
-    // Stats: -30% (mais justo que -50%)
+    // Stats: MANTIDOS (sem redução)
     const statsReduzidos = {
-      forca: Math.floor(avatar.forca * 0.7),
-      agilidade: Math.floor(avatar.agilidade * 0.7),
-      resistencia: Math.floor(avatar.resistencia * 0.7),
-      foco: Math.floor(avatar.foco * 0.7)
+      forca: avatar.forca,
+      agilidade: avatar.agilidade,
+      resistencia: avatar.resistencia,
+      foco: avatar.foco
     };
 
-    // Validar se stats ainda estão dentro dos limites da raridade
-    const validacao = validarStats(statsReduzidos, avatar.raridade);
-    if (!validacao.valido) {
-      console.log("⚠️ Stats fora dos limites, ajustando...");
-      // Se ficaram abaixo do mínimo, ajustar para o mínimo da raridade
-      const RANGES = {
-        'Comum': { min: 5 },
-        'Raro': { min: 10 },
-        'Lendário': { min: 16 }
-      };
-      const minimo = RANGES[avatar.raridade].min;
-
-      Object.keys(statsReduzidos).forEach(stat => {
-        if (statsReduzidos[stat] < minimo) {
-          statsReduzidos[stat] = minimo;
-        }
-      });
-    }
-
-    console.log("Stats após ressurreição:", statsReduzidos);
+    console.log("Stats mantidos (sem penalidade):", statsReduzidos);
 
     // Vínculo: -50% (não zera completamente)
     const novoVinculo = Math.floor((avatar.vinculo || 0) * 0.5);
@@ -231,20 +226,26 @@ export async function POST(request) {
 
     // Calcular perdas para mostrar ao jogador
     const perdas = {
-      stats_perdidos: {
-        forca: avatar.forca - statsReduzidos.forca,
-        agilidade: avatar.agilidade - statsReduzidos.agilidade,
-        resistencia: avatar.resistencia - statsReduzidos.resistencia,
-        foco: avatar.foco - statsReduzidos.foco
-      },
       vinculo_perdido: (avatar.vinculo || 0) - novoVinculo,
-      xp_perdida: (avatar.experiencia || 0) - novaXP,
-      porcentagem_reducao: 30
+      xp_perdida: (avatar.experiencia || 0) - novaXP
     };
+
+    // Mensagem especial se foi sacrificado ou fundido
+    const causaAnterior = avatar.marca_morte_causa;
+    let mensagemEspecial = "O ritual foi concluído. Seu avatar retornou do além, mas carrega cicatrizes profundas.";
+    let loreAntes = "A morte havia levado sua essência para o vazio...";
+
+    if (causaAnterior === 'sacrificio') {
+      mensagemEspecial = "O ritual quebrou as correntes do sacrifício. Sua alma foi arrancada do Vazio Dimensional!";
+      loreAntes = "Sacrificado ao Vazio Dimensional, sua essência estava perdida para sempre...";
+    } else if (causaAnterior === 'fusao') {
+      mensagemEspecial = "O ritual separou as almas fundidas. Seu avatar retorna fragmentado, mas livre!";
+      loreAntes = "Fundido com outro ser, sua identidade estava diluída...";
+    }
 
     return Response.json({
       success: true,
-      message: "O ritual foi concluído. Seu avatar retornou do além, mas carrega cicatrizes profundas.",
+      message: mensagemEspecial,
       avatar: avatarRessuscitado,
       stats: statsAtualizados,
       custoUtilizado: custo,
@@ -253,7 +254,6 @@ export async function POST(request) {
         perdas: perdas,
         avisos: [
           "💀 Marca da Morte: Este avatar não pode ser ressuscitado novamente",
-          `📉 Stats reduzidos em 30%`,
           `💔 Vínculo reduzido em 50% (${avatar.vinculo}% → ${novoVinculo}%)`,
           `📖 XP reduzida em 30% (${avatar.experiencia} → ${novaXP})`,
           `😰 Estado: EXAUSTO (60/100 exaustão)`,
@@ -261,7 +261,7 @@ export async function POST(request) {
         ]
       },
       lore: {
-        antes: "A morte havia levado sua essência para o vazio...",
+        antes: loreAntes,
         depois: "Agora retorna, enfraquecido, mas vivo. A Marca da Morte queimará eternamente em sua alma."
       }
     });
