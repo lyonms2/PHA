@@ -347,8 +347,9 @@ export default function MercadoPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
-            {avataresPaginados.map((avatar) => (
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
+              {avataresPaginados.map((avatar) => (
               <div
                 key={avatar.id}
                 className="group relative"
@@ -441,14 +442,15 @@ export default function MercadoPage() {
                 </div>
               </div>
             ))}
-          </div>
+            </div>
 
-          <Pagination
-            paginaAtual={paginaAtual}
-            totalPaginas={totalPaginas}
-            onMudarPagina={setPaginaAtual}
-            corTema="amber"
-          />
+            <Pagination
+              paginaAtual={paginaAtual}
+              totalPaginas={totalPaginas}
+              onMudarPagina={setPaginaAtual}
+              corTema="amber"
+            />
+          </>
         )}
       </div>
 
