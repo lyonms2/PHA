@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getDocuments, getDocument, updateDocument } from "@/lib/firebase/firestore";
+import { getDocuments, getDocument, updateDocument, setDocument } from "@/lib/firebase/firestore";
 
 export const dynamic = 'force-dynamic';
 
@@ -130,10 +130,18 @@ export async function POST(request) {
       votadoEm: agora.toISOString()
     };
 
-    // Atualizar stats do votante
-    await updateDocument('stats', userId, {
-      voto_beleza: voto
-    });
+    // Atualizar stats do votante (criar documento se não existir)
+    if (!stats) {
+      // Se o documento não existe, criar um novo com o voto
+      await setDocument('stats', userId, {
+        voto_beleza: voto
+      });
+    } else {
+      // Se existe, atualizar apenas o campo voto_beleza
+      await updateDocument('stats', userId, {
+        voto_beleza: voto
+      });
+    }
 
     // Incrementar votos recebidos pelo avatar
     await updateDocument('avatares', avatarId, {
