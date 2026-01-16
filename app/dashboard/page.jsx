@@ -431,12 +431,12 @@ export default function DashboardPage() {
                           ARENA DE COMBATE
                         </div>
                         <div className="text-[10px] text-slate-400 font-mono uppercase tracking-wider">
-                          3 Modos Disponíveis
+                          2 Modos Disponíveis
                         </div>
                       </div>
                     </div>
                     <p className="text-xs text-slate-400 leading-relaxed mb-3">
-                      Treinamento contra IA, PvP competitivo e modo Sobrevivência.
+                      Treinamento contra IA e PvP competitivo.
                     </p>
                     <div className="mt-auto pt-3 border-t border-red-500/20">
                       <div className="flex items-center justify-between">
