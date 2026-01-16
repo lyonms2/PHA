@@ -481,10 +481,11 @@ export default function MercadoPage() {
                     </div>
                   </div>
 
-                  {/* Botão Fechar */}
+                  {/* Botão Fechar - Mobile Optimized */}
                   <button
                     onClick={() => setModalDetalhes(null)}
-                    className="absolute top-3 right-3 w-8 h-8 bg-slate-900/80 hover:bg-amber-900/80 rounded-full flex items-center justify-center text-slate-400 hover:text-white transition-all z-20 border border-slate-700/50 hover:border-amber-500/50"
+                    className="absolute top-2 right-2 min-w-[44px] min-h-[44px] w-11 h-11 bg-slate-900/80 hover:bg-amber-900/80 rounded-full flex items-center justify-center text-slate-400 hover:text-white transition-all z-20 border border-slate-700/50 hover:border-amber-500/50 active:scale-95"
+                    aria-label="Fechar"
                   >
                     ✕
                   </button>
@@ -616,7 +617,7 @@ export default function MercadoPage() {
                       </div>
                     </div>
 
-                    {/* Botão Comprar */}
+                    {/* Botão Comprar - Mobile Optimized Touch Target */}
                     <div className="mt-4 md:mt-6">
                       <button
                         onClick={() => {
@@ -627,7 +628,7 @@ export default function MercadoPage() {
                           (modalDetalhes.preco_venda > 0 && stats?.moedas < modalDetalhes.preco_venda) ||
                           (modalDetalhes.preco_fragmentos > 0 && stats?.fragmentos < modalDetalhes.preco_fragmentos)
                         }
-                        className="w-full px-4 py-3 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white font-bold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full min-h-[48px] px-4 py-3 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white font-bold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
                       >
                         {(modalDetalhes.preco_venda > 0 && stats?.moedas < modalDetalhes.preco_venda) ? '💰 Moedas Insuficientes' :
                          (modalDetalhes.preco_fragmentos > 0 && stats?.fragmentos < modalDetalhes.preco_fragmentos) ? '💎 Fragmentos Insuficientes' :
@@ -730,18 +731,19 @@ export default function MercadoPage() {
                     </div>
                   </div>
 
-                  <div className="flex gap-3">
+                  {/* Botões Mobile-Friendly com Touch Targets */}
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <button
                       onClick={() => setModalCompra(null)}
                       disabled={comprando}
-                      className="flex-1 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-lg transition-all disabled:opacity-50"
+                      className="flex-1 min-h-[48px] px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-lg transition-all disabled:opacity-50 active:scale-[0.98]"
                     >
                       Cancelar
                     </button>
                     <button
                       onClick={comprarAvatar}
                       disabled={comprando}
-                      className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white font-bold rounded-lg transition-all disabled:opacity-50"
+                      className="flex-1 min-h-[48px] px-4 py-3 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white font-bold rounded-lg transition-all disabled:opacity-50 active:scale-[0.98]"
                     >
                       {comprando ? 'Comprando...' : 'Confirmar'}
                     </button>

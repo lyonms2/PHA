@@ -304,14 +304,14 @@ export default function CampeonatoBelezaPage() {
                         </div>
                       </div>
 
-                      {/* Botão de Votar */}
+                      {/* Botão de Votar - Mobile Optimized */}
                       {podeVotar ? (
                         <button
                           onClick={() => votar(avatar.id, avatar.raridade)}
-                          className="w-full group/btn relative"
+                          className="w-full min-h-[48px] group/btn relative"
                         >
                           <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-500 to-rose-500 rounded-lg blur opacity-50 group-hover/btn:opacity-75 transition-all"></div>
-                          <div className="relative px-4 py-3 bg-slate-950 rounded-lg border border-pink-500/50 transition-all">
+                          <div className="relative px-4 py-3 bg-slate-950 rounded-lg border border-pink-500/50 transition-all active:scale-[0.98]">
                             <span className="font-bold text-pink-400">👑 VOTAR</span>
                           </div>
                         </button>
@@ -526,9 +526,17 @@ export default function CampeonatoBelezaPage() {
           onClick={() => setModalRegras(false)}
         >
           <div
-            className="max-w-lg w-full bg-slate-950/95 border border-cyan-500/30 rounded-xl overflow-hidden"
+            className="max-w-lg w-full bg-slate-950/95 border border-cyan-500/30 rounded-xl overflow-hidden relative"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Botão Fechar - Mobile Optimized */}
+            <button
+              onClick={() => setModalRegras(false)}
+              className="absolute top-2 right-2 z-10 min-w-[44px] min-h-[44px] w-11 h-11 bg-slate-900/80 hover:bg-cyan-900/80 rounded-full flex items-center justify-center text-slate-400 hover:text-white transition-all border border-slate-700/50 hover:border-cyan-500/50 active:scale-95"
+              aria-label="Fechar"
+            >
+              ✕
+            </button>
             <div className="bg-gradient-to-r from-cyan-900/50 to-blue-900/50 p-4 border-b border-cyan-500/30">
               <h3 className="text-xl font-black text-cyan-300">📜 REGRAS DO CAMPEONATO</h3>
             </div>
@@ -561,7 +569,7 @@ export default function CampeonatoBelezaPage() {
               </ul>
               <button
                 onClick={() => setModalRegras(false)}
-                className="w-full mt-6 px-4 py-3 bg-cyan-900/50 hover:bg-cyan-800/50 border border-cyan-500/50 rounded-lg text-cyan-400 font-bold transition-all"
+                className="w-full min-h-[48px] mt-6 px-4 py-3 bg-cyan-900/50 hover:bg-cyan-800/50 border border-cyan-500/50 rounded-lg text-cyan-400 font-bold transition-all active:scale-[0.98]"
               >
                 Entendi
               </button>
@@ -577,9 +585,17 @@ export default function CampeonatoBelezaPage() {
           onClick={() => setModalPremios(false)}
         >
           <div
-            className="max-w-lg w-full bg-slate-950/95 border border-amber-500/30 rounded-xl overflow-hidden"
+            className="max-w-lg w-full bg-slate-950/95 border border-amber-500/30 rounded-xl overflow-hidden relative"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Botão Fechar - Mobile Optimized */}
+            <button
+              onClick={() => setModalPremios(false)}
+              className="absolute top-2 right-2 z-10 min-w-[44px] min-h-[44px] w-11 h-11 bg-slate-900/80 hover:bg-amber-900/80 rounded-full flex items-center justify-center text-slate-400 hover:text-white transition-all border border-slate-700/50 hover:border-amber-500/50 active:scale-95"
+              aria-label="Fechar"
+            >
+              ✕
+            </button>
             <div className="bg-gradient-to-r from-amber-900/50 to-orange-900/50 p-4 border-b border-amber-500/30">
               <h3 className="text-xl font-black text-amber-300">🏆 PREMIAÇÃO</h3>
             </div>
@@ -627,7 +643,7 @@ export default function CampeonatoBelezaPage() {
               </div>
               <button
                 onClick={() => setModalPremios(false)}
-                className="w-full mt-6 px-4 py-3 bg-amber-900/50 hover:bg-amber-800/50 border border-amber-500/50 rounded-lg text-amber-400 font-bold transition-all"
+                className="w-full min-h-[48px] mt-6 px-4 py-3 bg-amber-900/50 hover:bg-amber-800/50 border border-amber-500/50 rounded-lg text-amber-400 font-bold transition-all active:scale-[0.98]"
               >
                 Fechar
               </button>
