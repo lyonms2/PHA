@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { getCollection, getDocument, updateDocument } from "@/app/firebase/firebaseAdmin";
+import { getDocuments, getDocument, updateDocument } from "@/lib/firebase/firestore";
+
+export const dynamic = 'force-dynamic';
 
 // GET - Carregar avatares concorrentes e status de voto
 export async function GET(request) {
@@ -12,28 +14,27 @@ export async function GET(request) {
     }
 
     // Buscar todos os avatares vivos (concorrentes)
-    const avatarsSnapshot = await getCollection('avatares');
+    const avatarsData = await getDocuments('avatares');
     const avatares = [];
 
-    for (const doc of avatarsSnapshot.docs) {
-      const data = doc.data();
-      if (data.vivo) { // Apenas avatares vivos podem concorrer
+    for (const avatar of avatarsData) {
+      if (avatar.vivo) { // Apenas avatares vivos podem concorrer
         avatares.push({
-          id: doc.id,
-          nome: data.nome,
-          raridade: data.raridade,
-          elemento: data.elemento,
-          cor_primaria: data.cor_primaria,
-          cor_secundaria: data.cor_secundaria,
-          cor_roupa: data.cor_roupa,
-          estilo_roupa: data.estilo_roupa,
-          cor_cabelo: data.cor_cabelo,
-          estilo_cabelo: data.estilo_cabelo,
-          cor_olhos: data.cor_olhos,
-          cor_pele: data.cor_pele,
-          acessorio: data.acessorio,
-          userId: data.userId,
-          votosRecebidos: data.votosRecebidos || 0
+          id: avatar.id,
+          nome: avatar.nome,
+          raridade: avatar.raridade,
+          elemento: avatar.elemento,
+          cor_primaria: avatar.cor_primaria,
+          cor_secundaria: avatar.cor_secundaria,
+          cor_roupa: avatar.cor_roupa,
+          estilo_roupa: avatar.estilo_roupa,
+          cor_cabelo: avatar.cor_cabelo,
+          estilo_cabelo: avatar.estilo_cabelo,
+          cor_olhos: avatar.cor_olhos,
+          cor_pele: avatar.cor_pele,
+          acessorio: avatar.acessorio,
+          userId: avatar.userId,
+          votosRecebidos: avatar.votosRecebidos || 0
         });
       }
     }
