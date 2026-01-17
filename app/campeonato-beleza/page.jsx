@@ -12,7 +12,7 @@ export default function CampeonatoBelezaPage() {
   const [loading, setLoading] = useState(true);
   const [categoriaAtiva, setCategoriaAtiva] = useState('todos'); // 'todos', 'Comum', 'Raro', 'Lendário'
   const [avataresConcorrentes, setAvataresConcorrentes] = useState([]);
-  const [meuVoto, setMeuVoto] = useState(null); // {avatarId, categoria, votadoEm}
+  const [meuVoto, setMeuVoto] = useState({ Comum: null, Raro: null, Lendário: null }); // Votos por categoria
   const [ranking, setRanking] = useState({ Comum: [], Raro: [], Lendário: [] });
   const [modalRegras, setModalRegras] = useState(false);
   const [modalPremios, setModalPremios] = useState(false);
@@ -60,7 +60,7 @@ export default function CampeonatoBelezaPage() {
   }, [router]);
 
   const votar = async (avatarId, categoria) => {
-    if (!user || meuVoto) return;
+    if (!user || meuVoto[categoria]) return;
 
     try {
       const response = await fetch('/api/campeonato-beleza', {
@@ -76,14 +76,15 @@ export default function CampeonatoBelezaPage() {
       const data = await response.json();
 
       if (response.ok) {
-        setMeuVoto(data.voto);
-        // Recarregar dados
+        // Recarregar dados completos
         const reloadResponse = await fetch(`/api/campeonato-beleza?userId=${user.id}`);
         const reloadData = await reloadResponse.json();
         if (reloadResponse.ok) {
           setAvataresConcorrentes(reloadData.avatares || []);
+          setMeuVoto(reloadData.meuVoto);
           setRanking(reloadData.ranking || { Comum: [], Raro: [], Lendário: [] });
         }
+        alert(`✅ Voto registrado na categoria ${categoria}!`);
       } else {
         alert(data.message);
       }
@@ -177,7 +178,7 @@ export default function CampeonatoBelezaPage() {
           </div>
 
           <p className="text-slate-400 max-w-2xl mx-auto text-sm leading-relaxed">
-            Vote no avatar mais bonito de cada categoria. Um voto por mês, escolha com sabedoria!
+            Vote no avatar mais bonito de cada categoria. <strong className="text-pink-400">1 voto por categoria por mês!</strong>
           </p>
 
           {/* Botões de Info */}
@@ -197,23 +198,49 @@ export default function CampeonatoBelezaPage() {
           </div>
         </div>
 
-        {/* Status do Voto */}
-        {meuVoto && (
-          <div className="mb-6 max-w-2xl mx-auto">
-            <div className="bg-green-950/30 border border-green-500/30 rounded-lg p-4">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">✓</span>
-                <div className="flex-1">
-                  <div className="text-sm font-bold text-green-400 mb-1">Você já votou este mês!</div>
-                  <div className="text-xs text-slate-400">
-                    Categoria: <span className="text-green-300">{meuVoto.categoria}</span> •
-                    Votado em: <span className="text-green-300">{new Date(meuVoto.votadoEm).toLocaleDateString('pt-BR')}</span>
-                  </div>
-                </div>
+        {/* Status dos Votos por Categoria */}
+        <div className="mb-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {/* Comum */}
+            <div className={`p-4 rounded-lg border-2 ${meuVoto.Comum ? 'bg-green-950/30 border-green-500/50' : 'bg-slate-900/30 border-slate-700'}`}>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xl">{meuVoto.Comum ? '✅' : '⚪'}</span>
+                <div className="font-bold text-sm text-gray-300">COMUM</div>
               </div>
+              {meuVoto.Comum ? (
+                <div className="text-xs text-green-400">Voto registrado!</div>
+              ) : (
+                <div className="text-xs text-slate-500">Disponível para votar</div>
+              )}
+            </div>
+
+            {/* Raro */}
+            <div className={`p-4 rounded-lg border-2 ${meuVoto.Raro ? 'bg-green-950/30 border-green-500/50' : 'bg-slate-900/30 border-slate-700'}`}>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xl">{meuVoto.Raro ? '✅' : '💜'}</span>
+                <div className="font-bold text-sm text-purple-300">RARO</div>
+              </div>
+              {meuVoto.Raro ? (
+                <div className="text-xs text-green-400">Voto registrado!</div>
+              ) : (
+                <div className="text-xs text-slate-500">Disponível para votar</div>
+              )}
+            </div>
+
+            {/* Lendário */}
+            <div className={`p-4 rounded-lg border-2 ${meuVoto.Lendário ? 'bg-green-950/30 border-green-500/50' : 'bg-slate-900/30 border-slate-700'}`}>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xl">{meuVoto.Lendário ? '✅' : '🟡'}</span>
+                <div className="font-bold text-sm text-amber-300">LENDÁRIO</div>
+              </div>
+              {meuVoto.Lendário ? (
+                <div className="text-xs text-green-400">Voto registrado!</div>
+              ) : (
+                <div className="text-xs text-slate-500">Disponível para votar</div>
+              )}
             </div>
           </div>
-        )}
+        </div>
 
         {/* Filtros de Categoria */}
         <div className="mb-8">
@@ -250,8 +277,9 @@ export default function CampeonatoBelezaPage() {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {avataresPaginados.map((avatar) => {
-              const jaVotou = meuVoto?.avatarId === avatar.id;
-              const podeVotar = !meuVoto && avatar.userId !== user.id;
+              const votoCategoria = meuVoto[avatar.raridade];
+              const jaVotou = votoCategoria?.avatarId === avatar.id;
+              const podeVotar = !votoCategoria && avatar.userId !== user.id;
 
               return (
                 <div
@@ -544,7 +572,7 @@ export default function CampeonatoBelezaPage() {
               <ul className="space-y-3 text-sm text-slate-300">
                 <li className="flex gap-3">
                   <span className="text-cyan-400">•</span>
-                  <span>Cada jogador tem <strong>1 voto por mês</strong></span>
+                  <span>Cada jogador tem <strong>1 voto por categoria por mês</strong> (total de 3 votos)</span>
                 </li>
                 <li className="flex gap-3">
                   <span className="text-cyan-400">•</span>

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getDocuments, getDocument, updateDocument } from "@/lib/firebase/firestore";
+import { getDocuments, getDocument, updateDocument, setDocument } from "@/lib/firebase/firestore";
 
 export const dynamic = 'force-dynamic';
 
@@ -40,17 +40,28 @@ export async function GET(request) {
     }
 
     // Buscar voto do usuário (se existe)
-    let meuVoto = null;
+    let meuVoto = {
+      Comum: null,
+      Raro: null,
+      Lendário: null
+    };
+
     try {
       const statsDoc = await getDocument('stats', userId);
-      if (statsDoc.voto_beleza) {
+      if (statsDoc && statsDoc.voto_beleza) {
         const votoData = statsDoc.voto_beleza;
-        // Verificar se o voto é do mês atual
-        const dataVoto = new Date(votoData.votadoEm);
         const agora = new Date();
-        if (dataVoto.getMonth() === agora.getMonth() && dataVoto.getFullYear() === agora.getFullYear()) {
-          meuVoto = votoData;
-        }
+
+        // Verificar votos de cada categoria
+        ['Comum', 'Raro', 'Lendário'].forEach(categoria => {
+          if (votoData[categoria]) {
+            const dataVoto = new Date(votoData[categoria].votadoEm);
+            // Verificar se o voto é do mês atual
+            if (dataVoto.getMonth() === agora.getMonth() && dataVoto.getFullYear() === agora.getFullYear()) {
+              meuVoto[categoria] = votoData[categoria];
+            }
+          }
+        });
       }
     } catch (err) {
       console.error('Erro ao buscar voto:', err);
@@ -109,14 +120,14 @@ export async function POST(request) {
       return NextResponse.json({ message: "Você não pode votar em seus próprios avatares" }, { status: 400 });
     }
 
-    // Verificar se já votou este mês
+    // Verificar se já votou nesta categoria este mês
     const stats = await getDocument('stats', userId);
-    if (stats.voto_beleza) {
-      const dataVoto = new Date(stats.voto_beleza.votadoEm);
+    if (stats && stats.voto_beleza && stats.voto_beleza[categoria]) {
+      const dataVoto = new Date(stats.voto_beleza[categoria].votadoEm);
       const agora = new Date();
       if (dataVoto.getMonth() === agora.getMonth() && dataVoto.getFullYear() === agora.getFullYear()) {
         return NextResponse.json(
-          { message: "Você já votou este mês. Aguarde o próximo campeonato!" },
+          { message: `Você já votou na categoria ${categoria} este mês!` },
           { status: 400 }
         );
       }
@@ -124,16 +135,31 @@ export async function POST(request) {
 
     // Registrar voto
     const agora = new Date();
-    const voto = {
+    const votoCategoria = {
       avatarId,
-      categoria,
       votadoEm: agora.toISOString()
     };
 
-    // Atualizar stats do votante
-    await updateDocument('stats', userId, {
-      voto_beleza: voto
-    });
+    // Preparar estrutura de votos completa
+    const votosAtualizados = {
+      Comum: stats?.voto_beleza?.Comum || null,
+      Raro: stats?.voto_beleza?.Raro || null,
+      Lendário: stats?.voto_beleza?.Lendário || null,
+      [categoria]: votoCategoria
+    };
+
+    // Atualizar stats do votante (criar documento se não existir)
+    if (!stats) {
+      // Se o documento não existe, criar um novo com o voto
+      await setDocument('stats', userId, {
+        voto_beleza: votosAtualizados
+      });
+    } else {
+      // Se existe, atualizar apenas o campo voto_beleza
+      await updateDocument('stats', userId, {
+        voto_beleza: votosAtualizados
+      });
+    }
 
     // Incrementar votos recebidos pelo avatar
     await updateDocument('avatares', avatarId, {
@@ -144,7 +170,7 @@ export async function POST(request) {
 
     return NextResponse.json({
       message: "Voto registrado com sucesso!",
-      voto
+      voto: votoCategoria
     });
 
   } catch (error) {
