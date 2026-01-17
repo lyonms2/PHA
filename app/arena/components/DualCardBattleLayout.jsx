@@ -446,12 +446,22 @@ export default function DualCardBattleLayout({
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {playerAbilities.map((ability, index) => {
-                    // Usar nome como ID se id não existir
-                    const abilityKey = ability.id || ability.nome || index;
-                    const cooldownValue = playerCooldowns[abilityKey] || playerCooldowns[index] || 0;
+                    // SEMPRE usar nome da habilidade como chave (consistente com backend)
+                    const abilityKey = ability.nome;
+                    const cooldownValue = playerCooldowns[abilityKey] || 0;
                     const isOnCooldown = cooldownValue > 0;
                     const hasEnergy = myEnergy >= ability.custo_energia;
-                    const tooltipText = `${ability.nome}\n${ability.descricao || ''}\n⚡ Custo: ${ability.custo_energia} energia\n🔄 Cooldown: ${ability.cooldown || 0} turnos`;
+
+                    // Debug: Log de cooldowns
+                    console.log('🔍 [COOLDOWN DEBUG]', {
+                      habilidade: ability.nome,
+                      cooldownDefinido: ability.cooldown,
+                      cooldownRestante: cooldownValue,
+                      playerCooldowns,
+                      index
+                    });
+
+                    const tooltipText = `${ability.nome}\n${ability.descricao || ''}\n⚡ Custo: ${ability.custo_energia} energia\n🔄 Cooldown: ${ability.cooldown || 0} turnos\n${isOnCooldown ? `⏱️ Restam: ${cooldownValue} turno(s)` : '✅ Disponível'}`;
 
                     return (
                       <button
