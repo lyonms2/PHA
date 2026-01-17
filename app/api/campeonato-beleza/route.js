@@ -170,7 +170,7 @@ export async function POST(request) {
 
     return NextResponse.json({
       message: "Voto registrado com sucesso!",
-      voto
+      voto: votoCategoria
     });
 
   } catch (error) {
