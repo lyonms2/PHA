@@ -366,6 +366,13 @@ export async function POST(request) {
       };
     } else {
       // ===== PROCESSAR AÇÃO DO PLAYER =====
+      // ===== DECREMENTAR COOLDOWNS NO INÍCIO DO TURNO =====
+      battle.player_cooldowns = decrementarCooldowns(
+        battle.player_cooldowns || {},
+        battle.player.nome,
+        'TREINO'
+      );
+
       // Validar estado antes de processar
       console.log('🎮 [BATALHA] Estado antes de processar ação do jogador:', {
         playerHp: battle.player.hp,
@@ -980,10 +987,7 @@ export async function POST(request) {
       });
     }
 
-    // Decrementar cooldowns do player no início do turno
-    battle.player_cooldowns = decrementarCooldowns(battle.player_cooldowns || {}, battle.player.nome, 'TREINO');
-
-    // Voltar turno para player
+    // Voltar turno para player (cooldowns do player já foram decrementados no início do turno)
     battle.current_turn = 'player';
     await setBattle(battleId, battle);
 
