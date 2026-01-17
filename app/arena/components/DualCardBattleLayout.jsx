@@ -225,9 +225,9 @@ export default function DualCardBattleLayout({
                           <span
                             key={i}
                             className={`text-xs ${ehBuff(effect.tipo) ? 'text-green-400' : 'text-red-400'}`}
-                            title={effect.tipo}
+                            title={`${effect.tipo} (${effect.turnosRestantes || 0} turnos)`}
                           >
-                            {getEfeitoEmoji(effect.tipo)}
+                            {getEfeitoEmoji(effect.tipo)}{effect.turnosRestantes || 0}
                           </span>
                         ))}
                         {effects.length > 3 && (
