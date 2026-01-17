@@ -676,8 +676,14 @@ export default function DashboardPage() {
 
               <div className="relative bg-slate-950/80 backdrop-blur-xl border border-pink-900/30 rounded-lg p-3 group-hover:border-pink-500/50 transition-all">
                 <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-pink-500/20 to-rose-500/20 rounded-lg flex items-center justify-center border border-pink-500/30 group-hover:border-pink-400/50 transition-all">
-                    <span className="text-xl">👑</span>
+                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-pink-500/20 to-rose-500/20 rounded-lg flex items-center justify-center border border-pink-500/30 group-hover:border-pink-400/50 transition-all overflow-hidden">
+                    <Image
+                      src="/personagens/beleza.jpg"
+                      alt="Beleza"
+                      width={40}
+                      height={40}
+                      className="object-cover w-full h-full"
+                    />
                   </div>
                   <div className="flex-1 text-left">
                     <div className="font-bold text-pink-300 text-sm mb-0.5 group-hover:text-pink-200 transition-colors">
