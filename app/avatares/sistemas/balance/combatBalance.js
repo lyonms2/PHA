@@ -35,19 +35,19 @@ export const COMBAT_BALANCE = {
   /**
    * Energia recuperada ao defender
    * Defender = sacrifica 1 turno para recuperar energia para habilidade
-   * 20 energia = suficiente para usar habilidade fraca após defender
+   * 30 energia = suficiente para usar habilidade média após defender
    */
-  ENERGIA_DEFENDER_RECUPERA: 20,
+  ENERGIA_DEFENDER_RECUPERA: 30,
 
   /**
    * Faixas de custo de energia para habilidades
-   * - Fraca (20): Pode usar 5x por batalha
-   * - Média (30): Pode usar 3x por batalha
-   * - Forte (40): Pode usar 2x por batalha
+   * - Fraca (15): Pode usar 6-7x por batalha
+   * - Média (25): Pode usar 4x por batalha
+   * - Forte (35): Pode usar 2-3x por batalha
    */
-  ENERGIA_HABILIDADE_FRACA: 20,
-  ENERGIA_HABILIDADE_MEDIA: 30,
-  ENERGIA_HABILIDADE_FORTE: 40,
+  ENERGIA_HABILIDADE_FRACA: 15,
+  ENERGIA_HABILIDADE_MEDIA: 25,
+  ENERGIA_HABILIDADE_FORTE: 35,
 
 
   // ==================== DANO - ATAQUE BÁSICO ====================
