@@ -27,7 +27,7 @@ export const HABILIDADES_AETHER = {
     stat_primario: 'foco',
     ignora_defesa: 0.75, // ESPECIAL AETHER: Ignora 75% defesa
     efeitos_status: ['limpar_debuffs', 'sobrecarga'], // Remove debuffs + buff temporário
-    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE + 5, // 40 (balanceado)
+    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE, // 35 (supremo dominante)
     cooldown: COOLDOWN_BALANCE.COOLDOWN_DANO_FORTE, // 3 turnos
     nivel_minimo: 1
   }),
@@ -44,7 +44,7 @@ export const HABILIDADES_AETHER = {
     efeitos_status: ['transcendencia'], // +50% todos os stats por 2 turnos
     duracao_efeito: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO, // 3 → 2 turnos ativos
     alvo: 'self',
-    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA, // 25 (balanceado)
+    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA + 5, // 30 (força foco em ataque)
     cooldown: COOLDOWN_BALANCE.COOLDOWN_SUPORTE_ESPECIAL, // 4 turnos
     nivel_minimo: 1
   })
@@ -58,12 +58,12 @@ export const HABILIDADES_AETHER = {
  * 1️⃣ RAIO PRIMORDIAL (Ataque) ⚡ DEVASTADOR
  *    Dano: 10 base + Foco × 4.5 (MULTIPLICADOR_HABILIDADE_FORTE - EXTREMAMENTE FORTE!)
  *    Efeitos: Penetra 75% defesa + Remove TODOS debuffs + Sobrecarga
- *    Energia: 40 (FORTE + 5) | Cooldown: 3 (FORTE)
+ *    Energia: 35 (FORTE - supremo dominante) | Cooldown: 3 (FORTE)
  *
  * 2️⃣ CAMPO DE TRANSCENDÊNCIA (Suporte) 🌟 SUPREMO
  *    Dano: 0 (não ataca)
  *    Efeitos: +50% TODOS stats por 2 turnos (MEGA BUFF!)
- *    Energia: 25 (MEDIA) | Cooldown: 4 (SUPORTE_ESPECIAL)
+ *    Energia: 30 (MEDIA + 5) | Cooldown: 4 (SUPORTE_ESPECIAL)
  *
  * ✅ SISTEMA BALANCEADO CENTRALIZADO
  * ✅ Usa valores de combatBalance, cooldownBalance, effectBalance

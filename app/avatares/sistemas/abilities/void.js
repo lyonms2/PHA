@@ -27,7 +27,7 @@ export const HABILIDADES_VOID = {
     stat_primario: 'foco',
     ignora_defesa: 0.80, // ESPECIAL VOID: Ignora 80% defesa
     efeitos_status: ['anula_buffs'], // Remove buffs do inimigo
-    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE + 10, // 45 (mais caro que normal)
+    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE, // 35 (supremo dominante)
     cooldown: COOLDOWN_BALANCE.COOLDOWN_DANO_FORTE, // 3 turnos
     nivel_minimo: 1
   }),
@@ -58,7 +58,7 @@ export const HABILIDADES_VOID = {
  * 1️⃣ RUPTURA DIMENSIONAL (Ataque) ⚠️ PODEROSO
  *    Dano: 10 base + Foco × 4.5 (MULTIPLICADOR_HABILIDADE_FORTE - MAIS FORTE!)
  *    Efeitos: Ignora 80% defesa + Remove TODOS buffs do inimigo
- *    Energia: 45 (FORTE + 10) | Cooldown: 3 (FORTE)
+ *    Energia: 35 (FORTE - supremo dominante) | Cooldown: 3 (FORTE)
  *
  * 2️⃣ CAMPO DE ANULAÇÃO (Defesa) 🛡️ TANQUE
  *    Dano: 0 (não ataca)

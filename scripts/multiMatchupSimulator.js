@@ -467,7 +467,7 @@ function criarAvatarVoid() {
       multiplicador_stat: COMBAT_BALANCE.MULTIPLICADOR_HABILIDADE_FORTE, // 4.5 (FORTE!)
       stat_primario: 'foco',
       ignora_defesa: 0.80, // Ignora 80% defesa
-      custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE + 10, // 45
+      custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE, // 35 (supremo dominante)
       cooldown: COOLDOWN_BALANCE.COOLDOWN_DANO_FORTE, // 3 turnos
       efeitos_status: []
     },
@@ -493,7 +493,7 @@ function criarAvatarAether() {
       multiplicador_stat: COMBAT_BALANCE.MULTIPLICADOR_HABILIDADE_FORTE, // 4.5 (SUPREMO!)
       stat_primario: 'foco',
       ignora_defesa: 0.75, // Ignora 75% defesa
-      custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE + 5, // 40 (balanceado)
+      custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE, // 35 (supremo dominante)
       cooldown: COOLDOWN_BALANCE.COOLDOWN_DANO_FORTE, // 3 turnos
       efeitos_status: []
     },
@@ -502,7 +502,7 @@ function criarAvatarAether() {
       dano_base: 0,
       multiplicador_stat: 0,
       stat_primario: 'foco',
-      custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA, // 25 (balanceado)
+      custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA + 5, // 30 (força foco em ataque)
       cooldown: COOLDOWN_BALANCE.COOLDOWN_SUPORTE_ESPECIAL,
       efeitos_status: ['transcendencia'], // +50% todos stats
       duracao_efeito: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO,

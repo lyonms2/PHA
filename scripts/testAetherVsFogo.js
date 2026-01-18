@@ -297,7 +297,7 @@ function criarAvatarAether() {
       multiplicador_stat: COMBAT_BALANCE.MULTIPLICADOR_HABILIDADE_FORTE, // 4.5
       stat_primario: 'foco',
       ignora_defesa: 0.75,
-      custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE + 5, // 40 (balanceado)
+      custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE, // 35 (supremo dominante)
       cooldown: COOLDOWN_BALANCE.COOLDOWN_DANO_FORTE, // 3 turnos
       efeitos_status: []
     },
@@ -306,7 +306,7 @@ function criarAvatarAether() {
       dano_base: 0,
       multiplicador_stat: 0,
       stat_primario: 'foco',
-      custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA, // 25 (balanceado)
+      custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA + 5, // 30 (força foco em ataque)
       cooldown: COOLDOWN_BALANCE.COOLDOWN_SUPORTE_ESPECIAL,
       efeitos_status: ['transcendencia'],
       duracao_efeito: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO,
@@ -357,7 +357,7 @@ engine.simular();
 
 console.log('\n💡 ANÁLISE:');
 console.log('   Aether tem dano superior (4.5x vs 3.5x, +10 base damage)');
-console.log('   Custo energia BALANCEADO:');
-console.log('   - Raio Primordial: 40 energia (vs 35 do Fogo)');
-console.log('   - Transcendência: 25 energia (igual outros buffs)');
-console.log('   - Total: 65 energia em 2 turnos → permite combo sustentável');
+console.log('   Custo energia IGUALADO AO FOGO:');
+console.log('   - Raio Primordial: 35 energia (IGUAL ao Fogo!)');
+console.log('   - Transcendência: 30 energia (força Aether a defender mais)');
+console.log('   - Mesma frequência + Dano 2x superior = Supremo dominante!');
