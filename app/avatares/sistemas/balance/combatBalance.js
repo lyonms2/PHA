@@ -72,21 +72,21 @@ export const COMBAT_BALANCE = {
   /**
    * Multiplicadores de stat para habilidades
    *
-   * HABILIDADE FRACA (custo 20):
-   *   - Foco 5: 5 × 2.5 = 12 dano (pouco melhor que básico)
-   *   - Foco 10: 10 × 2.5 = 25 dano
+   * HABILIDADE FRACA (custo 15):
+   *   - Foco 5: 5 × 3.0 = 15 dano (igual ao básico, mas com efeitos)
+   *   - Foco 25: 25 × 3.0 = 75 dano
    *
-   * HABILIDADE MÉDIA (custo 30):
-   *   - Foco 5: 5 × 3.5 = 17 dano (melhor que básico)
-   *   - Foco 10: 10 × 3.5 = 35 dano (forte!)
+   * HABILIDADE MÉDIA (custo 35):
+   *   - Foco 5: 5 + (5 × 5.0) = 30 dano (2x melhor que básico!)
+   *   - Foco 25: 5 + (25 × 5.0) = 130 dano (3.7x melhor!)
    *
-   * HABILIDADE FORTE (custo 40):
-   *   - Foco 5: 5 × 4.5 = 22 dano (muito melhor!)
-   *   - Foco 10: 10 × 4.5 = 45 dano (devastador!)
+   * HABILIDADE FORTE (custo 35):
+   *   - Foco 5: 10 + (5 × 6.0) = 40 dano (muito melhor!)
+   *   - Foco 35: 10 + (35 × 6.0) = 220 dano (6.3x devastador!)
    */
-  MULTIPLICADOR_HABILIDADE_FRACA: 2.5,
-  MULTIPLICADOR_HABILIDADE_MEDIA: 3.5,
-  MULTIPLICADOR_HABILIDADE_FORTE: 4.5,
+  MULTIPLICADOR_HABILIDADE_FRACA: 3.0,
+  MULTIPLICADOR_HABILIDADE_MEDIA: 5.0,
+  MULTIPLICADOR_HABILIDADE_FORTE: 6.0,
 
   /**
    * Dano base adicional para habilidades (opcional)
