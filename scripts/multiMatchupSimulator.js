@@ -493,7 +493,7 @@ function criarAvatarAether() {
       multiplicador_stat: COMBAT_BALANCE.MULTIPLICADOR_HABILIDADE_FORTE, // 4.5 (SUPREMO!)
       stat_primario: 'foco',
       ignora_defesa: 0.75, // Ignora 75% defesa
-      custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE + 10, // 45
+      custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE + 5, // 40 (balanceado)
       cooldown: COOLDOWN_BALANCE.COOLDOWN_DANO_FORTE, // 3 turnos
       efeitos_status: []
     },

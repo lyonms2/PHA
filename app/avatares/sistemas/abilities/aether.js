@@ -27,7 +27,7 @@ export const HABILIDADES_AETHER = {
     stat_primario: 'foco',
     ignora_defesa: 0.75, // ESPECIAL AETHER: Ignora 75% defesa
     efeitos_status: ['limpar_debuffs', 'sobrecarga'], // Remove debuffs + buff temporário
-    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE + 10, // 45 (mais caro)
+    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE + 5, // 40 (balanceado)
     cooldown: COOLDOWN_BALANCE.COOLDOWN_DANO_FORTE, // 3 turnos
     nivel_minimo: 1
   }),
@@ -58,7 +58,7 @@ export const HABILIDADES_AETHER = {
  * 1️⃣ RAIO PRIMORDIAL (Ataque) ⚡ DEVASTADOR
  *    Dano: 10 base + Foco × 4.5 (MULTIPLICADOR_HABILIDADE_FORTE - EXTREMAMENTE FORTE!)
  *    Efeitos: Penetra 75% defesa + Remove TODOS debuffs + Sobrecarga
- *    Energia: 45 (FORTE + 10) | Cooldown: 3 (FORTE)
+ *    Energia: 40 (FORTE + 5) | Cooldown: 3 (FORTE)
  *
  * 2️⃣ CAMPO DE TRANSCENDÊNCIA (Suporte) 🌟 SUPREMO
  *    Dano: 0 (não ataca)

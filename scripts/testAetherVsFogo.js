@@ -297,7 +297,7 @@ function criarAvatarAether() {
       multiplicador_stat: COMBAT_BALANCE.MULTIPLICADOR_HABILIDADE_FORTE, // 4.5
       stat_primario: 'foco',
       ignora_defesa: 0.75,
-      custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE + 10, // 45
+      custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE + 5, // 40 (balanceado)
       cooldown: COOLDOWN_BALANCE.COOLDOWN_DANO_FORTE, // 3 turnos
       efeitos_status: []
     },
@@ -356,8 +356,8 @@ const engine = new CombatEngine(aether, fogo);
 engine.simular();
 
 console.log('\n💡 ANÁLISE:');
-console.log('   Aether deveria dominar (4.5x vs 3.5x, +10 base damage)');
-console.log('   Mas Aether tem custo energia MUITO ALTO:');
-console.log('   - Raio Primordial: 45 energia (vs 35 do Fogo)');
+console.log('   Aether tem dano superior (4.5x vs 3.5x, +10 base damage)');
+console.log('   Custo energia ajustado:');
+console.log('   - Raio Primordial: 40 energia (vs 35 do Fogo) - BALANCEADO');
 console.log('   - Transcendência: 35 energia (vs 25 do Fogo)');
-console.log('   - Aether ataca menos vezes = perde DPS');
+console.log('   - Redução de 45 → 40 energia melhora DPS');
