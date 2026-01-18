@@ -1,6 +1,12 @@
 // ==================== SISTEMA DE EFEITOS DE STATUS ====================
 // Arquivo: /app/avatares/sistemas/effects/statusEffects.js
-// Extraído de: abilitiesSystem.js
+//
+// ATUALIZADO: Agora usa valores do sistema centralizado de balanceamento
+// Todos os valores vêm de effectBalance.js e cooldownBalance.js
+// ================================================================
+
+import { EFFECT_BALANCE } from '../balance/effectBalance.js';
+import { COOLDOWN_BALANCE } from '../balance/cooldownBalance.js';
 
 /**
  * Efeitos de status possíveis
@@ -14,50 +20,78 @@
  * - cura_continua: Cura por turno
  * - defensivo: Efeitos defensivos especiais
  * - especial: Efeitos especiais únicos
- * - zona: Efeitos em zona de combate
  */
 export const EFEITOS_STATUS = {
-  // ==================== EFEITOS OFENSIVOS ====================
+
+  // ==================== DANO CONTÍNUO (DoT) ====================
 
   queimadura: {
     nome: 'Queimadura',
     tipo: 'dano_continuo',
-    dano_por_turno: 0.05, // 5% do HP máximo por turno
-    duracao_base: 3, // Dura 3 turnos causando dano contínuo
+    dano_por_turno: EFFECT_BALANCE.DOT_FRACO,  // 5% HP/turno
+    duracao_base: COOLDOWN_BALANCE.DURACAO_DOT_FRACO,  // 2 turnos
     icone: '🔥',
-    descricao: 'Sofre 5% do HP máximo como dano por turno durante 3 turnos (DoT da Explosão de Chamas)'
+    descricao: `Sofre ${(EFFECT_BALANCE.DOT_FRACO * 100).toFixed(0)}% do HP por turno`
   },
 
   queimadura_intensa: {
     nome: 'Queimadura Intensa',
     tipo: 'dano_continuo',
-    dano_por_turno: 0.10, // 10% do HP máximo por turno
-    duracao_base: 3,
+    dano_por_turno: EFFECT_BALANCE.DOT_FORTE,  // 12% HP/turno
+    duracao_base: COOLDOWN_BALANCE.DURACAO_DOT_FORTE,  // 4 turnos
     icone: '🔥🔥',
-    descricao: 'Sofre 10% do HP máximo como dano por turno durante 3 turnos (DoT intenso)'
+    descricao: `Sofre ${(EFFECT_BALANCE.DOT_FORTE * 100).toFixed(0)}% do HP por turno (DoT intenso)`
   },
+
+  afogamento: {
+    nome: 'Afogamento',
+    tipo: 'dano_continuo',
+    dano_por_turno: EFFECT_BALANCE.DOT_MEDIO,  // 8% HP/turno
+    duracao_base: COOLDOWN_BALANCE.DURACAO_DOT_MEDIO,  // 3 turnos
+    icone: '💧'
+  },
+
+  eletrocucao: {
+    nome: 'Eletrocução',
+    tipo: 'dano_continuo',
+    dano_por_turno: EFFECT_BALANCE.DOT_MEDIO,  // 8% HP/turno
+    duracao_base: COOLDOWN_BALANCE.DURACAO_DOT_MEDIO,  // 3 turnos
+    icone: '⚡'
+  },
+
+  maldito: {
+    nome: 'Maldito',
+    tipo: 'dano_continuo',
+    dano_por_turno: EFFECT_BALANCE.DOT_MEDIO,  // 8% HP/turno
+    impede_cura: true,
+    duracao_base: COOLDOWN_BALANCE.DURACAO_DOT_MEDIO,  // 3 turnos
+    icone: '💀'
+  },
+
+
+  // ==================== CONTROLE (Stun, Paralisia) ====================
 
   congelado: {
     nome: 'Congelado',
     tipo: 'controle',
     efeito: 'impede_acao',
-    duracao_base: 2,
+    duracao_base: COOLDOWN_BALANCE.DURACAO_CONTROLE_MEDIO,  // 2 turnos (1 ativo)
     icone: '❄️'
   },
 
   paralisia: {
     nome: 'Paralisia',
     tipo: 'controle',
-    chance_falha: 0.30, // 30% chance de falhar ação
-    duracao_base: 2,
+    chance_falha: EFFECT_BALANCE.CHANCE_CONTROLE_BAIXA,  // 30%
+    duracao_base: COOLDOWN_BALANCE.DURACAO_CONTROLE_MEDIO,  // 2 turnos
     icone: '⚡'
   },
 
   paralisia_intensa: {
     nome: 'Paralisia Intensa',
     tipo: 'controle',
-    chance_falha: 0.60,
-    duracao_base: 2,
+    chance_falha: EFFECT_BALANCE.CHANCE_CONTROLE_MEDIA,  // 50%
+    duracao_base: COOLDOWN_BALANCE.DURACAO_CONTROLE_MEDIO,  // 2 turnos
     icone: '⚡⚡'
   },
 
@@ -65,141 +99,180 @@ export const EFEITOS_STATUS = {
     nome: 'Atordoado',
     tipo: 'controle',
     efeito: 'pula_turno',
-    duracao_base: 1,
+    duracao_base: COOLDOWN_BALANCE.DURACAO_CONTROLE_FRACO,  // 1 turno
     icone: '💫'
   },
+
+
+  // ==================== DEBUFFS (Reduções) ====================
 
   desorientado: {
     nome: 'Desorientado',
     tipo: 'debuff',
-    reducao_acerto: 0.30, // -30% chance de acerto
-    duracao_base: 2,
+    reducao_acerto: EFFECT_BALANCE.DEBUFF_STAT_MEDIO,  // -30%
+    duracao_base: COOLDOWN_BALANCE.DURACAO_DEBUFF_MEDIO,  // 3 turnos
     icone: '🌀'
   },
 
   enfraquecido: {
     nome: 'Enfraquecido',
     tipo: 'debuff',
-    reducao_stats: 0.25, // -25% em todos os stats
-    duracao_base: 2,
+    reducao_stats: EFFECT_BALANCE.DEBUFF_STAT_FRACO,  // -20%
+    duracao_base: COOLDOWN_BALANCE.DURACAO_DEBUFF_MEDIO,  // 3 turnos
     icone: '⬇️'
   },
 
   lentidao: {
     nome: 'Lentidão',
     tipo: 'debuff',
-    reducao_agilidade: 0.40, // -40% agilidade
-    duracao_base: 2,
+    reducao_agilidade: EFFECT_BALANCE.DEBUFF_STAT_FORTE,  // -45%
+    duracao_base: COOLDOWN_BALANCE.DURACAO_DEBUFF_MEDIO,  // 3 turnos
     icone: '🐌'
   },
 
-  afogamento: {
-    nome: 'Afogamento',
-    tipo: 'dano_continuo',
-    dano_por_turno: 0.08,
-    duracao_base: 2,
-    icone: '💧'
+  terror: {
+    nome: 'Terror',
+    tipo: 'debuff',
+    reducao_stats: EFFECT_BALANCE.DEBUFF_STAT_FORTE,  // -45%
+    duracao_base: COOLDOWN_BALANCE.DURACAO_DEBUFF_FORTE,  // 4 turnos
+    icone: '😱'
   },
 
-  maldito: {
-    nome: 'Maldito',
-    tipo: 'dano_continuo',
-    dano_por_turno: 0.07,
-    impede_cura: true,
-    duracao_base: 2,
-    icone: '💀'
-  },
 
-  eletrocucao: {
-    nome: 'Eletrocução',
-    tipo: 'dano_continuo',
-    dano_por_turno: 0.06,
-    duracao_base: 2,
-    icone: '⚡'
-  },
-
-  // ==================== EFEITOS DEFENSIVOS / BUFFS ====================
+  // ==================== BUFFS (Aumentos) ====================
 
   defesa_aumentada: {
     nome: 'Defesa Aumentada',
     tipo: 'buff',
-    bonus_resistencia: 0.50, // +50% resistência
-    duracao_base: 2,
+    bonus_resistencia: EFFECT_BALANCE.BUFF_STAT_FORTE,  // +50%
+    duracao_base: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO,  // 3 turnos (2 ativos)
     icone: '🛡️'
   },
 
   defesa_aumentada_instantanea: {
     nome: 'Defesa Aumentada (Turno Atual)',
     tipo: 'buff',
-    bonus_resistencia: 0.60, // +60% resistência APENAS neste turno
-    duracao_base: 2, // Dura 2 turnos para cobrir ataque do oponente
+    bonus_resistencia: EFFECT_BALANCE.BUFF_STAT_FORTE,  // +50%
+    duracao_base: COOLDOWN_BALANCE.DURACAO_ESPECIAL_CURTA,  // 2 turnos
     icone: '🛡️🔥',
-    instantaneo: true // Flag para indicar que é efeito instantâneo
+    instantaneo: true
   },
 
   evasao_aumentada: {
     nome: 'Evasão Aumentada',
     tipo: 'buff',
-    bonus_evasao: 0.30, // +30% evasão
-    duracao_base: 2,
+    bonus_evasao: EFFECT_BALANCE.EVASAO_AUMENTADA_MEDIA,  // +25%
+    duracao_base: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO,  // 3 turnos
     icone: '💨'
+  },
+
+  evasao_aumentada_instantanea: {
+    nome: 'Evasão Aumentada (Turno Atual)',
+    tipo: 'buff',
+    bonus_evasao: EFFECT_BALANCE.EVASAO_AUMENTADA_FORTE,  // +40%
+    duracao_base: COOLDOWN_BALANCE.DURACAO_ESPECIAL_CURTA,  // 2 turnos
+    icone: '💨⚡',
+    instantaneo: true
   },
 
   velocidade_aumentada: {
     nome: 'Velocidade Aumentada',
     tipo: 'buff',
-    bonus_agilidade: 0.40, // +40% agilidade
-    duracao_base: 2,
+    bonus_agilidade: EFFECT_BALANCE.BUFF_STAT_MEDIO,  // +35%
+    duracao_base: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO,  // 3 turnos
     icone: '⚡'
   },
 
   sobrecarga: {
     nome: 'Sobrecarga',
     tipo: 'buff_risco',
-    bonus_foco: 0.60, // +60% foco
-    reducao_resistencia: 0.30, // -30% resistência
-    duracao_base: 2,
+    bonus_foco: EFFECT_BALANCE.BUFF_STAT_MEDIO,  // +35% (antes era 60%!)
+    reducao_resistencia: EFFECT_BALANCE.DEBUFF_STAT_MEDIO,  // -30%
+    duracao_base: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO,  // 3 turnos (2 ativos)
     icone: '⚡🔴'
   },
 
   bencao: {
     nome: 'Benção',
     tipo: 'buff',
-    bonus_todos_stats: 0.20, // +20% todos os stats
-    duracao_base: 2,
+    bonus_todos_stats: EFFECT_BALANCE.BUFF_TODOS_STATS,  // +20%
+    duracao_base: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO,  // 3 turnos
     icone: '✨'
   },
+
+  transcendencia: {
+    nome: 'Transcendência',
+    tipo: 'buff',
+    bonus_todos_stats: EFFECT_BALANCE.BUFF_STAT_MEDIO,  // +35%
+    duracao_base: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO,  // 3 turnos
+    icone: '✨🌟',
+    instantaneo: true
+  },
+
+  precisao_aumentada: {
+    nome: 'Precisão Aumentada',
+    tipo: 'buff',
+    bonus_acerto: EFFECT_BALANCE.PRECISAO_AUMENTADA_MEDIA,  // +25%
+    duracao_base: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO,  // 3 turnos
+    icone: '🎯'
+  },
+
+
+  // ==================== CURA CONTÍNUA (HoT) ====================
 
   regeneracao: {
     nome: 'Regeneração',
     tipo: 'cura_continua',
-    cura_por_turno: 0.05, // 5% HP por turno
-    duracao_base: 2,
+    cura_por_turno: EFFECT_BALANCE.HOT_FRACO,  // 5% HP/turno
+    duracao_base: COOLDOWN_BALANCE.DURACAO_HOT_MEDIO,  // 3 turnos
     icone: '💚'
   },
+
+
+  // ==================== EFEITOS DEFENSIVOS ESPECIAIS ====================
 
   invisivel: {
     nome: 'Invisível',
     tipo: 'defensivo',
-    evasao_total: true, // 100% evasão
-    duracao_base: 2, // Dura 2 turnos para cobrir ataque do oponente
+    evasao_total: true,  // 100% evasão
+    duracao_base: COOLDOWN_BALANCE.DURACAO_ESPECIAL_MEDIA,  // 3 turnos (2 ativos)
     icone: '👻'
   },
 
-  // ==================== EFEITOS ESPECIAIS ====================
+  escudo_flamejante: {
+    nome: 'Escudo Flamejante',
+    tipo: 'buff',
+    contra_ataque_percent: EFFECT_BALANCE.REFLEXAO_DANO_FRACA,  // Reflete 20%
+    duracao_base: COOLDOWN_BALANCE.DURACAO_ESPECIAL_CURTA,  // 2 turnos
+    icone: '🔥🛡️',
+    instantaneo: true,
+    descricao: 'Quando recebe dano, queima o atacante com 20% do dano'
+  },
+
+  reducao_dano: {
+    nome: 'Redução de Dano',
+    tipo: 'buff',
+    reducao_dano_recebido: EFFECT_BALANCE.BUFF_STAT_MEDIO,  // 35% redução
+    duracao_base: COOLDOWN_BALANCE.DURACAO_ESPECIAL_CURTA,  // 2 turnos
+    icone: '🛡️💜',
+    instantaneo: true
+  },
+
+
+  // ==================== EFEITOS ESPECIAIS (Instantâneos) ====================
 
   roubo_vida: {
     nome: 'Roubo de Vida',
     tipo: 'especial',
-    percentual_roubo: 0.15, // 15% do dano vira cura
-    duracao_base: 0, // Instantâneo
+    percentual_roubo: EFFECT_BALANCE.ROUBO_VIDA_FRACO,  // 25%
+    duracao_base: 0,  // Instantâneo
     icone: '🩸'
   },
 
   roubo_vida_intenso: {
     nome: 'Roubo de Vida Intenso',
     tipo: 'especial',
-    percentual_roubo: 0.30,
+    percentual_roubo: EFFECT_BALANCE.ROUBO_VIDA_MEDIO,  // 40%
     duracao_base: 0,
     icone: '🩸🩸'
   },
@@ -207,15 +280,31 @@ export const EFEITOS_STATUS = {
   roubo_vida_massivo: {
     nome: 'Roubo de Vida Massivo',
     tipo: 'especial',
-    percentual_roubo: 0.40,
+    percentual_roubo: EFFECT_BALANCE.ROUBO_VIDA_FORTE,  // 50%
     duracao_base: 0,
     icone: '🩸🩸🩸'
+  },
+
+  cura_instantanea: {
+    nome: 'Cura Instantânea',
+    tipo: 'especial',
+    percentual_cura: 0.30,  // 30% HP
+    duracao_base: 0,
+    icone: '💚'
+  },
+
+  auto_cura: {
+    nome: 'Auto Cura',
+    tipo: 'especial',
+    percentual_cura: 0.25,  // 25%
+    duracao_base: 0,
+    icone: '💚'
   },
 
   perfuracao: {
     nome: 'Perfuração',
     tipo: 'especial',
-    ignora_defesa: 0.40, // Ignora 40% da defesa
+    ignora_defesa: 0.40,  // Ignora 40% defesa
     duracao_base: 0,
     icone: '🗡️'
   },
@@ -223,71 +312,27 @@ export const EFEITOS_STATUS = {
   execucao: {
     nome: 'Execução',
     tipo: 'especial',
-    bonus_baixo_hp: 0.50, // +50% dano em alvos com <30% HP
+    bonus_baixo_hp: 0.50,  // +50% dano em <30% HP
     limite_hp: 0.30,
     duracao_base: 0,
     icone: '💀'
   },
 
-  auto_cura: {
-    nome: 'Auto Cura',
-    tipo: 'especial',
-    percentual_cura: 0.25, // 25% do dano é convertido em cura
-    duracao_base: 0,
-    icone: '💚'
-  },
-
   dano_massivo_inimigos: {
     nome: 'Dano Massivo nos Inimigos',
     tipo: 'especial',
-    multiplicador_dano_extra: 1.5, // 50% de dano extra
+    multiplicador_dano_extra: 1.5,  // 50% extra
     duracao_base: 0,
     icone: '💥'
   },
 
-  terror: {
-    nome: 'Terror',
-    tipo: 'debuff',
-    reducao_stats: 0.40, // -40% em todos os stats
-    duracao_base: 2,
-    icone: '😱'
+  anula_buffs: {
+    nome: 'Anular Buffs',
+    tipo: 'especial',
+    remove_buffs_inimigo: true,
+    duracao_base: 0,
+    icone: '🚫'
   },
-
-  // ==================== EFEITOS DE ZONA ====================
-
-  campo_eletrico: {
-    nome: 'Campo Elétrico',
-    tipo: 'zona',
-    dano_entrada: 20,
-    duracao_base: 2,
-    icone: '⚡🔷'
-  },
-
-  fissuras_explosivas: {
-    nome: 'Fissuras Explosivas',
-    tipo: 'zona',
-    dano_continuo: 0.06,
-    duracao_base: 2,
-    icone: '💥'
-  },
-
-  vendaval_cortante: {
-    nome: 'Vendaval Cortante',
-    tipo: 'zona',
-    dano_continuo: 0.04,
-    duracao_base: 2,
-    icone: '🌪️'
-  },
-
-  precisao_aumentada: {
-    nome: 'Precisão Aumentada',
-    tipo: 'buff',
-    bonus_acerto: 0.25, // +25% chance de acerto
-    duracao_base: 2,
-    icone: '🎯'
-  },
-
-  // ==================== EFEITOS DE LIMPEZA ====================
 
   limpar_debuffs: {
     nome: 'Limpar Debuffs',
@@ -297,67 +342,39 @@ export const EFEITOS_STATUS = {
     icone: '✨'
   },
 
-  // ==================== NOVOS EFEITOS - SISTEMA SIMPLIFICADO ====================
-
-  cura_instantanea: {
-    nome: 'Cura Instantânea',
-    tipo: 'especial',
-    percentual_cura: 0.30, // 30% do HP máximo
-    duracao_base: 0,
-    icone: '💚'
-  },
-
-  anula_buffs: {
-    nome: 'Anular Buffs',
-    tipo: 'especial',
-    remove_buffs_inimigo: true, // Remove todos os buffs do inimigo
-    duracao_base: 0,
-    icone: '🚫'
-  },
-
-  reducao_dano: {
-    nome: 'Redução de Dano',
-    tipo: 'buff',
-    reducao_dano_recebido: 0.40, // Reduz 40% do dano recebido
-    duracao_base: 2, // Dura 2 turnos para cobrir ataque do oponente
-    icone: '🛡️💜',
-    instantaneo: true
-  },
-
   dreno_energia: {
     nome: 'Dreno de Energia',
     tipo: 'especial',
-    drena_energia: 30, // Drena 30 de energia do oponente
+    drena_energia: 30,
     duracao_base: 0,
     icone: '⚡💀'
   },
 
-  transcendencia: {
-    nome: 'Transcendência',
-    tipo: 'buff',
-    bonus_todos_stats: 0.30, // +30% todos os stats
-    duracao_base: 2, // Dura 2 turnos para cobrir turno completo
-    icone: '✨🌟',
-    instantaneo: true
+
+  // ==================== EFEITOS DE ZONA ====================
+
+  campo_eletrico: {
+    nome: 'Campo Elétrico',
+    tipo: 'zona',
+    dano_entrada: 20,
+    duracao_base: COOLDOWN_BALANCE.DURACAO_ESPECIAL_CURTA,  // 2 turnos
+    icone: '⚡🔷'
   },
 
-  evasao_aumentada_instantanea: {
-    nome: 'Evasão Aumentada (Turno Atual)',
-    tipo: 'buff',
-    bonus_evasao: 0.50, // +50% evasão APENAS neste turno
-    duracao_base: 2, // Dura 2 turnos para cobrir ataque do oponente
-    icone: '💨⚡',
-    instantaneo: true
+  fissuras_explosivas: {
+    nome: 'Fissuras Explosivas',
+    tipo: 'zona',
+    dano_continuo: EFFECT_BALANCE.DOT_MEDIO,  // 8%
+    duracao_base: COOLDOWN_BALANCE.DURACAO_ESPECIAL_CURTA,  // 2 turnos
+    icone: '💥'
   },
 
-  escudo_flamejante: {
-    nome: 'Escudo Flamejante',
-    tipo: 'buff',
-    contra_ataque_percent: 0.20, // Reflete 20% do dano recebido como queimadura
-    duracao_base: 2, // Dura 2 turnos para cobrir ataque do oponente
-    icone: '🔥🛡️',
-    instantaneo: true,
-    descricao: 'Quando recebe dano, queima o atacante com 20% do dano'
+  vendaval_cortante: {
+    nome: 'Vendaval Cortante',
+    tipo: 'zona',
+    dano_continuo: EFFECT_BALANCE.DOT_FRACO,  // 5%
+    duracao_base: COOLDOWN_BALANCE.DURACAO_ESPECIAL_CURTA,  // 2 turnos
+    icone: '🌪️'
   }
 };
 
