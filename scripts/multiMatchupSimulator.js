@@ -626,6 +626,9 @@ simularMatchup(criarAvatarVoid, criarAvatarAether, 'Void vs Aether (BATALHA SUPR
 // Teste 10: Aether vs Fogo (poder supremo vs elemento básico)
 simularMatchup(criarAvatarAether, criarAvatarFogo, 'Aether vs Fogo (Supremo vs Básico)', 15);
 
+// Teste 11: Void vs Fogo (outro supremo vs básico)
+simularMatchup(criarAvatarVoid, criarAvatarFogo, 'Void vs Fogo (Supremo vs Básico)', 15);
+
 console.log(`\n${'='.repeat(60)}`);
-console.log('✅ Testes completos! 10 matchups testados');
+console.log('✅ Testes completos! 11 matchups testados');
 console.log(`${'='.repeat(60)}\n`);
