@@ -323,13 +323,14 @@ function criarAvatarAgua() {
       efeitos_status: []
     },
     {
-      nome: 'Cura Aquática',
-      dano_base: -20, // CURA 20% HP
+      nome: 'Corrente Temporal',
+      dano_base: 0,
       multiplicador_stat: 0,
       stat_primario: 'foco',
       custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA,
-      cooldown: COOLDOWN_BALANCE.COOLDOWN_CURA_PEQUENA,
-      efeitos_status: [],
+      cooldown: COOLDOWN_BALANCE.COOLDOWN_SUPORTE_ESPECIAL,
+      efeitos_status: ['corrente_temporal'], // Reduz cooldown + buff agilidade
+      duracao_efeito: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO,
       alvo: 'self'
     }
   ]);
@@ -372,14 +373,14 @@ function criarAvatarLuz() {
       efeitos_status: []
     },
     {
-      nome: 'Benção',
+      nome: 'Aegis Sagrado',
       dano_base: 0,
       multiplicador_stat: 0,
       stat_primario: 'foco',
       custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA,
-      cooldown: COOLDOWN_BALANCE.COOLDOWN_CURA_PEQUENA,
-      efeitos_status: ['regeneracao'], // HoT 5% por turno
-      duracao_efeito: COOLDOWN_BALANCE.DURACAO_DOT_FRACO,
+      cooldown: COOLDOWN_BALANCE.COOLDOWN_SUPORTE_ESPECIAL,
+      efeitos_status: ['aegis_sagrado'], // Escudo 35% HP + reflexo 15%
+      duracao_efeito: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO,
       alvo: 'self'
     }
   ]);

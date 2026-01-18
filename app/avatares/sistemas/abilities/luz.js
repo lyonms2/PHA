@@ -30,20 +30,20 @@ export const HABILIDADES_LUZ = {
     nivel_minimo: 1
   }),
 
-  // ==================== 2️⃣ BENÇÃO ====================
-  BENCAO: criarHabilidade({
-    nome: 'Benção',
-    descricao: 'Restaura HP ao longo de 2 turnos (regeneração 5% HP por turno)',
+  // ==================== 2️⃣ AEGIS SAGRADO ====================
+  AEGIS_SAGRADO: criarHabilidade({
+    nome: 'Aegis Sagrado',
+    descricao: 'Escudo de luz divina que absorve 35% do HP como dano e reflete 15% do dano bloqueado de volta ao atacante (2 turnos)',
     tipo: TIPO_HABILIDADE.SUPORTE,
     elemento: ELEMENTOS.LUZ,
     dano_base: 0,
     multiplicador_stat: 0,
     stat_primario: 'foco',
-    efeitos_status: ['regeneracao'],
-    duracao_efeito: COOLDOWN_BALANCE.DURACAO_DOT_FRACO, // 2 turnos (HoT)
+    efeitos_status: ['aegis_sagrado'], // Escudo + reflexo de dano
+    duracao_efeito: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO, // 3 → 2 turnos ativos
     alvo: 'self',
     custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA, // 25
-    cooldown: COOLDOWN_BALANCE.COOLDOWN_CURA_PEQUENA, // 3 turnos
+    cooldown: COOLDOWN_BALANCE.COOLDOWN_SUPORTE_ESPECIAL, // 4 turnos
     nivel_minimo: 1
   })
 };
@@ -53,18 +53,21 @@ export const HABILIDADES_LUZ = {
  * RESUMO DAS 2 HABILIDADES DE LUZ
  * ========================================
  *
- * 1️⃣ JULGAMENTO DIVINO (Ataque)
+ * 1️⃣ JULGAMENTO DIVINO (Ataque) ⚡
  *    Dano: Foco × 3.5 (MULTIPLICADOR_HABILIDADE_MEDIA)
  *    Efeitos: Roubo de vida (cura 25% do dano causado)
  *    Energia: 35 (FORTE) | Cooldown: 2 (MEDIO)
  *
- * 2️⃣ BENÇÃO (Suporte)
+ * 2️⃣ AEGIS SAGRADO (Suporte) 🛡️✨
  *    Dano: 0 (não ataca)
- *    Efeitos: Regeneração 5% HP por turno durante 2 turnos
- *    Energia: 25 (MEDIA) | Cooldown: 3 (CURA_PEQUENA)
+ *    Efeitos: Escudo absorve 35% HP máximo como dano + Reflete 15% do dano bloqueado
+ *    Energia: 25 (MEDIA) | Cooldown: 4 (SUPORTE_ESPECIAL)
+ *    Duração: 2 turnos
+ *    MECÂNICA ÚNICA: Proteção com contraataque passivo
  *
  * ✅ SISTEMA BALANCEADO CENTRALIZADO
  * ✅ Usa valores de combatBalance, cooldownBalance, effectBalance
  * ✅ Efeitos claros e diretos
  * ✅ Fácil de balancear e entender
+ * ✅ ESPECIALIDADE: Lifesteal ofensivo + proteção com reflexo
  */

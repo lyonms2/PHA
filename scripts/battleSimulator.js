@@ -404,14 +404,15 @@ const agua = new AvatarBatalha(
       duracao_efeito: 0
     },
     {
-      nome: 'Cura Aquática',
+      nome: 'Corrente Temporal',
       dano_base: 0,
       multiplicador_stat: 0,
       stat_primario: 'foco',
       custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA,
-      cooldown: COOLDOWN_BALANCE.COOLDOWN_CURA_PEQUENA,
-      efeitos_status: [],
-      duracao_efeito: 0
+      cooldown: COOLDOWN_BALANCE.COOLDOWN_SUPORTE_ESPECIAL,
+      efeitos_status: ['corrente_temporal'],
+      duracao_efeito: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO,
+      alvo: 'self'
     }
   ]
 );

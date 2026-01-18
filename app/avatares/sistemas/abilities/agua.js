@@ -32,19 +32,20 @@ export const HABILIDADES_AGUA = {
     nivel_minimo: 1
   }),
 
-  // ==================== 2️⃣ CURA AQUÁTICA ====================
-  CURA_AQUATICA: criarHabilidade({
-    nome: 'Cura Aquática',
-    descricao: 'Água purificadora restaura 20% do HP máximo instantaneamente',
+  // ==================== 2️⃣ CORRENTE TEMPORAL ====================
+  CORRENTE_TEMPORAL: criarHabilidade({
+    nome: 'Corrente Temporal',
+    descricao: 'Fluxo do tempo acelera: reduz cooldown de todas habilidades em 1 turno e aumenta velocidade (+20% agilidade por 2 turnos)',
     tipo: TIPO_HABILIDADE.SUPORTE,
     elemento: ELEMENTOS.AGUA,
-    dano_base: -20, // Negativo = cura (20% do HP máximo)
+    dano_base: 0,
     multiplicador_stat: 0,
     stat_primario: 'foco',
-    efeitos_status: ['cura_instantanea'],
+    efeitos_status: ['corrente_temporal'], // Reduz cooldown + buff agilidade
+    duracao_efeito: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO, // 3 → 2 turnos ativos
     alvo: 'self',
     custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA, // 25
-    cooldown: COOLDOWN_BALANCE.COOLDOWN_CURA_PEQUENA, // 3 turnos
+    cooldown: COOLDOWN_BALANCE.COOLDOWN_SUPORTE_ESPECIAL, // 4 turnos
     nivel_minimo: 1
   })
 };
@@ -59,13 +60,15 @@ export const HABILIDADES_AGUA = {
  *    Efeitos: 70% chance de congelar (pula 1 turno)
  *    Energia: 35 (FORTE) | Cooldown: 2 (MEDIO)
  *
- * 2️⃣ CURA AQUÁTICA (Suporte)
+ * 2️⃣ CORRENTE TEMPORAL (Suporte) 🌊⏰ ÚNICO
  *    Dano: 0 (não ataca)
- *    Efeitos: Restaura 20% HP máximo instantaneamente
- *    Energia: 25 (MEDIA) | Cooldown: 3 (CURA_PEQUENA)
+ *    Efeitos: Reduz cooldown de todas habilidades em 1 turno + Buff agilidade (+20% por 2 turnos)
+ *    Energia: 25 (MEDIA) | Cooldown: 4 (SUPORTE_ESPECIAL)
+ *    MECÂNICA ÚNICA: Manipulação de tempo/cooldowns
  *
  * ✅ SISTEMA BALANCEADO CENTRALIZADO
  * ✅ Usa valores de combatBalance, cooldownBalance, effectBalance
  * ✅ Efeitos claros e diretos
  * ✅ Fácil de balancear e entender
+ * ✅ ESPECIALIDADE: Controle (congelar) e aceleração temporal
  */
