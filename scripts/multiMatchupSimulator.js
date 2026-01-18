@@ -324,7 +324,7 @@ function criarAvatarAgua() {
     },
     {
       nome: 'Cura Aquática',
-      dano_base: -25, // CURA 25% HP
+      dano_base: -20, // CURA 20% HP
       multiplicador_stat: 0,
       stat_primario: 'foco',
       custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA,

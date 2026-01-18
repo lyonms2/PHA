@@ -35,10 +35,10 @@ export const HABILIDADES_AGUA = {
   // ==================== 2️⃣ CURA AQUÁTICA ====================
   CURA_AQUATICA: criarHabilidade({
     nome: 'Cura Aquática',
-    descricao: 'Água purificadora restaura 25% do HP máximo instantaneamente',
+    descricao: 'Água purificadora restaura 20% do HP máximo instantaneamente',
     tipo: TIPO_HABILIDADE.SUPORTE,
     elemento: ELEMENTOS.AGUA,
-    dano_base: -25, // Negativo = cura (25% do HP máximo)
+    dano_base: -20, // Negativo = cura (20% do HP máximo)
     multiplicador_stat: 0,
     stat_primario: 'foco',
     efeitos_status: ['cura_instantanea'],
@@ -61,7 +61,7 @@ export const HABILIDADES_AGUA = {
  *
  * 2️⃣ CURA AQUÁTICA (Suporte)
  *    Dano: 0 (não ataca)
- *    Efeitos: Restaura 25% HP máximo instantaneamente
+ *    Efeitos: Restaura 20% HP máximo instantaneamente
  *    Energia: 25 (MEDIA) | Cooldown: 3 (CURA_PEQUENA)
  *
  * ✅ SISTEMA BALANCEADO CENTRALIZADO
