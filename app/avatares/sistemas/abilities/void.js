@@ -10,6 +10,9 @@
 
 import { TIPO_HABILIDADE, RARIDADE_HABILIDADE, criarHabilidade } from '../constants/abilityTypes';
 import { ELEMENTOS } from '../elementalSystem';
+import { COMBAT_BALANCE } from '../balance/combatBalance.js';
+import { COOLDOWN_BALANCE } from '../balance/cooldownBalance.js';
+import { EFFECT_BALANCE } from '../balance/effectBalance.js';
 
 export const HABILIDADES_VOID = {
   // ==================== 1️⃣ RUPTURA DIMENSIONAL ====================
@@ -19,13 +22,13 @@ export const HABILIDADES_VOID = {
     tipo: TIPO_HABILIDADE.OFENSIVA,
     raridade: RARIDADE_HABILIDADE.AVANCADA,
     elemento: ELEMENTOS.VOID,
-    dano_base: 0, // Sem dano base fixo - 100% baseado em stats
-    multiplicador_stat: 4.0, // Foco × 4.0 (VOID - mais forte que elementos básicos)
+    dano_base: COMBAT_BALANCE.DANO_BASE_HABILIDADE_FORTE, // 10 base
+    multiplicador_stat: COMBAT_BALANCE.MULTIPLICADOR_HABILIDADE_FORTE, // Foco × 4.5 (VOID - mais forte!)
     stat_primario: 'foco',
-    ignora_defesa: 0.80, // Aumentado de 50% para 80%
+    ignora_defesa: 0.80, // ESPECIAL VOID: Ignora 80% defesa
     efeitos_status: ['anula_buffs'], // Remove buffs do inimigo
-    custo_energia: 50, // Aumentado de 40 para 50 (mais poderoso = mais caro)
-    cooldown: 3, // Aumentado de 2 para 3
+    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE + 10, // 45 (mais caro que normal)
+    cooldown: COOLDOWN_BALANCE.COOLDOWN_DANO_FORTE, // 3 turnos
     nivel_minimo: 1
   }),
 
@@ -39,9 +42,10 @@ export const HABILIDADES_VOID = {
     multiplicador_stat: 0,
     stat_primario: 'foco',
     efeitos_status: ['reducao_dano'], // Efeito especial: 40% redução por 2 turnos
+    duracao_efeito: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO, // 3 → 2 turnos ativos
     alvo: 'self',
-    custo_energia: 35, // Aumentado de 30 para 35
-    cooldown: 4, // Aumentado de 3 para 4
+    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA + 5, // 30 (um pouco mais caro)
+    cooldown: COOLDOWN_BALANCE.COOLDOWN_SUPORTE_ESPECIAL, // 4 turnos
     nivel_minimo: 1
   })
 };
@@ -52,16 +56,17 @@ export const HABILIDADES_VOID = {
  * ========================================
  *
  * 1️⃣ RUPTURA DIMENSIONAL (Ataque) ⚠️ PODEROSO
- *    Dano: 130 base + Foco×2.2 (MAIS FORTE!)
+ *    Dano: 10 base + Foco × 4.5 (MULTIPLICADOR_HABILIDADE_FORTE - MAIS FORTE!)
  *    Efeitos: Ignora 80% defesa + Remove TODOS buffs do inimigo
- *    Energia: 50 | Cooldown: 3
+ *    Energia: 45 (FORTE + 10) | Cooldown: 3 (FORTE)
  *
  * 2️⃣ CAMPO DE ANULAÇÃO (Defesa) 🛡️ TANQUE
  *    Dano: 0 (não ataca)
- *    Efeitos: Reduz 40% dano recebido por 2 TURNOS
- *    Energia: 35 | Cooldown: 4
+ *    Efeitos: Reduz 40% dano recebido por 2 turnos
+ *    Energia: 30 (MEDIA + 5) | Cooldown: 4 (SUPORTE_ESPECIAL)
  *
- * ✅ SISTEMA SIMPLIFICADO
+ * ✅ SISTEMA BALANCEADO CENTRALIZADO
+ * ✅ Usa valores de combatBalance, cooldownBalance, effectBalance
  * ✅ Efeitos claros e diretos
  * ✅ Fácil de balancear e entender
  * ✅ ESPECIALIDADE: Penetração de defesa e remoção de buffs

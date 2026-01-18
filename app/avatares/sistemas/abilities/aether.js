@@ -10,6 +10,9 @@
 
 import { TIPO_HABILIDADE, RARIDADE_HABILIDADE, criarHabilidade } from '../constants/abilityTypes';
 import { ELEMENTOS } from '../elementalSystem';
+import { COMBAT_BALANCE } from '../balance/combatBalance.js';
+import { COOLDOWN_BALANCE } from '../balance/cooldownBalance.js';
+import { EFFECT_BALANCE } from '../balance/effectBalance.js';
 
 export const HABILIDADES_AETHER = {
   // ==================== 1️⃣ RAIO PRIMORDIAL ====================
@@ -19,13 +22,13 @@ export const HABILIDADES_AETHER = {
     tipo: TIPO_HABILIDADE.OFENSIVA,
     raridade: RARIDADE_HABILIDADE.AVANCADA,
     elemento: ELEMENTOS.AETHER,
-    dano_base: 0, // Sem dano base fixo - 100% baseado em stats
-    multiplicador_stat: 4.2, // Foco × 4.2 (AETHER - supremo)
+    dano_base: COMBAT_BALANCE.DANO_BASE_HABILIDADE_FORTE, // 10 base
+    multiplicador_stat: COMBAT_BALANCE.MULTIPLICADOR_HABILIDADE_FORTE, // Foco × 4.5 (AETHER - supremo!)
     stat_primario: 'foco',
-    ignora_defesa: 0.75, // Aumentado de 50% para 75%
+    ignora_defesa: 0.75, // ESPECIAL AETHER: Ignora 75% defesa
     efeitos_status: ['limpar_debuffs', 'sobrecarga'], // Remove debuffs + buff temporário
-    custo_energia: 50, // Aumentado de 40 para 50
-    cooldown: 3, // Aumentado de 2 para 3
+    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE + 10, // 45 (mais caro)
+    cooldown: COOLDOWN_BALANCE.COOLDOWN_DANO_FORTE, // 3 turnos
     nivel_minimo: 1
   }),
 
@@ -39,9 +42,10 @@ export const HABILIDADES_AETHER = {
     multiplicador_stat: 0,
     stat_primario: 'foco',
     efeitos_status: ['transcendencia'], // +50% todos os stats por 2 turnos
+    duracao_efeito: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO, // 3 → 2 turnos ativos
     alvo: 'self',
-    custo_energia: 40, // Aumentado de 30 para 40
-    cooldown: 4, // Aumentado de 3 para 4
+    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA + 10, // 35 (muito caro)
+    cooldown: COOLDOWN_BALANCE.COOLDOWN_SUPORTE_ESPECIAL, // 4 turnos
     nivel_minimo: 1
   })
 };
@@ -52,16 +56,17 @@ export const HABILIDADES_AETHER = {
  * ========================================
  *
  * 1️⃣ RAIO PRIMORDIAL (Ataque) ⚡ DEVASTADOR
- *    Dano: 125 base + Foco×2.3 (EXTREMAMENTE FORTE!)
+ *    Dano: 10 base + Foco × 4.5 (MULTIPLICADOR_HABILIDADE_FORTE - EXTREMAMENTE FORTE!)
  *    Efeitos: Penetra 75% defesa + Remove TODOS debuffs + Sobrecarga
- *    Energia: 50 | Cooldown: 3
+ *    Energia: 45 (FORTE + 10) | Cooldown: 3 (FORTE)
  *
  * 2️⃣ CAMPO DE TRANSCENDÊNCIA (Suporte) 🌟 SUPREMO
  *    Dano: 0 (não ataca)
- *    Efeitos: +50% TODOS stats por 2 TURNOS (MEGA BUFF!)
- *    Energia: 40 | Cooldown: 4
+ *    Efeitos: +50% TODOS stats por 2 turnos (MEGA BUFF!)
+ *    Energia: 35 (MEDIA + 10) | Cooldown: 4 (SUPORTE_ESPECIAL)
  *
- * ✅ SISTEMA SIMPLIFICADO
+ * ✅ SISTEMA BALANCEADO CENTRALIZADO
+ * ✅ Usa valores de combatBalance, cooldownBalance, effectBalance
  * ✅ Efeitos claros e diretos
  * ✅ Fácil de balancear e entender
  * ✅ ESPECIALIDADE: Penetração de defesa, mega buffs, transcendência

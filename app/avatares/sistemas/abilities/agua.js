@@ -9,6 +9,9 @@
 
 import { TIPO_HABILIDADE, RARIDADE_HABILIDADE, criarHabilidade } from '../constants/abilityTypes';
 import { ELEMENTOS } from '../elementalSystem';
+import { COMBAT_BALANCE } from '../balance/combatBalance.js';
+import { COOLDOWN_BALANCE } from '../balance/cooldownBalance.js';
+import { EFFECT_BALANCE } from '../balance/effectBalance.js';
 
 export const HABILIDADES_AGUA = {
   // ==================== 1️⃣ MAREMOTO ====================
@@ -19,29 +22,29 @@ export const HABILIDADES_AGUA = {
     raridade: RARIDADE_HABILIDADE.AVANCADA,
     elemento: ELEMENTOS.AGUA,
     dano_base: 0, // Sem dano base fixo - 100% baseado em stats
-    multiplicador_stat: 3.5, // Foco × 3.5
+    multiplicador_stat: COMBAT_BALANCE.MULTIPLICADOR_HABILIDADE_MEDIA, // Foco × 3.5
     stat_primario: 'foco',
     efeitos_status: ['congelado'],
-    chance_efeito: 70,
-    duracao_efeito: 1,
-    custo_energia: 40,
-    cooldown: 2,
+    chance_efeito: EFFECT_BALANCE.CHANCE_CONTROLE_ALTA * 100, // 70%
+    duracao_efeito: COOLDOWN_BALANCE.DURACAO_CONTROLE_FRACO, // 1 turno
+    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE, // 35
+    cooldown: COOLDOWN_BALANCE.COOLDOWN_DANO_MEDIO, // 2 turnos
     nivel_minimo: 1
   }),
 
   // ==================== 2️⃣ CURA AQUÁTICA ====================
   CURA_AQUATICA: criarHabilidade({
     nome: 'Cura Aquática',
-    descricao: 'Água purificadora restaura 30% do HP máximo instantaneamente',
+    descricao: 'Água purificadora restaura 25% do HP máximo instantaneamente',
     tipo: TIPO_HABILIDADE.SUPORTE,
     elemento: ELEMENTOS.AGUA,
-    dano_base: -30, // Negativo = cura (30% do HP máximo)
+    dano_base: -25, // Negativo = cura (25% do HP máximo)
     multiplicador_stat: 0,
     stat_primario: 'foco',
     efeitos_status: ['cura_instantanea'],
     alvo: 'self',
-    custo_energia: 30,
-    cooldown: 3,
+    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA, // 25
+    cooldown: COOLDOWN_BALANCE.COOLDOWN_CURA_PEQUENA, // 3 turnos
     nivel_minimo: 1
   })
 };
@@ -52,16 +55,17 @@ export const HABILIDADES_AGUA = {
  * ========================================
  *
  * 1️⃣ MAREMOTO (Ataque)
- *    Dano: 100 base + Foco×2.0
+ *    Dano: Foco × 3.5 (MULTIPLICADOR_HABILIDADE_MEDIA)
  *    Efeitos: 70% chance de congelar (pula 1 turno)
- *    Energia: 40 | Cooldown: 2
+ *    Energia: 35 (FORTE) | Cooldown: 2 (MEDIO)
  *
  * 2️⃣ CURA AQUÁTICA (Suporte)
  *    Dano: 0 (não ataca)
- *    Efeitos: Restaura 30% HP máximo instantaneamente
- *    Energia: 30 | Cooldown: 3
+ *    Efeitos: Restaura 25% HP máximo instantaneamente
+ *    Energia: 25 (MEDIA) | Cooldown: 3 (CURA_PEQUENA)
  *
- * ✅ SISTEMA SIMPLIFICADO
+ * ✅ SISTEMA BALANCEADO CENTRALIZADO
+ * ✅ Usa valores de combatBalance, cooldownBalance, effectBalance
  * ✅ Efeitos claros e diretos
  * ✅ Fácil de balancear e entender
  */
