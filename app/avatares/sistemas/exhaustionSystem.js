@@ -427,9 +427,29 @@ export function aplicarPenalidadesExaustao(stats, exaustao, effects = []) {
 
   // Aplicar buffs específicos de cada stat
   for (const efeito of effects) {
-    // Velocidade Aumentada: +40% agilidade
-    if (efeito.tipo === 'velocidade_aumentada' && efeito.bonusAgilidade) {
+    // Buffs de Força (+X% força)
+    if (efeito.bonusForca) {
+      finalStats.forca = Math.floor(finalStats.forca * (1 + efeito.bonusForca));
+    }
+
+    // Buffs de Agilidade (+X% agilidade)
+    if (efeito.bonusAgilidade) {
       finalStats.agilidade = Math.floor(finalStats.agilidade * (1 + efeito.bonusAgilidade));
+    }
+
+    // Buffs de Resistência (+X% resistência)
+    if (efeito.bonusResistencia) {
+      finalStats.resistencia = Math.floor(finalStats.resistencia * (1 + efeito.bonusResistencia));
+    }
+
+    // Buffs de Foco (+X% foco) - SOBRECARGA
+    if (efeito.bonusFoco) {
+      finalStats.foco = Math.floor(finalStats.foco * (1 + efeito.bonusFoco));
+    }
+
+    // Debuffs de Resistência (-X% resistência) - SOBRECARGA
+    if (efeito.reducaoResistencia) {
+      finalStats.resistencia = Math.floor(finalStats.resistencia * (1 - efeito.reducaoResistencia));
     }
   }
 
