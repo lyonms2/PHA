@@ -115,8 +115,8 @@ class CombatEngine {
         avatar.receberDano(dano);
       }
 
-      // HoT
-      if (efeito.tipo === 'regeneracao') {
+      // HoT (cura contínua)
+      if (efeito.tipo === 'cura_continua') {
         const cura = Math.floor(avatar.hp_max * EFFECT_BALANCE.HOT_FRACO);
         avatar.curar(cura);
         this.totalCuras += cura;

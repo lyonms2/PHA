@@ -11,11 +11,11 @@
 /**
  * FILOSOFIA ELEMENTAL:
  *
- * VANTAGEM: +30% de dano
- * - Fogo vs Gelo = Fogo causa 130% de dano
+ * VANTAGEM: +15% de dano
+ * - Fogo vs Gelo = Fogo causa 115% de dano
  *
- * DESVANTAGEM: -25% de dano
- * - Gelo vs Fogo = Gelo causa 75% de dano
+ * DESVANTAGEM: -10% de dano
+ * - Gelo vs Fogo = Gelo causa 90% de dano
  *
  * NEUTRO: 100% de dano
  * - Fogo vs Água = 100% (nem vantagem nem desvantagem)
@@ -24,6 +24,7 @@
  * - Cada elemento tem 2-3 vantagens
  * - Cada elemento tem 2-3 desvantagens (vantagens de outros elementos)
  * - Nenhum elemento é dominante
+ * - Vantagens moderadas permitem vitória através de skill e estratégia
  */
 export const ELEMENTAL_BALANCE = {
 
@@ -31,15 +32,15 @@ export const ELEMENTAL_BALANCE = {
 
   /**
    * Multiplicador de vantagem elemental
-   * 1.30 = +30% de dano (significativo mas não OP)
+   * 1.15 = +15% de dano (balanceado para competição justa)
    */
-  VANTAGEM_MULTIPLICADOR: 1.30,
+  VANTAGEM_MULTIPLICADOR: 1.15,
 
   /**
    * Multiplicador de desvantagem elemental
-   * 0.75 = -25% de dano (penalidade menor que bonus)
+   * 0.90 = -10% de dano (penalidade moderada)
    */
-  DESVANTAGEM_MULTIPLICADOR: 0.75,
+  DESVANTAGEM_MULTIPLICADOR: 0.90,
 
   /**
    * Multiplicador neutro
@@ -154,14 +155,14 @@ export function getElementalMultiplier(elementoAtacante, elementoDefensor) {
   // Verificar VANTAGEM: atacante é forte contra defensor?
   const vantagens = ELEMENTAL_BALANCE.VANTAGENS[elementoAtacante] || [];
   if (vantagens.includes(elementoDefensor)) {
-    console.log(`⚡ [ELEMENTAL] ${elementoAtacante} é FORTE contra ${elementoDefensor} (+30% dano)`);
+    console.log(`⚡ [ELEMENTAL] ${elementoAtacante} é FORTE contra ${elementoDefensor} (+15% dano)`);
     return ELEMENTAL_BALANCE.VANTAGEM_MULTIPLICADOR;
   }
 
   // Verificar DESVANTAGEM: defensor é forte contra atacante?
   const desvantagens = ELEMENTAL_BALANCE.VANTAGENS[elementoDefensor] || [];
   if (desvantagens.includes(elementoAtacante)) {
-    console.log(`💨 [ELEMENTAL] ${elementoAtacante} é FRACO contra ${elementoDefensor} (-25% dano)`);
+    console.log(`💨 [ELEMENTAL] ${elementoAtacante} é FRACO contra ${elementoDefensor} (-10% dano)`);
     return ELEMENTAL_BALANCE.DESVANTAGEM_MULTIPLICADOR;
   }
 
