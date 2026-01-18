@@ -409,6 +409,108 @@ function criarAvatarTerra() {
   ]);
 }
 
+function criarAvatarVento() {
+  return new AvatarBatalha('Vento', 'Vento', { hp: 310, forca: 18, resistencia: 16, foco: 22, agilidade: 30 }, [
+    {
+      nome: 'Tornado',
+      dano_base: 0,
+      multiplicador_stat: COMBAT_BALANCE.MULTIPLICADOR_HABILIDADE_MEDIA,
+      stat_primario: 'agilidade',
+      custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE,
+      cooldown: COOLDOWN_BALANCE.COOLDOWN_DANO_MEDIO,
+      efeitos_status: []
+    },
+    {
+      nome: 'Velocidade do Vento',
+      dano_base: 0,
+      multiplicador_stat: 0,
+      stat_primario: 'agilidade',
+      custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA,
+      cooldown: COOLDOWN_BALANCE.COOLDOWN_BUFF_MEDIO,
+      efeitos_status: ['evasao_aumentada'],
+      duracao_efeito: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO,
+      alvo: 'self'
+    }
+  ]);
+}
+
+function criarAvatarSombra() {
+  return new AvatarBatalha('Sombra', 'Sombra', { hp: 320, forca: 18, resistencia: 18, foco: 28, agilidade: 24 }, [
+    {
+      nome: 'Abraço das Trevas',
+      dano_base: 0,
+      multiplicador_stat: COMBAT_BALANCE.MULTIPLICADOR_HABILIDADE_MEDIA,
+      stat_primario: 'foco',
+      custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE,
+      cooldown: COOLDOWN_BALANCE.COOLDOWN_DANO_MEDIO,
+      efeitos_status: ['roubo_vida_intenso'] // 25% do dano causado volta como cura
+    },
+    {
+      nome: 'Manto da Noite',
+      dano_base: 0,
+      multiplicador_stat: 0,
+      stat_primario: 'foco',
+      custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA,
+      cooldown: COOLDOWN_BALANCE.COOLDOWN_SUPORTE_ESPECIAL,
+      efeitos_status: ['invisivel'],
+      duracao_efeito: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO,
+      alvo: 'self'
+    }
+  ]);
+}
+
+function criarAvatarVoid() {
+  return new AvatarBatalha('Void', 'Void', { hp: 300, forca: 15, resistencia: 20, foco: 32, agilidade: 20 }, [
+    {
+      nome: 'Ruptura Dimensional',
+      dano_base: COMBAT_BALANCE.DANO_BASE_HABILIDADE_FORTE, // 10
+      multiplicador_stat: COMBAT_BALANCE.MULTIPLICADOR_HABILIDADE_FORTE, // 4.5 (FORTE!)
+      stat_primario: 'foco',
+      ignora_defesa: 0.80, // Ignora 80% defesa
+      custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE + 10, // 45
+      cooldown: COOLDOWN_BALANCE.COOLDOWN_DANO_FORTE, // 3 turnos
+      efeitos_status: []
+    },
+    {
+      nome: 'Campo de Anulação',
+      dano_base: 0,
+      multiplicador_stat: 0,
+      stat_primario: 'foco',
+      custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA + 5, // 30
+      cooldown: COOLDOWN_BALANCE.COOLDOWN_SUPORTE_ESPECIAL,
+      efeitos_status: ['reducao_dano'],
+      duracao_efeito: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO,
+      alvo: 'self'
+    }
+  ]);
+}
+
+function criarAvatarAether() {
+  return new AvatarBatalha('Aether', 'Aether', { hp: 300, forca: 15, resistencia: 20, foco: 35, agilidade: 22 }, [
+    {
+      nome: 'Raio Primordial',
+      dano_base: COMBAT_BALANCE.DANO_BASE_HABILIDADE_FORTE, // 10
+      multiplicador_stat: COMBAT_BALANCE.MULTIPLICADOR_HABILIDADE_FORTE, // 4.5 (SUPREMO!)
+      stat_primario: 'foco',
+      ignora_defesa: 0.75, // Ignora 75% defesa
+      custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE + 10, // 45
+      cooldown: COOLDOWN_BALANCE.COOLDOWN_DANO_FORTE, // 3 turnos
+      efeitos_status: []
+    },
+    {
+      nome: 'Campo de Transcendência',
+      dano_base: 0,
+      multiplicador_stat: 0,
+      stat_primario: 'foco',
+      custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA + 10, // 35
+      cooldown: COOLDOWN_BALANCE.COOLDOWN_SUPORTE_ESPECIAL,
+      efeitos_status: ['transcendencia'], // +50% todos stats
+      duracao_efeito: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO,
+      alvo: 'self'
+    }
+  ]);
+}
+
 // ==================== SIMULADOR DE MÚLTIPLAS BATALHAS ====================
 
 function simularMatchup(criarAvatar1, criarAvatar2, nomeBatalha, numBatalhas = 10) {
@@ -512,6 +614,18 @@ simularMatchup(criarAvatarTerra, criarAvatarAgua, 'Terra vs Água (Tanque vs Cur
 // Teste 6: Água vs Luz (cura instantânea vs regeneração)
 simularMatchup(criarAvatarAgua, criarAvatarLuz, 'Água vs Luz (CURA vs REGENERAÇÃO)', 15);
 
+// Teste 7: Vento vs Água (vantagem elemental Vento)
+simularMatchup(criarAvatarVento, criarAvatarAgua, 'Vento vs Água (Vento dispersa Água)', 15);
+
+// Teste 8: Sombra vs Luz (vantagem Sombra + roubo de vida vs regeneração)
+simularMatchup(criarAvatarSombra, criarAvatarLuz, 'Sombra vs Luz (Trevas vs Luz)', 15);
+
+// Teste 9: Void vs Aether (batalha dos supremos - 4.5x multiplier)
+simularMatchup(criarAvatarVoid, criarAvatarAether, 'Void vs Aether (BATALHA SUPREMA)', 15);
+
+// Teste 10: Aether vs Fogo (poder supremo vs elemento básico)
+simularMatchup(criarAvatarAether, criarAvatarFogo, 'Aether vs Fogo (Supremo vs Básico)', 15);
+
 console.log(`\n${'='.repeat(60)}`);
-console.log('✅ Testes completos!');
+console.log('✅ Testes completos! 10 matchups testados');
 console.log(`${'='.repeat(60)}\n`);
