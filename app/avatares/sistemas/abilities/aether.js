@@ -44,7 +44,7 @@ export const HABILIDADES_AETHER = {
     efeitos_status: ['transcendencia'], // +50% todos os stats por 2 turnos
     duracao_efeito: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO, // 3 → 2 turnos ativos
     alvo: 'self',
-    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA + 10, // 35 (muito caro)
+    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA, // 25 (balanceado)
     cooldown: COOLDOWN_BALANCE.COOLDOWN_SUPORTE_ESPECIAL, // 4 turnos
     nivel_minimo: 1
   })
@@ -63,7 +63,7 @@ export const HABILIDADES_AETHER = {
  * 2️⃣ CAMPO DE TRANSCENDÊNCIA (Suporte) 🌟 SUPREMO
  *    Dano: 0 (não ataca)
  *    Efeitos: +50% TODOS stats por 2 turnos (MEGA BUFF!)
- *    Energia: 35 (MEDIA + 10) | Cooldown: 4 (SUPORTE_ESPECIAL)
+ *    Energia: 25 (MEDIA) | Cooldown: 4 (SUPORTE_ESPECIAL)
  *
  * ✅ SISTEMA BALANCEADO CENTRALIZADO
  * ✅ Usa valores de combatBalance, cooldownBalance, effectBalance

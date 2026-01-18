@@ -502,7 +502,7 @@ function criarAvatarAether() {
       dano_base: 0,
       multiplicador_stat: 0,
       stat_primario: 'foco',
-      custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA + 10, // 35
+      custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA, // 25 (balanceado)
       cooldown: COOLDOWN_BALANCE.COOLDOWN_SUPORTE_ESPECIAL,
       efeitos_status: ['transcendencia'], // +50% todos stats
       duracao_efeito: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO,
