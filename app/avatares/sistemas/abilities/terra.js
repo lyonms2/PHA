@@ -9,40 +9,43 @@
 
 import { TIPO_HABILIDADE, RARIDADE_HABILIDADE, criarHabilidade } from '../constants/abilityTypes';
 import { ELEMENTOS } from '../elementalSystem';
+import { COMBAT_BALANCE } from '../balance/combatBalance.js';
+import { COOLDOWN_BALANCE } from '../balance/cooldownBalance.js';
+import { EFFECT_BALANCE } from '../balance/effectBalance.js';
 
 export const HABILIDADES_TERRA = {
   // ==================== 1️⃣ TERREMOTO ====================
   TERREMOTO: criarHabilidade({
     nome: 'Terremoto',
-    descricao: 'Fissura devastadora com 75% chance de atordoar o inimigo (pula próximo turno)',
+    descricao: 'Fissura devastadora com 70% chance de atordoar o inimigo (pula próximo turno)',
     tipo: TIPO_HABILIDADE.OFENSIVA,
     raridade: RARIDADE_HABILIDADE.AVANCADA,
     elemento: ELEMENTOS.TERRA,
     dano_base: 0, // Sem dano base fixo - 100% baseado em stats
-    multiplicador_stat: 3.5, // Força × 3.5
+    multiplicador_stat: COMBAT_BALANCE.MULTIPLICADOR_HABILIDADE_MEDIA, // Força × 3.5
     stat_primario: 'forca',
     efeitos_status: ['atordoado'],
-    chance_efeito: 75,
-    duracao_efeito: 1,
-    custo_energia: 40,
-    cooldown: 2,
+    chance_efeito: EFFECT_BALANCE.CHANCE_CONTROLE_ALTA * 100, // 70%
+    duracao_efeito: COOLDOWN_BALANCE.DURACAO_CONTROLE_FRACO, // 1 turno
+    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE, // 35
+    cooldown: COOLDOWN_BALANCE.COOLDOWN_DANO_MEDIO, // 2 turnos
     nivel_minimo: 1
   }),
 
   // ==================== 2️⃣ MURALHA DE PEDRA ====================
   MURALHA_DE_PEDRA: criarHabilidade({
     nome: 'Muralha de Pedra',
-    descricao: 'Ergue uma barreira rochosa que aumenta +70% resistência por 2 turnos',
+    descricao: 'Ergue uma barreira rochosa que aumenta +50% resistência por 2 turnos',
     tipo: TIPO_HABILIDADE.SUPORTE,
     elemento: ELEMENTOS.TERRA,
     dano_base: 0,
     multiplicador_stat: 0,
     stat_primario: 'resistencia',
     efeitos_status: ['defesa_aumentada'],
-    duracao_efeito: 2,
+    duracao_efeito: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO, // 3 → 2 turnos ativos
     alvo: 'self',
-    custo_energia: 30,
-    cooldown: 3,
+    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA, // 25
+    cooldown: COOLDOWN_BALANCE.COOLDOWN_BUFF_MEDIO, // 3 turnos
     nivel_minimo: 1
   })
 };
@@ -53,16 +56,17 @@ export const HABILIDADES_TERRA = {
  * ========================================
  *
  * 1️⃣ TERREMOTO (Ataque)
- *    Dano: 100 base + Força×2.0
- *    Efeitos: 75% chance de atordoar (pula 1 turno)
- *    Energia: 40 | Cooldown: 2
+ *    Dano: Força × 3.5 (MULTIPLICADOR_HABILIDADE_MEDIA)
+ *    Efeitos: 70% chance de atordoar (pula 1 turno)
+ *    Energia: 35 (FORTE) | Cooldown: 2 (MEDIO)
  *
  * 2️⃣ MURALHA DE PEDRA (Defesa)
  *    Dano: 0 (não ataca)
- *    Efeitos: +70% resistência por 1 turno
- *    Energia: 30 | Cooldown: 3
+ *    Efeitos: +50% resistência por 2 turnos
+ *    Energia: 25 (MEDIA) | Cooldown: 3 (BUFF_MEDIO)
  *
- * ✅ SISTEMA SIMPLIFICADO
+ * ✅ SISTEMA BALANCEADO CENTRALIZADO
+ * ✅ Usa valores de combatBalance, cooldownBalance, effectBalance
  * ✅ Efeitos claros e diretos
  * ✅ Fácil de balancear e entender
  */

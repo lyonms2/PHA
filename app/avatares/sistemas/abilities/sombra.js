@@ -9,38 +9,41 @@
 
 import { TIPO_HABILIDADE, RARIDADE_HABILIDADE, criarHabilidade } from '../constants/abilityTypes';
 import { ELEMENTOS } from '../elementalSystem';
+import { COMBAT_BALANCE } from '../balance/combatBalance.js';
+import { COOLDOWN_BALANCE } from '../balance/cooldownBalance.js';
+import { EFFECT_BALANCE } from '../balance/effectBalance.js';
 
 export const HABILIDADES_SOMBRA = {
   // ==================== 1️⃣ ABRAÇO DAS TREVAS ====================
   ABRACO_DAS_TREVAS: criarHabilidade({
     nome: 'Abraço das Trevas',
-    descricao: 'Drena vida intensamente (dano alto + cura 30% do dano causado)',
+    descricao: 'Drena vida intensamente (dano alto + cura 25% do dano causado)',
     tipo: TIPO_HABILIDADE.OFENSIVA,
     raridade: RARIDADE_HABILIDADE.AVANCADA,
     elemento: ELEMENTOS.SOMBRA,
     dano_base: 0, // Sem dano base fixo - 100% baseado em stats
-    multiplicador_stat: 3.5, // Foco × 3.5
+    multiplicador_stat: COMBAT_BALANCE.MULTIPLICADOR_HABILIDADE_MEDIA, // Foco × 3.5
     stat_primario: 'foco',
     efeitos_status: ['roubo_vida_intenso'],
-    custo_energia: 40,
-    cooldown: 2,
+    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE, // 35
+    cooldown: COOLDOWN_BALANCE.COOLDOWN_DANO_MEDIO, // 2 turnos
     nivel_minimo: 1
   }),
 
   // ==================== 2️⃣ MANTO DA NOITE ====================
   MANTO_DA_NOITE: criarHabilidade({
     nome: 'Manto da Noite',
-    descricao: 'Torna-se invisível (100% evasão por 2 turnos)',
+    descricao: 'Torna-se invisível (aumenta muito a evasão por 3 turnos)',
     tipo: TIPO_HABILIDADE.SUPORTE,
     elemento: ELEMENTOS.SOMBRA,
     dano_base: 0,
     multiplicador_stat: 0,
     stat_primario: 'foco',
     efeitos_status: ['invisivel'],
-    duracao_efeito: 2,
+    duracao_efeito: 3, // 3 turnos de invisibilidade
     alvo: 'self',
-    custo_energia: 30,
-    cooldown: 4,
+    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA, // 25
+    cooldown: COOLDOWN_BALANCE.COOLDOWN_SUPORTE_ESPECIAL, // 4 turnos
     nivel_minimo: 1
   })
 };
@@ -51,16 +54,17 @@ export const HABILIDADES_SOMBRA = {
  * ========================================
  *
  * 1️⃣ ABRAÇO DAS TREVAS (Ataque)
- *    Dano: 100 base + Foco×2.0
- *    Efeitos: Roubo de vida (cura 30% do dano causado)
- *    Energia: 40 | Cooldown: 2
+ *    Dano: Foco × 3.5 (MULTIPLICADOR_HABILIDADE_MEDIA)
+ *    Efeitos: Roubo de vida (cura 25% do dano causado)
+ *    Energia: 35 (FORTE) | Cooldown: 2 (MEDIO)
  *
  * 2️⃣ MANTO DA NOITE (Suporte)
  *    Dano: 0 (não ataca)
- *    Efeitos: Invisibilidade (100% evasão por 1 turno)
- *    Energia: 30 | Cooldown: 4
+ *    Efeitos: Invisibilidade (alta evasão por 3 turnos)
+ *    Energia: 25 (MEDIA) | Cooldown: 4 (SUPORTE_ESPECIAL)
  *
- * ✅ SISTEMA SIMPLIFICADO
+ * ✅ SISTEMA BALANCEADO CENTRALIZADO
+ * ✅ Usa valores de combatBalance, cooldownBalance, effectBalance
  * ✅ Efeitos claros e diretos
  * ✅ Fácil de balancear e entender
  */

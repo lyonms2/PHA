@@ -9,6 +9,9 @@
 
 import { TIPO_HABILIDADE, RARIDADE_HABILIDADE, criarHabilidade } from '../constants/abilityTypes';
 import { ELEMENTOS } from '../elementalSystem';
+import { COMBAT_BALANCE } from '../balance/combatBalance.js';
+import { COOLDOWN_BALANCE } from '../balance/cooldownBalance.js';
+import { EFFECT_BALANCE } from '../balance/effectBalance.js';
 
 export const HABILIDADES_ELETRICIDADE = {
   // ==================== 1️⃣ RELÂMPAGO ====================
@@ -19,30 +22,30 @@ export const HABILIDADES_ELETRICIDADE = {
     raridade: RARIDADE_HABILIDADE.AVANCADA,
     elemento: ELEMENTOS.ELETRICIDADE,
     dano_base: 0, // Sem dano base fixo - 100% baseado em stats
-    multiplicador_stat: 3.5, // Foco × 3.5
+    multiplicador_stat: COMBAT_BALANCE.MULTIPLICADOR_HABILIDADE_MEDIA, // Foco × 3.5
     stat_primario: 'foco',
     efeitos_status: ['paralisia'],
-    chance_efeito: 70,
-    duracao_efeito: 1,
-    custo_energia: 40,
-    cooldown: 2,
+    chance_efeito: EFFECT_BALANCE.CHANCE_CONTROLE_ALTA * 100, // 70%
+    duracao_efeito: COOLDOWN_BALANCE.DURACAO_CONTROLE_FRACO, // 1 turno
+    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE, // 40
+    cooldown: COOLDOWN_BALANCE.COOLDOWN_DANO_MEDIO, // 2 turnos
     nivel_minimo: 1
   }),
 
   // ==================== 2️⃣ SOBRECARGA ====================
   SOBRECARGA: criarHabilidade({
     nome: 'Sobrecarga',
-    descricao: 'Aumenta drasticamente o foco (+60% foco por 2 turnos)',
+    descricao: 'Aumenta drasticamente o foco (+35% foco por 2 turnos, mas reduz resistência em 30%)',
     tipo: TIPO_HABILIDADE.SUPORTE,
     elemento: ELEMENTOS.ELETRICIDADE,
     dano_base: 0,
     multiplicador_stat: 0,
     stat_primario: 'foco',
     efeitos_status: ['sobrecarga'],
-    duracao_efeito: 2,
+    duracao_efeito: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO, // 3 → 2 turnos ativos
     alvo: 'self',
-    custo_energia: 30,
-    cooldown: 3,
+    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA, // 30
+    cooldown: COOLDOWN_BALANCE.COOLDOWN_BUFF_MEDIO, // 3 turnos
     nivel_minimo: 1
   })
 };
@@ -53,16 +56,17 @@ export const HABILIDADES_ELETRICIDADE = {
  * ========================================
  *
  * 1️⃣ RELÂMPAGO (Ataque)
- *    Dano: 100 base + Foco×2.0
+ *    Dano: Foco × 3.5 (MULTIPLICADOR_HABILIDADE_MEDIA)
  *    Efeitos: 70% chance de paralisar (30% chance de falhar ações)
- *    Energia: 40 | Cooldown: 2
+ *    Energia: 40 (FORTE) | Cooldown: 2 (MEDIO)
  *
  * 2️⃣ SOBRECARGA (Suporte)
  *    Dano: 0 (não ataca)
- *    Efeitos: +60% foco por 1 turno
- *    Energia: 30 | Cooldown: 3
+ *    Efeitos: +35% foco por 2 turnos (BUFF_STAT_MEDIO), -30% resistência
+ *    Energia: 30 (MEDIA) | Cooldown: 3 (BUFF_MEDIO)
  *
- * ✅ SISTEMA SIMPLIFICADO
+ * ✅ SISTEMA BALANCEADO CENTRALIZADO
+ * ✅ Usa valores de combatBalance, cooldownBalance, effectBalance
  * ✅ Efeitos claros e diretos
  * ✅ Fácil de balancear e entender
  */
