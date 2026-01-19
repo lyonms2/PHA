@@ -239,6 +239,28 @@ export const EFEITOS_STATUS = {
     icone: '👻'
   },
 
+  aegis_sagrado: {
+    nome: 'Aegis Sagrado',
+    tipo: 'defensivo',
+    escudo_percentual: 0.35,  // Escudo de 35% HP
+    reflexo_dano: 0.15,  // Reflete 15% do dano bloqueado
+    duracao_base: COOLDOWN_BALANCE.DURACAO_ESPECIAL_CURTA,  // 2 turnos
+    icone: '🛡️✨',
+    instantaneo: true,
+    descricao: 'Escudo de luz que absorve 35% HP e reflete 15% do dano'
+  },
+
+  corrente_temporal: {
+    nome: 'Corrente Temporal',
+    tipo: 'buff',
+    bonus_agilidade: 0.20,  // +20% agilidade
+    reduz_cooldown: 1,  // Reduz 1 turno de todos os cooldowns
+    duracao_base: COOLDOWN_BALANCE.DURACAO_ESPECIAL_CURTA,  // 2 turnos
+    icone: '🌊⏰',
+    instantaneo: true,
+    descricao: 'Acelera o tempo: reduz cooldowns e aumenta agilidade'
+  },
+
   escudo_flamejante: {
     nome: 'Escudo Flamejante',
     tipo: 'buff',
@@ -272,7 +294,7 @@ export const EFEITOS_STATUS = {
   roubo_vida_intenso: {
     nome: 'Roubo de Vida Intenso',
     tipo: 'especial',
-    percentual_roubo: EFFECT_BALANCE.ROUBO_VIDA_MEDIO,  // 40%
+    percentual_roubo: EFFECT_BALANCE.ROUBO_VIDA_FRACO,  // 25% (não 40%)
     duracao_base: 0,
     icone: '🩸🩸'
   },
