@@ -585,6 +585,13 @@ function BatalhaTreinoIAContent() {
           mostrarDanoVisual('oponente', null, 'miss', null);
         }
 
+        // Roubo de vida (cura do jogador)
+        if (result.rouboVida && result.rouboVida > 0) {
+          setTimeout(() => {
+            mostrarDanoVisual('meu', result.rouboVida, 'heal', meuAvatar?.elemento);
+          }, 600);
+        }
+
         // Logs da IA (processados automaticamente pelo backend)
         if (result.logsParaJogador && Array.isArray(result.logsParaJogador)) {
           result.logsParaJogador.forEach(log => addLog(log));
@@ -752,6 +759,13 @@ function BatalhaTreinoIAContent() {
         // Efeitos visuais de CURA (habilidades de suporte)
         if (result.cura && result.cura > 0) {
           mostrarDanoVisual('meu', result.cura, 'heal', meuAvatar?.elemento);
+        }
+
+        // Roubo de vida de habilidades (cura do jogador)
+        if (result.rouboVida && result.rouboVida > 0) {
+          setTimeout(() => {
+            mostrarDanoVisual('meu', result.rouboVida, 'heal', meuAvatar?.elemento);
+          }, 600);
         }
 
         // Logs da IA (processados automaticamente pelo backend)
