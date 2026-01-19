@@ -40,7 +40,7 @@ export const HABILIDADES_LUZ = {
     multiplicador_stat: 0,
     stat_primario: 'foco',
     efeitos_status: ['aegis_sagrado'], // Escudo + reflexo de dano
-    duracao_efeito: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO, // 3 → 2 turnos ativos
+    duracao_efeito: 2, // 2 turnos ativos (removido +1 extra do engine)
     alvo: 'self',
     custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA, // 25
     cooldown: COOLDOWN_BALANCE.COOLDOWN_SUPORTE_ESPECIAL, // 4 turnos
