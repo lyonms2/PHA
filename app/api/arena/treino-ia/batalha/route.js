@@ -469,7 +469,7 @@ export async function POST(request) {
           cooldown,
           battle.player.nome,
           'TREINO',
-          battle.player_effects || []
+          result.attacker?.effects || []
         );
       }
     } else if (action === 'useItem') {
@@ -887,7 +887,7 @@ export async function POST(request) {
                 cooldown,
                 battle.ia.nome,
                 'TREINO',
-                battle.ia_effects || []
+                iaResult.attacker?.effects || []
               );
             }
           }
