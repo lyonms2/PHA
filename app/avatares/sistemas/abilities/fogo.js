@@ -25,7 +25,7 @@ export const HABILIDADES_FOGO = {
     multiplicador_stat: COMBAT_BALANCE.MULTIPLICADOR_HABILIDADE_MEDIA, // Força × 3.5
     stat_primario: 'forca',
     efeitos_status: ['queimadura'],
-    chance_efeito: EFFECT_BALANCE.CHANCE_EFEITO_ALTA * 100, // 80%
+    chance_efeito: EFFECT_BALANCE.CHANCE_CONTROLE_ALTA * 100, // 70%
     duracao_efeito: COOLDOWN_BALANCE.DURACAO_DOT_FRACO, // 2 turnos
     custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE, // 35
     cooldown: COOLDOWN_BALANCE.COOLDOWN_DANO_MEDIO, // 2 turnos
@@ -57,7 +57,7 @@ export const HABILIDADES_FOGO = {
  *
  * 1️⃣ EXPLOSÃO DE CHAMAS (Ataque) 🔥💥
  *    Dano: Força × 3.5 (MULTIPLICADOR_HABILIDADE_MEDIA)
- *    Efeitos: 80% chance de QUEIMAR (DoT: 5% HP por turno durante 2 turnos)
+ *    Efeitos: 70% chance de QUEIMAR (DoT: 5% HP por turno durante 2 turnos)
  *    Energia: 35 (FORTE) | Cooldown: 2 (MEDIO)
  *    ⚠️ QUEIMADURA = DANO CONTÍNUO (não é reflect!)
  *
