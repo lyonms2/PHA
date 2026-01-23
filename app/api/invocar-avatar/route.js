@@ -24,32 +24,37 @@ function escolherAleatorio(array) {
  * - 99% chance de elementos comuns
  */
 function escolherElemento(raridade) {
+  // ==================== TESTE TEMPORÁRIO: AETHER 100% ====================
+  console.log(`✨ [AETHER] Elemento AETHER forçado para testes!`);
+  return ELEMENTOS.AETHER;
+  // ====================================================================
+
   // ==================== VOID/AETHER AJUSTADO ====================
   // INDEPENDENTE da raridade, Void/Aether têm chance fixa de 0.5% cada
-  const rand = Math.random();
+  // const rand = Math.random();
 
-  if (rand < 0.005) {
-    console.log(`🕳️ [VOID] Elemento raro VOID obtido! (0.5% de chance)`);
-    return ELEMENTOS.VOID;  // 0.5% chance
-  }
+  // if (rand < 0.005) {
+  //   console.log(`🕳️ [VOID] Elemento raro VOID obtido! (0.5% de chance)`);
+  //   return ELEMENTOS.VOID;  // 0.5% chance
+  // }
 
-  if (rand < 0.01) {
-    console.log(`✨ [AETHER] Elemento raro AETHER obtido! (0.5% de chance)`);
-    return ELEMENTOS.AETHER; // 0.5% chance
-  }
+  // if (rand < 0.01) {
+  //   console.log(`✨ [AETHER] Elemento raro AETHER obtido! (0.5% de chance)`);
+  //   return ELEMENTOS.AETHER; // 0.5% chance
+  // }
 
-  // 99% chance de elemento comum
-  const elementosComuns = [
-    ELEMENTOS.FOGO,
-    ELEMENTOS.AGUA,
-    ELEMENTOS.TERRA,
-    ELEMENTOS.VENTO,
-    ELEMENTOS.ELETRICIDADE,
-    ELEMENTOS.SOMBRA,
-    ELEMENTOS.LUZ
-  ];
+  // // 99% chance de elemento comum
+  // const elementosComuns = [
+  //   ELEMENTOS.FOGO,
+  //   ELEMENTOS.AGUA,
+  //   ELEMENTOS.TERRA,
+  //   ELEMENTOS.VENTO,
+  //   ELEMENTOS.ELETRICIDADE,
+  //   ELEMENTOS.SOMBRA,
+  //   ELEMENTOS.LUZ
+  // ];
 
-  return escolherAleatorio(elementosComuns);
+  // return escolherAleatorio(elementosComuns);
   // ==============================================================
 }
 

@@ -148,9 +148,9 @@ export const ORIGENS_ELEMENTAIS = {
 
   [ELEMENTOS.LUZ]: {
     nome: 'Plano Radiante',
-    descricao: `Dimensão de luz eterna e energia celestial. Onde a primeira luz do 
-    universo ainda brilha, onde conceitos de esperança e ordem são forças físicas. 
-    Avatares de Luz carregam a essência da criação, mas também sua arrogância - 
+    descricao: `Dimensão de luz eterna e energia celestial. Onde a primeira luz do
+    universo ainda brilha, onde conceitos de esperança e ordem são forças físicas.
+    Avatares de Luz carregam a essência da criação, mas também sua arrogância -
     acreditam que luz é superior a trevas por definição.`,
     caracteristicas: [
       'Idealistas e esperançosos',
@@ -160,6 +160,38 @@ export const ORIGENS_ELEMENTAIS = {
     ],
     aparencia_comum: 'Branco puro, dourado e prateado. Emite luz própria constantemente.',
     citacao: '"Onde há luz, há ordem. Onde há escuridão, trazemos a aurora."'
+  },
+
+  [ELEMENTOS.VOID]: {
+    nome: 'O Vácuo Absoluto',
+    descricao: `Dimensão da não-existência, onde até o vazio tem ausência. Um lugar
+    que não deveria existir, mas existe pela negação de tudo mais. Avatares de Void
+    são paradoxos ambulantes - seres feitos de nada que anulam tudo. Incompreensíveis
+    e aterradores, ignoram as leis da realidade simplesmente por não reconhecê-las.`,
+    caracteristicas: [
+      'Completamente alheios a emoções normais',
+      'Anulam magia e energia ao redor',
+      'Extremamente raros e perigosos',
+      'Não entendem conceitos de "ser" ou "não-ser"'
+    ],
+    aparencia_comum: 'Ausência de cor e forma. Parecem buracos na realidade, aberrações visuais.',
+    citacao: '"Não somos. Mas quando não somos, tudo mais deixa de ser também."'
+  },
+
+  [ELEMENTOS.AETHER]: {
+    nome: 'Plano Etéreo Primordial',
+    descricao: `Dimensão da energia pura e não-manifesta, anterior à especialização
+    em elementos. O substrato do qual toda magia emerge. Avatares de Aether são seres
+    de possibilidade infinita, podendo manifestar qualquer elemento mas dominando nenhum.
+    São extremamente raros, representando o potencial ainda não realizado.`,
+    caracteristicas: [
+      'Adaptáveis a qualquer situação',
+      'Imprevisíveis em combate',
+      'Filosóficos sobre a natureza da existência',
+      'Consideram-se superiores aos elementos "limitados"'
+    ],
+    aparencia_comum: 'Multicolorido e mutável. Cores fluem e mudam constantemente, sem padrão.',
+    citacao: '"Somos todos os elementos e nenhum. Somos o que poderia ser, não o que é."'
   }
 };
 
@@ -201,6 +233,16 @@ export const PREFIXOS_NOME_DETALHADOS = {
     Comum: ['Gleam', 'Shimmer', 'Glow', 'Ray', 'Beam', 'Flash'],
     Raro: ['Lux', 'Sol', 'Aurora', 'Radiant', 'Dawn', 'Celestial'],
     Lendário: ['Ra', 'Apollo', 'Amaterasu', 'Lucifer', 'Baldur', 'Inti']
+  },
+  [ELEMENTOS.VOID]: {
+    Comum: ['Null', 'Zero', 'Empty', 'Hollow', 'Blank', 'Naught'],
+    Raro: ['Nihil', 'Vacuo', 'Oblivion', 'Entropy', 'Nullus', 'Absence'],
+    Lendário: ['Ouroboros', 'Azathoth', 'Chronos', 'Shūnyatā', 'Annihilus', 'The Uncreated']
+  },
+  [ELEMENTOS.AETHER]: {
+    Comum: ['Flux', 'Shift', 'Essence', 'Mote', 'Spark', 'Glimmer'],
+    Raro: ['Aether', 'Quintessence', 'Prisma', 'Nexus', 'Catalyst', 'Arcanum'],
+    Lendário: ['Metatron', 'Akasha', 'Philosopher', 'Prima Materia', 'The Unified', 'Yggdrasil']
   }
 };
 
@@ -322,6 +364,16 @@ export const TEMPLATES_DESCRICAO = {
       'Um raio de luz que atravessou dimensões. Brilhante, mas ainda não ofuscante.',
       'Nascido do amanhecer de outro mundo. Sua luminosidade ainda está crescendo.',
       'Uma centelha de esperança dimensional. Um dia pode iluminar o mundo.'
+    ],
+    [ELEMENTOS.VOID]: [
+      'Uma pequena fenda na realidade. Sua mera existência questiona o que é "ser".',
+      'Nascido do espaço entre as coisas. Ainda não aprendeu a anular completamente.',
+      'Um vazio que ganhou consciência. Pequeno agora, mas crescendo em ausência.'
+    ],
+    [ELEMENTOS.AETHER]: [
+      'Um fragmento de energia pura ainda não-manifestada. Pode se tornar qualquer coisa.',
+      'Nascido do potencial infinito. Ainda descobrindo quais formas pode assumir.',
+      'Uma essência primordial em desenvolvimento. Todos os elementos e nenhum ao mesmo tempo.'
     ]
   },
 
@@ -360,6 +412,16 @@ export const TEMPLATES_DESCRICAO = {
       'Fragmento da primeira luz do universo. Sua radiância purifica e destrói.',
       'Nascido da explosão de uma supernova. Luz tão intensa que cega a própria escuridão.',
       'Um farol dimensional. Onde vai, a esperança segue - ou a cegueira total.'
+    ],
+    [ELEMENTOS.VOID]: [
+      'Emergiu de onde nem o vazio ousa existir. Sua presença anula leis fundamentais da realidade.',
+      'Uma ruptura dimensional estabilizada. Remove não apenas matéria, mas conceitos.',
+      'Nascido da negação absoluta. Buffs, defesas, até mesmo a sorte - tudo vira nada perto dele.'
+    ],
+    [ELEMENTOS.AETHER]: [
+      'Energia quintessencial de mil dimensões fundidas. Impossível prever sua próxima forma.',
+      'Um catalisador vivo de transformação. Adapta-se instantaneamente a qualquer situação.',
+      'Condensado do potencial não-realizado do multiverso. Todas as possibilidades em uma.'
     ]
   },
 
@@ -398,6 +460,16 @@ export const TEMPLATES_DESCRICAO = {
       'O primeiro raio de luz na escuridão primordial. Sua luminosidade definiu o que é "visão" no universo.',
       'Anjo caído que manteve sua luz - ou demônio ascendente que roubou o fogo celestial. Ninguém sabe ao certo.',
       'Fragmento vivo de uma estrela divina. Sua presença é salvação para alguns, aniquilação para outros.'
+    ],
+    [ELEMENTOS.VOID]: [
+      'A própria ausência personificada. Não existe, mas sua não-existência é mais real que tudo ao redor. Leis da física se curvam para evitá-lo.',
+      'Anterior ao Big Bang - o vazio que existia quando nada existia. Sua presença não é apenas morte, é des-existência.',
+      'Dizem que este ser foi o único a testemunhar o fim do universo anterior. Carrega consigo a anulação absoluta de tudo que um dia foi.'
+    ],
+    [ELEMENTOS.AETHER]: [
+      'A essência não-manifesta que permeia toda criação. Não escolhe uma forma porque É todas as formas possíveis ao mesmo tempo.',
+      'Nascido no momento zero, quando tudo era potencial puro. É o "e se?" eterno - possibilidade infinita cristalizada.',
+      'Fragmento da Prima Materia original, anterior à divisão nos elementos. Alquimistas matariam por um segundo de estudo.'
     ]
   }
 };

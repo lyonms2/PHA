@@ -468,7 +468,8 @@ export async function POST(request) {
           habilidadeAtualizada.nome,
           cooldown,
           battle.player.nome,
-          'TREINO'
+          'TREINO',
+          result.attacker?.effects || []
         );
       }
     } else if (action === 'useItem') {
@@ -885,7 +886,8 @@ export async function POST(request) {
                 habAtualizada.nome,
                 cooldown,
                 battle.ia.nome,
-                'TREINO'
+                'TREINO',
+                iaResult.attacker?.effects || []
               );
             }
           }

@@ -203,7 +203,7 @@ export const EFEITOS_STATUS = {
   transcendencia: {
     nome: 'Transcendência',
     tipo: 'buff',
-    bonus_todos_stats: EFFECT_BALANCE.BUFF_STAT_MEDIO,  // +35%
+    bonus_todos_stats: EFFECT_BALANCE.BUFF_STAT_FORTE,  // +50% (AETHER - elemento lendário!)
     duracao_base: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO,  // 3 turnos
     icone: '✨🌟',
     instantaneo: true
@@ -239,6 +239,28 @@ export const EFEITOS_STATUS = {
     icone: '👻'
   },
 
+  aegis_sagrado: {
+    nome: 'Aegis Sagrado',
+    tipo: 'defensivo',
+    escudo_percentual: 0.35,  // Escudo de 35% HP
+    reflexo_dano: 0.15,  // Reflete 15% do dano bloqueado
+    duracao_base: COOLDOWN_BALANCE.DURACAO_ESPECIAL_CURTA,  // 2 turnos
+    icone: '🛡️✨',
+    instantaneo: true,
+    descricao: 'Escudo de luz que absorve 35% HP e reflete 15% do dano'
+  },
+
+  corrente_temporal: {
+    nome: 'Corrente Temporal',
+    tipo: 'buff',
+    bonus_agilidade: 0.20,  // +20% agilidade
+    reduz_cooldown: 1,  // Reduz 1 turno de todos os cooldowns
+    duracao_base: COOLDOWN_BALANCE.DURACAO_ESPECIAL_CURTA,  // 2 turnos
+    icone: '🌊⏰',
+    instantaneo: true,
+    descricao: 'Acelera o tempo: reduz cooldowns e aumenta agilidade'
+  },
+
   escudo_flamejante: {
     nome: 'Escudo Flamejante',
     tipo: 'buff',
@@ -250,12 +272,14 @@ export const EFEITOS_STATUS = {
   },
 
   reducao_dano: {
-    nome: 'Redução de Dano',
+    nome: 'Campo de Anulação',
     tipo: 'buff',
-    reducao_dano_recebido: EFFECT_BALANCE.BUFF_STAT_MEDIO,  // 35% redução
+    reducao_dano_recebido: 0.50,  // 50% redução (VOID - elemento lendário)
+    drena_energia_atacante: 10,  // Drena 10 energia quando atacado
     duracao_base: COOLDOWN_BALANCE.DURACAO_ESPECIAL_CURTA,  // 2 turnos
     icone: '🛡️💜',
-    instantaneo: true
+    instantaneo: true,
+    descricao: 'Vácuo protetor que reduz dano e drena energia do atacante'
   },
 
 
@@ -272,7 +296,7 @@ export const EFEITOS_STATUS = {
   roubo_vida_intenso: {
     nome: 'Roubo de Vida Intenso',
     tipo: 'especial',
-    percentual_roubo: EFFECT_BALANCE.ROUBO_VIDA_MEDIO,  // 40%
+    percentual_roubo: EFFECT_BALANCE.ROUBO_VIDA_FRACO,  // 25% (não 40%)
     duracao_base: 0,
     icone: '🩸🩸'
   },
@@ -348,6 +372,27 @@ export const EFEITOS_STATUS = {
     drena_energia: 30,
     duracao_base: 0,
     icone: '⚡💀'
+  },
+
+  enfraquecimento_primordial: {
+    nome: 'Ruptura Dimensional',
+    tipo: 'debuff',
+    reducao_forca: EFFECT_BALANCE.DEBUFF_STAT_MEDIO,  // -30%
+    reducao_foco: EFFECT_BALANCE.DEBUFF_STAT_MEDIO,  // -30%
+    duracao_base: COOLDOWN_BALANCE.DURACAO_ESPECIAL_CURTA,  // 2 turnos
+    icone: '🕳️⬇️',
+    descricao: 'Vazio consome força e foco do alvo'
+  },
+
+  escudo_energetico: {
+    nome: 'Escudo Energético',
+    tipo: 'buff',
+    reducao_dano_recebido: 0.50,  // 50% redução (AETHER - elemento lendário)
+    acerto_garantido: true,  // 100% de acerto enquanto ativo
+    duracao_base: COOLDOWN_BALANCE.DURACAO_ESPECIAL_CURTA,  // 2 turnos
+    icone: '✨🛡️',
+    instantaneo: true,
+    descricao: 'Energia primordial que transcende limitações'
   },
 
 

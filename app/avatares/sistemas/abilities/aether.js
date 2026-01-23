@@ -18,33 +18,32 @@ export const HABILIDADES_AETHER = {
   // ==================== 1️⃣ RAIO PRIMORDIAL ====================
   RAIO_PRIMORDIAL: criarHabilidade({
     nome: 'Raio Primordial',
-    descricao: 'Descarga devastadora de energia primordial que penetra 75% da defesa e purifica TODOS os debuffs próprios',
+    descricao: 'Descarga devastadora de energia primordial que ignora 80% da defesa do inimigo',
     tipo: TIPO_HABILIDADE.OFENSIVA,
     raridade: RARIDADE_HABILIDADE.AVANCADA,
     elemento: ELEMENTOS.AETHER,
     dano_base: COMBAT_BALANCE.DANO_BASE_HABILIDADE_FORTE, // 10 base
-    multiplicador_stat: COMBAT_BALANCE.MULTIPLICADOR_HABILIDADE_FORTE, // Foco × 4.5 (AETHER - supremo!)
+    multiplicador_stat: COMBAT_BALANCE.MULTIPLICADOR_HABILIDADE_FORTE, // Foco × 4.5
     stat_primario: 'foco',
-    ignora_defesa: 0.75, // ESPECIAL AETHER: Ignora 75% defesa
-    efeitos_status: ['limpar_debuffs', 'sobrecarga'], // Remove debuffs + buff temporário
-    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE, // 35 (supremo dominante)
+    ignora_defesa: 0.80, // ESPECIAL AETHER: Ignora 80% defesa
+    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE, // 35
     cooldown: COOLDOWN_BALANCE.COOLDOWN_DANO_FORTE, // 3 turnos
     nivel_minimo: 1
   }),
 
-  // ==================== 2️⃣ CAMPO DE TRANSCENDÊNCIA ====================
-  CAMPO_DE_TRANSCENDENCIA: criarHabilidade({
-    nome: 'Campo de Transcendência',
-    descricao: 'Eleva o corpo a estado superior (+50% em TODOS os stats por 2 turnos)',
+  // ==================== 2️⃣ ESCUDO ENERGÉTICO ====================
+  ESCUDO_ENERGETICO: criarHabilidade({
+    nome: 'Escudo Energético',
+    descricao: 'Cria um escudo de energia primordial que reduz 50% do dano recebido e garante 100% de acerto por 2 turnos',
     tipo: TIPO_HABILIDADE.SUPORTE,
     elemento: ELEMENTOS.AETHER,
     dano_base: 0,
     multiplicador_stat: 0,
     stat_primario: 'foco',
-    efeitos_status: ['transcendencia'], // +50% todos os stats por 2 turnos
+    efeitos_status: ['escudo_energetico'], // 50% redução + 100% acerto garantido
     duracao_efeito: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO, // 3 → 2 turnos ativos
     alvo: 'self',
-    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA + 5, // 30 (força foco em ataque)
+    custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA + 5, // 30
     cooldown: COOLDOWN_BALANCE.COOLDOWN_SUPORTE_ESPECIAL, // 4 turnos
     nivel_minimo: 1
   })
@@ -55,19 +54,19 @@ export const HABILIDADES_AETHER = {
  * RESUMO DAS 2 HABILIDADES DE AETHER
  * ========================================
  *
- * 1️⃣ RAIO PRIMORDIAL (Ataque) ⚡ DEVASTADOR
- *    Dano: 10 base + Foco × 4.5 (MULTIPLICADOR_HABILIDADE_FORTE - EXTREMAMENTE FORTE!)
- *    Efeitos: Penetra 75% defesa + Remove TODOS debuffs + Sobrecarga
- *    Energia: 35 (FORTE - supremo dominante) | Cooldown: 3 (FORTE)
+ * 1️⃣ RAIO PRIMORDIAL (Ataque) ⚡✨ PENETRADOR
+ *    Dano: 10 base + Foco × 4.5 (MULTIPLICADOR_HABILIDADE_FORTE)
+ *    Efeitos: Ignora 80% da defesa do inimigo
+ *    Energia: 35 (FORTE) | Cooldown: 3 (FORTE)
  *
- * 2️⃣ CAMPO DE TRANSCENDÊNCIA (Suporte) 🌟 SUPREMO
+ * 2️⃣ ESCUDO ENERGÉTICO (Suporte) 🛡️✨ TRANSCENDENTE
  *    Dano: 0 (não ataca)
- *    Efeitos: +50% TODOS stats por 2 turnos (MEGA BUFF!)
+ *    Efeitos: Reduz 50% dano recebido + 100% acerto garantido por 2 turnos
  *    Energia: 30 (MEDIA + 5) | Cooldown: 4 (SUPORTE_ESPECIAL)
  *
  * ✅ SISTEMA BALANCEADO CENTRALIZADO
  * ✅ Usa valores de combatBalance, cooldownBalance, effectBalance
  * ✅ Efeitos claros e diretos
  * ✅ Fácil de balancear e entender
- * ✅ ESPECIALIDADE: Penetração de defesa, mega buffs, transcendência
+ * ✅ ESPECIALIDADE: Transcendência de limitações (ignora defesa + acerto garantido)
  */
