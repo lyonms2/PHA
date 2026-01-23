@@ -35,13 +35,13 @@ export const HABILIDADES_VOID = {
   // ==================== 2️⃣ CAMPO DE ANULAÇÃO ====================
   CAMPO_DE_ANULACAO: criarHabilidade({
     nome: 'Campo de Anulação',
-    descricao: 'Cria um vácuo protetor que reduz 40% do dano recebido por 2 turnos',
+    descricao: 'Cria um vácuo protetor que reduz 50% do dano recebido e garante acerto de 100% em todos os ataques por 2 turnos',
     tipo: TIPO_HABILIDADE.SUPORTE,
     elemento: ELEMENTOS.VOID,
     dano_base: 0,
     multiplicador_stat: 0,
     stat_primario: 'foco',
-    efeitos_status: ['reducao_dano'], // Efeito especial: 40% redução por 2 turnos
+    efeitos_status: ['reducao_dano'], // Efeito especial: 50% redução + 100% acerto por 2 turnos
     duracao_efeito: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO, // 3 → 2 turnos ativos
     alvo: 'self',
     custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA + 5, // 30 (um pouco mais caro)
@@ -60,9 +60,9 @@ export const HABILIDADES_VOID = {
  *    Efeitos: Ignora 80% defesa + Remove TODOS buffs do inimigo
  *    Energia: 35 (FORTE - supremo dominante) | Cooldown: 3 (FORTE)
  *
- * 2️⃣ CAMPO DE ANULAÇÃO (Defesa) 🛡️ TANQUE
+ * 2️⃣ CAMPO DE ANULAÇÃO (Defesa) 🛡️ TANQUE LENDÁRIO
  *    Dano: 0 (não ataca)
- *    Efeitos: Reduz 40% dano recebido por 2 turnos
+ *    Efeitos: Reduz 50% dano recebido + 100% acerto garantido por 2 turnos
  *    Energia: 30 (MEDIA + 5) | Cooldown: 4 (SUPORTE_ESPECIAL)
  *
  * ✅ SISTEMA BALANCEADO CENTRALIZADO

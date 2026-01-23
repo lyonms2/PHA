@@ -274,7 +274,8 @@ export const EFEITOS_STATUS = {
   reducao_dano: {
     nome: 'Redução de Dano',
     tipo: 'buff',
-    reducao_dano_recebido: EFFECT_BALANCE.BUFF_STAT_MEDIO,  // 35% redução
+    reducao_dano_recebido: 0.50,  // 50% redução (VOID - elemento lendário)
+    acerto_garantido: true,  // 100% de acerto enquanto ativo
     duracao_base: COOLDOWN_BALANCE.DURACAO_ESPECIAL_CURTA,  // 2 turnos
     icone: '🛡️💜',
     instantaneo: true
