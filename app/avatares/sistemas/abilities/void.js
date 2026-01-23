@@ -6,7 +6,7 @@
 // 2. Defesa/Suporte - Proteção/buff temático
 //
 // Sistema de combate: Ataque Básico + Defender + 2 Habilidades
-// ESPECIALIDADE: Ignora defesa, remove buffs
+// ESPECIALIDADE: Penetração massiva de defesa (80%) + Campo protetor lendário
 
 import { TIPO_HABILIDADE, RARIDADE_HABILIDADE, criarHabilidade } from '../constants/abilityTypes';
 import { ELEMENTOS } from '../elementalSystem';
@@ -18,7 +18,7 @@ export const HABILIDADES_VOID = {
   // ==================== 1️⃣ RUPTURA DIMENSIONAL ====================
   RUPTURA_DIMENSIONAL: criarHabilidade({
     nome: 'Ruptura Dimensional',
-    descricao: 'Rasga a realidade causando dano massivo, ignorando 80% da defesa e removendo TODOS os buffs do inimigo',
+    descricao: 'Rasga a realidade causando dano massivo, ignorando 80% da defesa do inimigo',
     tipo: TIPO_HABILIDADE.OFENSIVA,
     raridade: RARIDADE_HABILIDADE.AVANCADA,
     elemento: ELEMENTOS.VOID,
@@ -26,7 +26,6 @@ export const HABILIDADES_VOID = {
     multiplicador_stat: COMBAT_BALANCE.MULTIPLICADOR_HABILIDADE_FORTE, // Foco × 4.5 (VOID - mais forte!)
     stat_primario: 'foco',
     ignora_defesa: 0.80, // ESPECIAL VOID: Ignora 80% defesa
-    efeitos_status: ['anula_buffs'], // Remove buffs do inimigo
     custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_FORTE, // 35 (supremo dominante)
     cooldown: COOLDOWN_BALANCE.COOLDOWN_DANO_FORTE, // 3 turnos
     nivel_minimo: 1
@@ -57,7 +56,7 @@ export const HABILIDADES_VOID = {
  *
  * 1️⃣ RUPTURA DIMENSIONAL (Ataque) ⚠️ PODEROSO
  *    Dano: 10 base + Foco × 4.5 (MULTIPLICADOR_HABILIDADE_FORTE - MAIS FORTE!)
- *    Efeitos: Ignora 80% defesa + Remove TODOS buffs do inimigo
+ *    Efeitos: Ignora 80% da defesa do inimigo
  *    Energia: 35 (FORTE - supremo dominante) | Cooldown: 3 (FORTE)
  *
  * 2️⃣ CAMPO DE ANULAÇÃO (Defesa) 🛡️ TANQUE LENDÁRIO
@@ -69,5 +68,5 @@ export const HABILIDADES_VOID = {
  * ✅ Usa valores de combatBalance, cooldownBalance, effectBalance
  * ✅ Efeitos claros e diretos
  * ✅ Fácil de balancear e entender
- * ✅ ESPECIALIDADE: Penetração de defesa e remoção de buffs
+ * ✅ ESPECIALIDADE: Penetração massiva de defesa (80%) + Campo de proteção lendário
  */
