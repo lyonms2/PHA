@@ -39,6 +39,7 @@ export const criarHabilidade = (config) => ({
   dano_base: config.dano_base ?? 0,
   multiplicador_stat: config.multiplicador_stat ?? 1.0,
   stat_primario: config.stat_primario || 'forca', // qual stat usa
+  ignora_defesa: config.ignora_defesa ?? 0, // % de defesa ignorada (0.0 a 1.0) - VOID e AETHER
 
   // Efeitos especiais
   efeitos_status: config.efeitos_status || [],
