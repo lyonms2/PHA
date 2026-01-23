@@ -452,12 +452,12 @@ export function aplicarPenalidadesExaustao(stats, exaustao, effects = []) {
       finalStats.resistencia = Math.floor(finalStats.resistencia * (1 - efeito.reducaoResistencia));
     }
 
-    // Debuffs de Força (-X% força) - ENFRAQUECIMENTO PRIMORDIAL (AETHER)
+    // Debuffs de Força (-X% força) - RUPTURA DIMENSIONAL (VOID)
     if (efeito.reducaoForca) {
       finalStats.forca = Math.floor(finalStats.forca * (1 - efeito.reducaoForca));
     }
 
-    // Debuffs de Foco (-X% foco) - ENFRAQUECIMENTO PRIMORDIAL (AETHER)
+    // Debuffs de Foco (-X% foco) - RUPTURA DIMENSIONAL (VOID)
     if (efeito.reducaoFoco) {
       finalStats.foco = Math.floor(finalStats.foco * (1 - efeito.reducaoFoco));
     }
