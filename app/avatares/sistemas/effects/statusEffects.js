@@ -203,7 +203,7 @@ export const EFEITOS_STATUS = {
   transcendencia: {
     nome: 'Transcendência',
     tipo: 'buff',
-    bonus_todos_stats: EFFECT_BALANCE.BUFF_STAT_MEDIO,  // +35%
+    bonus_todos_stats: EFFECT_BALANCE.BUFF_STAT_FORTE,  // +50% (AETHER - elemento lendário!)
     duracao_base: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO,  // 3 turnos
     icone: '✨🌟',
     instantaneo: true

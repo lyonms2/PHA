@@ -24,9 +24,9 @@ function escolherAleatorio(array) {
  * - 99% chance de elementos comuns
  */
 function escolherElemento(raridade) {
-  // ==================== TESTE TEMPORÁRIO: VOID 100% ====================
-  console.log(`🕳️ [VOID] Elemento VOID forçado para testes!`);
-  return ELEMENTOS.VOID;
+  // ==================== TESTE TEMPORÁRIO: AETHER 100% ====================
+  console.log(`✨ [AETHER] Elemento AETHER forçado para testes!`);
+  return ELEMENTOS.AETHER;
   // ====================================================================
 
   // ==================== VOID/AETHER AJUSTADO ====================
