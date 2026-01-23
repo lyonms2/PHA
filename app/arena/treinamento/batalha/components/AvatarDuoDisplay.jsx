@@ -176,12 +176,12 @@ export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true, 
                 <div
                   key={`buff-${idx}`}
                   className="relative group"
-                  title={`${info.nome} (${efeito.turnosRestantes || efeito.duracao} turnos)`}
+                  title={`${info.nome} (${Math.max(0, (efeito.turnosRestantes || efeito.duracao) - 1)} turnos)`}
                 >
                   <div className="flex items-center gap-0.5 bg-green-900/30 border border-green-500/30 rounded px-1.5 py-0.5">
                     <span className={`text-xs ${info.cor}`}>{info.icone}</span>
                     <span className="text-[9px] text-green-300 font-mono">
-                      {efeito.turnosRestantes || efeito.duracao}
+                      {Math.max(0, (efeito.turnosRestantes || efeito.duracao) - 1)}
                     </span>
                   </div>
                   {/* Tooltip */}
@@ -200,12 +200,12 @@ export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true, 
                 <div
                   key={`debuff-${idx}`}
                   className="relative group"
-                  title={`${info.nome} (${efeito.turnosRestantes || efeito.duracao} turnos)`}
+                  title={`${info.nome} (${Math.max(0, (efeito.turnosRestantes || efeito.duracao) - 1)} turnos)`}
                 >
                   <div className="flex items-center gap-0.5 bg-red-900/30 border border-red-500/30 rounded px-1.5 py-0.5">
                     <span className={`text-xs ${info.cor}`}>{info.icone}</span>
                     <span className="text-[9px] text-red-300 font-mono">
-                      {efeito.turnosRestantes || efeito.duracao}
+                      {Math.max(0, (efeito.turnosRestantes || efeito.duracao) - 1)}
                     </span>
                   </div>
                   {/* Tooltip */}
