@@ -373,6 +373,27 @@ export const EFEITOS_STATUS = {
     icone: '⚡💀'
   },
 
+  enfraquecimento_primordial: {
+    nome: 'Enfraquecimento Primordial',
+    tipo: 'debuff',
+    reducao_forca: EFFECT_BALANCE.DEBUFF_STAT_MEDIO,  // -30%
+    reducao_foco: EFFECT_BALANCE.DEBUFF_STAT_MEDIO,  // -30%
+    duracao_base: COOLDOWN_BALANCE.DURACAO_ESPECIAL_CURTA,  // 2 turnos
+    icone: '✨⬇️',
+    descricao: 'Energia primordial drena força e foco do alvo'
+  },
+
+  escudo_energetico: {
+    nome: 'Escudo Energético',
+    tipo: 'buff',
+    reducao_dano_recebido: 0.50,  // 50% redução (igual ao VOID)
+    drena_energia_atacante: 10,  // Drena 10 de energia quando atacado
+    duracao_base: COOLDOWN_BALANCE.DURACAO_ESPECIAL_CURTA,  // 2 turnos
+    icone: '✨🛡️',
+    instantaneo: true,
+    descricao: 'Escudo de energia primordial que reduz dano e drena energia do atacante'
+  },
+
 
   // ==================== EFEITOS DE ZONA ====================
 
