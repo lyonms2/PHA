@@ -45,7 +45,7 @@ export const HABILIDADES_ELETRICIDADE = {
     duracao_efeito: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO, // 3 → 2 turnos ativos
     alvo: 'self',
     custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA, // 30
-    cooldown: COOLDOWN_BALANCE.COOLDOWN_BUFF_MEDIO, // 3 turnos
+    cooldown: 4, // 4 turnos - previne 100% uptime (antes: 3)
     nivel_minimo: 1
   })
 };
