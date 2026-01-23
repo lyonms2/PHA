@@ -35,7 +35,7 @@ export const criarHabilidade = (config) => ({
   custo_energia: config.custo_energia || 20,
   cooldown: config.cooldown || 1, // turnos
 
-  // Efeitos numéricos
+  // Efeitos numéricos (força reload)
   dano_base: config.dano_base ?? 0,
   multiplicador_stat: config.multiplicador_stat ?? 1.0,
   stat_primario: config.stat_primario || 'forca', // qual stat usa
