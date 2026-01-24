@@ -221,15 +221,20 @@ export default function DualCardBattleLayout({
                     {/* Efeitos ativos */}
                     {effects.length > 0 && (
                       <div className="flex gap-0.5 mt-0.5 flex-wrap justify-center px-2 flex-shrink-0 min-h-[16px]">
-                        {effects.slice(0, 3).map((effect, i) => (
-                          <span
-                            key={i}
-                            className={`text-xs ${ehBuff(effect.tipo) ? 'text-green-400' : 'text-red-400'}`}
-                            title={`${effect.tipo} (${Math.max(0, (effect.turnosRestantes || 0) - 1)} turnos)`}
-                          >
-                            {getEfeitoEmoji(effect.tipo)}{Math.max(0, (effect.turnosRestantes || 0) - 1)}
-                          </span>
-                        ))}
+                        {effects.slice(0, 3).map((effect, i) => {
+                          const turnos = effect.turnosRestantes || 0;
+                          const turnosDisplay = turnos > 1 ? turnos - 1 : '';
+                          const turnosTooltip = turnos > 1 ? `${turnos - 1} turnos` : 'último turno';
+                          return (
+                            <span
+                              key={i}
+                              className={`text-xs ${ehBuff(effect.tipo) ? 'text-green-400' : 'text-red-400'}`}
+                              title={`${effect.tipo} (${turnosTooltip})`}
+                            >
+                              {getEfeitoEmoji(effect.tipo)}{turnosDisplay}
+                            </span>
+                          );
+                        })}
                         {effects.length > 3 && (
                           <span className="text-[9px] text-purple-400" title={`+${effects.length - 3} efeitos`}>
                             +{effects.length - 3}
