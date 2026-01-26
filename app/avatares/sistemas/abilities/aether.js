@@ -41,7 +41,7 @@ export const HABILIDADES_AETHER = {
     multiplicador_stat: 0,
     stat_primario: 'foco',
     efeitos_status: ['escudo_energetico'], // 50% redução + 100% acerto garantido
-    duracao_efeito: COOLDOWN_BALANCE.DURACAO_BUFF_SELF_MEDIO, // 3 → 2 turnos ativos
+    duracao_efeito: 4, // 4 → fica ativo por 2 turnos completos após aplicar
     alvo: 'self',
     custo_energia: COMBAT_BALANCE.ENERGIA_HABILIDADE_MEDIA + 5, // 30
     cooldown: COOLDOWN_BALANCE.COOLDOWN_SUPORTE_ESPECIAL, // 4 turnos
