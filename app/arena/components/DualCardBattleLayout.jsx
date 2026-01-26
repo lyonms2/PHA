@@ -7,7 +7,7 @@
 import { useState, useEffect, useRef } from 'react';
 import AvatarSVG from '@/app/components/AvatarSVG';
 import BattleEffectWrapper from './BattleEffectWrapper';
-import { getElementoEmoji, getElementoCor, getEfeitoEmoji, ehBuff } from '@/lib/arena/battleEffects';
+import { getElementoEmoji, getElementoCor, getEfeitoEmoji, ehBuff, getEfeitoDetalhado } from '@/lib/arena/battleEffects';
 import { calcularPoderTotal } from '@/lib/gameLogic';
 
 export default function DualCardBattleLayout({
@@ -220,25 +220,32 @@ export default function DualCardBattleLayout({
 
                     {/* Efeitos ativos */}
                     {effects.length > 0 && (
-                      <div className="flex gap-0.5 mt-0.5 flex-wrap justify-center px-2 flex-shrink-0 min-h-[16px]">
+                      <div className="flex flex-col gap-0.5 mt-0.5 px-2 flex-shrink-0">
                         {effects.slice(0, 3).map((effect, i) => {
-                          const turnos = effect.turnosRestantes || 0;
-                          const turnosDisplay = turnos > 0 ? Math.ceil((turnos + 1) / 2) : '';
-                          const turnosTooltip = `${Math.ceil((turnos + 1) / 2)} ${Math.ceil((turnos + 1) / 2) === 1 ? 'turno' : 'turnos'}`;
+                          const info = getEfeitoDetalhado(effect);
+                          const isBuff = ehBuff(effect.tipo);
                           return (
-                            <span
+                            <div
                               key={i}
-                              className={`text-xs ${ehBuff(effect.tipo) ? 'text-green-400' : 'text-red-400'}`}
-                              title={`${effect.tipo} (${turnosTooltip})`}
+                              className={`text-[8px] px-1.5 py-0.5 rounded ${
+                                isBuff ? 'bg-green-900/30 border border-green-600/50' : 'bg-red-900/30 border border-red-600/50'
+                              }`}
                             >
-                              {getEfeitoEmoji(effect.tipo)}{turnosDisplay}
-                            </span>
+                              <div className={`font-bold ${isBuff ? 'text-green-300' : 'text-red-300'}`}>
+                                {getEfeitoEmoji(effect.tipo)} {info.nome}
+                              </div>
+                              {info.efeitos.map((efeito, idx) => (
+                                <div key={idx} className={isBuff ? 'text-green-200' : 'text-red-200'}>
+                                  {efeito}
+                                </div>
+                              ))}
+                            </div>
                           );
                         })}
                         {effects.length > 3 && (
-                          <span className="text-[9px] text-purple-400" title={`+${effects.length - 3} efeitos`}>
-                            +{effects.length - 3}
-                          </span>
+                          <div className="text-[9px] text-purple-400 text-center">
+                            +{effects.length - 3} efeitos
+                          </div>
                         )}
                       </div>
                     )}
