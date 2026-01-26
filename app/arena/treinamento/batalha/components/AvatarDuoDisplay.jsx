@@ -173,8 +173,8 @@ export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true, 
             {buffs.map((efeito, idx) => {
               const info = getEfeitoInfo(efeito);
               const turnos = efeito.turnosRestantes || efeito.duracao || 0;
-              const turnosDisplay = turnos > 0 ? Math.ceil(turnos / 2) : '';
-              const turnosTooltip = `${Math.ceil(turnos / 2)} ${Math.ceil(turnos / 2) === 1 ? 'turno' : 'turnos'}`;
+              const turnosDisplay = turnos > 0 ? Math.ceil((turnos + 1) / 2) : '';
+              const turnosTooltip = `${Math.ceil((turnos + 1) / 2)} ${Math.ceil((turnos + 1) / 2) === 1 ? 'turno' : 'turnos'}`;
               return (
                 <div
                   key={`buff-${idx}`}
@@ -200,8 +200,8 @@ export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true, 
             {debuffs.map((efeito, idx) => {
               const info = getEfeitoInfo(efeito);
               const turnos = efeito.turnosRestantes || efeito.duracao || 0;
-              const turnosDisplay = turnos > 0 ? Math.ceil(turnos / 2) : '';
-              const turnosTooltip = `${Math.ceil(turnos / 2)} ${Math.ceil(turnos / 2) === 1 ? 'turno' : 'turnos'}`;
+              const turnosDisplay = turnos > 0 ? Math.ceil((turnos + 1) / 2) : '';
+              const turnosTooltip = `${Math.ceil((turnos + 1) / 2)} ${Math.ceil((turnos + 1) / 2) === 1 ? 'turno' : 'turnos'}`;
               return (
                 <div
                   key={`debuff-${idx}`}
