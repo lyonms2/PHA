@@ -9,7 +9,8 @@ import {
   atualizarBalanceamentoHabilidade,
   getElementoEmoji,
   ehBuff,
-  getEfeitoEmoji
+  getEfeitoEmoji,
+  getEfeitoDetalhado
 } from './utils';
 import SynergyDisplay from './components/SynergyDisplay';
 import AvatarDuoDisplay from './components/AvatarDuoDisplay';
@@ -1063,28 +1064,30 @@ function BatalhaTreinoIAContent() {
                 <div className="px-3 pb-3 border-t border-slate-800 pt-2">
                   <div className="grid grid-cols-2 gap-1">
                     {/* Buffs (Esquerda) */}
-                    <div className="flex flex-wrap gap-0.5">
+                    <div className="flex flex-col gap-1">
                       {myEffects.filter(ef => ehBuff(ef.tipo)).map((ef, i) => {
-                        const turnos = ef.turnosRestantes || 0;
-                        const turnosDisplay = turnos > 0 ? Math.ceil((turnos + 1) / 2) : '';
-                        const turnosTooltip = `${Math.ceil((turnos + 1) / 2)} ${Math.ceil((turnos + 1) / 2) === 1 ? 'turno' : 'turnos'}`;
+                        const info = getEfeitoDetalhado(ef);
                         return (
-                          <span key={i} className="text-[10px] bg-green-900/30 px-1 py-0.5 rounded border border-green-600/50" title={`${ef.tipo} (${turnosTooltip})`}>
-                            {getEfeitoEmoji(ef.tipo)}{turnosDisplay}
-                          </span>
+                          <div key={i} className="text-[9px] bg-green-900/30 px-2 py-1 rounded border border-green-600/50">
+                            <div className="font-bold text-green-300">{getEfeitoEmoji(ef.tipo)} {info.nome}</div>
+                            {info.efeitos.map((efeito, idx) => (
+                              <div key={idx} className="text-green-200">{efeito}</div>
+                            ))}
+                          </div>
                         );
                       })}
                     </div>
                     {/* Debuffs (Direita) */}
-                    <div className="flex flex-wrap gap-0.5 justify-end">
+                    <div className="flex flex-col gap-1">
                       {myEffects.filter(ef => !ehBuff(ef.tipo)).map((ef, i) => {
-                        const turnos = ef.turnosRestantes || 0;
-                        const turnosDisplay = turnos > 0 ? Math.ceil((turnos + 1) / 2) : '';
-                        const turnosTooltip = `${Math.ceil((turnos + 1) / 2)} ${Math.ceil((turnos + 1) / 2) === 1 ? 'turno' : 'turnos'}`;
+                        const info = getEfeitoDetalhado(ef);
                         return (
-                          <span key={i} className="text-[10px] bg-red-900/30 px-1 py-0.5 rounded border border-red-600/50" title={`${ef.tipo} (${turnosTooltip})`}>
-                            {getEfeitoEmoji(ef.tipo)}{turnosDisplay}
-                          </span>
+                          <div key={i} className="text-[9px] bg-red-900/30 px-2 py-1 rounded border border-red-600/50">
+                            <div className="font-bold text-red-300">{getEfeitoEmoji(ef.tipo)} {info.nome}</div>
+                            {info.efeitos.map((efeito, idx) => (
+                              <div key={idx} className="text-red-200">{efeito}</div>
+                            ))}
+                          </div>
                         );
                       })}
                     </div>
@@ -1196,28 +1199,30 @@ function BatalhaTreinoIAContent() {
                 <div className="px-3 pb-3 border-t border-slate-800 pt-2">
                   <div className="grid grid-cols-2 gap-1">
                     {/* Buffs (Esquerda) */}
-                    <div className="flex flex-wrap gap-0.5">
+                    <div className="flex flex-col gap-1">
                       {opponentEffects.filter(ef => ehBuff(ef.tipo)).map((ef, i) => {
-                        const turnos = ef.turnosRestantes || 0;
-                        const turnosDisplay = turnos > 0 ? Math.ceil((turnos + 1) / 2) : '';
-                        const turnosTooltip = `${Math.ceil((turnos + 1) / 2)} ${Math.ceil((turnos + 1) / 2) === 1 ? 'turno' : 'turnos'}`;
+                        const info = getEfeitoDetalhado(ef);
                         return (
-                          <span key={i} className="text-[10px] bg-green-900/30 px-1 py-0.5 rounded border border-green-600/50" title={`${ef.tipo} (${turnosTooltip})`}>
-                            {getEfeitoEmoji(ef.tipo)}{turnosDisplay}
-                          </span>
+                          <div key={i} className="text-[9px] bg-green-900/30 px-2 py-1 rounded border border-green-600/50">
+                            <div className="font-bold text-green-300">{getEfeitoEmoji(ef.tipo)} {info.nome}</div>
+                            {info.efeitos.map((efeito, idx) => (
+                              <div key={idx} className="text-green-200">{efeito}</div>
+                            ))}
+                          </div>
                         );
                       })}
                     </div>
                     {/* Debuffs (Direita) */}
-                    <div className="flex flex-wrap gap-0.5 justify-end">
+                    <div className="flex flex-col gap-1">
                       {opponentEffects.filter(ef => !ehBuff(ef.tipo)).map((ef, i) => {
-                        const turnos = ef.turnosRestantes || 0;
-                        const turnosDisplay = turnos > 0 ? Math.ceil((turnos + 1) / 2) : '';
-                        const turnosTooltip = `${Math.ceil((turnos + 1) / 2)} ${Math.ceil((turnos + 1) / 2) === 1 ? 'turno' : 'turnos'}`;
+                        const info = getEfeitoDetalhado(ef);
                         return (
-                          <span key={i} className="text-[10px] bg-red-900/30 px-1 py-0.5 rounded border border-red-600/50" title={`${ef.tipo} (${turnosTooltip})`}>
-                            {getEfeitoEmoji(ef.tipo)}{turnosDisplay}
-                          </span>
+                          <div key={i} className="text-[9px] bg-red-900/30 px-2 py-1 rounded border border-red-600/50">
+                            <div className="font-bold text-red-300">{getEfeitoEmoji(ef.tipo)} {info.nome}</div>
+                            {info.efeitos.map((efeito, idx) => (
+                              <div key={idx} className="text-red-200">{efeito}</div>
+                            ))}
+                          </div>
                         );
                       })}
                     </div>
