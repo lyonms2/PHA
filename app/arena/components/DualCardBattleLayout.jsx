@@ -223,8 +223,8 @@ export default function DualCardBattleLayout({
                       <div className="flex gap-0.5 mt-0.5 flex-wrap justify-center px-2 flex-shrink-0 min-h-[16px]">
                         {effects.slice(0, 3).map((effect, i) => {
                           const turnos = effect.turnosRestantes || 0;
-                          const turnosDisplay = turnos > 1 ? Math.ceil(turnos / 2) : '';
-                          const turnosTooltip = turnos > 1 ? `${Math.ceil(turnos / 2)} turnos` : 'último turno';
+                          const turnosDisplay = turnos > 0 ? Math.ceil(turnos / 2) : '';
+                          const turnosTooltip = `${Math.ceil(turnos / 2)} ${Math.ceil(turnos / 2) === 1 ? 'turno' : 'turnos'}`;
                           return (
                             <span
                               key={i}
