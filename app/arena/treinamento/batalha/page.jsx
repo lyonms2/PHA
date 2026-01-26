@@ -1065,8 +1065,9 @@ function BatalhaTreinoIAContent() {
                     {/* Buffs (Esquerda) */}
                     <div className="flex flex-wrap gap-0.5">
                       {myEffects.filter(ef => ehBuff(ef.tipo)).map((ef, i) => {
-                        const turnosDisplay = ef.turnosRestantes > 1 ? ef.turnosRestantes - 1 : '';
-                        const turnosTooltip = ef.turnosRestantes > 1 ? `${ef.turnosRestantes - 1} turnos` : 'último turno';
+                        const turnos = ef.turnosRestantes || 0;
+                        const turnosDisplay = turnos > 1 ? turnos : '';
+                        const turnosTooltip = turnos > 1 ? `${turnos} turnos` : 'último turno';
                         return (
                           <span key={i} className="text-[10px] bg-green-900/30 px-1 py-0.5 rounded border border-green-600/50" title={`${ef.tipo} (${turnosTooltip})`}>
                             {getEfeitoEmoji(ef.tipo)}{turnosDisplay}
@@ -1077,8 +1078,9 @@ function BatalhaTreinoIAContent() {
                     {/* Debuffs (Direita) */}
                     <div className="flex flex-wrap gap-0.5 justify-end">
                       {myEffects.filter(ef => !ehBuff(ef.tipo)).map((ef, i) => {
-                        const turnosDisplay = ef.turnosRestantes > 1 ? ef.turnosRestantes - 1 : '';
-                        const turnosTooltip = ef.turnosRestantes > 1 ? `${ef.turnosRestantes - 1} turnos` : 'último turno';
+                        const turnos = ef.turnosRestantes || 0;
+                        const turnosDisplay = turnos > 1 ? turnos : '';
+                        const turnosTooltip = turnos > 1 ? `${turnos} turnos` : 'último turno';
                         return (
                           <span key={i} className="text-[10px] bg-red-900/30 px-1 py-0.5 rounded border border-red-600/50" title={`${ef.tipo} (${turnosTooltip})`}>
                             {getEfeitoEmoji(ef.tipo)}{turnosDisplay}
@@ -1196,8 +1198,9 @@ function BatalhaTreinoIAContent() {
                     {/* Buffs (Esquerda) */}
                     <div className="flex flex-wrap gap-0.5">
                       {opponentEffects.filter(ef => ehBuff(ef.tipo)).map((ef, i) => {
-                        const turnosDisplay = ef.turnosRestantes > 1 ? ef.turnosRestantes - 1 : '';
-                        const turnosTooltip = ef.turnosRestantes > 1 ? `${ef.turnosRestantes - 1} turnos` : 'último turno';
+                        const turnos = ef.turnosRestantes || 0;
+                        const turnosDisplay = turnos > 1 ? turnos : '';
+                        const turnosTooltip = turnos > 1 ? `${turnos} turnos` : 'último turno';
                         return (
                           <span key={i} className="text-[10px] bg-green-900/30 px-1 py-0.5 rounded border border-green-600/50" title={`${ef.tipo} (${turnosTooltip})`}>
                             {getEfeitoEmoji(ef.tipo)}{turnosDisplay}
@@ -1208,8 +1211,9 @@ function BatalhaTreinoIAContent() {
                     {/* Debuffs (Direita) */}
                     <div className="flex flex-wrap gap-0.5 justify-end">
                       {opponentEffects.filter(ef => !ehBuff(ef.tipo)).map((ef, i) => {
-                        const turnosDisplay = ef.turnosRestantes > 1 ? ef.turnosRestantes - 1 : '';
-                        const turnosTooltip = ef.turnosRestantes > 1 ? `${ef.turnosRestantes - 1} turnos` : 'último turno';
+                        const turnos = ef.turnosRestantes || 0;
+                        const turnosDisplay = turnos > 1 ? turnos : '';
+                        const turnosTooltip = turnos > 1 ? `${turnos} turnos` : 'último turno';
                         return (
                           <span key={i} className="text-[10px] bg-red-900/30 px-1 py-0.5 rounded border border-red-600/50" title={`${ef.tipo} (${turnosTooltip})`}>
                             {getEfeitoEmoji(ef.tipo)}{turnosDisplay}

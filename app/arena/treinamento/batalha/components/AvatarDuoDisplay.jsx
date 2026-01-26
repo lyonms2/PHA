@@ -172,9 +172,9 @@ export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true, 
             {/* Buffs */}
             {buffs.map((efeito, idx) => {
               const info = getEfeitoInfo(efeito);
-              const turnos = efeito.turnosRestantes || efeito.duracao;
-              const turnosDisplay = turnos > 1 ? turnos - 1 : '';
-              const turnosTooltip = turnos > 1 ? `${turnos - 1} turnos` : 'último turno';
+              const turnos = efeito.turnosRestantes || efeito.duracao || 0;
+              const turnosDisplay = turnos > 1 ? turnos : '';
+              const turnosTooltip = turnos > 1 ? `${turnos} turnos` : 'último turno';
               return (
                 <div
                   key={`buff-${idx}`}
@@ -199,16 +199,19 @@ export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true, 
             {/* Debuffs */}
             {debuffs.map((efeito, idx) => {
               const info = getEfeitoInfo(efeito);
+              const turnos = efeito.turnosRestantes || efeito.duracao || 0;
+              const turnosDisplay = turnos > 1 ? turnos : '';
+              const turnosTooltip = turnos > 1 ? `${turnos} turnos` : 'último turno';
               return (
                 <div
                   key={`debuff-${idx}`}
                   className="relative group"
-                  title={`${info.nome} (${Math.max(0, (efeito.turnosRestantes || efeito.duracao) - 1)} turnos)`}
+                  title={`${info.nome} (${turnosTooltip})`}
                 >
                   <div className="flex items-center gap-0.5 bg-red-900/30 border border-red-500/30 rounded px-1.5 py-0.5">
                     <span className={`text-xs ${info.cor}`}>{info.icone}</span>
                     <span className="text-[9px] text-red-300 font-mono">
-                      {Math.max(0, (efeito.turnosRestantes || efeito.duracao) - 1)}
+                      {turnosDisplay}
                     </span>
                   </div>
                   {/* Tooltip */}
