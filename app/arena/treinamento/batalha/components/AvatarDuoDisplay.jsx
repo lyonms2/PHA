@@ -173,8 +173,8 @@ export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true, 
             {buffs.map((efeito, idx) => {
               const info = getEfeitoInfo(efeito);
               const turnos = efeito.turnosRestantes || efeito.duracao || 0;
-              const turnosDisplay = turnos > 1 ? turnos : '';
-              const turnosTooltip = turnos > 1 ? `${turnos} turnos` : 'último turno';
+              const turnosDisplay = turnos > 1 ? Math.ceil(turnos / 2) : '';
+              const turnosTooltip = turnos > 1 ? `${Math.ceil(turnos / 2)} turnos` : 'último turno';
               return (
                 <div
                   key={`buff-${idx}`}
@@ -200,8 +200,8 @@ export default function AvatarDuoDisplay({ principal, suporte, isPlayer = true, 
             {debuffs.map((efeito, idx) => {
               const info = getEfeitoInfo(efeito);
               const turnos = efeito.turnosRestantes || efeito.duracao || 0;
-              const turnosDisplay = turnos > 1 ? turnos : '';
-              const turnosTooltip = turnos > 1 ? `${turnos} turnos` : 'último turno';
+              const turnosDisplay = turnos > 1 ? Math.ceil(turnos / 2) : '';
+              const turnosTooltip = turnos > 1 ? `${Math.ceil(turnos / 2)} turnos` : 'último turno';
               return (
                 <div
                   key={`debuff-${idx}`}
